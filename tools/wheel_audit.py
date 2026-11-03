@@ -14,6 +14,16 @@ REQUIRED = {
     "claasp/serialization/primitive.py",
     "claasp/representations/source/__init__.py",
 }
+REQUIRED.add("claasp/analysis/nist_sts.py")
+REQUIRED.update(
+    "claasp/analysis/nist_sts_templates/" + name
+    for name in (
+        "dataInfo",
+        *(f"template{i}" for i in range(2, 17)),
+        *(f"template{i}.Z" for i in range(17, 22)),
+    )
+)
+
 FORBIDDEN_PARTS = {
     "__pycache__",
     ".mypy_cache",

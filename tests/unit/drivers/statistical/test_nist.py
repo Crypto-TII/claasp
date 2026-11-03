@@ -188,3 +188,36 @@ def test_version_falls_back_to_unknown_without_an_sts_version_hint(tmp_path):
     ).run(dataset)
 
     assert run.suite_version == "unknown"
+
+
+def test_nist_accepts_supplied_arrays_and_validates_sequence_lengths(tmp_path):
+    from claasp.analysis import SuppliedStatisticalDataset
+
+    dataset = SuppliedStatisticalDataset.from_bits([1, 0] * 80)
+    executable = _fake_assess(tmp_path, body=REPORT_BODY)
+    driver = NistStsDriver(
+        str(executable), working_dir=str(tmp_path / "working"), timeout_seconds=10
+    )
+    run = driver.run(
+        dataset, number_of_bit_streams=2, bits_per_sequence=80, test_selection="100000000000000"
+    )
+    assert run.command[2:] == ("80", "2", "0", "100000000000000")
+    assert run.dataset_sha256 == dataset.digest()
+    with pytest.raises(ValueError, match="exactly"):
+        driver.run(dataset, number_of_bit_streams=2, bits_per_sequence=64)
+    with pytest.raises(ValueError, match="evenly"):
+        driver.run(dataset, number_of_bit_streams=3)
+
+
+def test_nist_preserves_non_byte_aligned_supplied_bits(tmp_path):
+    from claasp.analysis import SuppliedStatisticalDataset
+
+    dataset = SuppliedStatisticalDataset.from_bits([1, 0, 1] * 3)
+    executable = _fake_assess(tmp_path, body=REPORT_BODY)
+    captured = tmp_path / "captured"
+    executable.write_text(executable.read_text().replace("exit 1", f'cp "$1" "{captured}"\nexit 1'))
+    run = NistStsDriver(
+        str(executable), working_dir=str(tmp_path / "working"), timeout_seconds=10
+    ).run(dataset)
+    assert captured.read_bytes() == b"101101101"
+    assert run.command[2:5] == ("9", "1", "0")

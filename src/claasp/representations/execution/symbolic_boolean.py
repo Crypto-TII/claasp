@@ -4,17 +4,23 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from claasp.components import (
+    Add,
+    BitVectorSBox,
     BitwiseAnd,
     BitwiseNot,
     BitwiseOr,
     Constant,
+    Identity,
     ModularAdd,
+    Multiply,
+    Permutation,
     Rotate,
+    SBox,
     Shift,
     Xor,
 )
 from claasp.graph import Primitive
-from claasp.representations.constraints.polynomial import BooleanPolynomial
+from claasp.representations.constraints.polynomial import BooleanPolynomial, anf_from_truth_table
 from claasp.unit_types import Bit, Word
 
 SymbolicUnit = BooleanPolynomial | tuple[BooleanPolynomial, ...]
@@ -49,15 +55,60 @@ class BooleanSymbolicEvaluator:
         2
     """
 
-    def evaluate(self, primitive: Primitive) -> BooleanSymbolicResult:
-        """Return exact output ANFs for a supported Bit/Word primitive graph."""
+    def evaluate(
+        self,
+        primitive: Primitive,
+        *,
+        fixed_inputs=None,
+        maximum_terms=100_000,
+        maximum_operations=1_000_000,
+    ) -> BooleanSymbolicResult:
+        """Return exact ANFs, stopping explicitly at the declared resource limits.
 
+        Concrete fixed inputs are substituted before expanding components.
+        A limit raises RuntimeError; no truncated polynomial is returned.
+        """
+        from claasp.representations.constraints.polynomial.boolean import _bounded_anf
+
+        with _bounded_anf(maximum_terms, maximum_operations):
+            return self._evaluate(primitive, fixed_inputs or {})
+
+    def _evaluate(self, primitive, fixed_inputs):
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a typed graph")
-        values = {}
+        values: dict[str, tuple[SymbolicUnit, ...]] = {}
+        if set(fixed_inputs) - set(primitive.graph.input_arrays):
+            raise ValueError("unknown fixed input")
         for name, unit_array in primitive.graph.input_arrays.items():
-            prefix = {"plaintext": "p", "key": "k", "state": "s"}.get(name, name[:1])
+            prefix = {
+                "plaintext": "p",
+                "key": "k",
+                "state": "s",
+                "iv": "i",
+                "left": "l",
+                "right": "r",
+            }.get(name, name + "_")
             unit_type = unit_array.array_type.unit_type
+            if name in fixed_inputs:
+                decoded = primitive._decode_boundary(fixed_inputs[name], unit_array.array_type)
+                if isinstance(unit_type, Bit):
+                    values[name] = tuple(
+                        BooleanPolynomial.one() if value else BooleanPolynomial.zero()
+                        for value in decoded
+                    )
+                elif isinstance(unit_type, Word):
+                    values[name] = tuple(
+                        tuple(
+                            BooleanPolynomial.one()
+                            if value & (1 << (unit_type.width - 1 - bit))
+                            else BooleanPolynomial.zero()
+                            for bit in range(unit_type.width)
+                        )
+                        for value in decoded
+                    )
+                else:
+                    raise NotImplementedError("fixed inputs require Bit or Word units")
+                continue
             if isinstance(unit_type, Bit):
                 values[name] = tuple(
                     BooleanPolynomial.variable(f"{prefix}{index}")
@@ -76,12 +127,13 @@ class BooleanSymbolicEvaluator:
                     "Boolean symbolic evaluation supports Bit and Word domains"
                 )
 
-        binding_cache = {}
+        binding_cache: dict = {}
         for component in primitive.graph.components:
             inputs = tuple(
                 primitive.graph.resolve_selection(selection, values, binding_cache)
                 for selection in component.inputs
             )
+            assert component.component_id is not None
             values[component.component_id] = self._component(component, inputs)
         if primitive.graph.output is None:
             return BooleanSymbolicResult((), values)
@@ -100,7 +152,7 @@ class BooleanSymbolicEvaluator:
         the result therefore describes the operation rather than a graph id.
         """
 
-        symbolic_inputs = []
+        symbolic_inputs: list[tuple[SymbolicUnit, ...]] = []
         for operand_index, selection in enumerate(component.inputs):
             unit_type = selection.array_type.unit_type
             if isinstance(unit_type, Bit):
@@ -130,6 +182,45 @@ class BooleanSymbolicEvaluator:
         )
 
     def _component(self, component, inputs):
+        if isinstance(component, Identity):
+            return inputs[0]
+        if isinstance(component, Permutation):
+            return tuple(inputs[0][index] for index in component.mapping)
+        if isinstance(component, (BitVectorSBox, SBox)):
+            groups = (inputs[0],) if isinstance(component, BitVectorSBox) else inputs[0]
+            if isinstance(component, BitVectorSBox):
+                output_width = component.output_bit_size
+            else:
+                unit_type = component.output_type.unit_type
+                if not isinstance(unit_type, Word):
+                    raise NotImplementedError("symbolic S-box requires Word units")
+                output_width = unit_type.width
+            results = []
+            for group in groups:
+                anfs = []
+                for bit in range(output_width):
+                    local = anf_from_truth_table(
+                        tuple((value >> (output_width - 1 - bit)) & 1 for value in component.table)
+                    )
+                    polynomial_result = BooleanPolynomial.zero()
+                    for monomial in local.monomials:
+                        term = BooleanPolynomial.one()
+                        for variable in monomial.variables:
+                            term *= group[int(variable[1:])]
+                        polynomial_result += term
+                    anfs.append(polynomial_result)
+                results.append(tuple(anfs))
+            return tuple(results[0]) if isinstance(component, BitVectorSBox) else tuple(results)
+        if isinstance(component, (Add, Multiply)):
+            if not isinstance(component.output_type.unit_type, Bit):
+                raise NotImplementedError("Boolean symbolic Add/Multiply require Bit units")
+            result = list(inputs[0])
+            for operand in inputs[1:]:
+                result = [
+                    (a + b) if isinstance(component, Add) else (a * b)
+                    for a, b in zip(result, operand)
+                ]
+            return tuple(result)
         if isinstance(component, Constant):
             unit_type = component.output_type.unit_type
             if isinstance(unit_type, Bit):

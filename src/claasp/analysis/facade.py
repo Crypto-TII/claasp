@@ -518,6 +518,81 @@ class Analysis:
             self.primitive, input_pattern, output_pattern, solver=solver
         )
 
+    def search_impossible_differentials(
+        self,
+        *,
+        middle_round=None,
+        split_order=None,
+        input_pattern=None,
+        output_pattern=None,
+        active_input="plaintext",
+        zero_difference_inputs=None,
+        representation="bitwise",
+        solver=None,
+        limit=1,
+    ):
+        """Search or enumerate checked impossible-model external pattern pairs.
+
+        Requires Kissat; the integration job executes the examples below.
+        A candidate limit is not an exhaustion proof: complete remains False.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.search_impossible_differentials(limit=1)  # doctest: +SKIP
+            >>> result.found, result.complete  # doctest: +SKIP
+            (True, False)
+            >>> result.candidates[0].trail.boundary.is_impossible  # doctest: +SKIP
+            True
+        """
+        from claasp.analysis.composed_search import search_impossible_differentials
+
+        return search_impossible_differentials(
+            self.primitive,
+            middle_round=middle_round,
+            split_order=split_order,
+            input_pattern=input_pattern,
+            output_pattern=output_pattern,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            representation=representation,
+            solver=solver,
+            limit=limit,
+        )
+
+    def find_optimal_differential_linear_trail(
+        self,
+        *,
+        prefix_rounds=None,
+        middle_rounds=None,
+        input_difference=None,
+        output_mask=None,
+        solver=None,
+    ):
+        """Optimize the declared differential/truncated/linear characteristic model.
+
+        Requires Kissat; the integration job executes the examples below.
+        The rational score P_D * C_L**2 is relative to the declared model,
+        not an empirical whole-primitive correlation.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+            >>> result.partition, result.score  # doctest: +SKIP
+            ((1, 1, 1), Fraction(1, 1))
+        """
+        from claasp.analysis.composed_search import find_optimal_differential_linear_trail
+
+        return find_optimal_differential_linear_trail(
+            self.primitive,
+            prefix_rounds=prefix_rounds,
+            middle_rounds=middle_rounds,
+            input_difference=input_difference,
+            output_mask=output_mask,
+            solver=solver,
+        )
+
     def find_impossible_xor_differential(
         self,
         middle_round,
@@ -564,6 +639,130 @@ class Analysis:
         from claasp.analysis.component_inspection import _select_component
 
         return _select_component(self.primitive, kind, index=index, bit_size=bit_size)
+
+    def anf(
+        self,
+        *,
+        output_bit=None,
+        component=None,
+        fixed_inputs=None,
+        maximum_terms=100_000,
+        maximum_operations=1_000_000,
+    ):
+        """Return exact output/intermediate ANFs with explicit expansion limits.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Simon
+            >>> Simon(number_of_rounds=1).analysis.anf(output_bit=0).degrees
+            (2,)
+        """
+        from claasp.analysis.monomial_workflows import analyze_anf
+
+        return analyze_anf(
+            self.primitive,
+            output_bit=output_bit,
+            component=component,
+            fixed_inputs=fixed_inputs,
+            maximum_terms=maximum_terms,
+            maximum_operations=maximum_operations,
+        )
+
+    def algebraic_degree(
+        self,
+        *,
+        output_bit=0,
+        variable_input="plaintext",
+        solver=None,
+        exact=False,
+        maximum_paths=10_000,
+        variable_positions=None,
+    ):
+        """Find a division-property upper bound or a parity-proved exact degree.
+
+        Requires GLPK. The integration job executes the solver examples below.
+        Default bounds do not account for cancellation; exact mode must finish
+        path enumeration before its degree can be used as an exact result.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Simon
+            >>> primitive = Simon(number_of_rounds=1)
+            >>> bound = primitive.analysis.algebraic_degree(output_bit=0)  # doctest: +SKIP
+            >>> bound.upper_bound, bound.exact_degree  # doctest: +SKIP
+            (2, None)
+            >>> exact = primitive.analysis.algebraic_degree(output_bit=0, exact=True).require_complete()  # doctest: +SKIP
+            >>> exact.exact_degree  # doctest: +SKIP
+            2
+        """
+        from claasp.analysis.monomial_workflows import find_algebraic_degree
+
+        return find_algebraic_degree(
+            self.primitive,
+            output_bit=output_bit,
+            variable_input=variable_input,
+            solver=solver,
+            exact=exact,
+            maximum_paths=maximum_paths,
+            variable_positions=variable_positions,
+        )
+
+    def superpoly(
+        self,
+        cube_positions,
+        *,
+        cube_input="plaintext",
+        output_bit=0,
+        solver=None,
+        maximum_paths=10_000,
+        zero_outside_cube=False,
+    ):
+        """Recover a cube superpoly by complete solver-path parity.
+
+        Requires GLPK. The integration job executes the solver examples below.
+        Other variables stay symbolic unless zero_outside_cube is requested.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Simon
+            >>> from claasp.representations.constraints.polynomial import BooleanPolynomial
+            >>> primitive = Simon(number_of_rounds=1)
+            >>> result = primitive.analysis.superpoly((1,), output_bit=0).require_complete()  # doctest: +SKIP
+            >>> result.polynomial == BooleanPolynomial.variable("p8")  # doctest: +SKIP
+            True
+            >>> zeroed = primitive.analysis.superpoly((1,), zero_outside_cube=True).require_complete()  # doctest: +SKIP
+            >>> zeroed.polynomial.degree  # doctest: +SKIP
+            -1
+        """
+        from claasp.analysis.monomial_workflows import recover_superpoly
+
+        return recover_superpoly(
+            self.primitive,
+            cube_positions,
+            cube_input=cube_input,
+            output_bit=output_bit,
+            solver=solver,
+            maximum_paths=maximum_paths,
+            zero_outside_cube=zero_outside_cube,
+        )
+
+    def polynomial_system(self):
+        """Build local Boolean equations for round statistics and algebra runs.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).analysis.polynomial_system()
+            >>> result.statistics()
+            ((1, 144, 96, 285, 2),)
+            >>> graph = result.connection_graph(round_number=1)
+            >>> len(graph.equations) == len(result.system.equations)
+            True
+        """
+        from claasp.analysis.boolean_system import BooleanSystemAnalysis
+        from claasp.representations.constraints.polynomial import BooleanEquationSystem
+
+        return BooleanSystemAnalysis(BooleanEquationSystem.from_primitive(self.primitive))
 
     def component_analysis(self):
         """Discover semantic component groups and analyze their default properties.
@@ -721,6 +920,8 @@ class Analysis:
         maximum_weight=None,
         *,
         fixed_weight=None,
+        minimum_weight=None,
+        weight_tolerance=0,
         solver=None,
         nonzero_input=None,
         fixed_input_differences=None,
@@ -731,6 +932,22 @@ class Analysis:
 
         The default is single-key (key difference zero). Select a nonzero
         key input to include related-key propagation instead.
+
+        Bounds are inclusive physical weights, not rounded component scores.
+        This one-round Heys characteristic has probability 3/8. Exact decimal
+        equality at 1.42 would exclude it; the interval below includes it.
+        Requires Z3; these examples run in the Z3 integration job.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Heys
+            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_differential_trails(  # doctest: +SKIP
+            ...     minimum_weight=1.41, maximum_weight=1.42,
+            ...     fixed_input_differences={"plaintext": 0x2000, "key": 0},
+            ...     output_difference=0x5000,
+            ... )
+            >>> result.require_complete().cluster_probability()  # doctest: +SKIP
+            Fraction(3, 8)
         """
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
@@ -751,6 +968,8 @@ class Analysis:
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
+            minimum_weight=minimum_weight,
+            weight_tolerance=weight_tolerance,
             nonzero_input=policy.nonzero_input,
             fixed_input_differences=policy.fixed_patterns,
             output_difference=output_difference,
@@ -759,8 +978,11 @@ class Analysis:
 
     def enumerate_xor_linear_trails(
         self,
-        maximum_weight,
+        maximum_weight=None,
         *,
+        minimum_weight=None,
+        fixed_weight=None,
+        weight_tolerance=0,
         solver=None,
         nonzero_input=None,
         fixed_input_masks=None,
@@ -772,6 +994,21 @@ class Analysis:
         By default, a keyed graph fixes key value zero (single-key analysis).
         Requesting ``nonzero_input="key"`` instead includes key-schedule masks.
         Solver execution is optional and separate from graph realization.
+
+        A finite limit can return a useful witness without exhausting the
+        interval. Check complete before claiming that every trail was found.
+        Requires Z3; these examples run in the Z3 integration job.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Heys
+            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_linear_trails(  # doctest: +SKIP
+            ...     minimum_weight=0.41, maximum_weight=0.42, limit=1,
+            ... )
+            >>> len(result.trails), result.complete  # doctest: +SKIP
+            (1, False)
+            >>> round(result.trails[0].total_weight, 6)  # doctest: +SKIP
+            0.415037
         """
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
@@ -792,6 +1029,9 @@ class Analysis:
         model = WordLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
+            minimum_weight=minimum_weight,
+            fixed_weight=fixed_weight,
+            weight_tolerance=weight_tolerance,
             nonzero_input=policy.nonzero_input,
             fixed_input_masks=policy.fixed_patterns,
             fixed_inputs=fixed_inputs,

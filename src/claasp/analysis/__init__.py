@@ -14,6 +14,11 @@ from claasp.analysis.avalanche import (
     AvalancheResult,
     avalanche_probabilities,
 )
+from claasp.analysis.boolean_system import (
+    BooleanSystemAnalysis,
+    GroebnerResult,
+    PolynomialConnectionGraph,
+)
 from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
@@ -49,6 +54,13 @@ from claasp.analysis.composed import (
     run_speck32_differential_linear_experiment,
     speck32_differential_linear_legacy_fixture,
 )
+from claasp.analysis.composed_search import (
+    DifferentialLinearSearchResult,
+    ImpossibleCandidate,
+    ImpossibleSearchResult,
+    find_optimal_differential_linear_trail,
+    search_impossible_differentials,
+)
 from claasp.analysis.constraints import (
     Equal,
     FixedValue,
@@ -81,6 +93,14 @@ from claasp.analysis.monomial import (
     SolutionPoolMonomialParityResult,
     enumerate_optimal_monomial_parity,
     project_optimal_pool_monomial_parity,
+)
+from claasp.analysis.monomial_workflows import (
+    AlgebraicDegreeResult,
+    ANFResult,
+    SuperpolyAnalysisResult,
+    analyze_anf,
+    find_algebraic_degree,
+    recover_superpoly,
 )
 from claasp.analysis.neural import (
     NeuralDataset,
@@ -122,6 +142,7 @@ from claasp.analysis.statistical_datasets import (
     StatisticalDataset,
     StatisticalDatasetManifest,
     StatisticalRecord,
+    SuppliedStatisticalDataset,
     avalanche_statistical_dataset,
     cbc_dataset,
     correlation_dataset,
@@ -172,6 +193,17 @@ __all__ = [
     "ContinuousDiffusionResult",
     "continuous_diffusion",
     "Analysis",
+    "ANFResult",
+    "AlgebraicDegreeResult",
+    "SuperpolyAnalysisResult",
+    "analyze_anf",
+    "find_algebraic_degree",
+    "recover_superpoly",
+    "ImpossibleCandidate",
+    "ImpossibleSearchResult",
+    "DifferentialLinearSearchResult",
+    "search_impossible_differentials",
+    "find_optimal_differential_linear_trail",
     "AnalysisProblem",
     "AnalysisResult",
     "TrailSearchBackend",
@@ -183,6 +215,9 @@ __all__ = [
     "AvalancheSample",
     "BitPattern",
     "BooleanAlgebraicEvidence",
+    "BooleanSystemAnalysis",
+    "GroebnerResult",
+    "PolynomialConnectionGraph",
     "BoomerangExperimentResult",
     "CPCharacteristicResult",
     "ComponentAnalysis",
@@ -244,6 +279,7 @@ __all__ = [
     "StatisticalAssessment",
     "StatisticalCampaignResult",
     "StatisticalDataset",
+    "SuppliedStatisticalDataset",
     "StatisticalDatasetManifest",
     "StatisticalRecord",
     "StatisticalRoundResult",

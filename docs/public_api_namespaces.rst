@@ -37,6 +37,12 @@ claasp.analysis.neural_distinguisher
 .. automodule:: claasp.analysis.neural_distinguisher
    :no-index:
 
+claasp.analysis.nist_sts
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.nist_sts
+   :no-index:
+
 claasp.analysis.trail_search
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

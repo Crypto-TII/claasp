@@ -33,3 +33,21 @@ def test_niststs_driver_executes_one_bounded_smoke_run():
     assert result.dataset_sha256 == dataset.digest()
     assert result.report.rows
     assert result.runtime_seconds < 10
+
+
+@pytest.mark.skipif(shutil.which("niststs") is None, reason="NIST STS is not installed")
+def test_niststs_supplied_non_aligned_sequences_preserve_boundaries():
+    from claasp.analysis import SuppliedStatisticalDataset
+
+    # The binary reader consumes 32-bit chunks; 100-bit sequences must use
+    # ASCII transport, otherwise it discards bits between sequences.
+    dataset = SuppliedStatisticalDataset.from_bits([0, 1] * 500)
+    result = NistStsDriver(timeout_seconds=10).run(
+        dataset,
+        number_of_bit_streams=10,
+        bits_per_sequence=100,
+        test_selection="100000000000000",
+    )
+    row = result.report.rows[0]
+    assert (row.passed_sequences, row.total_sequences) == (10, 10)
+    assert result.command[4] == "0"

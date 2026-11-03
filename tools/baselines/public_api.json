@@ -391,6 +391,18 @@
       "qualified_name": "claasp.analysis"
     },
     {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ANFResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.AlgebraicDegreeResult"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis",
       "defined_in": "claasp.analysis.facade",
       "kind": "class",
@@ -455,6 +467,12 @@
       "defined_in": "claasp.analysis.algebraic",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.BooleanAlgebraicEvidence"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.BooleanSystemAnalysis"
     },
     {
       "canonical_name": "claasp.analysis.boomerang.BoomerangExperimentResult",
@@ -577,6 +595,12 @@
       "qualified_name": "claasp.analysis.DifferentialLinearFixture"
     },
     {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.DifferentialLinearSearchResult"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.Equal",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -601,6 +625,12 @@
       "qualified_name": "claasp.analysis.FixedValue"
     },
     {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.GroebnerResult"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.HammingWeight",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -611,6 +641,18 @@
       "defined_in": "claasp.analysis.hybrid",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.HybridDifferentialResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ImpossibleCandidate"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ImpossibleSearchResult"
     },
     {
       "canonical_name": "claasp.analysis.legacy_evidence.LegacyBoundedDifferentialCluster",
@@ -757,6 +799,12 @@
       "qualified_name": "claasp.analysis.NotEqual"
     },
     {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.PolynomialConnectionGraph"
+    },
+    {
       "canonical_name": "claasp.analysis.monomial.PresentMonomialSemantics",
       "defined_in": "claasp.analysis.monomial",
       "kind": "class",
@@ -857,6 +905,18 @@
       "defined_in": "claasp.analysis.statistical_results",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.StatisticalTestRun"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SuperpolyAnalysisResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SuppliedStatisticalDataset"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.Trail",
@@ -1070,6 +1130,12 @@
       "qualified_name": "claasp.analysis.algebraic.BooleanAlgebraicEvidence.require_complete"
     },
     {
+      "canonical_name": "claasp.analysis.monomial_workflows.analyze_anf",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.analyze_anf"
+    },
+    {
       "canonical_name": "claasp.analysis.algebraic.analyze_boolean_algebra",
       "defined_in": "claasp.analysis.algebraic",
       "kind": "function",
@@ -1281,6 +1347,119 @@
       "defined_in": "claasp.analysis.neural",
       "kind": "function",
       "qualified_name": "claasp.analysis.black_box_dataset"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.__init__",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.BooleanSystemAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.connection_graph",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.connection_graph"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.groebner",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.groebner"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.statistics",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.statistics"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.system",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.BooleanSystemAnalysis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.system"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.to_terminal",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.BooleanSystemAnalysis.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.__init__",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.basis",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.basis"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.complete",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.diagnostic",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.require_complete",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.GroebnerResult.runtime_seconds",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.GroebnerResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.GroebnerResult.runtime_seconds"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.__init__",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.edges",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.edges"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.equations",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.equations"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.plot",
+      "defined_in": "claasp.analysis.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.variables",
+      "defined_in": "claasp.analysis.boolean_system",
+      "documented_by": "claasp.analysis.boolean_system.PolynomialConnectionGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boolean_system.PolynomialConnectionGraph.variables"
     },
     {
       "canonical_name": "claasp.analysis.boomerang.BoomerangExperimentResult.__init__",
@@ -2319,6 +2498,147 @@
       "qualified_name": "claasp.analysis.composed.DifferentialLinearFixture.trail"
     },
     {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.__init__",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.attempted_partitions",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.attempted_partitions"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.found",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.found"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.partition",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.partition"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.require_complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.score",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.score"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.trail",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.DifferentialLinearSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.DifferentialLinearSearchResult.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.__init__",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.middle_round",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.middle_round"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.representation",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.representation"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleCandidate.trail",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleCandidate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleCandidate.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.__init__",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.attempted_rounds",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.attempted_rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.candidates",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.candidates"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.found",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.found"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.require_complete",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.termination",
+      "defined_in": "claasp.analysis.composed_search",
+      "documented_by": "claasp.analysis.composed_search.ImpossibleSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.ImpossibleSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.composed_search.ImpossibleSearchResult.to_terminal"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.Equal.__init__",
       "defined_in": "claasp.analysis.constraints",
       "documented_by": "claasp.analysis.constraints.Equal",
@@ -2757,6 +3077,18 @@
       "qualified_name": "claasp.analysis.facade.Analysis.__init__"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.algebraic_degree",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.algebraic_degree"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.anf",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.anf"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.autond",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2853,6 +3185,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_linear_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_differential_linear_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_optimal_differential_linear_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_trail",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2889,6 +3227,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.neural_differential"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.polynomial_system",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.polynomial_system"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.propagate_truncated_xor_difference",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -2913,10 +3257,22 @@
       "qualified_name": "claasp.analysis.facade.Analysis.run_statistical_tests"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.search_impossible_differentials",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.search_impossible_differentials"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.solve",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.solve"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.superpoly",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.superpoly"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.train_staged_neural_distinguisher",
@@ -3049,6 +3405,12 @@
       "qualified_name": "claasp.analysis.facade.TrailSearchBackend.__init__"
     },
     {
+      "canonical_name": "claasp.analysis.monomial_workflows.find_algebraic_degree",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_algebraic_degree"
+    },
+    {
       "canonical_name": "claasp.analysis.neural_workflows.find_good_input_difference",
       "defined_in": "claasp.analysis.neural_workflows",
       "kind": "function",
@@ -3059,6 +3421,12 @@
       "defined_in": "claasp.analysis.advanced_trails",
       "kind": "function",
       "qualified_name": "claasp.analysis.find_impossible_xor_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.find_optimal_differential_linear_trail",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_optimal_differential_linear_trail"
     },
     {
       "canonical_name": "claasp.analysis.advanced_trails.find_probabilistic_truncated_xor_differential",
@@ -3511,6 +3879,159 @@
       "documented_by": "claasp.analysis.monomial.SolutionPoolMonomialParityResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.monomial.SolutionPoolMonomialParityResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.__init__",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.coefficient",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.coefficient"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.degree_in",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.degree_in"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.degrees",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.degrees"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.polynomials",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.polynomials"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.superpoly",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.superpoly"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.to_terminal",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.ANFResult.variables",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.ANFResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.ANFResult.variables"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.__init__",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.enumerated_paths",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.enumerated_paths"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.exact_degree",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.exact_degree"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.require_complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.termination",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.upper_bound",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.AlgebraicDegreeResult.upper_bound"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.__init__",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.enumerated_paths",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.enumerated_paths"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.polynomial",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.polynomial"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.require_complete",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.termination",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "documented_by": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.termination"
+    },
+    {
+      "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.to_terminal",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult.to_terminal"
     },
     {
       "canonical_name": "claasp.analysis.neural.NeuralDataset.__init__",
@@ -4213,6 +4734,157 @@
       "qualified_name": "claasp.analysis.neural_workflows.NeuralStagedTrainingResult.to_terminal"
     },
     {
+      "canonical_name": "claasp.analysis.nist_sts",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.nist_sts"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.__init__",
+      "defined_in": "claasp.analysis.nist_sts",
+      "documented_by": "claasp.analysis.nist_sts.NISTTests",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.approximate_entropy_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.approximate_entropy_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.assess",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.assess"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.block_frequency_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.block_frequency_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.cumulative_sums_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.cumulative_sums_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.dft_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.dft_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.format_results_nist_style",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.format_results_nist_style"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.frequency_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.frequency_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.linear_complexity_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.linear_complexity_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.longest_run_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.longest_run_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test_given_template",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.non_overlapping_template_test_given_template"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.overlapping_template_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.overlapping_template_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_variant_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.random_excursions_variant_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.rank_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.rank_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.run_all_tests",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.run_all_tests"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.runs_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.runs_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.serial_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.serial_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.uniformity_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.uniformity_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.NISTTests.universal_test",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.nist_sts.NISTTests.universal_test"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.parse_final_analysis_report",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.nist_sts.parse_final_analysis_report"
+    },
+    {
+      "canonical_name": "claasp.analysis.nist_sts.parse_nist_stats",
+      "defined_in": "claasp.analysis.nist_sts",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.nist_sts.parse_nist_stats"
+    },
+    {
       "canonical_name": "claasp.analysis.problem.AnalysisProblem.__init__",
       "defined_in": "claasp.analysis.problem",
       "documented_by": "claasp.analysis.problem.AnalysisProblem",
@@ -4286,6 +4958,12 @@
       "qualified_name": "claasp.analysis.random_statistical_dataset"
     },
     {
+      "canonical_name": "claasp.analysis.monomial_workflows.recover_superpoly",
+      "defined_in": "claasp.analysis.monomial_workflows",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.recover_superpoly"
+    },
+    {
       "canonical_name": "claasp.analysis.neural.round_component_ids",
       "defined_in": "claasp.analysis.neural",
       "kind": "function",
@@ -4320,6 +4998,12 @@
       "defined_in": "claasp.analysis.statistical",
       "kind": "function",
       "qualified_name": "claasp.analysis.run_statistical_campaign"
+    },
+    {
+      "canonical_name": "claasp.analysis.composed_search.search_impossible_differentials",
+      "defined_in": "claasp.analysis.composed_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.search_impossible_differentials"
     },
     {
       "canonical_name": "claasp.analysis.component_properties.semantic_component_groups",
@@ -4700,6 +5384,51 @@
       "documented_by": "claasp.analysis.statistical_datasets.StatisticalRecord",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.statistical_datasets.StatisticalRecord.value"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.__init__",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "documented_by": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.bit_count",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "documented_by": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.bit_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.data",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "documented_by": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.data"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.digest",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.digest"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_bits",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_bits"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_file",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.from_file"
+    },
+    {
+      "canonical_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.write_binary",
+      "defined_in": "claasp.analysis.statistical_datasets",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.statistical_datasets.SuppliedStatisticalDataset.write_binary"
     },
     {
       "canonical_name": "claasp.analysis.statistical_results.DieharderObservation.__init__",
@@ -13800,6 +14529,12 @@
       "qualified_name": "claasp.presentation.PrimitiveProvenance"
     },
     {
+      "canonical_name": "claasp.presentation.files.Report",
+      "defined_in": "claasp.presentation.files",
+      "kind": "class",
+      "qualified_name": "claasp.presentation.Report"
+    },
+    {
       "canonical_name": "claasp.presentation.model.ReportData",
       "defined_in": "claasp.presentation.model",
       "kind": "dataclass",
@@ -14333,6 +15068,37 @@
       "defined_in": "claasp.presentation.adapters",
       "kind": "function",
       "qualified_name": "claasp.presentation.dieharder_section"
+    },
+    {
+      "canonical_name": "claasp.presentation.files.Report.__init__",
+      "defined_in": "claasp.presentation.files",
+      "documented_by": "claasp.presentation.files.Report",
+      "kind": "constructor",
+      "qualified_name": "claasp.presentation.files.Report.__init__"
+    },
+    {
+      "canonical_name": "claasp.presentation.files.Report.render",
+      "defined_in": "claasp.presentation.files",
+      "kind": "method",
+      "qualified_name": "claasp.presentation.files.Report.render"
+    },
+    {
+      "canonical_name": "claasp.presentation.files.Report.save",
+      "defined_in": "claasp.presentation.files",
+      "kind": "method",
+      "qualified_name": "claasp.presentation.files.Report.save"
+    },
+    {
+      "canonical_name": "claasp.presentation.files.Report.to_latex",
+      "defined_in": "claasp.presentation.files",
+      "kind": "method",
+      "qualified_name": "claasp.presentation.files.Report.to_latex"
+    },
+    {
+      "canonical_name": "claasp.presentation.files.Report.to_terminal",
+      "defined_in": "claasp.presentation.files",
+      "kind": "method",
+      "qualified_name": "claasp.presentation.files.Report.to_terminal"
     },
     {
       "canonical_name": "claasp.presentation.files.WrittenReport.__init__",
@@ -25053,6 +25819,12 @@
       "qualified_name": "claasp.representations.constraints.polynomial"
     },
     {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.polynomial.BooleanEquationSystem"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.polynomial.boolean.BooleanMonomial",
       "defined_in": "claasp.representations.constraints.polynomial.boolean",
       "kind": "dataclass",
@@ -25187,6 +25959,60 @@
       "defined_in": "claasp.representations.constraints.polynomial.boolean",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.polynomial.boolean.BooleanPolynomial.zero"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.__init__",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.equations",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.equations"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.from_primitive",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.from_primitive"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.inputs",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.inputs"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.outputs",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.outputs"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.rounds",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.rounds"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.singular_program",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.singular_program"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.variables",
+      "defined_in": "claasp.representations.constraints.polynomial.boolean_system",
+      "documented_by": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.polynomial.boolean_system.BooleanEquationSystem.variables"
     },
     {
       "canonical_name": "claasp.representations.constraints.polynomial.boolean.equality_polynomials",
