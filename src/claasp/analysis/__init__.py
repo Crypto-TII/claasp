@@ -93,6 +93,10 @@ from claasp.analysis.legacy_evidence import (
     LegacyBoundedDifferentialCluster,
     ublock_three_round_legacy_cluster,
 )
+from claasp.analysis.minimax_differential import (
+    MinimaxDifferentialAnalysis,
+    MinimaxDifferentialResult,
+)
 from claasp.analysis.monomial import (
     MonomialParityResult,
     MonomialTrail,
@@ -207,6 +211,8 @@ def __getattr__(name):
 
 
 __all__ = [
+    "MinimaxDifferentialAnalysis",
+    "MinimaxDifferentialResult",
     "BoomerangAnalysis",
     "BoomerangSearchResult",
     "BoomerangSearchStatus",
