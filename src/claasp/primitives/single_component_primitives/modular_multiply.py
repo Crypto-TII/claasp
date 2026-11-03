@@ -19,6 +19,11 @@ class ModularMultiply(Primitive):
     30
 
 
+    An explicit modulus also supports non-power-of-two experiments.
+
+    >>> ModularMultiply(word_bit_size=4, modulus=13).evaluate(11, 7)
+    12
+
     EXAMPLES::
 
         >>> primitive = ModularMultiply()
@@ -28,7 +33,9 @@ class ModularMultiply(Primitive):
         ('0x0', 0)
     """
 
-    def __init__(self, word_bit_size: int = 4, number_of_inputs: int = 2) -> None:
+    def __init__(
+        self, word_bit_size: int = 4, number_of_inputs: int = 2, *, modulus: int | None = None
+    ) -> None:
         super().__init__(
             "modmul",
             word_inputs(word_bit_size, number_of_inputs),
@@ -36,7 +43,7 @@ class ModularMultiply(Primitive):
         )
         self._builder.add_round()
         operands = self.graph.inputs()
-        output = self._builder.add_component(ModularMultiplyComponent(operands))
+        output = self._builder.add_component(ModularMultiplyComponent(operands, modulus=modulus))
         self._builder.set_output(output)
 
 
