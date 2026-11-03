@@ -69,3 +69,48 @@ def test_small_encoded_switches_exhaustively_match_original_table_restriction():
         solved = solver.solve(builder.formula())
         count = ModularAddBoomerangAutomaton(2).connectivity(*values).count
         assert (solved.status is SatStatus.SATISFIABLE) == (count >= 8)
+
+
+def test_portable_backend_preserves_restricted_boomerang_search():
+    import os
+
+    from claasp.drivers.solvers import GLPKSolver, MinisatSolver, MiniZincSolver
+
+    backend = os.environ.get("CLAASP_PARITY_BACKEND", "z3")
+    driver = {
+        "z3": lambda: Z3Solver(timeout_seconds=30),
+        "minisat": lambda: MinisatSolver(timeout_seconds=30),
+        "glpk": lambda: GLPKSolver(timeout_seconds=30),
+        "minizinc": lambda: MiniZincSolver(
+            os.environ.get("CLAASP_PARITY_CP_SOLVER", "gecode"), timeout_seconds=30
+        ),
+    }[backend]()
+    analysis = ToySpeck(3).analysis.boomerang(switch_round=1)
+    candidate = analysis.find_one_trail(solver=driver)
+    assert candidate.status is BoomerangSearchStatus.SATISFIABLE
+    assert candidate.trail is not None and candidate.trail.model_complete
+    result = analysis.find_lowest_weight_trail(solver=driver)
+    assert result.status is BoomerangSearchStatus.SATISFIABLE
+    assert result.is_optimal and result.trail is not None
+    assert result.trail.model_complete
+
+
+@pytest.mark.parametrize("rhs,feasible", [(0, True), (1, False)])
+def test_glpk_preserves_constant_linear_rows(rhs, feasible):
+    from claasp.drivers.solvers import GLPKSolver
+    from claasp.representations.constraints.milp import (
+        ConstraintSense,
+        LinearConstraint,
+        LinearExpression,
+        LinearVariable,
+        MILPModel,
+    )
+
+    model = MILPModel(
+        (LinearVariable("x"),),
+        (LinearConstraint(LinearExpression(), ConstraintSense.GREATER_EQUAL, rhs),),
+    )
+    result = GLPKSolver(timeout_seconds=10).solve(model)
+    assert result.is_feasible == feasible
+    if feasible:
+        assert result.assignment is not None and model.is_feasible(result.assignment)

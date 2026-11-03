@@ -4,7 +4,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from subprocess import TimeoutExpired
 
-from claasp.drivers.solvers import SatStatus, Z3Solver
+from claasp.drivers.solvers import Z3Solver
 from claasp.representations.constraints.sat.boomerang import ARXBoomerangTrail, BoomerangSATModel
 
 
@@ -48,6 +48,15 @@ class BoomerangSearchResult:
             print(self.diagnostic, file=file)
         if self.trail is not None:
             self.trail.to_terminal(file=file)
+
+
+def _search_status(status):
+    value = status.value
+    if value in {"satisfiable", "satisfied"}:
+        return BoomerangSearchStatus.SATISFIABLE
+    if value == "unsatisfiable":
+        return BoomerangSearchStatus.UNSATISFIABLE
+    return BoomerangSearchStatus.UNKNOWN
 
 
 class BoomerangAnalysis:
@@ -96,13 +105,14 @@ class BoomerangAnalysis:
                 BoomerangSearchStatus.UNKNOWN,
                 diagnostic="solver timeout; no checked characteristic returned",
             )
+        status = _search_status(solved.status)
         if solved.assignment is not None:
             trail = model.decode(solved.assignment)
             return BoomerangSearchResult(
-                BoomerangSearchStatus(solved.status.value),
-                replace(trail, model_complete=solved.status is SatStatus.SATISFIABLE),
+                status,
+                replace(trail, model_complete=status is BoomerangSearchStatus.SATISFIABLE),
             )
-        return BoomerangSearchResult(BoomerangSearchStatus(solved.status.value))
+        return BoomerangSearchResult(_search_status(solved.status))
 
     def find_lowest_weight_trail(
         self, *, input_difference=None, output_difference=None, maximum_weight=None, solver=None
@@ -125,16 +135,17 @@ class BoomerangAnalysis:
                 candidate = model.decode(solved.assignment)
                 if best is None or candidate.outer_weight < best.outer_weight:
                     best = candidate
-            if solved.status not in (SatStatus.SATISFIABLE, SatStatus.UNSATISFIABLE):
+            status = _search_status(solved.status)
+            if status is BoomerangSearchStatus.UNKNOWN:
                 return BoomerangSearchResult(
                     BoomerangSearchStatus.UNKNOWN,
                     best,
                     False,
                     "solver incomplete; minimum not proved",
                 )
-            if solved.status is SatStatus.UNSATISFIABLE:
+            if status is BoomerangSearchStatus.UNSATISFIABLE:
                 if best is None:
-                    return BoomerangSearchResult(BoomerangSearchStatus(solved.status.value))
+                    return BoomerangSearchResult(_search_status(solved.status))
                 assert bound is not None
                 lower = bound + 1
             else:
