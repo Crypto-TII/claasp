@@ -4,7 +4,9 @@ from claasp.representations.constraints.milp.model import MILPModel, VariableKin
 
 
 def _number(value: float) -> str:
-    return str(int(value)) if value.is_integer() else format(value, ".15g")
+    return (
+        str(int(value)) if isinstance(value, int) or value.is_integer() else format(value, ".15g")
+    )
 
 
 def _expression(terms: tuple[tuple[str, float], ...], constant: float = 0) -> str:
@@ -41,9 +43,11 @@ class LPExporter:
         for index, constraint in enumerate(model.constraints):
             name = constraint.name or f"constraint_{index}"
             rhs = constraint.rhs - constraint.expression.constant
-            lines.append(
-                f" {name}: {_expression(constraint.expression.terms)} {constraint.sense.value} {_number(rhs)}"
-            )
+            lhs = _expression(constraint.expression.terms)
+            # LP readers require a variable even when all coefficients cancel.
+            if lhs == "0":
+                lhs = f"0 {model.variables[0].name}"
+            lines.append(f" {name}: {lhs} {constraint.sense.value} {_number(rhs)}")
         lines.append("Bounds")
         for variable in model.variables:
             if variable.kind is VariableKind.BINARY:
