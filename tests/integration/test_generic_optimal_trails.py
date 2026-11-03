@@ -110,3 +110,28 @@ def test_recovered_basic_word_component_semantics(primitive, kind):
         **options,
     )
     assert result.is_optimal
+
+
+@pytest.mark.parametrize("kind", tuple(TrailKind))
+def test_generic_speck_summary_reports_full_single_key_round_boundaries(kind):
+    primitive = Speck(number_of_rounds=2)
+    result = primitive.analysis.find_optimal_trail(kind, backend="sat", solver=MinisatSolver())
+
+    assert len(result.round_transitions) == 2
+    assert all(item.output_pattern.width == 32 for item in result.round_transitions)
+    assert all(item.output_pattern.value != 0 for item in result.round_transitions)
+    assert result.round_transitions[-1].output_pattern == result.trail.output_pattern
+    if kind is TrailKind.XOR_DIFFERENTIAL:
+        evidence = {item.component_id: item for item in result.component_transitions}
+        for primitive_round, boundary in zip(primitive.graph.rounds, result.round_transitions):
+            x, y = primitive_round.components[2], primitive_round.components[4]
+            assert x.component_id is not None and y.component_id is not None
+            assert boundary.output_pattern.value == (
+                evidence[x.component_id].output_pattern.value << 16
+                | evidence[y.component_id].output_pattern.value
+            )
+
+    output = StringIO()
+    result.to_terminal(file=output)
+    for boundary in result.round_transitions:
+        assert f"0x{boundary.output_pattern.value:08x}" in output.getvalue()

@@ -1,0 +1,20 @@
+name: Install pinned Kissat
+description: Build and install checksum-verified Kissat for solver-backed examples and tests.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --yes build-essential curl
+        KISSAT_VERSION=4.0.4
+        KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
+        curl --fail --location --silent --show-error \
+          "https://github.com/arminbiere/kissat/archive/refs/tags/rel-${KISSAT_VERSION}.tar.gz" \
+          --output kissat.tar.gz
+        echo "${KISSAT_SHA256}  kissat.tar.gz" | sha256sum --check
+        tar --extract --gzip --file kissat.tar.gz
+        cd "kissat-rel-${KISSAT_VERSION}"
+        ./configure
+        make --jobs="$(nproc)"
+        sudo install -m 0755 build/kissat /usr/local/bin/kissat
