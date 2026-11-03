@@ -285,7 +285,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Z3 integration
-        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py -q
+        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py -q
 
   glpk-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
@@ -310,7 +310,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute GLPK integration
-        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py -q
+        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py -q
 
   latex-rendering:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
