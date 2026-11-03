@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -239,13 +240,17 @@ def _parse_all_output(
 ) -> tuple[CPStatus, tuple[Mapping[str, object], ...], bool, str]:
     """Parse MiniZinc's JSON all-solutions stream and proof marker."""
 
-    complete = "==========" in output or "=====UNSATISFIABLE=====" in output
-    unknown = "=====UNKNOWN=====" in output
-    payload = output
-    for marker in ("==========", "=====UNSATISFIABLE=====", "=====UNKNOWN====="):
-        payload = payload.replace(marker, "")
+    # Solver diagnostics/statistics are full-line MiniZinc comments, including
+    # Gecode's "% Top level failure!" and "% [<UNKNOWN>]". They are not JSON
+    # candidates or termination statuses. Preserve percent signs inside JSON.
+    markers = {"==========", "=====UNSATISFIABLE=====", "=====UNKNOWN====="}
+    lines = [line for line in output.splitlines() if not line.lstrip().startswith("%")]
+    statuses = {line.strip() for line in lines if line.strip() in markers}
+    complete = bool(statuses & {"==========", "=====UNSATISFIABLE====="})
+    unknown = "=====UNKNOWN=====" in statuses
+    payload = "\n".join(line for line in lines if line.strip() not in markers)
     solutions = []
-    for block in payload.split("----------"):
+    for block in re.split(r"(?m)^[ \t]*----------[ \t]*$", payload):
         block = block.strip()
         if not block:
             continue
@@ -265,6 +270,6 @@ def _parse_all_output(
             complete,
             ("exhausted" if complete else "missing_terminal_marker"),
         )
-    if "=====UNSATISFIABLE=====" in output:
+    if "=====UNSATISFIABLE=====" in statuses:
         return CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"
     raise RuntimeError("MiniZinc returned no status or solution")

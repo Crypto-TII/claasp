@@ -319,7 +319,7 @@ jobs:
         run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py -q
 
       - name: Prove complete small-component functional parity
-        run: CLAASP_PARITY_BACKEND=glpk python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_boomerang_search.py::test_glpk_preserves_constant_linear_rows tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q
+        run: CLAASP_PARITY_BACKEND=glpk python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_glpk_integration.py::test_glpk_preserves_constant_linear_rows tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q
 
   latex-rendering:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
