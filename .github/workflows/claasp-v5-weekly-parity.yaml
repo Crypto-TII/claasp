@@ -1,0 +1,101 @@
+name: CLAASP v5 weekly parity
+
+# Scheduled workflows must live on the repository's default branch (main).
+# The implementation and pinned validation environment are checked out from v5.
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: claasp-v5-weekly-parity
+  cancel-in-progress: false
+
+jobs:
+  legacy-drift:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claasp-v5
+          path: v5
+      - uses: actions/checkout@v4
+        with:
+          ref: develop
+          path: legacy-source
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Require explicit review of current legacy additions and changes
+        run: python v5/tools/legacy_parity_gate.py --legacy-root legacy-source
+      - name: Check preserved native NIST implementation and data
+        run: python v5/tools/legacy_native_nist.py --check
+
+  pinned-backend-matrix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claasp-v5
+          path: v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the versioned Sage-free environment
+        uses: docker/build-push-action@v6
+        with:
+          context: v5
+          file: v5/docker/v5/Dockerfile
+          load: true
+          tags: claasp-v5-parity:weekly
+          cache-from: type=gha,scope=claasp-v5-release
+          cache-to: type=gha,scope=claasp-v5-release,mode=max
+      - name: Record the implementation and environment
+        run: |
+          git -C v5 rev-parse HEAD
+          docker image inspect claasp-v5-parity:weekly --format '{{.Id}}'
+      - name: Execute the complete portable regression and external-backend checks
+        shell: bash
+        run: |
+          set -o pipefail
+          docker run --rm \
+            -e CLAASP_DEPENDENCY_FREE_EXPRESSION='not external and not extended' \
+            -e CLAASP_EXTERNAL_EXPRESSION='external and not extended and not emulation_sensitive' \
+            -v "$PWD/v5:/workspace" \
+            claasp-v5-parity:weekly /workspace/docker/v5/check.sh 2>&1 | tee parity.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pinned-parity-log
+          path: parity.log
+
+  neural-architecture-parity:
+    runs-on: ubuntu-24.04
+    env:
+      CUDA_VISIBLE_DEVICES: '-1'
+      TF_NUM_INTRAOP_THREADS: '1'
+      TF_NUM_INTEROP_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claasp-v5
+          path: v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install the pinned optional TensorFlow runtime
+        working-directory: v5
+        run: python -m pip install -e '.[dev,ml-tensorflow]' 'tensorflow==2.20.0'
+      - name: Compare original network builders and run bounded training
+        working-directory: v5
+        run: |
+          python -c "import tensorflow as tf; print(tf.__version__)"
+          python -m pytest -m external tests/integration/test_legacy_neural_architectures.py tests/integration/test_tensorflow_neural_driver.py -q --junitxml=neural-parity.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neural-parity-evidence
+          path: v5/neural-parity.xml
