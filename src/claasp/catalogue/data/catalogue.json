@@ -422,6 +422,16 @@
       "target": "glpsol"
     },
     {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
+      "kind": "solver",
+      "name": "highs",
+      "representations": [
+        "boolean_monomial_milp"
+      ],
+      "target": "scipy"
+    },
+    {
       "availability": "executable",
       "implementation": "claasp.drivers.algebra.singular:SingularDriver",
       "kind": "solver",
@@ -12399,7 +12409,8 @@
         "Word"
       ],
       "drivers": [
-        "glpk"
+        "glpk",
+        "highs"
       ],
       "implementation": "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
       "kind": "constraint",

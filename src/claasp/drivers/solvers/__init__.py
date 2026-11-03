@@ -18,6 +18,7 @@ __all__ = [
     "CPStatus",
     "CryptoMiniSatSolver",
     "GLPKSolver",
+    "HighsSolver",
     "GurobiSolver",
     "GurobiSolutionPoolResult",
     "KissatSolver",
@@ -38,6 +39,10 @@ def __getattr__(name: str):
         from claasp.drivers.solvers.z3 import Z3Solver
 
         return Z3Solver
+    if name == "HighsSolver":
+        from claasp.drivers.solvers.highs import HighsSolver
+
+        return HighsSolver
     if name == "GLPKSolver":
         from claasp.drivers.solvers.glpk import GLPKSolver
 
