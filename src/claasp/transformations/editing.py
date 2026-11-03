@@ -89,7 +89,7 @@ def _round_key_boundaries(primitive, index, dependencies, secret_inputs):
     return tuple((source_id, tuple(positions[source_id])) for source_id in order)
 
 
-def _zero_neutral_data_input(component, dependencies, secret_inputs):
+def _zero_neutral_data_inputs(component, dependencies, secret_inputs):
     data_indices = tuple(
         index
         for index, selection in enumerate(component.inputs)
@@ -101,12 +101,12 @@ def _zero_neutral_data_input(component, dependencies, secret_inputs):
     key_indices = tuple(
         index for index in range(len(component.inputs)) if index not in data_indices
     )
-    if len(data_indices) != 1 or not key_indices:
+    if not data_indices or not key_indices:
         return None
     if isinstance(component, (Xor, Add, ModularAdd)):
-        return data_indices[0]
+        return data_indices
     if isinstance(component, ModularSubtract) and data_indices == (0,):
-        return 0
+        return (0,)
     return None
 
 
@@ -123,20 +123,24 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         )
         if not has_key:
             continue
-        data_index = _zero_neutral_data_input(component, dependencies, secret_inputs)
-        if data_index is None:
+        data_indices = _zero_neutral_data_inputs(component, dependencies, secret_inputs)
+        if data_indices is None:
             raise TransformationError(
                 TransformationFailureReason.UNSUPPORTED_COMPONENT,
                 "key injection is not a recognized zero-neutral operation",
                 source_ids=(component.component_id,),
             )
-        if component.inputs[data_index].array_type != component.output_type:
+        if any(
+            component.inputs[index].array_type != component.output_type for index in data_indices
+        ):
             raise TransformationError(
                 TransformationFailureReason.AMBIGUOUS_BOUNDARY,
                 "key injection data input does not match its output type",
                 source_ids=(component.component_id,),
             )
-        injections[component.component_id] = component.inputs[data_index]
+        injections[component.component_id] = tuple(
+            component.inputs[index] for index in data_indices
+        )
 
     required = set()
     visiting = [primitive.graph.output.source.source_id]
@@ -146,7 +150,7 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             continue
         required.add(source_id)
         if source_id in injections:
-            visiting.append(injections[source_id].source.source_id)
+            visiting.extend(selection.source.source_id for selection in injections[source_id])
         else:
             visiting.extend(index.predecessors(source_id))
 
@@ -188,7 +192,18 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         if source_id not in required or source_id in inputs:
             continue
         if source_id in injections:
-            unit_arrays[source_id] = remap(injections[source_id])
+            operands = tuple(remap(selection) for selection in injections[source_id])
+            if len(operands) == 1:
+                unit_arrays[source_id] = operands[0]
+            else:
+                original_round = round_by_component[source_id]
+                if original_round != active_round:
+                    derived._builder.add_round()
+                    active_round = original_round
+                clone = copy(component_by_id[source_id])
+                object.__setattr__(clone, "component_id", None)
+                object.__setattr__(clone, "inputs", operands)
+                unit_arrays[source_id] = derived._builder.add_component(clone)
             continue
         source = index.source(source_id)
         if source.kind is GraphSourceKind.BINDING:
