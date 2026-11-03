@@ -52,6 +52,9 @@ jobs:
       - name: Run Python API doctests
         run: python -m pytest --doctest-modules src/claasp
 
+      - name: Install solver for executable documentation examples
+        uses: ./.github/actions/install-kissat
+
       - name: Run documentation doctests
         run: make -C docs doctest
 
@@ -96,6 +99,9 @@ jobs:
           python tools/typecheck_closure.py --check
           python tools/public_api_closure.py --check
           python tools/documentation_quality_closure.py --check
+
+      - name: Install solver for executable documentation examples
+        uses: ./.github/actions/install-kissat
 
       - name: Run Python and guide doctests
         run: |
@@ -225,21 +231,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Kissat and MiniSat
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes build-essential curl minisat
-          KISSAT_VERSION=4.0.4
-          KISSAT_SHA256=bfe93eaa6323b48011e4b1fcf74b3f2e20f9de544767e728009e5b2018296193
-          curl --fail --location --silent --show-error \
-            "https://github.com/arminbiere/kissat/archive/refs/tags/rel-${KISSAT_VERSION}.tar.gz" \
-            --output kissat.tar.gz
-          echo "${KISSAT_SHA256}  kissat.tar.gz" | sha256sum --check
-          tar --extract --gzip --file kissat.tar.gz
-          cd "kissat-rel-${KISSAT_VERSION}"
-          ./configure
-          make --jobs="$(nproc)"
-          sudo install -m 0755 build/kissat /usr/local/bin/kissat
+      - name: Install Kissat
+        uses: ./.github/actions/install-kissat
+
+      - name: Install MiniSat
+        run: sudo apt-get install --yes minisat
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'
