@@ -90,6 +90,28 @@ class Analysis:
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive
 
+    def quasidifferential(self):
+        """Inspect signed trails and recover exact fixed-key probabilities.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> analysis = Speck(number_of_rounds=1).analysis.quasidifferential()
+            >>> analysis.model().cnf_formula().variable_count > 0
+            True
+        """
+        from claasp.analysis.quasidifferential import QuasidifferentialAnalysis
+
+        return QuasidifferentialAnalysis(self.primitive)
+
+    def find_lowest_weight_xor_quasidifferential_trail(self, **constraints):
+        """Find a signed trail with maximum absolute coefficient.
+
+        Solver witnesses and the exact product of local coefficients are checked;
+        a negative coefficient is retained, rather than interpreted as a probability.
+        """
+        return self.quasidifferential().find_lowest_weight_trail(**constraints)
+
     def solve(self, problem: AnalysisProblem, solver: object | None = None) -> AnalysisResult:
         """Solve a backend-neutral problem through a SAT adapter."""
 
