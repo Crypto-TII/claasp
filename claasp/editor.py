@@ -232,6 +232,7 @@ def add_fsr_component(cipher, input_id_links, input_bit_positions, output_bit_si
     Use this function to create and add an lfsr/nlfsr component to editor.
 
     INPUT:
+
     - ``cipher`` -- **Cipher object**; an instance of the object cipher
     - ``input_id_links`` -- **list**; the list of input_id links
     - ``input_bit_positions`` -- **list**; the list of input_bits corresponding to the input_id links
@@ -253,7 +254,7 @@ def add_fsr_component(cipher, input_id_links, input_bit_positions, output_bit_si
       The last entry in the description list represents the word size which is 1-bit in this example.
       By default, the registers clock one time.
 
-    EXAMPLES:
+    EXAMPLES::
 
         sage: from claasp.cipher import Cipher
         sage: cipher = Cipher("cipher_name", "fsr", ["input"], [12], 12)
@@ -1880,7 +1881,7 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
 
     - ``cipher`` -- **Cipher object**; an instance of a cipher.
     - ``keep_round_key_injection`` -- **bool** (default: True); if False, removes components corresponding to the
-    round key injection.
+      round key injection.
 
     EXAMPLES::
 
@@ -1923,7 +1924,7 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
     if not keep_round_key_injection:
         components_to_remove = {}
         for round_ in cipher_without_key_schedule.rounds_as_list:
-            for component in round_.components:
+            for component in round_.components[:]:  # copy: components may be removed while iterating
                 key_indices = [
                     i
                     for i, link in enumerate(component.input_id_links)
@@ -1936,16 +1937,35 @@ def remove_key_schedule(cipher, keep_round_key_injection=True):
 
                     component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 
-                    if len(component.input_bit_positions) == 1:
-                        components_to_remove[component.id] = component.input_id_links[0]
+                    is_single_word_xor = (
+                        component.type == "word_operation"
+                        and component.description[0] == "XOR"
+                        and component.input_bit_size == component.output_bit_size
+                    )
+                    if len(component.input_bit_positions) == 1 or is_single_word_xor:
+                        # One logical word can span several source links (e.g. uBlock's two halves).
+                        components_to_remove[component.id] = [
+                            (input_id, position)
+                            for input_id, positions in zip(component.input_id_links, component.input_bit_positions)
+                            for position in positions
+                        ]
                         cipher_without_key_schedule.remove_round_component_from_id(round_.id, component.id)
 
         for round_ in cipher_without_key_schedule.rounds_as_list:
             for component in round_.components:
-                for i, input_id in enumerate(component.input_id_links):
-                    while input_id in components_to_remove:
-                        input_id = components_to_remove[input_id]
-                    component.input_id_links[i] = input_id
+                input_links = []
+                input_positions = []
+                for input_id, positions in zip(component.input_id_links, component.input_bit_positions):
+                    for position in positions:
+                        source_id, source_position = input_id, position
+                        while source_id in components_to_remove:
+                            source_id, source_position = components_to_remove[source_id][source_position]
+                        if not input_links or input_links[-1] != source_id:
+                            input_links.append(source_id)
+                            input_positions.append([])
+                        input_positions[-1].append(source_position)
+                component.input_id_links[:] = input_links
+                component.input_bit_positions[:] = input_positions
 
                 component._input._bit_size = sum(len(positions) for positions in component.input_bit_positions)
 

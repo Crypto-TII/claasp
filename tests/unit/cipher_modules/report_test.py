@@ -99,11 +99,14 @@ def _cached_speck_neural_network_results():
 
 
 def _cached_speck_algebraic_results():
+    # A system whose Groebner basis completes well within the timeout: when the
+    # alarm fires instead, PolyBoRi may only honour it minutes later, which made
+    # this fixture randomly exceed the per-test timeout on CI.
     def _generate():
-        cipher = SpeckBlockCipher(number_of_rounds=2)
-        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=1)
+        cipher = SpeckBlockCipher(block_bit_size=8, key_bit_size=16, number_of_rounds=1)
+        return AlgebraicTests(cipher).algebraic_tests(timeout_in_seconds=60)
 
-    return _get_cached_result('speck_r2_algebraic_tests', _generate)
+    return _get_cached_result('speck_b8_r1_algebraic_tests', _generate)
 
 
 def _cached_speck_component_analysis():
@@ -223,7 +226,8 @@ def _run_show():
     neural_network_tests_report.show(fixed_input_difference=None)
     neural_network_tests_report.show(fixed_input_difference='0xa')
 
-def test_save_as_latex_table():
+def test_save_as_latex_table(tmp_path):
+    output_dir = str(tmp_path / 'test_reports')
     simon = SimonBlockCipher(number_of_rounds=2)
     smt = SmtXorDifferentialModel(simon)
 
@@ -242,17 +246,18 @@ def test_save_as_latex_table():
 
     avalanche_test_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_test_results)
-    avalanche_report.save_as_latex_table(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-    avalanche_report.clean_reports()
+    avalanche_report.save_as_latex_table(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.clean_reports(output_dir=output_dir)
     trail_report = Report(trail)
-    trail_report.save_as_latex_table()
-    trail_report.clean_reports()
+    trail_report.save_as_latex_table(output_dir=output_dir)
+    trail_report.clean_reports(output_dir=output_dir)
     dieharder=DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_latex_table()
-    report_sts.clean_reports()
+    report_sts.save_as_latex_table(output_dir=output_dir)
+    report_sts.clean_reports(output_dir=output_dir)
 
-def test_save_as_dataframe():
+def test_save_as_dataframe(tmp_path):
+    output_dir = str(tmp_path / 'test_reports')
     speck = SpeckBlockCipher(number_of_rounds=2)
     cp = MznXorDifferentialModel(speck)
     plaintext = set_fixed_variables(
@@ -269,31 +274,32 @@ def test_save_as_dataframe():
 
     avalanche_results = AvalancheTests(speck).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_dataframe(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-    avalanche_report.clean_reports()
+    avalanche_report.save_as_dataframe(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.clean_reports(output_dir=output_dir)
     trail_report = Report(trail)
-    trail_report.save_as_dataframe()
-    trail_report.clean_reports()
+    trail_report.save_as_dataframe(output_dir=output_dir)
+    trail_report.clean_reports(output_dir=output_dir)
     dieharder = DieharderTests(speck)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_dataframe()
-    report_sts.clean_reports()
+    report_sts.save_as_dataframe(output_dir=output_dir)
+    report_sts.clean_reports(output_dir=output_dir)
 
-def test_save_as_json():
+def test_save_as_json(tmp_path):
+    output_dir = str(tmp_path / 'test_reports')
 
     speck = SpeckBlockCipher(number_of_rounds=2)
 
     neural_network_blackbox_distinguisher_tests_results = NeuralNetworkTests(speck).neural_network_blackbox_distinguisher_tests(nb_samples=10)
     blackbox_report = Report(neural_network_blackbox_distinguisher_tests_results)
-    blackbox_report.save_as_json(fixed_input='plaintext',fixed_output='round_output')
-    blackbox_report.clean_reports()
+    blackbox_report.save_as_json(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output')
+    blackbox_report.clean_reports(output_dir=output_dir)
 
     simon = SimonBlockCipher(number_of_rounds=2)
 
     dieharder = DieharderTests(simon)
     report_sts = Report(dieharder.dieharder_statistical_tests('avalanche', dieharder_test_option=100))
-    report_sts.save_as_json()
-    report_sts.clean_reports()
+    report_sts.save_as_json(output_dir=output_dir)
+    report_sts.clean_reports(output_dir=output_dir)
     present = PresentBlockCipher(number_of_rounds=2)
     sat = SatXorDifferentialModel(present)
     related_key_setting = [
@@ -309,8 +315,8 @@ def test_save_as_json():
 
     avalanche_results = AvalancheTests(simon).avalanche_tests()
     avalanche_report = Report(avalanche_results)
-    avalanche_report.save_as_json(fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
-    avalanche_report.clean_reports()
+    avalanche_report.save_as_json(output_dir=output_dir, fixed_input='plaintext',fixed_output='round_output',fixed_test='avalanche_weight_vectors')
+    avalanche_report.clean_reports(output_dir=output_dir)
 
 def test_show(monkeypatch, tmp_path):
     captured_fig_shows = []

@@ -49,6 +49,7 @@ EXAMPLES::
 Summary of input format support:
 
 1. **Byte-oriented (packed binary)**: Most efficient format
+
    - bytes, bytearray: ``b'\\xA5\\x3F...'``
    - numpy array of uint8 (0-255): ``np.array([165, 63, ...], dtype=np.uint8)``
    - Bits extracted in big-endian order (MSB first)
@@ -57,11 +58,13 @@ Summary of input format support:
      sequences with detectable patterns for large sample sizes (>100KB).
 
 2. **ASCII format (one bit per byte)**:
+
    - String of '0' and '1' characters: ``"10110010..."``
    - Convert to binary array: ``np.array([int(b) for b in string], dtype=np.uint8)``
    - Or list comprehension: ``np.array(list(map(int, string)), dtype=np.uint8)``
 
 3. **Binary array (preprocessed)**:
+
    - numpy array of 0s and 1s: ``np.array([1,0,1,1,0,0,1,0], dtype=np.uint8)``
    - This format is used internally and passed through unchanged
 
@@ -1930,10 +1933,10 @@ class NISTTests:
         
             - ``sequences`` -- **list of numpy arrays**; list of binary sequences to test
             - ``test_names`` -- **list** (optional); names of tests to run. If None, runs all tests.
-            Valid names: 'frequency', 'block_frequency', 'cumulative_sums', 'runs', 'longest_run',
-            'rank', 'dft', 'non_overlapping_template', 'overlapping_template', 'universal',
-            'approximate_entropy', 'random_excursions', 'random_excursions_variant', 
-            'serial', 'linear_complexity'
+              Valid names: 'frequency', 'block_frequency', 'cumulative_sums', 'runs', 'longest_run',
+              'rank', 'dft', 'non_overlapping_template', 'overlapping_template', 'universal',
+              'approximate_entropy', 'random_excursions', 'random_excursions_variant',
+              'serial', 'linear_complexity'
             - ``alpha`` -- **float** (default: 0.01); significance level for individual test pass/fail
             - ``block_frequency_block_size`` -- **integer** (default: 128); block size for Block Frequency Test
             - ``non_overlapping_template_block_size`` -- **integer** (default: 968); block size for Non-overlapping Template Test

@@ -30,6 +30,7 @@ class SalsaPermutation(Cipher):
     Construct an instance of the SalsaPermutation class.
 
     This class is used to store compact representations of a permutation, used to generate the corresponding cipher.
+    The unit tests reproduce Crowley's truncated differential on this permutation [Cro2005]_.
 
     INPUT:
 
@@ -66,7 +67,6 @@ class SalsaPermutation(Cipher):
     ):
         init_latin_dances_cipher(
             self,
-            super(),
             INPUT_PLAINTEXT,
             state_of_components,
             number_of_rounds,

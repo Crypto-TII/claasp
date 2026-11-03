@@ -29,7 +29,7 @@ import os
 import pickle
 
 from claasp.cipher_modules.models.milp import MILP_AUXILIARY_FILE_PATH
-from claasp.cipher_modules.models.milp.solvers import SOLVER_DEFAULT
+from claasp.cipher_modules.models.milp.solvers import SOLVER_INTERNAL_DEFAULT
 
 small_sbox_file_name = "dictionary_that_contains_inequalities_for_small_sboxes.obj"
 small_sbox_xor_linear_file_name = "dictionary_that_contains_inequalities_for_small_sboxes_xor_linear.obj"
@@ -49,7 +49,7 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp"):
     - ``algorithm`` -- **string** (default: `greedy`); choosing the algorithm for computing the S-box model, one of
       ['none', 'greedy', 'milp']
 
-        EXAMPLES::
+    EXAMPLES::
 
         sage: from sage.crypto.sbox import SBox
         sage: SBox_PRESENT = SBox([12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2])
@@ -185,7 +185,7 @@ def cutting_off_milp(dict_polyhedron, number_of_ineqs=None):
 
         # precompute which inequality removes which impossible point
         precomputation = matrix([[int(not (ineq.contains(p))) for p in impossible] for ineq in ineqs])
-        milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_DEFAULT)
+        milp = MixedIntegerLinearProgram(maximization=False, solver=SOLVER_INTERNAL_DEFAULT)
         var_ineqs = milp.new_variable(binary=True, name="ineqs")
 
         # either use the minimal number of inequalities for the representation

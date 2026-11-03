@@ -97,9 +97,9 @@ class SerpentBlockCipher(Cipher):
     INPUT:
 
     - ``key_bit_size`` -- **integer** (default: `256`); key size in bits
-    (128, 192, or 256)
+      (128, 192, or 256)
     - ``number_of_rounds`` -- **integer** (default: `32`); number of rounds
-    from 1 to 32
+      from 1 to 32
 
     EXAMPLES::
 

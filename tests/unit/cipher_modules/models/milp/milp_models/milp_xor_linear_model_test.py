@@ -1,4 +1,5 @@
 import pytest
+from sage.numerical.mip import MIPSolverException
 
 from claasp.cipher_modules.models.milp.milp_models.milp_xor_linear_model import MilpXorLinearModel
 from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
@@ -101,59 +102,72 @@ def test_find_one_xor_linear_trail():
 def test_find_one_xor_linear_trail_with_fixed_weight():
     # speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     # milp = MilpXorLinearModel(speck)
-    # trail = milp.find_one_xor_linear_trail_with_fixed_weight(6)
+    # trail = milp.find_one_xor_linear_trail(lower_bound=6, upper_bound=6)
     # assert len(trail) == 9
     # assert trail["total_weight"] == 6.0
 
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorLinearModel(speck)
-    trail = milp.find_one_xor_linear_trail_with_fixed_weight(1)
+    trail = milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=1)
     assert len(trail) == 10
     assert trail["total_weight"] == 1.0
     #
     # speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     # milp = MilpXorLinearModel(speck)
-    # trail = milp.find_one_xor_linear_trail_with_fixed_weight(10)
+    # trail = milp.find_one_xor_linear_trail(lower_bound=10, upper_bound=10)
     # assert len(trail) == 9
     # assert trail["total_weight"] == 10.0
 
 
 def test_find_one_xor_linear_trail_with_weight_at_most():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-    trail = MilpXorLinearModel(speck).find_one_xor_linear_trail_with_weight_at_most(6)
+    trail = MilpXorLinearModel(speck).find_one_xor_linear_trail(upper_bound=6)
     assert 0.0 <= trail["total_weight"] <= 6.0
 
-    trail = MilpXorLinearModel(speck).find_one_xor_linear_trail_with_weight_at_most(6, 1)
+    trail = MilpXorLinearModel(speck).find_one_xor_linear_trail(lower_bound=1, upper_bound=6)
     assert 1.0 <= trail["total_weight"] <= 6.0
+
+
+def test_find_one_xor_linear_trail_with_weight_at_least():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    trail = MilpXorLinearModel(speck).find_one_xor_linear_trail(lower_bound=1)
+    assert trail["total_weight"] >= 1.0
+
+
+def test_find_one_xor_linear_trail_rejects_invalid_bounds():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpXorLinearModel(speck)
+    with pytest.raises(ValueError, match="lower_bound must be <= upper_bound"):
+        milp.find_one_xor_linear_trail(lower_bound=7, upper_bound=6)
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_external_solver():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
     milp = MilpXorLinearModel(speck)
-    trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="glpk_ext")
+    trail = milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=1, external_solver_name="glpk_ext")
     assert len(trail) == 10
     assert trail["total_weight"] == 1.0
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_supported_but_not_installed_external_solver():
-    with pytest.raises(Exception) as e_info:
-        speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        milp = MilpXorLinearModel(speck)
-        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="cplex_ext")
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpXorLinearModel(speck)
+    with pytest.raises(MIPSolverException):
+        milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=1, external_solver_name="cplex_ext")
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_installed_external_solver_but_missing_license():
-    with pytest.raises(Exception) as e_info:
-        speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        milp = MilpXorLinearModel(speck)
-        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="Gurobi_ext")
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpXorLinearModel(speck)
+    with pytest.raises(MIPSolverException):
+        milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=1, external_solver_name="Gurobi_ext")
 
 
 def test_find_one_xor_linear_trail_with_fixed_weight_with_unsupported_external_solver():
-    with pytest.raises(Exception) as e_info:
-        speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-        milp = MilpXorLinearModel(speck)
-        trail = milp.find_one_xor_linear_trail_with_fixed_weight(1, external_solver_name="unsupported_solver")
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+    milp = MilpXorLinearModel(speck)
+    with pytest.raises(ValueError):
+        milp.find_one_xor_linear_trail(lower_bound=1, upper_bound=1, external_solver_name="unsupported_solver")
 
 
 def test_fix_variables_value_xor_linear_constraints():

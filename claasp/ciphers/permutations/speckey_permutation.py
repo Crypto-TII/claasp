@@ -34,7 +34,8 @@ class SpeckeyPermutation(Cipher):
     Construct an instance of the SpeckeyPermutation class.
 
     Speckey is a 32-bit ARX permutation based on one round of Speck-32,
-    using two 16-bit words, as described in [DPUVGB2016]_.
+    using two 16-bit words, as described in [DPUVGB2016]_. The unit tests check it against the
+    SPARX reference implementation [CryptoLUXSPARX]_.
 
     INPUT:
 

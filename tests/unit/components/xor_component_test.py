@@ -8,7 +8,9 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 )
 from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.components.xor_component import Xor, cp_build_truncated_table, generic_with_constant_sign_linear_constraints
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 
 def test_cp_build_truncated_table():
     assert cp_build_truncated_table(3) == 'array[0..4, 1..3] of int: xor_truncated_table_3 = ' \
@@ -187,3 +189,18 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_simple_constrain
     assert str(constraints[1]) == '1 + x_0 + x_1 - 7*x_3 <= 2'
     assert str(constraints[-2]) == 'x_2 <= 2 + 6*x_6 + 6*x_7'
     assert str(constraints[-1]) == '2 <= x_2 + 6*x_6 + 6*x_7'
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+    model = SmtXorQuasidifferentialModel(cipher)
+    xor_component = cipher.component_from(0, 0)
+    variables, constraints = xor_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == ['xor_0_0_0', 'xor_0_0_1', 'qdt_xor_0_0_0', 'qdt_xor_0_0_1']
+
+    assert constraints == ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+                           '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
+                           '(assert (= qdt_plaintext_0 qdt_xor_0_0_0))',
+                           '(assert (= qdt_key_0 qdt_xor_0_0_0))',
+                           '(assert (= qdt_plaintext_1 qdt_xor_0_0_1))',
+                           '(assert (= qdt_key_1 qdt_xor_0_0_1))']

@@ -64,11 +64,17 @@ def _get_data(data_keywords, lines):
 
 
 def _get_variables_value(internal_variables, read_file):
+    # the variables are integer, hence their values are rounded: solvers may write them with a numerical error and in
+    # scientific notation (e.g. HiGHS writes "1e-13" or "-2e-13" for 0), whose sign and exponent are part of the number
+    number = r"[-+]?(?:[0-9]+[.]?[0-9]*|[.][0-9]+)(?:[eE][-+]?[0-9]+)?"
+    # the solution is read once, keeping the first value written for each index
+    values = {}
+    for index, value in re.findall(r"[xyz]_([0-9]+)[\s]+[\*]?[\s]*(%s)" % number, read_file):
+        values.setdefault(int(index), float(round(float(value))))
     variables_value = {}
     for key in internal_variables.keys():
         index = int(re.search(r"\d+", str(internal_variables[key])).group()) + 1
-        match = re.search(r"[xyz]_%s[\s]+[\*]?[\s]*([0-9]*[.]?[0-9]+)" % index, read_file)
-        variables_value[key] = float(match.group(1)) if match else 0.0
+        variables_value[key] = values.get(index, 0.0)
     return variables_value
 
 
@@ -583,21 +589,21 @@ def milp_xor_truncated(model, input_1, input_2, output):
     in the deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-    model the result c of the truncated XOR between inputs a and b.
+    model the result c of the truncated XOR between inputs a and b::
 
-    _______________
-     a  |  b  |  c
-    _______________
-     0  |  0  |  0
-     0  |  1  |  1
-     0  |  2  |  2
-     1  |  0  |  1
-     1  |  1  |  0
-     1  |  2  |  2
-     2  |  0  |  2
-     2  |  1  |  2
-     2  |  2  |  2
-    _______________
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  2  |  2
+         2  |  0  |  2
+         2  |  1  |  2
+         2  |  2  |  2
+        _______________
 
     The table can be obtained with the following lines:
 
@@ -638,29 +644,29 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     in deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-    model the result c of the truncated XOR between inputs a and b.
+    model the result c of the truncated XOR between inputs a and b::
 
-    _______________
-     a  |  b  |  c
-    _______________
-     0  |  0  |  0
-     0  |  1  |  1
-     0  |  2  |  2
-     0  |  3  |  3
-     1  |  0  |  1
-     1  |  1  |  0
-     1  |  1  |  1
-     1  |  2  |  3
-     1  |  3  |  3
-     2  |  0  |  2
-     2  |  1  |  3
-     2  |  2  |  3
-     2  |  3  |  3
-     3  |  0  |  3
-     3  |  1  |  3
-     3  |  2  |  3
-     3  |  3  |  3
-    _______________
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         0  |  3  |  3
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  1  |  1
+         1  |  2  |  3
+         1  |  3  |  3
+         2  |  0  |  2
+         2  |  1  |  3
+         2  |  2  |  3
+         2  |  3  |  3
+         3  |  0  |  3
+         3  |  1  |  3
+         3  |  2  |  3
+         3  |  3  |  3
+        _______________
 
 
     Espresso was used to reduce the number of constraints to 91 inequalities.

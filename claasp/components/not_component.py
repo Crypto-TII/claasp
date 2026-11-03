@@ -48,6 +48,7 @@ class Not(Component):
         sage: print(component.description)
         ['NOT', 0]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -717,3 +718,49 @@ class Not(Component):
         ]
         result = input_bit_ids + output_bit_ids, constraints
         return result
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for NOT quasidifferential propagation.
+
+        NOT is an AFFINE map (x -> x xor 1), not a linear one. Per
+        Beyne & Rijmen, Theorem 3.2 (4), a translation by a constant t
+        propagates both differences and masks UNCHANGED, and
+        contributes only a SIGN factor chi_v(t) = (-1)^(v . t) -- here
+        t is the all-ones word, so the factor is (-1)^popcount(v).
+
+        The sign is deliberately NOT encoded as an SMT constraint: it
+        never affects the weight (which is 0 for an affine map), so
+        constraining it would only slow the search down. It is applied
+        afterwards by
+        SmtXorQuasidifferentialModel.compute_trail_sign, exactly as
+        done for the Constant component. Note that
+        Not.generic_sign_linear_constraints in this same file computes
+        the very same parity for the ordinary linear model.
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.not_cipher import NotCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = NotCipher(bit_size=2)
+            sage: not_component = cipher.component_from(0, 0)
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = not_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: len(variables)
+            4
+            sage: len(constraints)
+            4
+        """
+
+        # Theorem 3.2 (4): a translation leaves differences and masks
+        # unchanged. Its sign factor is applied by compute_trail_sign.
+        return model._bit_moving_propagation_constraints(
+            self, [(position, position) for position in range(self.output_bit_size)]
+        )

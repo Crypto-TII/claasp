@@ -11,7 +11,7 @@ def test_find_lowest_number_of_active_sboxes_toyaes_internal_solver():
     milp = MilpXorDifferentialNumberOfActiveSboxesModel(cipher)
     fixed_variables = get_single_key_scenario_format_for_fixed_values(cipher)
 
-    solution = milp.find_lowest_number_of_active_sboxes(fixed_variables)
+    solution = milp.find_lowest_number_of_active_sboxes(fixed_variables, solver_name="GLPK")
 
     assert solution["model_type"] == "xor_differential_number_of_active_sboxes"
     assert solution["solver_name"] == "GLPK"

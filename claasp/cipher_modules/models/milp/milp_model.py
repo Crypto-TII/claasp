@@ -25,19 +25,21 @@ The user is asked to use one of the following MILP solver, some need to be insta
 Available MILP solvers are:
 
     * `Use Solver through Sage <https://doc.sagemath.org/html/en/thematic_tutorials/linear_programming.html>`_
-    * `GLPK`_ (integrated in sage by default, poor performance)
-    * `Gurobi`_ (show better performance, but you need to get a license beforehand)
-    * `CBC`_
-    * `CVXOPT`_
-    * `CPLEX`_
-    * `PPL`_
+    * `GLPK <https://www.gnu.org/software/glpk/>`_ (integrated in sage by default, poor performance)
+    * `Gurobi <https://www.gurobi.com/>`_ (show better performance, but you need to get a license beforehand)
+    * `CBC <https://github.com/coin-or/Cbc>`_
+    * `CVXOPT <https://cvxopt.org/>`_
+    * `CPLEX <https://www.ibm.com/products/ilog-cplex-optimization-studio>`_
+    * `PPL <https://www.bugseng.com/ppl>`_
 
-The default choice is GLPK.
+The default choice is HiGHS (``HIGHS_EXT``, an external solver), while the models are built with GLPK.
 
 """
 
 import os
+import signal
 import subprocess
+import tempfile
 import time
 import tracemalloc
 
@@ -48,6 +50,7 @@ from claasp.cipher_modules.models.milp.solvers import (
     MILP_SOLVERS_INTERNAL,
     MODEL_DEFAULT_PATH,
     SOLVER_DEFAULT,
+    SOLVER_INTERNAL_DEFAULT,
 )
 from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
 from claasp.cipher_modules.models.milp.utils.utils import (
@@ -137,6 +140,27 @@ def get_input_output_variables(component):
     return input_vars, output_vars
 
 
+def _run_and_stream_output(command, process_line):
+    # stderr goes to a file, so that the solver cannot block on a full stderr pipe while stdout is being read; the
+    # command runs in its own process group, so that the solver, started by the shell, can be stopped with the shell
+    with tempfile.TemporaryFile(mode="w+") as errors_file:
+        with subprocess.Popen(
+            command, shell=True, text=True, stdout=subprocess.PIPE, stderr=errors_file, start_new_session=True
+        ) as process:
+            output_lines = []
+            try:
+                for line in process.stdout:
+                    output_lines.append(line)
+                    process_line(line)
+            except BaseException:
+                # the solver is stopped if the search is interrupted (e.g. by KeyboardInterrupt)
+                os.killpg(process.pid, signal.SIGKILL)
+                process.wait()
+                raise
+        errors_file.seek(0)
+        return "".join(output_lines), errors_file.read()
+
+
 class MilpModel:
     """Build MILP models for ciphers using Cipher."""
 
@@ -221,10 +245,12 @@ class MilpModel:
                         a = x[f"{comp_id}_{pos}"]
                         b = x[f"{var_vals[i][0]}_{var_vals[i][1]}"]
 
-                        constraints.append(lhs <= a + b)
-                        constraints.append(lhs >= a - b)
-                        constraints.append(lhs >= b - a)
-                        constraints.append(lhs + a + b <= 2)
+                        constraints.extend([
+                            lhs <= a + b,
+                            lhs >= a - b,
+                            lhs >= b - a,
+                            lhs + a + b <= 2,
+                        ])
 
                     constraints.append(sum(x[f"{comp_id}{p}_not_equal_{n_trails}"] for p in bit_pos) >= 1)
             else:
@@ -268,17 +294,18 @@ class MilpModel:
 
         return self.weight_range_constraints(weight, weight, weight_precision)
 
-    def weight_range_constraints(self, min_weight, max_weight, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
+    def weight_range_constraints(self, min_weight=None, max_weight=None, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION):
         """
-        Return a list of variables and a list of constraints that bound the total weight to ``[min_weight, max_weight]``.
+        Return a list of variables and a list of constraints that bound the total weight.
 
-        Unlike :py:meth:`weight_constraints`, which pins the weight to a single value, this bounds it to a
-        range. Setting ``min_weight == max_weight`` is equivalent to fixing the weight.
+        If both bounds are provided, this bounds the weight to ``[min_weight, max_weight]``. Setting
+        ``min_weight == max_weight`` is equivalent to fixing the weight. If only one bound is provided, only that
+        side of the range is constrained. If neither bound is provided, no weight constraint is returned.
 
         INPUT:
 
-        - ``min_weight`` -- **integer**; lower bound on the total weight
-        - ``max_weight`` -- **integer**; upper bound on the total weight
+        - ``min_weight`` -- **integer** or ``None`` (default: ``None``); lower bound on the total weight
+        - ``max_weight`` -- **integer** or ``None`` (default: ``None``); upper bound on the total weight
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
 
         EXAMPLES::
@@ -295,16 +322,39 @@ class MilpModel:
             [300 <= x_0, x_0 <= 1000]
             sage: milp.weight_range_constraints(5, 5)[1]
             [x_0 == 500]
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpModel(simon)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: milp.weight_range_constraints(3, None)[1]
+            [300 <= x_0]
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.milp.milp_model import MilpModel
+            sage: simon = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpModel(simon)
+            sage: milp.init_model_in_sage_milp_class()
+            sage: milp.weight_range_constraints(None, 5)[1]
+            [x_0 <= 500]
         """
+        if min_weight is None and max_weight is None:
+            return [], []
+        if min_weight is not None and max_weight is not None and min_weight > max_weight:
+            raise ValueError("lower_bound must be <= upper_bound")
+
         p = self._integer_variable
         prec = 10**weight_precision
         variables = [("p[probability]", p["probability"])]
         if min_weight == max_weight:
             constraints = [p["probability"] == prec * min_weight]
         else:
-            constraints = [p["probability"] <= prec * max_weight]
-            if min_weight > 0:
-                constraints.insert(0, p["probability"] >= prec * min_weight)
+            constraints = []
+            if min_weight is not None:
+                constraints.append(p["probability"] >= prec * min_weight)
+            if max_weight is not None:
+                constraints.append(p["probability"] <= prec * max_weight)
 
         return variables, constraints
 
@@ -327,20 +377,23 @@ class MilpModel:
             Mixed Integer Program (no objective, 0 variables, 0 constraints)
         """
         if solver_name.upper().endswith("_EXT"):
-            solver_name = SOLVER_DEFAULT
+            solver_name = SOLVER_INTERNAL_DEFAULT
         self._model = MixedIntegerLinearProgram(maximization=False, solver=solver_name)
         self._binary_variable = self._model.new_variable(binary=True)
         self._integer_variable = self._model.new_variable(integer=True)
         self._non_linear_component_id = []
 
-    def _solve_with_external_solver(self, model_type, model_path, solver_name=SOLVER_DEFAULT):
+    def _solve_with_external_solver(self, model_type, model_path, solver_name=SOLVER_DEFAULT, progress_log=None):
         solver_specs = [specs for specs in MILP_SOLVERS_EXTERNAL if specs["solver_name"] == solver_name.upper()][0]
         solution_file_path = f"{MODEL_DEFAULT_PATH}/{model_path[:-3]}.sol"
 
         command = ""
         for key in solver_specs["keywords"]["command"]["format"]:
             parameter = solver_specs["keywords"]["command"][key]
-            if key == "input_file":
+            if key == "executable" and progress_log is not None:
+                # before the model file, as some solvers (e.g. gurobi_cl) require
+                parameter += progress_log.solver_command_arguments(model_path)
+            elif key == "input_file":
                 parameter += " " + model_path
             elif key == "output_file":
                 parameter = (
@@ -350,34 +403,50 @@ class MilpModel:
                 parameter = " ".join(parameter)
             command += " " + parameter
         tracemalloc.start()
-        solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
-        milp_memory = tracemalloc.get_traced_memory()[1] / 10**6
+        if progress_log is None:
+            solver_process = subprocess.run(command, capture_output=True, shell=True, text=True)
+            peak_memory = tracemalloc.get_traced_memory()[1]
+            solver_output, solver_errors = solver_process.stdout, solver_process.stderr
+        else:
+            try:
+                solver_output, solver_errors = _run_and_stream_output(command, progress_log.process_line)
+            finally:
+                progress_log.finish_solver_run()
+            peak_memory = progress_log.peak_memory_without_logging()
+        milp_memory = peak_memory / 10**6
         tracemalloc.stop()
 
-        if solver_process.stderr:
+        if solver_errors:
             raise MIPSolverException("Make sure that the solver is correctly installed.")
 
         if "memory" in solver_specs:
-            milp_memory = _get_data(solver_specs["keywords"]["memory"], str(solver_process))
+            milp_memory = _get_data(solver_specs["keywords"]["memory"], solver_output)
 
         return _parse_external_solver_output(
-            self, solver_specs, model_type, solution_file_path, solver_process.stdout
+            self, solver_specs, model_type, solution_file_path, solver_output
         ) + (milp_memory,)
 
-    def _solve_with_internal_solver(self):
+    def _solve_with_internal_solver(self, progress_log=None):
         mip = self._model
         status = UNSATISFIABLE
         self._verbose_print("Solving model in progress ...")
         time_start = time.time()
         tracemalloc.start()
         try:
-            mip.solve()
+            if progress_log is None:
+                mip.solve()
+            else:
+                with progress_log.logging_glpk_output(mip.get_backend()):
+                    mip.solve()
             status = SATISFIABLE
 
         except MIPSolverException as milp_exception:
             print(milp_exception)
         finally:
-            milp_memory = tracemalloc.get_traced_memory()[1] / 10**6
+            if progress_log is None:
+                milp_memory = tracemalloc.get_traced_memory()[1] / 10**6
+            else:
+                milp_memory = progress_log.peak_memory_without_logging() / 10**6
             tracemalloc.stop()
             time_end = time.time()
             milp_time = time_end - time_start
@@ -385,15 +454,18 @@ class MilpModel:
 
         return status, milp_time, milp_memory
 
-    def solve(self, model_type, solver_name=SOLVER_DEFAULT, external_solver_name=None):
+    def solve(self, model_type, solver_name=SOLVER_DEFAULT, external_solver_name=None, progress_log=None):
         """
         Return the solution of the model.
 
         INPUT:
 
         - ``model_type`` -- **string**; the model to solve
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call when building the internal Sagemath MILP model. If no external solver is specified, ``solver_name`` will also be used to solve the model.
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the solver to call. An external solver (whose name ends with ``_EXT``) solves the model outside of Sagemath, which is then built with ``SOLVER_INTERNAL_DEFAULT``; an internal solver is also used to build the model.
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
+        - ``progress_log`` -- **MilpProgressLog object** (default: None); if specified, the output of the solver is
+          passed to it while the solver runs (see
+          :py:func:`~claasp.cipher_modules.models.milp.utils.milp_progress_log.create_progress_log`)
 
         EXAMPLES::
 
@@ -417,7 +489,7 @@ class MilpModel:
             solver_name_in_solution = solver_choice
             model_path = _write_model_to_lp_file(self, model_type)
             solution_file_path, status, objective_value, components_values, milp_time, milp_memory = (
-                self._solve_with_external_solver(model_type, model_path, solver_choice)
+                self._solve_with_external_solver(model_type, model_path, solver_choice, progress_log)
             )
             os.remove(model_path)
             os.remove(f"{solution_file_path}")
@@ -425,7 +497,7 @@ class MilpModel:
             objective_value = None
             components_values = None
             solver_name_in_solution = solver_name
-            status, milp_time, milp_memory = self._solve_with_internal_solver()
+            status, milp_time, milp_memory = self._solve_with_internal_solver(progress_log)
             if status == SATISFIABLE:
                 objective_value, components_values = self._parse_solver_output()
 

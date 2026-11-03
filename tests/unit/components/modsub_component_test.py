@@ -2,7 +2,10 @@ from claasp.cipher import Cipher
 from claasp.cipher_modules.models.algebraic.algebraic_model import AlgebraicModel
 from claasp.components.modsub_component import ModSub
 from claasp.name_mappings import PERMUTATION
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
+from claasp.ciphers.single_component_ciphers.modsub_cipher import ModsubCipher
 
 def test_algebraic_polynomials():
     cipher = Cipher("cipher_name", PERMUTATION, ["input"], [8], 8)
@@ -101,3 +104,30 @@ def test_smt_constraints():
     assert constraints[-2] == '(assert (= modsub_0_7_30 (xor modadd_0_4_30 temp_input_plaintext_62 ' \
                               'carry_modsub_0_7_30)))'
     assert constraints[-1] == '(assert (= modsub_0_7_31 (xor modadd_0_4_31 temp_input_plaintext_63)))'
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = ModsubCipher(word_bit_size=2, number_of_inputs=2, modulus=4)
+    model = SmtXorQuasidifferentialModel(cipher)
+    modsub_component = cipher.component_from(0, 0)
+    variables, constraints = modsub_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert len(variables) == 20
+    assert variables[:4] == ['modsub_0_0_0', 'modsub_0_0_1', 'qdt_modsub_0_0_0', 'qdt_modsub_0_0_1']
+    assert variables[-2:] == ['hw_qdt_modsub_0_0_0', 'hw_qdt_modsub_0_0_1']
+
+    assert len(constraints) == 23
+    assert constraints[0] == '(assert (= modsub_aprime_modsub_0_0_0 (xor key_0 plaintext_0)))'
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_more_than_two_operands():
+    cipher = ModsubCipher(word_bit_size=2, number_of_inputs=3, modulus=4)
+    model = SmtXorQuasidifferentialModel(cipher)
+    modsub_component = cipher.component_from(0, 0)
+
+    try:
+        modsub_component.smt_xor_quasidifferential_propagation_constraints(model)
+        raised = False
+    except NotImplementedError:
+        raised = True
+
+    assert raised

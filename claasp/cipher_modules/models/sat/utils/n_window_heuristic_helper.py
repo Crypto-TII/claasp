@@ -123,9 +123,11 @@ def generate_window_size_clauses(first_input_difference, second_input_difference
     Returns a set of clauses representing a simplified CNF (Conjunctive Normal Form) expression
     for the n-window size heuristic applied to a + b = c. Specifically, these clauses ensure that no more than n variables
     are true (i.e., there are no sequences of n+1 ones in the carry differences of a + b = c). These clauses were obtained after simplifying
-    the formula below (in sympy notation):
-    formula_temp = Equivalent(And(*[Xor(A[i], B[i], C[i]) for i in range(n - 1)]), aux);
-    formula = And(Not(And(aux, Xor(A[n - 1], B[n - 1], C[n - 1]))), formula_temp).
+    the formula below (in sympy notation)::
+
+        formula_temp = Equivalent(And(*[Xor(A[i], B[i], C[i]) for i in range(n - 1)]), aux);
+        formula = And(Not(And(aux, Xor(A[n - 1], B[n - 1], C[n - 1]))), formula_temp).
+
     The variable aux is used to store the conjunctions of the carries of the addition of the n - 1 bits of A and B.
     aux will serve as a variable to allow users to perform a global count on the number of full n-window sequences.
 

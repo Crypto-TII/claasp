@@ -29,6 +29,7 @@ from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
     MILP_XOR_DIFFERENTIAL,
     MILP_XOR_DIFFERENTIAL_OBJECTIVE,
 )
+from claasp.cipher_modules.models.milp.utils.milp_progress_log import create_progress_log
 from claasp.cipher_modules.models.milp.utils.utils import (
     _filter_fixed_variables,
     _get_variables_values_as_string,
@@ -191,7 +192,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output
           need to be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the name of the solver (if needed)
 
         EXAMPLES::
 
@@ -399,7 +400,7 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need to
           be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the name of the solver (if needed)
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         EXAMPLES::
@@ -477,6 +478,7 @@ class MilpXorDifferentialModel(MilpModel):
         weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
         solver_name=SOLVER_DEFAULT,
         external_solver_name=False,
+        log=False,
     ):
         """
         Return a XOR differential trail with the lowest weight in standard format, i.e. the solver solution.
@@ -491,8 +493,16 @@ class MilpXorDifferentialModel(MilpModel):
         - ``fixed_values`` -- **list** (default: `[]`); each dictionary contains variables values whose output need
           to be fixed
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the name of the solver (if needed)
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the name of the solver (if needed)
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
+        - ``log`` -- **boolean** (default: `False`); if ``True``, while the solver runs, append to the file
+          ``<cipher_id>__milp_find_lowest_weight_xor_differential_trail__<solver_name>solver.log`` the lower and
+          upper bounds proved so far on the weight of the trail and the trails found (see
+          :py:class:`~claasp.cipher_modules.models.milp.utils.milp_progress_log.MilpProgressLog`). Only available
+          with the solvers ``CPLEX_EXT``, ``GLPK``, ``GLPK_EXT``, ``GUROBI_EXT``, ``HIGHS_EXT`` and ``SCIP_EXT``,
+          which log different information (e.g. only some of them log the intermediate trails or the exploration of
+          the branch-and-bound tree, see the linked class); with other solvers, an error is raised before the model is
+          built
 
         EXAMPLES::
 
@@ -519,6 +529,12 @@ class MilpXorDifferentialModel(MilpModel):
             1.0
         """
         start = time.time()
+        progress_log = None
+        if log:
+            solver = external_solver_name or solver_name
+            progress_log = create_progress_log(
+                self, "find_lowest_weight_xor_differential_trail", solver, weight_precision, start
+            )
         self.init_model_in_sage_milp_class(solver_name)
         self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
         mip = self._model
@@ -528,7 +544,9 @@ class MilpXorDifferentialModel(MilpModel):
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
         end = time.time()
         building_time = end - start
-        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
+        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name, progress_log)
+        if progress_log is not None:
+            progress_log.write_final(solution)
         solution["building_time"] = building_time
         solution["test_name"] = "find_lowest_weight_xor_differential_trail"
 
@@ -537,20 +555,29 @@ class MilpXorDifferentialModel(MilpModel):
     def find_one_xor_differential_trail(
         self,
         fixed_values=[],
+        lower_bound=None,
+        upper_bound=None,
         weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
         solver_name=SOLVER_DEFAULT,
         external_solver_name=None,
     ):
         """
         Return a XOR differential trail, not necessarily the one with the lowest weight.
+
+        If bounds are provided, the returned trail has weight in ``[lower_bound, upper_bound]``. Passing only
+        ``lower_bound`` finds one trail with weight at least that value; passing only ``upper_bound`` finds one trail
+        with weight at most that value, and passing equal bounds fixes the trail weight.
+
         By default, the search is set in the single-key setting.
 
         INPUT:
 
         - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
             format
+        - ``lower_bound`` -- **integer** (default: `None`); lower bound on the weight of the trail
+        - ``upper_bound`` -- **integer** (default: `None`); upper bound on the weight of the trail
         - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
+        - ``solver_name`` -- **string** (default: `HIGHS_EXT`); the solver to call
         - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
 
         .. SEEALSO::
@@ -564,7 +591,28 @@ class MilpXorDifferentialModel(MilpModel):
             sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail() # random # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail() # random
+
+            # single-key setting with upper bound on the weight
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpXorDifferentialModel(speck)
+            sage: trail = milp.find_one_xor_differential_trail(upper_bound=5) # random
+            sage: 0.0 <= trail['total_weight'] <= 5.0
+            True
+
+            # single-key setting with lower bound on the weight
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpXorDifferentialModel(speck)
+            sage: trail = milp.find_one_xor_differential_trail(lower_bound=3) # random
+            sage: trail['total_weight'] >= 3.0
+            True
+
+            # single-key setting with bounded weight
+            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
+            sage: milp = MilpXorDifferentialModel(speck)
+            sage: trail = milp.find_one_xor_differential_trail(lower_bound=3, upper_bound=5) # random
+            sage: 3.0 <= trail['total_weight'] <= 5.0
+            True
 
             # related-key setting
             sage: from claasp.cipher_modules.models.utils import set_fixed_variables
@@ -573,7 +621,7 @@ class MilpXorDifferentialModel(MilpModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: milp = MilpXorDifferentialModel(speck)
             sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random # doctest: +SKIP
+            sage: trail = milp.find_one_xor_differential_trail(fixed_values=[key]) # random
         """
         start = time.time()
         self.init_model_in_sage_milp_class(solver_name)
@@ -581,129 +629,13 @@ class MilpXorDifferentialModel(MilpModel):
         mip = self._model
         mip.set_objective(None)
         self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        end = time.time()
-        building_time = end - start
-        solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
-        solution["building_time"] = building_time
-        solution["test_name"] = "find_one_xor_differential_trail"
-
-        return solution
-
-    def find_one_xor_differential_trail_with_weight_at_most(
-        self,
-        max_weight,
-        min_weight=0,
-        fixed_values=[],
-        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-        solver_name=SOLVER_DEFAULT,
-        external_solver_name=None,
-    ):
-        """
-        Return one XOR differential trail whose weight lies in ``[min_weight, max_weight]``, in standard format.
-        By default, the search is set in the single-key setting.
-
-        .. NOTE::
-
-            Feasibility search: returns any trail with weight in ``[min_weight, max_weight]``, not the trail of
-            lowest weight. With the default ``min_weight=0`` the returned trail may be trivial.
-
-        INPUT:
-
-        - ``max_weight`` -- **integer**; the upper bound on the weight of the trail
-        - ``min_weight`` -- **integer** (default: `0`); the lower bound on the weight of the trail
-        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
-            format
-        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
-        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
-
-        .. SEEALSO::
-
-            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=2)
-            sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail_with_weight_at_most(5)  # random
-            sage: trail['total_weight'] <= 5.0
-            True
-        """
-        start = time.time()
-        self.init_model_in_sage_milp_class(solver_name)
-        self._verbose_print(f"Solver used : {solver_name} (Choose Gurobi for Better performance)")
-        mip = self._model
-        mip.set_objective(None)
-        self.add_constraints_to_build_in_sage_milp_class(-1, weight_precision, fixed_values)
-        _, constraints = self.weight_range_constraints(min_weight, max_weight, weight_precision)
-        for constraint in constraints:
+        for constraint in self.weight_range_constraints(lower_bound, upper_bound, weight_precision)[1]:
             mip.add_constraint(constraint)
         end = time.time()
         building_time = end - start
         solution = self.solve(MILP_XOR_DIFFERENTIAL, solver_name, external_solver_name)
         solution["building_time"] = building_time
-        solution["test_name"] = "find_one_xor_differential_trail_with_weight_at_most"
-
-        return solution
-
-    def find_one_xor_differential_trail_with_fixed_weight(
-        self,
-        fixed_weight,
-        fixed_values=[],
-        weight_precision=MILP_DEFAULT_WEIGHT_PRECISION,
-        solver_name=SOLVER_DEFAULT,
-        external_solver_name=None,
-    ):
-        """
-        Return one XOR differential trail with weight equal to ``fixed_weight`` as a list in standard format.
-        By default, the search is set in the single-key setting.
-
-        INPUT:
-
-        - ``fixed_weight`` -- **integer**; the weight found using :py:meth:`~find_lowest_weight_xor_differential_trail`
-        - ``fixed_values`` -- **list** (default: `[]`); dictionaries containing the variables to be fixed in standard
-            format
-        - ``weight_precision`` -- **integer** (default: `2`); the number of decimals to use when rounding the weight of the trail.
-        - ``solver_name`` -- **string** (default: `GLPK`); the solver to call
-        - ``external_solver_name`` -- **string** (default: None); if specified, the library will write the internal Sagemath MILP model as a .lp file and solve it outside of Sagemath, using the external solver.
-
-        .. SEEALSO::
-
-            :py:meth:`~cipher_modules.models.utils.set_fixed_variables`
-
-        EXAMPLES::
-
-            # single-key setting
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: milp = MilpXorDifferentialModel(speck)
-            sage: trail = milp.find_one_xor_differential_trail_with_fixed_weight(3) # random # doctest: +SKIP
-            sage: trail['total_weight'] # doctest: +SKIP
-            3.0
-
-            # related-key setting
-            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.milp.milp_models.milp_xor_differential_model import MilpXorDifferentialModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: milp = MilpXorDifferentialModel(speck)
-            sage: key = set_fixed_variables('key', 'not_equal', list(range(64)), [0] * 64)
-            sage: trail = milp.find_one_xor_differential_trail_with_fixed_weight(3, fixed_values=[key]) # random # doctest: +SKIP
-            sage: trail['total_weight'] # doctest: +SKIP
-            3.0
-        """
-        solution = self.find_one_xor_differential_trail_with_weight_at_most(
-            fixed_weight,
-            fixed_weight,
-            fixed_values=fixed_values,
-            weight_precision=weight_precision,
-            solver_name=solver_name,
-            external_solver_name=external_solver_name,
-        )
-        solution["test_name"] = "find_one_xor_differential_trail_with_fixed_weight"
+        solution["test_name"] = "find_one_xor_differential_trail"
 
         return solution
 

@@ -1,5 +1,8 @@
 from claasp.components.constant_component import Constant
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
+from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
 
 def test_cp_wordwise_deterministic_truncated_xor_differential_constraints():
     class DummyModel:
@@ -63,3 +66,17 @@ def test_smt_xor_linear_mask_propagation_constraints():
     assert output_bit_ids[-1] == 'constant_0_2_31_o'
 
     assert constraints == []
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = RectangleBlockCipher(number_of_rounds=1)
+    model = SmtXorQuasidifferentialModel(cipher)
+    constant_component = cipher.component_from_id('constant_0_26')
+    variables, constraints = constant_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert len(variables) == 10
+    assert variables[0] == 'constant_0_26_0'
+    assert variables[-1] == 'qdt_constant_0_26_4'
+
+    assert len(constraints) == 5
+    assert constraints[0] == '(assert (not constant_0_26_0))'
+    assert constraints[-1] == '(assert (not constant_0_26_4))'

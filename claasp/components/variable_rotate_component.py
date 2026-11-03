@@ -46,6 +46,7 @@ class VariableRotate(Component):
         sage: print(component.description)
         ['ROTATE_BY_VARIABLE_AMOUNT', -1]
     """
+
     def __init__(
         self,
         current_round_number,

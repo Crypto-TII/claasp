@@ -20,8 +20,7 @@ from datetime import datetime
 import sphinx.ext.intersphinx
 from pygments.formatters.latex import LatexFormatter
 from sage.docs.conf import *
-from sage.env import MATHJAX_DIR, SAGE_DOC_SRC, SAGE_SRC
-from sage.misc.latex_macros import sage_mathjax_macros
+from sage.env import SAGE_DOC_SRC, SAGE_SRC
 from sphinx.highlighting import PygmentsBridge
 
 project = u"CLAASP: Cryptographic Library for Automated Analysis of Symmetric Primitives"
@@ -99,7 +98,7 @@ exclude_patterns = []
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
-default_role = 'math'
+default_role = 'literal'
 
 # If true, '()' will be appended to :func: etc. cross-reference text.
 # add_function_parentheses = True
@@ -301,32 +300,13 @@ texinfo_documents = [
 
 # -- Options copied from Sagemath conf.py file -------------------------------
 
-# We use MathJax to build the documentation unless the environment
-# variable SAGE_DOC_MATHJAX is set to "no" or "False".  (Note that if
-# the user does not set this variable, then the script sage-env sets
-# it to "True".)
-
 bibtex_bibfiles = ['references.bib']
 bibtex_default_style = 'unsrt'
 
-if (os.environ.get('SAGE_DOC_MATHJAX', 'no') != 'no'
-        and os.environ.get('SAGE_DOC_MATHJAX', 'no') != 'False'):
-
-    extensions.append('sphinx.ext.mathjax')
-    mathjax_path = 'MathJax.js?config=TeX-AMS_HTML-full,../mathjax_sage.js'
-
-    html_theme_options['mathjax_macros'] = sage_mathjax_macros()
-
-    mathjax_relative = os.path.basename(MATHJAX_DIR)
-
-    # It would be really nice if sphinx would copy the entire mathjax directory,
-    # (so we could have a _static/mathjax directory), rather than the contents of the directory
-
-    html_static_path.append(MATHJAX_DIR)
-    exclude_patterns += ['**/'+os.path.join(mathjax_relative, i) for i in ('docs', 'README*', 'test',
-                                                                           'unpacked', 'LICENSE')]
-else:
-    extensions.append('sphinx.ext.imgmath')
+# Render math in the browser with MathJax, so building the HTML docs needs no LaTeX tools.
+# The Sage defaults imported above point to a local MathJax 2 copy that is not part of our build.
+extensions.append('sphinx.ext.mathjax')
+mathjax_path = 'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js'
 
 # This is to make the verbatim font smaller;
 # Verbatim environment is not breaking long lines

@@ -56,6 +56,7 @@ class WordPermutation(Permutation):
         sage: print(component.description)
         [[1, 0], 2]
     """
+
     def __init__(
         self,
         current_round_number,

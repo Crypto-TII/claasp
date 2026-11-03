@@ -34,7 +34,7 @@ class SubterraneanPermutation(Cipher):
     This class is used to store compact representations of a cipher, used to generate the corresponding.
 
     REFERENCES:
-        [CDGP1993]_, [DMR2019]_, [NISTLWCSUB].
+        [CDGP1993]_, [DMR2019]_, [NISTLWCSUB]_.
 
     INPUT:
 

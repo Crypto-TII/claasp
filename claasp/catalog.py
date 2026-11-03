@@ -936,8 +936,8 @@ class Catalog:
           Category filters are retrieved automatically from subfolders under ``claasp/ciphers``
           such as ``block_ciphers``, ``permutations``, ``stream_ciphers``, ``hash_functions``,
           ``mac``, ``single_component_ciphers``, and ``toys``. Additional derived tags include
-                    ``tweakable_block_cipher``, ``sbox_based``, ``fsr_based``, ``arx``, ``purearx``, ``andrx``,
-                    and ``pureandrx``.
+          ``tweakable_block_cipher``, ``sbox_based``, ``fsr_based``, ``arx``, ``purearx``, ``andrx``,
+          and ``pureandrx``.
           Multiple filters are combined with logical AND.
         - ``has_components`` -- **string/list/tuple** (default: ``None``); keep only ciphers whose
           component set contains all requested components (logical AND), e.g. ``['sbox', 'xor']``.

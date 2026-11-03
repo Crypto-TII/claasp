@@ -878,10 +878,12 @@ def THETA_GASTON(input, rotation_amounts=(1, 18, 23, 25, 32, 52, 60, 63)):
     Perform the twin column parity mixer (mixing layer) of Gaston.
 
     INPUT:
+
     - ``input`` -- BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
     - ``rotation_amounts`` -- **tuple of 8 integers** (default: (1, 18, 23, 25, 32, 52, 60, 63)):
-        - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
-        - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
+
+      - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
+      - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
 
     EXAMPLES::
 
@@ -1132,7 +1134,8 @@ def fsr_binary(input, registers_info, number_of_clocks, verbosity=False):
     - ``registers_info`` -- **list**; a list of [register_bit_length, update_expression, clock_condition (optional)],
        register_bit_length is an integer to indicate the length of the register. update_expression and clock_condition
        are lists of index groups, represented as integer lists. For example [[0], [1], [2, 3]] represents
-       x0 + x1 + x2*x3. [] represents a constant 1.
+       x0 + x1 + x2*x3. An empty feedback sum [] represents zero; [[]] represents one.
+       An omitted or empty clock_condition enables clocking unconditionally.
     - ``number_of_clocks`` -- **integer**; indicates how many loops this FSR component would operate, this is optional
         by default it is 1.
     - ``verbosity`` -- **boolean** (default: `False`); set this flag to True to print the input/output
@@ -1240,7 +1243,8 @@ def index_list_to_expression_str_word(index_list):
     Convert a word-level index-based expression list to a readable string.
 
     Each entry is [field_coefficient, [indices]].
-    For example:
+    For example::
+
         [[1, [0]], [1, [2]], [1, [11]]] -> 'x0 + x2 + x11'
     """
     term_strs = []

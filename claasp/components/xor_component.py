@@ -766,21 +766,21 @@ class Xor(Component):
         in deterministic truncated XOR differential model.
 
         This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-        model the result c of the truncated XOR between inputs a and b.
+        model the result c of the truncated XOR between inputs a and b::
 
-        _______________
-         a  |  b  |  c
-        _______________
-         0  |  0  |  0
-         0  |  1  |  1
-         0  |  2  |  2
-         1  |  0  |  1
-         1  |  1  |  0
-         1  |  2  |  2
-         2  |  0  |  2
-         2  |  1  |  2
-         2  |  2  |  2
-        _______________
+            _______________
+             a  |  b  |  c
+            _______________
+             0  |  0  |  0
+             0  |  1  |  1
+             0  |  2  |  2
+             1  |  0  |  1
+             1  |  1  |  0
+             1  |  2  |  2
+             2  |  0  |  2
+             2  |  1  |  2
+             2  |  2  |  2
+            _______________
 
         Espresso was used to reduce the number of constraints to 10 inequalities.
         A k-input XOR is then split into k-1 2-input sequential XORs, for wich the results are stored in intermediate
@@ -1046,12 +1046,13 @@ class Xor(Component):
         Returns a list of variables and a list of constraints for XOR component
         in deterministic truncated XOR differential model.
 
-        It follows a simplified model:
-        if dX0 + dX1 > 2
-            then dY = 3
-        elif dX0<2 / dX1<2
-            then zeta Y = zetaX0 ^ zetaX1
-        else dY = 2
+        It follows a simplified model::
+
+            if dX0 + dX1 > 2
+                then dY = 3
+            elif dX0<2 / dX1<2
+                then zeta Y = zetaX0 ^ zetaX1
+            else dY = 2
 
         INPUTS:
 
@@ -1453,6 +1454,117 @@ class Xor(Component):
             constraints.append(smt_utils.smt_assert(equation))
 
         return bit_ids, constraints
+
+    def smt_xor_quasidifferential_propagation_constraints(
+        self,
+        model,
+    ):
+        """
+        Return SMT constraints for XOR quasidifferential propagation.
+
+        Handles an arbitrary number of operands (not just 2), matching
+        the general ``Xor`` component (``self.description[1]`` addends).
+
+        Per Beyne & Rijmen, XOR is a linear map, so Theorem 3.2 applies:
+
+        - difference propagation is the ordinary XOR rule (weight 0);
+        - mask propagation requires ALL masks meeting at the XOR node
+          (every input operand's mask AND the output mask) to be equal
+          -- the standard "branching" rule of linear cryptanalysis,
+          which is also what lets masks flow into a round-key XOR
+          branch (Section 4.4 of the paper).
+
+        INPUT:
+
+        - ``model`` -- **model object**; a model instance
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
+            sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
+            sage: cipher = XorCipher(word_bit_size=2, number_of_inputs=2)
+            sage: xor_component = cipher.component_from_id('xor_0_0')
+            sage: smt = SmtXorQuasidifferentialModel(cipher)
+            sage: variables, constraints = xor_component.smt_xor_quasidifferential_propagation_constraints(smt)
+            sage: variables
+            ['xor_0_0_0', 'xor_0_0_1', 'qdt_xor_0_0_0', 'qdt_xor_0_0_1']
+            sage: constraints
+            ['(assert (= xor_0_0_0 (xor plaintext_0 key_0)))',
+             '(assert (= xor_0_0_1 (xor plaintext_1 key_1)))',
+             '(assert (= qdt_plaintext_0 qdt_xor_0_0_0))',
+             '(assert (= qdt_key_0 qdt_xor_0_0_0))',
+             '(assert (= qdt_plaintext_1 qdt_xor_0_0_1))',
+             '(assert (= qdt_key_1 qdt_xor_0_0_1))']
+        """
+
+        # Ordinary XOR difference input identifiers.
+        input_bit_ids = self._generate_input_ids()
+
+        # Ordinary XOR difference output identifiers.
+
+        output_bit_ids_result = self._generate_output_ids()
+
+        if (
+            isinstance(output_bit_ids_result, (tuple, list))
+            and output_bit_ids_result
+            and isinstance(output_bit_ids_result[-1], list)
+        ):
+            output_bit_ids = output_bit_ids_result[-1]
+        else:
+            output_bit_ids = output_bit_ids_result
+
+        # QDT input mask identifiers.
+        qdt_input_bit_ids = model._qdt_input_bit_ids(self)
+        # QDT output mask identifiers.
+        qdt_output_bit_ids = [f"qdt_{bit_id}" for bit_id in output_bit_ids]
+
+        word_size = self.output_bit_size
+
+        if word_size == 0 or len(input_bit_ids) % word_size != 0:
+            raise ValueError(f"Unexpected XOR input size for {self.id}: {len(input_bit_ids)} bits")
+
+        variables = output_bit_ids + qdt_output_bit_ids
+
+        constraints = []
+
+        # XOR difference propagation (n-ary):
+        #
+        # dz_i = dx_0_i XOR dx_1_i XOR ... XOR dx_{k-1}_i
+
+        for i, output_bit in enumerate(output_bit_ids):
+            operands = input_bit_ids[i::word_size]
+
+            equation = smt_utils.smt_equivalent(
+                [
+                    output_bit,
+                    smt_utils.smt_xor(operands),
+                ]
+            )
+
+            constraints.append(smt_utils.smt_assert(equation))
+
+        # QDT mask propagation (n-ary, branching rule):
+        #
+        # u_0_i = u_1_i = ... = u_{k-1}_i = uz_i
+
+        for i, output_bit in enumerate(qdt_output_bit_ids):
+            operand_masks = qdt_input_bit_ids[i::word_size]
+
+            for operand_mask in operand_masks:
+                equation = smt_utils.smt_equivalent(
+                    [
+                        operand_mask,
+                        output_bit,
+                    ]
+                )
+
+                constraints.append(smt_utils.smt_assert(equation))
+
+        return (
+            variables,
+            constraints,
+        )
+
 
     def cp_transform_xor_components_for_first_step(self, model):
         """

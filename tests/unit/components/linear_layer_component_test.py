@@ -7,7 +7,9 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 )
 from claasp.ciphers.single_component_ciphers.linear_layer_cipher import LinearLayerCipher
 from claasp.components.linear_layer_component import LinearLayer
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 MATRIX = [
     [1, 0, 1, 0],
     [1, 1, 0, 1],
@@ -275,3 +277,46 @@ def test_milp_wordwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[1]) == "1 <= 1 + x_1 + x_4 + x_5 - x_9"
     assert str(constraints[-2]) == "1 <= 1 + x_5 - x_6"
     assert str(constraints[-1]) == "1 <= 1 + x_1 - x_2"
+
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    linear_layer_component = make_linear_layer_component()
+    model = SmtXorQuasidifferentialModel(make_linear_layer_cipher())
+    variables, constraints = linear_layer_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert len(variables) == 19
+    assert variables[:4] == [
+        "linear_layer_0_0_0",
+        "linear_layer_0_0_1",
+        "linear_layer_0_0_2",
+        "linear_layer_0_0_3",
+    ]
+    assert variables[4:8] == [
+        "qdt_linear_layer_0_0_0",
+        "qdt_linear_layer_0_0_1",
+        "qdt_linear_layer_0_0_2",
+        "qdt_linear_layer_0_0_3",
+    ]
+    assert variables[8] == "qdt_dummy_0_qdt_linear_layer_0_0_0"
+    assert variables[-1] == "qdt_dummy_2_qdt_linear_layer_0_0_3"
+
+    assert len(constraints) == 12
+
+    # Differences: the ordinary linear-layer constraints.
+    assert constraints[:4] == [
+        "(assert (= linear_layer_0_0_0 (xor input_0 input_1 input_3)))",
+        "(assert (= linear_layer_0_0_1 (xor input_1 input_2 input_3)))",
+        "(assert (= linear_layer_0_0_2 (xor input_0 input_2 input_3)))",
+        "(assert (= linear_layer_0_0_3 (xor input_1 input_3)))",
+    ]
+
+    # Masks: propagated backwards through the transpose, via dummy
+    # variables carrying the qdt_ naming convention.
+    assert constraints[4] == (
+        "(assert (= qdt_input_0 qdt_dummy_0_qdt_linear_layer_0_0_0 "
+        "qdt_dummy_0_qdt_linear_layer_0_0_3))"
+    )
+    assert constraints[-1] == (
+        "(assert (= qdt_linear_layer_0_0_3 (xor qdt_dummy_0_qdt_linear_layer_0_0_3 "
+        "qdt_dummy_1_qdt_linear_layer_0_0_3 qdt_dummy_2_qdt_linear_layer_0_0_3)))"
+    )

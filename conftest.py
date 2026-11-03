@@ -1,4 +1,9 @@
+import os
+
 import sage.all
+
+# HiGHS, the default MILP solver, writes this log file in the working directory at each run
+HIGHS_LOG_FILE_NAME = "HiGHS.log"
 
 
 def _install_isolate_timeout_retry():
@@ -62,3 +67,15 @@ def _install_isolate_timeout_retry():
 
 
 _install_isolate_timeout_retry()
+
+
+def pytest_sessionstart(session):
+    session.config.highs_log_existed = os.path.exists(HIGHS_LOG_FILE_NAME)
+
+
+def pytest_sessionfinish(session, exitstatus):
+    # the log of HiGHS is removed only by the main process (not by the xdist workers), if the tests created it
+    if hasattr(session.config, "workerinput"):
+        return
+    if not session.config.highs_log_existed and os.path.exists(HIGHS_LOG_FILE_NAME):
+        os.remove(HIGHS_LOG_FILE_NAME)
