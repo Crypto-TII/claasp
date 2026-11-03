@@ -426,7 +426,9 @@
       "implementation": "claasp.drivers.solvers.highs:HighsSolver",
       "kind": "solver",
       "name": "highs",
-      "representations": [],
+      "representations": [
+        "boolean_monomial_milp"
+      ],
       "target": "scipy"
     },
     {
@@ -12407,7 +12409,8 @@
         "Word"
       ],
       "drivers": [
-        "glpk"
+        "glpk",
+        "highs"
       ],
       "implementation": "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
       "kind": "constraint",
