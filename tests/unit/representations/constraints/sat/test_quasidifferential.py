@@ -16,7 +16,7 @@ from claasp.unit_types import BinaryExtensionField, Word
 
 def _unit_witness(formula):
     """Unit propagation suffices when all physical boundary bits are fixed."""
-    assigned = {}
+    assigned: dict[int, bool] = {}
     clauses = list(formula.clauses)
     while True:
         remaining = []
@@ -123,8 +123,10 @@ def test_binary_affine_map_repeats_bit_matrix_and_offset_per_field_unit():
     )
     primitive._builder.set_output(output)
     table = tuple(primitive.evaluate(value) for value in range(16))
+    assert all(isinstance(value, int) for value in table)
+    integer_table = tuple(value for value in table if isinstance(value, int))
     for a in (0, 1, 5, 15):
-        b = table[0] ^ table[a]
+        b = integer_table[0] ^ integer_table[a]
         for u, v in product(range(16), repeat=2):
             model = QuasidifferentialSATModel(
                 primitive,

@@ -7,6 +7,7 @@ import pytest
 from claasp import InputVisibility, Primitive, PrimitiveInput, UnitArrayType
 from claasp.analysis.quasidifferential import QuasidifferentialAnalysis
 from claasp.components import BitwiseAnd, Xor
+from claasp.graph import as_selection
 from claasp.primitives import BitVectorSBox, Speck
 from claasp.primitives.toy_primitives.heys import HEYS_SBOX
 from claasp.unit_types import Word
@@ -24,9 +25,9 @@ def _keyed_and(*, repeated=False, duplicate_output=False, key_schedule=False):
         },
     )
     primitive._builder.add_round()
-    plaintext, key = primitive.graph.input("plaintext"), primitive.graph.input("key")
+    plaintext, key = (as_selection(primitive.graph.input(name)) for name in ("plaintext", "key"))
     if key_schedule:
-        key = primitive._builder.add_component(BitwiseAnd((key, key)))
+        key = as_selection(primitive._builder.add_component(BitwiseAnd((key, key))))
     output = primitive._builder.add_component(
         BitwiseAnd((plaintext, plaintext if repeated else key))
     )

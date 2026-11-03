@@ -625,6 +625,12 @@
       "qualified_name": "claasp.analysis.EvaluationSample"
     },
     {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.FixedKeyProbabilityResult"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.FixedValue",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -845,6 +851,24 @@
       "defined_in": "claasp.analysis.component_properties",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.PropertyRequest"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.QuasidifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.QuasidifferentialEnumeration"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.QuasidifferentialTrail"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.SBoxTransitionSemantics",
@@ -3282,6 +3306,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_linear_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_quasidifferential_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_quasidifferential_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.find_optimal_differential_linear_trail",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -3334,6 +3364,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.propagate_truncated_xor_difference"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.quasidifferential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.quasidifferential"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.recover_input",
@@ -5053,6 +5089,249 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "function",
       "qualified_name": "claasp.analysis.propagate_two_word_speck_round"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.quasidifferential"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.__init__",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.complete",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.diagnostic",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.key_averaged",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.key_averaged"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.probability",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.require_complete",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.signed_sum",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.signed_sum"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.to_terminal",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.trail_count",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.trail_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.trails",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.FixedKeyProbabilityResult.trails"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.__init__",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.enumerate_trails",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.enumerate_trails"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.estimate_fixed_key_probability",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.estimate_fixed_key_probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.find_lowest_weight_trail",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.find_lowest_weight_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.find_one_trail",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.find_one_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.model",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialAnalysis.model"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.__init__",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.complete",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.diagnostic",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.require_complete",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.require_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.trails",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialEnumeration.trails"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.__init__",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.coefficient",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.coefficient"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.input_differences",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.input_differences"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.input_masks",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.input_masks"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.is_optimal",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.is_optimal"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.output_difference",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.output_difference"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.output_mask",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.output_mask"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.primitive",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.primitive"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.steps",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "documented_by": "claasp.analysis.quasidifferential.QuasidifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.steps"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.to_terminal",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.weight",
+      "defined_in": "claasp.analysis.quasidifferential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.quasidifferential.QuasidifferentialTrail.weight"
     },
     {
       "canonical_name": "claasp.analysis.statistical_datasets.random_statistical_dataset",
@@ -26776,6 +27055,12 @@
       "qualified_name": "claasp.representations.constraints.sat.ProbabilisticTruncatedModularAddSATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel",
+      "defined_in": "claasp.representations.constraints.sat.quasidifferential",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.QuasidifferentialSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.sbox.SBoxFunctionalSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.sbox",
       "kind": "class",
@@ -27935,6 +28220,37 @@
       "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
       "kind": "dataclass_field",
       "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.xor_provenance"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.quasidifferential",
+      "defined_in": "claasp.representations.constraints.sat.quasidifferential",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.quasidifferential"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel",
+      "defined_in": "claasp.representations.constraints.sat.quasidifferential",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.quasidifferential",
+      "documented_by": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel.decode",
+      "defined_in": "claasp.representations.constraints.sat.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.quasidifferential.QuasidifferentialSATModel.decode"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.trails",
@@ -30798,6 +31114,18 @@
       "qualified_name": "claasp.semantics.cryptanalysis.PropagationProblem"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "class",
+      "qualified_name": "claasp.semantics.cryptanalysis.QuasidifferentialSemantics"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.QuasidifferentialTransition"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.composed.SBoxBoomerangSemantics",
       "defined_in": "claasp.semantics.cryptanalysis.composed",
       "kind": "class",
@@ -31677,6 +32005,103 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "function",
       "qualified_name": "claasp.semantics.cryptanalysis.propagate_two_word_speck_round"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "module",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "class",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.lookup",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.lookup"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.modular_add",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.modular_add"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.modular_subtract",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialSemantics.modular_subtract"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.coefficient",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.coefficient"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.input_differences",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.input_differences"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.input_masks",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.input_masks"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.output_difference",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.output_difference"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.output_mask",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "documented_by": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.output_mask"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.sign",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.sign"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.weight",
+      "defined_in": "claasp.semantics.cryptanalysis.quasidifferential",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.quasidifferential.QuasidifferentialTransition.weight"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.BitPattern.__init__",

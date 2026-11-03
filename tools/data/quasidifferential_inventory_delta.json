@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387",
+  "records": [
+    {
+      "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_quasidifferential_model.py",
+      "kind": "source",
+      "sha256": "b320386331fa0d64ecf44bf07496606e905ce3f2fb75c87d1f4fe00631eb832d",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/analysis/quasidifferential.py",
+      "evidence": [
+        "tests/unit/semantics/cryptanalysis/test_quasidifferential.py",
+        "tests/unit/representations/constraints/sat/test_quasidifferential.py",
+        "tests/integration/test_quasidifferential_search.py"
+      ],
+      "scope": "Exact signed QDT coefficients, modular-add/subtract theorem with independent carry-DP checks, fork-mask cancellation, fractional lookup weights, complete fixed-key and key-averaged probability sums. Typed Boolean constraints replace legacy SMT strings."
+    },
+    {
+      "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_quasidifferential_model_test.py",
+      "kind": "test",
+      "sha256": "f2473eb6aab375b8716cbaa0d0880d605b3834fe4d2867733d0a35c415c8f236",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "tests/integration/test_quasidifferential_search.py",
+      "evidence": [
+        "tests/unit/semantics/cryptanalysis/test_quasidifferential.py",
+        "tests/unit/representations/constraints/sat/test_quasidifferential.py",
+        "tests/integration/test_quasidifferential_search.py"
+      ],
+      "scope": "Exact signed QDT coefficients, modular-add/subtract theorem with independent carry-DP checks, fork-mask cancellation, fractional lookup weights, complete fixed-key and key-averaged probability sums. Typed Boolean constraints replace legacy SMT strings."
+    }
+  ]
+}
