@@ -87,6 +87,7 @@ class LEA(Primitive):
                         KEY_ROTATIONS[operation],
                     )
                     round_key.append(key[index])
+            self._builder.add_round_key(tuple(round_key))
             state = [
                 rotate(
                     self,
@@ -105,6 +106,9 @@ class LEA(Primitive):
                 ),
                 state[0],
             ]
+            if round_number < rounds - 1:
+                self._builder.set_round_output(*state)
         if reorder_input_and_output:
             state = [byte_swap(self, value, 32) for value in state]
+        self._builder.set_round_output(*state)
         self._builder.set_output(concatenate(self, *state))
