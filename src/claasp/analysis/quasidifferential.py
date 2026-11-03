@@ -177,7 +177,7 @@ class FixedKeyProbabilityResult:
         rows = (
             TableRow.of("signed sum", str(self.signed_sum)),
             TableRow.of("event", self.event),
-            ("complete", self.complete),
+            TableRow.of("complete", self.complete),
             TableRow.of("trails", self.trail_count),
             TableRow.of("key averaged", self.key_averaged),
             TableRow.of("diagnostic", self.diagnostic or "-"),
