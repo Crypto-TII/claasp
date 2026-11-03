@@ -146,10 +146,10 @@ def test_every_public_constraint_model_declares_an_explicit_reference_status():
         assert declarations, f"{model.__name__} has no provenance declaration"
         records.extend(declarations)
 
-    assert len(models) == 142
-    assert len(records) == 145
+    assert len(models) == 143
+    assert len(records) == 146
     assert Counter(record.reference_status for record in records) == {
-        ConstraintReferenceStatus.VERIFIED: 31,
+        ConstraintReferenceStatus.VERIFIED: 32,
         ConstraintReferenceStatus.NOT_APPLICABLE: 103,
         ConstraintReferenceStatus.TO_BE_DETERMINED: 11,
     }

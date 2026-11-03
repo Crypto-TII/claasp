@@ -8,7 +8,7 @@ integer numerators. Fork masks XOR back to their source mask, per read.
 """
 
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from functools import lru_cache, partial
 from itertools import chain
@@ -32,6 +32,11 @@ from claasp.components import (
     Xor,
 )
 from claasp.graph import as_selection
+from claasp.representations.constraints import (
+    ConstraintBackend,
+    ConstraintModelApplication,
+    _verified_model,
+)
 from claasp.representations.constraints.sat.model import CNFFormula
 from claasp.representations.constraints.sat.trails import _at_most
 from claasp.representations.constraints.smt._probability_encoding import (
@@ -280,6 +285,16 @@ class QuasidifferentialSATModel:
         >>> model.cnf_formula().variable_count > 0
         True
     """
+
+    model_provenance = _verified_model(
+        ConstraintBackend.SAT,
+        "QuasidifferentialSATModel",
+        "xor_quasidifferential",
+        "exact signed lookup coefficients and modular-addition logical constraints",
+        "10.1007/978-3-031-15982-4_23",
+        "Differential Cryptanalysis in the Fixed-Key Model",
+        "Definition 3.2; Theorem 4.1; section 5.1; Theorems 5.1 and 5.2 (pp. 702--703)",
+    )
 
     def __init__(
         self,
@@ -693,7 +708,19 @@ class QuasidifferentialSATModel:
                     q.add,
                     "qdt_minimum",
                 )
-        return q.formula()
+        return replace(
+            q.formula(),
+            constraint_models=(
+                ConstraintModelApplication(
+                    self.model_provenance,
+                    tuple(
+                        component.component_id
+                        for component in self.primitive.graph.components
+                        if component.component_id is not None
+                    ),
+                ),
+            ),
+        )
 
     def decode(self, assignment):
         """Independently validate each selected atomic coefficient and its product."""

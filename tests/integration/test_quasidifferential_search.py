@@ -116,3 +116,18 @@ def test_partial_bit_patterns_can_address_structural_boundaries():
         fixed_differences={joined.source_id: "10"}, output_difference=1
     )
     assert abs(result.coefficient) == Fraction(1, 2)
+
+
+def test_probability_result_retains_internal_difference_constraints():
+    primitive = _keyed_and()
+    internal = primitive.graph.components[-1].component_id
+    assert internal is not None
+    result = primitive.analysis.quasidifferential().estimate_fixed_key_probability(
+        1,
+        1,
+        1,
+        fixed_differences={internal: "1"},
+    )
+    assert result.probability == 1
+    assert result.event == "constrained differential"
+    assert (internal, "1") in result.difference_constraints
