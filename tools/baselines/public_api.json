@@ -9665,6 +9665,18 @@
       "qualified_name": "claasp.drivers.solvers.KissatSolver"
     },
     {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.MILPProgressLog"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "dataclass",
+      "qualified_name": "claasp.drivers.solvers.MILPProgressSnapshot"
+    },
+    {
       "canonical_name": "claasp.drivers.solvers.milp_results.MILPResult",
       "defined_in": "claasp.drivers.solvers.milp_results",
       "kind": "dataclass",
@@ -10234,6 +10246,96 @@
       "defined_in": "claasp.drivers.solvers.minizinc",
       "kind": "method",
       "qualified_name": "claasp.drivers.solvers.minizinc.MiniZincSolver.solve_all"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "module",
+      "qualified_name": "claasp.drivers.solvers.progress"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog.__init__",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "documented_by": "claasp.drivers.solvers.progress.MILPProgressLog",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog.feed",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog.feed"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog.finish",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog.finish"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog.parse_integer_solution",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog.parse_integer_solution"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog.record_solution",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog.record_solution"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressLog.update",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressLog.update"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "kind": "dataclass",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.__init__",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.dual_bound",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.dual_bound"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.elapsed_seconds",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.elapsed_seconds"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.incumbent",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.incumbent"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.tree_percent",
+      "defined_in": "claasp.drivers.solvers.progress",
+      "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.tree_percent"
     },
     {
       "canonical_name": "claasp.drivers.solvers.z3.Z3Solver.__init__",

@@ -11,8 +11,11 @@ from claasp.drivers.solvers.minizinc import (
     CPStatus,
     MiniZincSolver,
 )
+from claasp.drivers.solvers.progress import MILPProgressLog, MILPProgressSnapshot
 
 __all__ = [
+    "MILPProgressLog",
+    "MILPProgressSnapshot",
     "CPEnumerationResult",
     "CPResult",
     "CPStatus",

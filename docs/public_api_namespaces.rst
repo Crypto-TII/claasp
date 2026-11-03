@@ -211,6 +211,12 @@ claasp.drivers.solvers.highs
 .. automodule:: claasp.drivers.solvers.highs
    :no-index:
 
+claasp.drivers.solvers.progress
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.drivers.solvers.progress
+   :no-index:
+
 claasp.drivers.source
 ~~~~~~~~~~~~~~~~~~~~~
 

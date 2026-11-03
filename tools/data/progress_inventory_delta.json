@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387",
+  "records": [
+    {
+      "path": "claasp/cipher_modules/models/milp/utils/milp_progress_log.py",
+      "kind": "source",
+      "sha256": "26dc8a98164bc5bc9b206c79d262b6e102e4b4ea25b63240927e000e543bb133",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/drivers/solvers/progress.py",
+      "evidence": [
+        "tests/unit/drivers/solvers/test_progress__legacy_parsers.py",
+        "tests/unit/drivers/solvers/test_progress__integer_solutions.py",
+        "tests/unit/drivers/solvers/test_progress.py",
+        "tests/integration/test_glpk_progress.py"
+      ],
+      "scope": "Original five-solver bound parsers, partial improving-solution file readers, and integer-solution numerical-tolerance tests. Live GLPK streaming and Gurobi callbacks use the portable model; Sage native-output hooks are replaced."
+    },
+    {
+      "path": "tests/unit/cipher_modules/models/milp/utils/milp_progress_log_test.py",
+      "kind": "test",
+      "sha256": "e43c2985bff3f8fe3631b887f8a2068ef35cff07baa8a42c1e7e6aff6f87093b",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/drivers/solvers/progress.py",
+      "evidence": [
+        "tests/unit/drivers/solvers/test_progress__legacy_parsers.py",
+        "tests/unit/drivers/solvers/test_progress__integer_solutions.py",
+        "tests/unit/drivers/solvers/test_progress.py",
+        "tests/integration/test_glpk_progress.py"
+      ],
+      "scope": "Original five-solver bound parsers, partial improving-solution file readers, and integer-solution numerical-tolerance tests. Live GLPK streaming and Gurobi callbacks use the portable model; Sage native-output hooks are replaced."
+    },
+    {
+      "path": "tests/unit/cipher_modules/models/milp/utils/milp_utils_test.py",
+      "kind": "test",
+      "sha256": "f91c3af89a9e3690fbb1da552000818d43cb4490848a9603ac0d2efd0fd126da",
+      "disposition": "migrate",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/drivers/solvers/progress.py",
+      "evidence": [
+        "tests/unit/drivers/solvers/test_progress__legacy_parsers.py",
+        "tests/unit/drivers/solvers/test_progress__integer_solutions.py",
+        "tests/unit/drivers/solvers/test_progress.py",
+        "tests/integration/test_glpk_progress.py"
+      ],
+      "scope": "Original five-solver bound parsers, partial improving-solution file readers, and integer-solution numerical-tolerance tests. Live GLPK streaming and Gurobi callbacks use the portable model; Sage native-output hooks are replaced."
+    }
+  ]
+}

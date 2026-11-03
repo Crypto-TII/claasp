@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from time import monotonic
 
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
+from claasp.drivers.solvers.progress import MILPProgressLog
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
     MILPModel,
@@ -56,10 +57,13 @@ class GurobiSolver:
         30
     """
 
-    def __init__(self, timeout_seconds: float | None = None) -> None:
+    def __init__(
+        self, timeout_seconds: float | None = None, *, progress_log: MILPProgressLog | None = None
+    ) -> None:
         if timeout_seconds is not None and timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be positive")
         self.timeout_seconds = timeout_seconds
+        self.progress_log = progress_log
 
     @staticmethod
     def is_available() -> bool:
@@ -78,7 +82,10 @@ class GurobiSolver:
             raise TypeError("model must be an MILPModel")
         started = monotonic()
         gp, native, variables = self._build_native(model)
-        native.optimize()
+        if self.progress_log is None:
+            native.optimize()
+        else:
+            native.optimize(self._progress_callback(gp, model, variables))
         elapsed = monotonic() - started
 
         if native.Status == gp.GRB.OPTIMAL:
@@ -100,7 +107,29 @@ class GurobiSolver:
                 raise RuntimeError("Gurobi returned an assignment that is not feasible")
             if objective is None or abs(model.objective_value(assignment) - objective) > 1e-6:
                 raise RuntimeError("Gurobi objective disagrees with the returned assignment")
-        return MILPResult(status, assignment, objective, elapsed, "", "")
+        result = MILPResult(status, assignment, objective, elapsed, "", "")
+        if self.progress_log is not None:
+            if assignment is not None:
+                self.progress_log.record_solution(model, assignment, status=status.value)
+            self.progress_log.finish(result)
+        return result
+
+    def _progress_callback(self, gp, model, variables):
+        def callback(native, where):
+            assert self.progress_log is not None
+            codes = gp.GRB.Callback
+            if where == codes.MIP:
+                self.progress_log.update(
+                    native.cbGet(codes.MIP_OBJBND), native.cbGet(codes.MIP_OBJBST)
+                )
+            elif where == codes.MIPSOL:
+                assignment = {
+                    name: float(native.cbGetSolution(variable))
+                    for name, variable in variables.items()
+                }
+                self.progress_log.record_solution(model, assignment)
+
+        return callback
 
     def solve_optimal_pool(
         self, model: MILPModel, *, maximum_solutions: int = 1_000
