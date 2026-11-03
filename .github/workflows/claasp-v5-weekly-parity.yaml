@@ -61,6 +61,8 @@ jobs:
         run: |
           set -o pipefail
           docker run --rm \
+            -e OPENBLAS_NUM_THREADS=1 \
+            -e OMP_NUM_THREADS=1 \
             -e CLAASP_DEPENDENCY_FREE_EXPRESSION='not external and not extended' \
             -e CLAASP_EXTERNAL_EXPRESSION='external and not extended and not emulation_sensitive' \
             -v "$PWD/v5:/workspace" \
