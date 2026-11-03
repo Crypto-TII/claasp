@@ -1,7 +1,8 @@
 """Reference ChaCha implementation following the designers' pseudocode."""
 
 from claasp.components import ModularAdd, Rotate, Xor
-from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
+from claasp.graph import Primitive, PrimitiveKind, Selection, UnitArray, UnitArrayType
+from claasp.primitives.permutations._arx_rounds import stage_configuration
 from claasp.unit_types import Word
 
 _COLUMNS = ((0, 4, 8, 12), (1, 5, 9, 13), (2, 6, 10, 14), (3, 7, 11, 15))
@@ -30,6 +31,19 @@ class ChaChaPermutation(Primitive):
         ...             "00000001090000004a00000000000000", 16)
         >>> hex(ChaChaPermutation().evaluate(state))
         '0x837778abe238d763a67ae21e5950bb2fc4f2d0c7fc62bb2f8fa018fc3f5ec7b7335271c2f29489f3eabda8fc82e46ebdd19c12b4b04e16de9e83d0cb4e3c50a2'
+
+    Partial rounds are explicit: ``round_mode="half"`` applies two stages
+    per reported round, and ``"half_half"`` applies one. ``start_round``
+    selects odd/even column orientation and the first stage. Standard full
+    rounds remain the default.
+
+    EXAMPLES::
+
+        >>> state = 123456789
+        >>> ChaChaPermutation(number_of_rounds=1).evaluate(state) == ChaChaPermutation(
+        ...     number_of_rounds=4, round_mode="half_half"
+        ... ).evaluate(state)
+        True
     """
 
     def __init__(
@@ -38,6 +52,8 @@ class ChaChaPermutation(Primitive):
         *,
         word_size: int = 32,
         rotations: tuple[int, int, int, int] = (16, 12, 8, 7),
+        start_round: tuple[str, str] = ("odd", "top"),
+        round_mode: str = "single",
     ) -> None:
         number_of_rounds = Primitive._validate_positive_integer(
             number_of_rounds,
@@ -55,7 +71,29 @@ class ChaChaPermutation(Primitive):
             {"state": UnitArrayType(Word(word_size), (16,))},
             kind=PrimitiveKind.PERMUTATION,
         )
-        state = [self.graph.input("state")[index] for index in range(16)]
+        state: list[UnitArray | Selection] = [
+            self.graph.input("state")[index] for index in range(16)
+        ]
+        first_stage, stages_per_round = stage_configuration(start_round, round_mode)
+        if first_stage or round_mode != "single":
+            for round_number in range(number_of_rounds):
+                self._builder.add_round()
+                for offset in range(stages_per_round):
+                    absolute_stage = first_stage + stages_per_round * round_number + offset
+                    groups = _COLUMNS if absolute_stage // 4 % 2 == 0 else _DIAGONALS
+                    stage = absolute_stage % 4
+                    for a, b, c, d in groups:
+                        left, right, target = (a, b, d) if stage % 2 == 0 else (c, d, b)
+                        state[left] = self._builder.add_component(
+                            ModularAdd((state[left], state[right]))
+                        )
+                        mixed = self._builder.add_component(Xor((state[target], state[left])))
+                        state[target] = self._builder.add_component(
+                            Rotate(mixed, rotations[stage], "left")
+                        )
+                self._builder.set_round_output(*state)
+            self._builder.set_output(state)
+            return
 
         def quarter_round(a, b, c, d):
             a = self._builder.add_component(ModularAdd((a, b)))
