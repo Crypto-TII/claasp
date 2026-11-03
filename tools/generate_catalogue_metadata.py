@@ -335,7 +335,7 @@ REPRESENTATIONS = (
         "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
         {"BitwiseAnd", "Constant", "Rotate", "Xor"},
         {"Bit", "Word"},
-        {"glpk"},
+        {"glpk", "highs"},
         "generic_graph",
     ),
     (

@@ -125,7 +125,7 @@ def test_catalogue_closure_gate_passes():
         text=True,
     )
     assert (
-        "147 primitives, 23 components, 21 representations, 12 analyses, 26 drivers"
+        "147 primitives, 23 components, 21 representations, 12 analyses, 27 drivers"
         in completed.stdout
     )
 
