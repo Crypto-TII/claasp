@@ -1,6 +1,9 @@
 """Immutable editor-style transformations for typed primitive graphs."""
 
+from collections.abc import Mapping
 from copy import copy
+from dataclasses import replace
+from itertools import groupby
 
 from claasp.components import (
     Add,
@@ -16,9 +19,15 @@ from claasp.graph import (
     Primitive,
     PrimitiveInput,
     PrimitiveKind,
+    Selection,
+    UnitArray,
+    UnitArrayType,
+    as_selection,
 )
+from claasp.graph.binding import BindingKind
 from claasp.graph.composite import CompositeInstance
 from claasp.provenance import TransformationRecord
+from claasp.transformations._observations import _preserve_observations
 from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
@@ -26,7 +35,7 @@ from claasp.transformations.contracts import (
 )
 from claasp.transformations.slicing import slice_primitive
 from claasp.transformations.traversal import DependencyIndex, GraphSourceKind
-from claasp.unit_types import Word
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 def _record(derived, source, operation, parameters=()):
@@ -52,6 +61,156 @@ def prune_orphans(primitive: Primitive) -> TransformationResult:
     result = slice_primitive(primitive, family_name=f"{primitive.family_name}_pruned")
     _record(result.primitive, primitive, "prune_orphans")
     return result
+
+
+def _canonical_binary_wiring(primitive, dependencies):
+    """Isolate selected encoded bits before classifying key-only operands.
+
+    Joining state and key bits does not make every later slice depend on
+    both. Rebuild only when whole-binding dependency sets obscure a slice;
+    repeated equivalent operand views share one new boundary.
+    """
+    arrays = [value.array_type for value in primitive.graph.input_arrays.values()]
+    arrays += [component.output_type for component in primitive.graph.components]
+    if not all(isinstance(array.unit_type, (Bit, Word, BinaryExtensionField)) for array in arrays):
+        return primitive, {}
+    actual = {name: frozenset((name,)) for name in primitive.graph.input_arrays}
+    needed = False
+    for component in primitive.graph.components:
+        selected = []
+        for selection in component.inputs:
+            names = frozenset(
+                name
+                for source, _ in primitive.graph.selection_bit_sources(selection)
+                for name in actual[source]
+            )
+            selected.append(names)
+            needed |= names != dependencies[selection.source.source_id]
+        actual[component.component_id] = frozenset().union(*selected)
+    if not needed:
+        return primitive, {}
+
+    derived = Primitive(
+        primitive.family_name,
+        dict(primitive.graph.input_descriptors),
+        kind=primitive.kind,
+        provenance=primitive.provenance,
+    )
+    derived.realization = primitive.realization
+    object.__setattr__(derived, "_transformation_provenance", primitive.transformation_provenance)
+    sources = {name: derived.graph.input(name) for name in primitive.graph.input_arrays}
+    unpacked = {}
+    remapped: dict[tuple[tuple[tuple[str, int], ...], UnitArrayType], Selection] = {}
+    origins = {}
+    prefix = "canonical_wiring_"
+    while any(name.startswith(prefix) for name in primitive._unit_arrays):
+        prefix += "_"
+    counter = 0
+
+    def binding(kind, inputs, output_type, word_width=None):
+        nonlocal counter
+        name = f"{prefix}{counter}"
+        counter += 1
+        return derived._add_binding(
+            kind,
+            tuple(as_selection(item) for item in inputs),
+            output_type,
+            word_width=word_width,
+            binding_id=name,
+        )
+
+    def remap(value):
+        selection = as_selection(value)
+        refs = primitive.graph.selection_bit_sources(selection)
+        cache_key = refs, selection.array_type
+        if cache_key in remapped:
+            return remapped[cache_key]
+        pieces = []
+        for source_id, group in groupby(refs, key=lambda item: item[0]):
+            source = sources[source_id]
+            if isinstance(source.array_type.unit_type, Bit):
+                bits = source
+            else:
+                if source_id not in unpacked:
+                    width = source.array_type.unit_type.encoded_bit_size
+                    total_width = source.array_type.encoded_bit_size
+                    assert width is not None and total_width is not None
+                    unpacked[source_id] = binding(
+                        BindingKind.UNPACK_BITS,
+                        (source,),
+                        UnitArrayType(Bit(), (total_width,)),
+                        width,
+                    )
+                bits = unpacked[source_id]
+            pieces.append(bits[tuple(position for _, position in group)])
+        joined = (
+            pieces[0]
+            if len(pieces) == 1
+            else binding(BindingKind.JOIN, pieces, UnitArrayType(Bit(), (len(refs),)))
+        )
+        unit = selection.array_type.unit_type
+        packed = (
+            joined
+            if isinstance(unit, Bit)
+            else binding(
+                BindingKind.PACK_BITS, (joined,), selection.array_type, unit.encoded_bit_size
+            )
+        )
+        view = binding(BindingKind.VIEW, (packed,), selection.array_type)
+        result = view.select_all()
+        remapped[cache_key] = result
+        origins[view.source_id] = selection
+        return result
+
+    rounds = {}
+    for original_round in primitive.graph.rounds:
+        rounds[original_round.number] = derived._builder.add_round()
+        for component in original_round.components:
+            cloned = copy(component)
+            object.__setattr__(
+                cloned, "inputs", tuple(remap(selection) for selection in component.inputs)
+            )
+            sources[component.component_id] = derived._builder.add_component(cloned)
+    derived._builder.set_output(remap(primitive.graph.output))
+    object.__setattr__(derived, "_round_count", primitive.details().number_of_rounds)
+
+    def published(value):
+        if isinstance(value, (UnitArray, Selection)):
+            return remap(value)
+        if isinstance(value, Mapping):
+            return {name: published(item) for name, item in value.items()}
+        if isinstance(value, (tuple, list)):
+            return tuple(published(item) for item in value)
+        return value
+
+    for attribute in (
+        "_published_intermediate_outputs",
+        "_published_round_keys",
+        "_published_key_schedule_states",
+    ):
+        if hasattr(primitive, attribute):
+            setattr(derived, attribute, published(getattr(primitive, attribute)))
+    for scope in primitive.graph.scopes:
+        instance = CompositeInstance(
+            scope.path,
+            scope.definition,
+            tuple((name, remap(value)) for name, value in scope.input_bindings),
+            tuple((name, remap(value)) for name, value in scope.output_bindings),
+            scope.component_ids,
+            derived,
+        )
+        derived._scopes[scope.path] = instance
+        if scope.component_ids:
+            number = next(
+                original_round.number
+                for original_round in primitive.graph.rounds
+                if any(
+                    component.component_id == scope.component_ids[0]
+                    for component in original_round.components
+                )
+            )
+            rounds[number]._append_scope(instance)
+    return derived, origins
 
 
 def _input_dependencies(primitive, index):
@@ -177,6 +336,7 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
         for component in primitive_round.components
     }
     active_round = None
+    retained_rounds = {}
 
     def remap(selection):
         try:
@@ -198,7 +358,7 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             else:
                 original_round = round_by_component[source_id]
                 if original_round != active_round:
-                    derived._builder.add_round()
+                    retained_rounds[original_round] = derived._builder.add_round()
                     active_round = original_round
                 clone = copy(component_by_id[source_id])
                 object.__setattr__(clone, "component_id", None)
@@ -218,13 +378,14 @@ def _rebuild_without_key_injections(primitive, index, dependencies, secret_input
             component = component_by_id[source_id]
             original_round = round_by_component[source_id]
             if original_round != active_round:
-                derived._builder.add_round()
+                retained_rounds[original_round] = derived._builder.add_round()
                 active_round = original_round
             clone = copy(component)
             object.__setattr__(clone, "component_id", None)
             object.__setattr__(clone, "inputs", tuple(remap(item) for item in component.inputs))
             unit_arrays[source_id] = derived._builder.add_component(clone)
     derived._builder.set_output(remap(primitive.graph.output))
+    _preserve_observations(primitive, derived, unit_arrays, retained_rounds)
     _record(
         derived,
         primitive,
@@ -273,8 +434,21 @@ def remove_key_schedule(
         )
     index = DependencyIndex(primitive)
     dependencies = _input_dependencies(primitive, index)
+    source_primitive = primitive
+    primitive, origins = _canonical_binary_wiring(primitive, dependencies)
+    if primitive is not source_primitive:
+        index = DependencyIndex(primitive)
+        dependencies = _input_dependencies(primitive, index)
     if not keep_round_key_injection:
-        return _rebuild_without_key_injections(primitive, index, dependencies, secret_inputs)
+        result = _rebuild_without_key_injections(primitive, index, dependencies, secret_inputs)
+        return replace(
+            result,
+            source_primitive=source_primitive,
+            input_boundaries=tuple(
+                (name, as_selection(source_primitive.graph.input(name)))
+                for name in result.primitive.graph.input_arrays
+            ),
+        )
 
     boundaries = _round_key_boundaries(
         primitive,
@@ -299,6 +473,9 @@ def remove_key_schedule(
         inputs=slice_inputs,
         family_name=f"{primitive.family_name}_without_key_schedule",
     )
+    result.primitive._published_round_keys = tuple(
+        result.primitive.graph.input(f"round_key_{number}") for number in range(len(boundaries))
+    )
     for number in range(len(boundaries)):
         name = f"round_key_{number}"
         result.primitive._input_descriptors[name] = PrimitiveInput(
@@ -314,11 +491,21 @@ def remove_key_schedule(
         "remove_key_schedule",
         (("keep_round_key_injection", "true"),),
     )
+    input_boundaries = [
+        (name, as_selection(source_primitive.graph.input(name)))
+        for name in source_primitive.graph.input_arrays
+        if name not in secret_inputs
+    ]
+    source_pairs = []
+    for number, (source_id, positions) in enumerate(boundaries):
+        original = origins.get(source_id)
+        if original is None:
+            original = as_selection(source_primitive.graph.unit_array(source_id))
+        selected = original[positions]
+        input_boundaries.append((f"round_key_{number}", selected))
+        source_pairs.append((selected.source.source_id, f"round_key_{number}"))
     return TransformationResult(
-        result.primitive,
-        tuple(
-            (source_id, f"round_key_{number}") for number, (source_id, _) in enumerate(boundaries)
-        ),
+        result.primitive, tuple(source_pairs), tuple(input_boundaries), source_primitive
     )
 
 
