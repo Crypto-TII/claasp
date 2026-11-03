@@ -109,7 +109,7 @@ def continuous_modular_add(
 
     The default follows integer carries from least to most significant bit.
     ``carry_order="legacy_msb_first"`` reproduces the traversal of the legacy
-    generalized-cipher evaluator. The majority polynomial is
+    generalized primitive evaluator. The majority polynomial is
     ``(a + b + c - a*b*c)/2`` in both modes.
 
     EXAMPLES::
@@ -130,6 +130,27 @@ def continuous_modular_add(
         output.append(a * b * carry)
         carry = (a + b + carry - a * b * carry) / 2
     return tuple(output if forward else reversed(output))
+
+
+def continuous_differential_add(left, right):
+    """Preserve the separate legacy CP differential-correlation recurrence.
+
+    This is the heuristic used by the legacy continuous differential-linear
+    model, not the Boolean extension of integer addition. Its carry polynomial
+    is ``(a+b+c+a*b*c)/4``, with least-significant-bit-first traversal.
+
+    EXAMPLES::
+
+        >>> continuous_differential_add((1., 1.), (1., 1.))
+        (0.0, -1.0)
+    """
+    _equal_vectors(left, right)
+    carry = -1.0
+    output = []
+    for a, b in zip(reversed(left), reversed(right)):
+        output.append(a * b * carry)
+        carry = (a + b + carry + a * b * carry) / 4
+    return tuple(reversed(output))
 
 
 def continuous_modular_subtract(left, right):
@@ -318,7 +339,10 @@ def _sbox_polynomials(table, output_width):
 def continuous_speck32(
     left: tuple[float, ...], right: tuple[float, ...], *, rounds: int
 ) -> ContinuousHeuristicResult:
-    """Propagate the legacy continuous model through reduced Speck32/64.
+    """Propagate the legacy CP differential-correlation heuristic through Speck32.
+
+    This preserves the differential model's quarter-scaled carry polynomial;
+    use continuous graph evaluation for the separate generalized primitive.
 
     Key and round-counter differences are fixed to zero (correlation ``-1``),
     matching the result-bearing legacy fixtures.
@@ -338,13 +362,13 @@ def continuous_speck32(
         raise ValueError("rounds must be between 1 and 22")
     zero_difference = (-1.0,) * 16
     for _ in range(rounds):
-        left = continuous_modular_add(continuous_rotate_right(left, 7), right)
+        left = continuous_differential_add(continuous_rotate_right(left, 7), right)
         left = continuous_xor(left, zero_difference)
         right = continuous_xor(continuous_rotate_left(right, 2), left)
     return ContinuousHeuristicResult(
         left + right,
         1e-4,
-        "continuous Speck with zero round keys; majority carries from least significant bit",
+        "legacy CP continuous differential-correlation Speck heuristic; BGGMP2023 equations 3--5",
     )
 
 

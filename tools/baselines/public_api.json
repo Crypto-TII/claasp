@@ -3253,6 +3253,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.component_property"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.continuous_differential_evaluate",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.continuous_differential_evaluate"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.continuous_diffusion",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -30128,6 +30134,12 @@
       "qualified_name": "claasp.representations.execution.BooleanSymbolicResult"
     },
     {
+      "canonical_name": "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver",
+      "defined_in": "claasp.representations.execution.continuous",
+      "kind": "class",
+      "qualified_name": "claasp.representations.execution.ContinuousDifferentialExecutionDriver"
+    },
+    {
       "canonical_name": "claasp.representations.execution.continuous.ContinuousEvaluationResult",
       "defined_in": "claasp.representations.execution.continuous",
       "kind": "dataclass",
@@ -30299,6 +30311,19 @@
       "qualified_name": "claasp.representations.execution.boolean_degree.BooleanDegreeResult.variable_input"
     },
     {
+      "canonical_name": "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver.__init__",
+      "defined_in": "claasp.representations.execution.continuous",
+      "documented_by": "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver.evaluate",
+      "defined_in": "claasp.representations.execution.continuous",
+      "kind": "method",
+      "qualified_name": "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver.evaluate"
+    },
+    {
       "canonical_name": "claasp.representations.execution.continuous.ContinuousEvaluationResult.__init__",
       "defined_in": "claasp.representations.execution.continuous",
       "documented_by": "claasp.representations.execution.continuous.ContinuousEvaluationResult",
@@ -30363,6 +30388,9 @@
     {
       "canonical_name": "claasp.representations.execution.continuous.ContinuousExecutionDriver.evaluate",
       "defined_in": "claasp.representations.execution.continuous",
+      "inherited_by": [
+        "claasp.representations.execution.continuous.ContinuousDifferentialExecutionDriver"
+      ],
       "kind": "method",
       "qualified_name": "claasp.representations.execution.continuous.ContinuousExecutionDriver.evaluate"
     },
@@ -31849,6 +31877,12 @@
       "defined_in": "claasp.semantics.cryptanalysis.continuous",
       "kind": "function",
       "qualified_name": "claasp.semantics.cryptanalysis.continuous_and"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.continuous.continuous_differential_add",
+      "defined_in": "claasp.semantics.cryptanalysis.continuous",
+      "kind": "function",
+      "qualified_name": "claasp.semantics.cryptanalysis.continuous_differential_add"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.continuous.continuous_modular_add",

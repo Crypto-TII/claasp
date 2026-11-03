@@ -22,6 +22,7 @@ from claasp.semantics.cryptanalysis.composed import (
 from claasp.semantics.cryptanalysis.continuous import (
     ContinuousHeuristicResult,
     continuous_and,
+    continuous_differential_add,
     continuous_modular_add,
     continuous_modular_subtract,
     continuous_not,
@@ -137,6 +138,7 @@ __all__ = [
     "branch_number_activity_table",
     "check_probabilistic_truncated_modular_add",
     "continuous_modular_add",
+    "continuous_differential_add",
     "continuous_modular_subtract",
     "continuous_not",
     "continuous_or",

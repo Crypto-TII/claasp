@@ -543,6 +543,28 @@ class Analysis:
             carry_order=carry_order,
         )
 
+    def continuous_differential_evaluate(self, inputs, *, tolerance=1e-4):
+        """Evaluate the legacy ARX differential-correlation heuristic.
+
+        This differs from the generalized primitive used in continuous diffusion.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).analysis.continuous_differential_evaluate(
+            ...     {"plaintext": (-1.,)*32, "key": (-1.,)*64}
+            ... )
+            >>> result.claim_kind
+            'heuristic'
+        """
+        from claasp.representations.execution.continuous import (
+            ContinuousDifferentialExecutionDriver,
+        )
+
+        return ContinuousDifferentialExecutionDriver().evaluate(
+            self.primitive, inputs, tolerance=tolerance
+        )
+
     def continuous_evaluate(self, inputs, *, tolerance=1e-4, carry_order="lsb_first"):
         """Propagate continuous-diffusion correlations through the typed graph."""
 
