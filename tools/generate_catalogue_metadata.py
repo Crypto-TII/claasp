@@ -107,6 +107,7 @@ DRIVERS = (
     ),
     ("z3", "solver", "executable", "z3", "claasp.drivers.solvers.z3:Z3Solver"),
     ("glpk", "solver", "executable", "glpsol", "claasp.drivers.solvers.glpk:GLPKSolver"),
+    ("highs", "solver", "python_module", "scipy", "claasp.drivers.solvers.highs:HighsSolver"),
     (
         "singular",
         "solver",

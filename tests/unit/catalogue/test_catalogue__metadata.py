@@ -26,8 +26,8 @@ def test_committed_catalogue_covers_public_primitives_components_and_drivers():
     assert len(catalogue["components"]) == 23
     assert len(catalogue["representations"]) == 21
     assert len(catalogue["analyses"]) == 12
-    assert len(catalogue["drivers"]) == 26
-    assert len({item["name"] for item in catalogue["drivers"]}) == 26
+    assert len(catalogue["drivers"]) == 27
+    assert len({item["name"] for item in catalogue["drivers"]}) == 27
 
 
 def test_every_primitive_has_classification_contract_and_evidence():

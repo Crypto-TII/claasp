@@ -422,6 +422,14 @@
       "target": "glpsol"
     },
     {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
+      "kind": "solver",
+      "name": "highs",
+      "representations": [],
+      "target": "scipy"
+    },
+    {
       "availability": "executable",
       "implementation": "claasp.drivers.algebra.singular:SingularDriver",
       "kind": "solver",
