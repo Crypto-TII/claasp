@@ -477,6 +477,7 @@ class Analysis:
         seed: int = 0,
         precision: int = 80,
         sampling: str = "boolean_neighborhood",
+        carry_order: str = "lsb_first",
     ):
         """Measure round-by-round continuous avalanche factors with local precision."""
         from claasp.analysis.continuous_diffusion import continuous_diffusion
@@ -489,14 +490,17 @@ class Analysis:
             seed=seed,
             precision=precision,
             sampling=sampling,
+            carry_order=carry_order,
         )
 
-    def continuous_evaluate(self, inputs, *, tolerance=1e-4):
+    def continuous_evaluate(self, inputs, *, tolerance=1e-4, carry_order="lsb_first"):
         """Propagate continuous-diffusion correlations through the typed graph."""
 
         from claasp.representations.execution.continuous import ContinuousExecutionDriver
 
-        return ContinuousExecutionDriver().evaluate(self.primitive, inputs, tolerance=tolerance)
+        return ContinuousExecutionDriver(carry_order=carry_order).evaluate(
+            self.primitive, inputs, tolerance=tolerance
+        )
 
     def propagate_truncated_xor_difference(self, input_pattern):
         """Propagate a sound three-valued XOR difference over all rounds."""

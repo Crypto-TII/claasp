@@ -102,8 +102,15 @@ def continuous_not(values: tuple[float, ...]) -> tuple[float, ...]:
     return tuple(-value for value in values)
 
 
-def continuous_modular_add(left: tuple[float, ...], right: tuple[float, ...]) -> tuple[float, ...]:
+def continuous_modular_add(
+    left: tuple[float, ...], right: tuple[float, ...], *, carry_order: str = "lsb_first"
+) -> tuple[float, ...]:
     """Apply the continuous majority/carry approximation to modular addition.
+
+    The default follows integer carries from least to most significant bit.
+    ``carry_order="legacy_msb_first"`` reproduces the traversal of the legacy
+    generalized-cipher evaluator. The majority polynomial is
+    ``(a + b + c - a*b*c)/2`` in both modes.
 
     EXAMPLES::
 
@@ -113,12 +120,33 @@ def continuous_modular_add(left: tuple[float, ...], right: tuple[float, ...]) ->
     """
 
     _equal_vectors(left, right)
+    if carry_order not in {"lsb_first", "legacy_msb_first"}:
+        raise ValueError("carry_order must be lsb_first or legacy_msb_first")
     carry = -1.0
-    reversed_output = []
+    forward = carry_order == "legacy_msb_first"
+    pairs = zip(left, right) if forward else zip(reversed(left), reversed(right))
+    output = []
+    for a, b in pairs:
+        output.append(a * b * carry)
+        carry = (a + b + carry - a * b * carry) / 2
+    return tuple(output if forward else reversed(output))
+
+
+def continuous_modular_subtract(left, right):
+    """Propagate a borrow from least to most significant bit.
+
+    EXAMPLES::
+
+        >>> continuous_modular_subtract((-1., -1.), (-1., 1.))
+        (1.0, 1.0)
+    """
+    _equal_vectors(left, right)
+    borrow = -1.0
+    output = []
     for a, b in zip(reversed(left), reversed(right)):
-        reversed_output.append(a * b * carry)
-        carry = 0.25 * (a + b + carry + a * b * carry)
-    return tuple(reversed(reversed_output))
+        output.append(a * b * borrow)
+        borrow = (-a + b + borrow + a * b * borrow) / 2
+    return tuple(reversed(output))
 
 
 def continuous_rotate_left(values: tuple[float, ...], amount: int) -> tuple[float, ...]:
@@ -316,7 +344,7 @@ def continuous_speck32(
     return ContinuousHeuristicResult(
         left + right,
         1e-4,
-        "legacy CLAASP continuous Speck model; BGGMP2023 equations 3--5",
+        "continuous Speck with zero round keys; majority carries from least significant bit",
     )
 
 

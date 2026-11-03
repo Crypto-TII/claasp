@@ -1,123 +1,62 @@
-"""Preserved continuous-model fixtures, explicitly treated as heuristics."""
+"""Boolean vertices and independent truth-table checks for continuous ARX."""
 
-from math import isclose
+from itertools import product
 
 import pytest
 
 from claasp.semantics.cryptanalysis import (
     ContinuousHeuristicResult,
     continuous_modular_add,
-    continuous_rotate_left,
-    continuous_rotate_right,
+    continuous_modular_subtract,
     continuous_speck32,
-    continuous_xor,
-)
-
-LEFT = (-1.0, -1.0, -1.0, 1.0) + (-1.0,) * 12
-RIGHT = (-1.0, 1.0, -1.0, 1.0) + (-1.0,) * 12
-ROUND_ONE_LEFT = (
-    0.0,
-    0.5,
-    0.0,
-    0.984375,
-    -0.96875,
-    -0.9375,
-    -0.875,
-    -0.75,
-    -0.5,
-    0.0,
-    1.0,
-    -1.0,
-    -1.0,
-    -1.0,
-    -1.0,
-    -1.0,
-)
-ROUND_ONE_RIGHT = (
-    0.0,
-    -0.5,
-    0.0,
-    0.984375,
-    -0.96875,
-    -0.9375,
-    -0.875,
-    -0.75,
-    -0.5,
-    0.0,
-    1.0,
-    -1.0,
-    -1.0,
-    -1.0,
-    -1.0,
-    1.0,
 )
 
 
-def test_continuous_component_vectors_preserve_legacy_scip_results():
-    rotated_left = continuous_rotate_right(LEFT, 7)
-    rotated_right = continuous_rotate_left(RIGHT, 2)
-    added = continuous_modular_add(rotated_left, RIGHT)
-
-    assert rotated_left[10] == 1
-    assert rotated_right[1] == 1 and rotated_right[15] == 1
-    assert all(
-        isclose(value, expected, abs_tol=1e-9) for value, expected in zip(added, ROUND_ONE_LEFT)
-    )
-    assert continuous_xor(added, rotated_right) == ROUND_ONE_RIGHT
+def _bits(value, width):
+    return tuple(float(2 * ((value >> shift) & 1) - 1) for shift in reversed(range(width)))
 
 
-def test_continuous_speck_preserves_one_and_two_round_legacy_vectors():
-    one = continuous_speck32(LEFT, RIGHT, rounds=1)
-    two = continuous_speck32(LEFT, RIGHT, rounds=2)
-    expected_two = (
-        0.0,
-        0.125904,
-        0.0,
-        0.849684,
-        -0.730319,
-        -0.521594,
-        -0.163504,
-        0.0,
-        -0.003400,
-        0.0,
-        -0.877274,
-        -0.785400,
-        -0.631694,
-        -0.382812,
-        0.0,
-        0.5,
-        0.0,
-        -0.123896,
-        0.0,
-        0.796585,
-        -0.639005,
-        -0.391206,
-        -0.081797,
-        0.0,
-        0.003400,
-        0.0,
-        -0.877274,
-        -0.785400,
-        -0.631695,
-        0.382810,
-        0.0,
-        0.25,
-    )
+@pytest.mark.parametrize("width", [1, 2, 3, 4])
+def test_add_and_subtract_agree_with_integer_arithmetic_at_every_boolean_vertex(width):
+    for left, right in product(range(1 << width), repeat=2):
+        a, b = _bits(left, width), _bits(right, width)
+        assert continuous_modular_add(a, b) == _bits((left + right) % (1 << width), width)
+        assert continuous_modular_subtract(a, b) == _bits((left - right) % (1 << width), width)
 
-    assert one.values == ROUND_ONE_LEFT + ROUND_ONE_RIGHT
-    assert all(
-        isclose(value, expected, abs_tol=1e-4) for value, expected in zip(two.values, expected_two)
-    )
-    assert two.claim_kind == "heuristic"
-    assert not hasattr(two, "is_satisfiable") and not hasattr(two, "is_optimal")
+
+def test_continuous_majority_matches_independent_bernoulli_enumeration():
+    a, b, c = 0.2, -0.6, 0.4
+    expected = 0.0
+    for x, y, z in product((0, 1), repeat=3):
+        probability = 1.0
+        for bit, mean in zip((x, y, z), (a, b, c)):
+            probability *= (1 + (2 * bit - 1) * mean) / 2
+        expected += probability * (2 * int(x + y + z >= 2) - 1)
+    # The low bit generates a carry with mean c=0.4: adding Boolean 1
+    # to a bit of mean c produces exactly that carry.
+    output = continuous_modular_add((a, 1.0), (b, c))
+    assert output[0] == pytest.approx(a * b * c)
+    # Exercise a second carry stage, whose majority is now observable.
+    result = continuous_modular_add((1.0, a, 1.0), (1.0, b, c))
+    assert result[0] == pytest.approx(expected)
+
+
+def test_specialized_speck_with_zero_round_keys_matches_integer_rounds():
+    left, right = 0x1000, 0x5000
+    expected_left, expected_right = left, right
+    for rounds in range(1, 4):
+        expected_left = (((expected_left >> 7) | (expected_left << 9)) + expected_right) & 0xFFFF
+        expected_right = (((expected_right << 2) | (expected_right >> 14)) & 0xFFFF) ^ expected_left
+        result = continuous_speck32(_bits(left, 16), _bits(right, 16), rounds=rounds)
+        assert result.values == _bits(expected_left, 16) + _bits(expected_right, 16)
+        assert result.claim_kind == "heuristic"
+        assert not hasattr(result, "is_optimal")
 
 
 def test_fixed_mask_correlation_retains_tolerance_and_numeric_provenance():
-    result = continuous_speck32(LEFT, RIGHT, rounds=2)
-    mask = tuple(int(index in (3, 26)) for index in range(32))
-
-    assert isclose(result.selected_correlation(mask), 0.7454814092873888, abs_tol=1e-6)
-    assert isclose(result.selected_weight(mask), 0.4237557196600851, abs_tol=1e-6)
+    result = ContinuousHeuristicResult((0.5, -0.5), 1e-4, "independent example")
+    assert result.selected_correlation((1, 1)) == 0.25
+    assert result.selected_weight((1, 1)) == 2
     assert result.precision == "binary64" and result.tolerance == 1e-4
 
 

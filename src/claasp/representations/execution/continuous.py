@@ -7,6 +7,7 @@ heuristic: these values are not probabilities and do not carry a proof claim.
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from functools import partial
 
 from claasp.components.algebraic import Add, LinearMap
 from claasp.components.structural import Constant, Identity, Permutation
@@ -27,6 +28,7 @@ from claasp.graph import Primitive
 from claasp.semantics.cryptanalysis.continuous import (
     continuous_and,
     continuous_modular_add,
+    continuous_modular_subtract,
     continuous_not,
     continuous_or,
     continuous_rotate_left,
@@ -88,6 +90,11 @@ class ContinuousExecutionDriver:
         (1.0,)
     """
 
+    def __init__(self, *, carry_order="lsb_first"):
+        if carry_order not in {"lsb_first", "legacy_msb_first"}:
+            raise ValueError("carry_order must be lsb_first or legacy_msb_first")
+        self.carry_order = carry_order
+
     def evaluate(
         self,
         primitive: Primitive,
@@ -137,7 +144,7 @@ class ContinuousExecutionDriver:
             flattened,
             output,
             tolerance,
-            "legacy MUR2020 continuous-diffusion equations over the typed v5 graph",
+            f"MUR2020 majority/carry model, carry_order={self.carry_order}",
         )
 
     def _component(self, primitive, component, inputs):
@@ -163,7 +170,11 @@ class ContinuousExecutionDriver:
         if isinstance(component, (ModularAdd, ModularSubtract)):
             if isinstance(component, ModularAdd) and component.modulus is not None:
                 raise self._unsupported(primitive, component, "non-power-of-two modular addition")
-            return _fold_units(inputs, continuous_modular_add)
+            if isinstance(component, ModularSubtract) and self.carry_order == "lsb_first":
+                return _fold_units(inputs, continuous_modular_subtract)
+            return _fold_units(
+                inputs, partial(continuous_modular_add, carry_order=self.carry_order)
+            )
         if isinstance(component, Rotate):
             operation = (
                 continuous_rotate_left if component.direction == "left" else continuous_rotate_right
