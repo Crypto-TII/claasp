@@ -42,3 +42,23 @@ Print the resulting trail:
 
 Use ``trail.to_terminal(details=True)`` to also see how the search was run
 and proved optimal, and the mask, correlation and weight of every component.
+
+Plot the weight contributed by each round and its running total:
+
+.. plot::
+   :context: close-figs
+   :include-source:
+
+   trail.plot()
+
+The horizontal axis is the round number; round zero represents the input.
+The vertical axis is weight in bits: :math:`-\log_2(|c|)` for correlation
+:math:`c`. The relative line shows each round's contribution and can rise
+or fall. The cumulative line sums those contributions, so it never decreases;
+its last point is the trail's total weight. A zero-weight round gives a
+flat segment in the cumulative line. Correlation signs do not change these
+weights.
+
+Plotting requires the ``presentation`` extra. Use ``trail.plot(show=False)``
+to create a figure without displaying it, or
+``trail.plot(save_to="linear-trail.png")`` to save it.
