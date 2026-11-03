@@ -19,7 +19,7 @@ on:
       - feat/fractional-trail-queries
       - feat/boolean-algebraic-systems
       - feat/monomial-analysis-workflows
-      - "codex/**"
+      - codex/**
     paths:
       - "**"
       - "docs/architecture/**"
@@ -58,14 +58,14 @@ jobs:
       - name: Verify Sage is not installed
         run: python -c "import importlib.util; assert importlib.util.find_spec('sage') is None"
 
+      - name: Install solver for executable documentation examples
+        uses: ./.github/actions/install-kissat
+
       - name: Run dependency-free tests
         run: python -m pytest
 
       - name: Run Python API doctests
         run: python -m pytest --doctest-modules src/claasp
-
-      - name: Install solver for executable documentation examples
-        uses: ./.github/actions/install-kissat
 
       - name: Run documentation doctests
         run: make -C docs doctest

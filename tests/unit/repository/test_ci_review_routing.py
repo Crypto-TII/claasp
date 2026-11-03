@@ -13,7 +13,7 @@ QUALITY = ROOT / ".github" / "workflows" / "claasp-quality.yaml"
 RELEASE_IMAGE = ROOT / ".github" / "workflows" / "claasp-v5-release-image.yaml"
 REVIEW_CONDITION = (
     "if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || "
-    "github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')"
+    "github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')"
 )
 
 
@@ -39,6 +39,7 @@ def _job_blocks(workflow: Path) -> dict[str, str]:
 def test_review_workflows_accept_review_and_stack_bases():
     expected = {
         "claasp-v5",
+        "codex/**",
         "develop",
         "feat/latex-report-tables",
         "feat/statistical-supplied-datasets",
@@ -92,7 +93,9 @@ def test_queue_rule_preserves_stack_ancestry_and_targets_only_claasp_v5():
     assert rule["conditions"]["ref_name"] == {"include": ["refs/heads/claasp-v5"], "exclude": []}
     assert rule["target"] == "branch"
     assert rule["enforcement"] == "active"
-    assert rule["bypass_actors"] == []
+    assert rule["bypass_actors"] == [
+        {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "pull_request"}
+    ]
     (queue,) = rule["rules"]
     assert queue["type"] == "merge_queue"
     assert queue["parameters"]["merge_method"] == "MERGE"
