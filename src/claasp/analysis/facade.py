@@ -543,6 +543,20 @@ class Analysis:
             carry_order=carry_order,
         )
 
+    def continuous_differential(self):
+        """Search the legacy continuous ARX differential-correlation heuristic.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).analysis.continuous_differential().find_best_correlation(1)
+            >>> result.claim_kind
+            'heuristic'
+        """
+        from claasp.analysis.continuous_differential import ContinuousDifferentialAnalysis
+
+        return ContinuousDifferentialAnalysis(self.primitive)
+
     def continuous_differential_evaluate(self, inputs, *, tolerance=1e-4):
         """Evaluate the legacy ARX differential-correlation heuristic.
 

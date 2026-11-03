@@ -207,20 +207,10 @@ class MiniZincSolver:
 
 
 def _parse_output(output: str) -> tuple[CPStatus, Mapping[str, object] | None]:
-    if "=====UNSATISFIABLE=====" in output:
-        return CPStatus.UNSATISFIABLE, None
-    if "=====UNKNOWN=====" in output:
-        return CPStatus.UNKNOWN, None
-    payload = output.split("----------", 1)[0].strip()
-    if not payload:
-        raise RuntimeError("MiniZinc returned no status or solution")
-    try:
-        values = json.loads(payload)
-    except json.JSONDecodeError as error:
-        raise RuntimeError("MiniZinc returned invalid JSON output") from error
-    if not isinstance(values, dict):
-        raise RuntimeError("MiniZinc JSON solution must be an object")
-    return CPStatus.SATISFIED, values
+    status, solutions, _, _ = _parse_all_output(output)
+    # Optimization emits improving solutions. Keep the last incumbent,
+    # including a valid candidate when the terminal status is UNKNOWN.
+    return status, solutions[-1] if solutions else None
 
 
 def _parse_all_output(

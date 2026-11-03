@@ -68,6 +68,10 @@ from claasp.analysis.constraints import (
     Nonzero,
     NotEqual,
 )
+from claasp.analysis.continuous_differential import (
+    ContinuousCorrelationResult,
+    ContinuousDifferentialAnalysis,
+)
 from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult, continuous_diffusion
 from claasp.analysis.cube import CubeSumResult, evaluate_cube_sum
 from claasp.analysis.datasets import (
@@ -198,6 +202,8 @@ def __getattr__(name):
 
 
 __all__ = [
+    "ContinuousDifferentialAnalysis",
+    "ContinuousCorrelationResult",
     "QuasidifferentialAnalysis",
     "QuasidifferentialTrail",
     "QuasidifferentialEnumeration",
