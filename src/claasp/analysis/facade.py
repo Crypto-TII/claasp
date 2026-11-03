@@ -721,6 +721,8 @@ class Analysis:
         maximum_weight=None,
         *,
         fixed_weight=None,
+        minimum_weight=None,
+        weight_tolerance=0,
         solver=None,
         nonzero_input=None,
         fixed_input_differences=None,
@@ -731,6 +733,22 @@ class Analysis:
 
         The default is single-key (key difference zero). Select a nonzero
         key input to include related-key propagation instead.
+
+        Bounds are inclusive physical weights, not rounded component scores.
+        This one-round Heys characteristic has probability 3/8. Exact decimal
+        equality at 1.42 would exclude it; the interval below includes it.
+        Requires Z3; these examples run in the Z3 integration job.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Heys
+            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_differential_trails(  # doctest: +SKIP
+            ...     minimum_weight=1.41, maximum_weight=1.42,
+            ...     fixed_input_differences={"plaintext": 0x2000, "key": 0},
+            ...     output_difference=0x5000,
+            ... )
+            >>> result.require_complete().cluster_probability()  # doctest: +SKIP
+            Fraction(3, 8)
         """
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
@@ -751,6 +769,8 @@ class Analysis:
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
+            minimum_weight=minimum_weight,
+            weight_tolerance=weight_tolerance,
             nonzero_input=policy.nonzero_input,
             fixed_input_differences=policy.fixed_patterns,
             output_difference=output_difference,
@@ -759,8 +779,11 @@ class Analysis:
 
     def enumerate_xor_linear_trails(
         self,
-        maximum_weight,
+        maximum_weight=None,
         *,
+        minimum_weight=None,
+        fixed_weight=None,
+        weight_tolerance=0,
         solver=None,
         nonzero_input=None,
         fixed_input_masks=None,
@@ -772,6 +795,21 @@ class Analysis:
         By default, a keyed graph fixes key value zero (single-key analysis).
         Requesting ``nonzero_input="key"`` instead includes key-schedule masks.
         Solver execution is optional and separate from graph realization.
+
+        A finite limit can return a useful witness without exhausting the
+        interval. Check complete before claiming that every trail was found.
+        Requires Z3; these examples run in the Z3 integration job.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Heys
+            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_linear_trails(  # doctest: +SKIP
+            ...     minimum_weight=0.41, maximum_weight=0.42, limit=1,
+            ... )
+            >>> len(result.trails), result.complete  # doctest: +SKIP
+            (1, False)
+            >>> round(result.trails[0].total_weight, 6)  # doctest: +SKIP
+            0.415037
         """
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
@@ -792,6 +830,9 @@ class Analysis:
         model = WordLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
+            minimum_weight=minimum_weight,
+            fixed_weight=fixed_weight,
+            weight_tolerance=weight_tolerance,
             nonzero_input=policy.nonzero_input,
             fixed_input_masks=policy.fixed_patterns,
             fixed_inputs=fixed_inputs,

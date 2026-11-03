@@ -26,10 +26,10 @@ from claasp.components import (
 from claasp.drivers.solvers import SatStatus
 from claasp.representations.constraints import ConstraintBackend, _direct_model
 from claasp.representations.constraints.smt._probability_encoding import (
-    _add_bound,
+    _add_weight_interval,
     _encode_probability_product,
-    _negate,
-    _satisfies_weight_bound,
+    _weight_interval,
+    _within_interval,
 )
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
@@ -124,17 +124,23 @@ class WordDifferentialSMTModel:
         *,
         maximum_weight=None,
         fixed_weight=None,
+        minimum_weight=None,
+        weight_tolerance=0,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
     ):
-        if maximum_weight is not None and fixed_weight is not None:
-            raise ValueError("choose a maximum or fixed weight, not both")
-        for weight in (maximum_weight, fixed_weight):
-            if weight is not None and (
-                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
-            ):
-                raise ValueError("weights must be nonnegative integers")
+        self._weight_interval = _weight_interval(
+            maximum_weight, fixed_weight, minimum_weight, weight_tolerance
+        )
+        self._general_weight_query = (
+            minimum_weight is not None
+            or weight_tolerance != 0
+            or any(
+                value is not None and not isinstance(value, int)
+                for value in (maximum_weight, fixed_weight)
+            )
+        )
         if nonzero_input is not None and nonzero_input not in primitive.graph.input_arrays:
             raise ValueError("unknown nonzero input")
         self.primitive, self.maximum_weight, self.fixed_weight = (
@@ -391,7 +397,7 @@ class WordDifferentialSMTModel:
         self._semantic_names = tuple(variables)
         self._probability_bits: tuple[int | bool, ...] = ()
         self._probability_denominator = 1
-        if probability_factors:
+        if probability_factors or self._general_weight_query:
             self._probability_bits, self._probability_denominator = _encode_probability_product(
                 probability_factors,
                 weights,
@@ -399,15 +405,14 @@ class WordDifferentialSMTModel:
                 indices,
                 add,
             )
-            bound = self.fixed_weight if self.fixed_weight is not None else self.maximum_weight
-            if bound is not None:
-                scale = 1 << bound
-                minimum = (self._probability_denominator + scale - 1) // scale
-                _add_bound(self._probability_bits, minimum, allocate, indices, add)
-                if self.fixed_weight is not None:
-                    maximum = self._probability_denominator // scale
-                    inverse = tuple(_negate(bit) for bit in self._probability_bits)
-                    _add_bound(inverse, (1 << len(inverse)) - 1 - maximum, allocate, indices, add)
+            _add_weight_interval(
+                self._probability_bits,
+                self._probability_denominator,
+                self._weight_interval,
+                allocate,
+                indices,
+                add,
+            )
         else:
             bound = self.fixed_weight if self.fixed_weight is not None else self.maximum_weight
             if bound is not None:
@@ -614,7 +619,7 @@ class WordDifferentialSMTModel:
             and trail.steps == steps
             and trail.input_differences == inputs
             and trail.output_difference == output
-            and _satisfies_weight_bound(trail.steps, self.maximum_weight, self.fixed_weight)
+            and _within_interval(trail.steps, self._weight_interval)
             and (self.output_difference is None or output == self.output_difference)
             and (self.nonzero_input is None or dict(inputs)[self.nonzero_input] != 0)
             and all(
@@ -630,6 +635,7 @@ class WordDifferentialSMTModel:
         formula = self.smt_formula()
         metadata = (
             ("primitive", self.primitive.family_name),
+            ("weight_interval", repr(self._weight_interval)),
             (
                 "realization",
                 getattr(getattr(self.primitive, "realization", None), "name", "default"),
@@ -658,6 +664,7 @@ class WordDifferentialSMTModel:
             ),
             ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
         )
+        blocking_names = {name for names in self._unit_arrays.values() for name in names}
         indices = {name: index for index, name in enumerate(formula.variables, 1)}
         trails: list[WordDifferentialCharacteristic] = []
         blocks: list[tuple[int, ...]] = []
@@ -686,5 +693,6 @@ class WordDifferentialSMTModel:
                     tuple(
                         -indices[name] if value else indices[name]
                         for name, value in trail.semantic_assignment
+                        if name in blocking_names
                     )
                 )
