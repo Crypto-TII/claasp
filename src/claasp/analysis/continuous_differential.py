@@ -108,7 +108,7 @@ class ContinuousDifferentialAnalysis:
 
     Fixed differences use ordinary packed integers. Patterns of 0/1/? allow
     free real correlations at ? positions, as in the legacy model. Such
-    problems need an external nonlinear MiniZinc solver, for example SCIP.
+    problems need an external nonlinear MiniZinc solver, for example Gecode.
     Fully fixed inputs need no solver: the best admissible mask is selected
     analytically and the model is evaluated directly.
 
@@ -236,7 +236,7 @@ class ContinuousDifferentialAnalysis:
             mask = sum(int(value) << (len(bits) - 1 - bit) for bit, value in enumerate(bits))
             return ContinuousCorrelationResult(inputs, output, mask, True, "analytic_fixed_inputs")
         encoded = model.minizinc_model()
-        selected = MiniZincSolver(solver="scip", timeout_seconds=30) if solver is None else solver
+        selected = MiniZincSolver(solver="gecode", timeout_seconds=30) if solver is None else solver
         try:
             solved = selected.solve(encoded)
         except TimeoutExpired as error:

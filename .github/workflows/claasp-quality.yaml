@@ -384,7 +384,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute MiniZinc integration
-        run: python -m pytest -m external tests/integration/test_minizinc_integration.py -q
+        run: python -m pytest -m external tests/integration/test_minizinc_integration.py tests/integration/test_continuous_differential_search.py -q
 
   dieharder-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')

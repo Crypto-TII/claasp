@@ -155,11 +155,12 @@ class ContinuousDifferentialCPModel:
         self._declarations.extend(
             (
                 f"array[0..{self.output_width - 1}] of var bool: output_mask;",
-                f"array[0..{self.output_width - 1}] of var -1.0..1.0: output_values = ["
-                + ",".join(selected)
-                + "];",
+                f"array[0..{self.output_width - 1}] of var -1.0..1.0: output_values;",
                 "var 0.0..1.0: correlation;",
             )
+        )
+        self._constraints.extend(
+            f"constraint output_values[{bit}] = {ref};" for bit, ref in enumerate(selected)
         )
         for bit, value in enumerate(self.output_mask):
             if value is not None:
