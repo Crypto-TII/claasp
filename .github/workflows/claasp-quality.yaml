@@ -1,6 +1,11 @@
 name: CLAASP 5 quality
 
 on:
+  merge_group:
+    types:
+      - checks_requested
+    branches:
+      - claasp-v5
   push:
     branches:
       - claasp-v5

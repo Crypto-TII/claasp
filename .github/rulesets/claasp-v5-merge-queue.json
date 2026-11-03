@@ -1,0 +1,28 @@
+{
+  "name": "claasp-v5 merge queue",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": [
+        "refs/heads/claasp-v5"
+      ],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "merge_queue",
+      "parameters": {
+        "check_response_timeout_minutes": 120,
+        "grouping_strategy": "ALLGREEN",
+        "max_entries_to_build": 1,
+        "max_entries_to_merge": 1,
+        "merge_method": "MERGE",
+        "min_entries_to_merge": 1,
+        "min_entries_to_merge_wait_minutes": 0
+      }
+    }
+  ]
+}

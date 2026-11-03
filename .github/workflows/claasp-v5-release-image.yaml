@@ -1,6 +1,11 @@
 name: CLAASP 5 release image
 
 on:
+  merge_group:
+    types:
+      - checks_requested
+    branches:
+      - claasp-v5
   push:
     branches: [claasp-v5]
     paths:

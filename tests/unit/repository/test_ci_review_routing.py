@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -63,3 +64,36 @@ def test_every_review_workflow_job_rejects_unrelated_develop_prs():
     assert len(image_jobs) == 2
     assert all(REVIEW_CONDITION in block for block in quality_jobs.values())
     assert all(REVIEW_CONDITION in block for block in image_jobs.values())
+
+
+def test_merge_queue_requests_checks_only_for_claasp_v5():
+    for workflow in (QUALITY, RELEASE_IMAGE):
+        triggers = workflow.read_text(encoding="utf-8").split("\njobs:", 1)[0]
+        match = re.search(r"(?ms)^  merge_group:\n(.*?)(?=^  \S|^\S|\Z)", triggers)
+        assert match is not None, workflow.name
+        values = re.findall(r"^\s+- ([^\s#]+)\s*$", match[1], re.MULTILINE)
+        assert values == ["checks_requested", "claasp-v5"], workflow.name
+
+
+def test_merge_queue_jobs_check_the_group_commit():
+    for workflow in (QUALITY, RELEASE_IMAGE):
+        text = workflow.read_text(encoding="utf-8")
+        # checkout's default ref is the merge-group commit. Overriding it with
+        # a PR head would omit the target branch and earlier queued changes.
+        assert "github.event.pull_request.head" not in text
+        for block in _job_blocks(workflow).values():
+            assert "github.event_name != 'pull_request'" in block
+
+
+def test_queue_rule_preserves_stack_ancestry_and_targets_only_claasp_v5():
+    rule = json.loads(
+        (ROOT / ".github/rulesets/claasp-v5-merge-queue.json").read_text(encoding="utf-8")
+    )
+    assert rule["conditions"]["ref_name"] == {"include": ["refs/heads/claasp-v5"], "exclude": []}
+    assert rule["target"] == "branch"
+    assert rule["enforcement"] == "active"
+    assert rule["bypass_actors"] == []
+    (queue,) = rule["rules"]
+    assert queue["type"] == "merge_queue"
+    assert queue["parameters"]["merge_method"] == "MERGE"
+    assert queue["parameters"]["grouping_strategy"] == "ALLGREEN"
