@@ -1,7 +1,9 @@
 """Command-line MiniZinc driver with no Python package dependency."""
 
 import json
+import os
 import shutil
+import signal
 import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -133,12 +135,9 @@ class MiniZincSolver:
             path = Path(directory) / "problem.mzn"
             path.write_text(model.source(), encoding="utf-8")
             start = monotonic()
-            completed = subprocess.run(
+            completed = _run_process(
                 [executable, "--solver", self.solver, "--output-mode", "json", str(path)],
-                text=True,
-                capture_output=True,
                 timeout=self.timeout_seconds,
-                check=False,
             )
             elapsed = monotonic() - start
         if completed.returncode != 0:
@@ -167,7 +166,7 @@ class MiniZincSolver:
             path = Path(directory) / "problem.mzn"
             path.write_text(model.source(), encoding="utf-8")
             start = monotonic()
-            completed = subprocess.run(
+            completed = _run_process(
                 [
                     executable,
                     "--solver",
@@ -177,10 +176,7 @@ class MiniZincSolver:
                     "--all-solutions",
                     str(path),
                 ],
-                text=True,
-                capture_output=True,
                 timeout=self.timeout_seconds,
-                check=False,
             )
             elapsed = monotonic() - start
         if completed.returncode != 0:
@@ -204,6 +200,31 @@ class MiniZincSolver:
             completed.stdout,
             completed.stderr,
         )
+
+
+def _run_process(command, *, timeout):
+    """Stop the isolated solver process group and retain partial output on timeout."""
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=os.name == "posix",
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        if os.name == "posix":
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        else:
+            process.kill()
+        stdout, stderr = process.communicate()
+        raise subprocess.TimeoutExpired(command, timeout, output=stdout, stderr=stderr) from error
+    assert process.returncode is not None
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
 
 
 def _parse_output(output: str) -> tuple[CPStatus, Mapping[str, object] | None]:
