@@ -343,7 +343,7 @@ def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, 
         raise ValueError("ci must be between 1 and 99.")
     if np.any(y <= 0):
         raise ValueError("All y_obs values must be strictly positive.")
-    if not 0 < prediction_quantile < 1:
+    if not (0 < prediction_quantile < 1):
         raise ValueError("prediction_quantile must be between 0 and 1.")
     if recency_weight_strength < 0:
         raise ValueError("recency_weight_strength must be >= 0.")
