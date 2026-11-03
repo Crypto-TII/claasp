@@ -2,8 +2,8 @@
 
 import json
 import os
-import signal
 import shutil
+import signal
 import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
