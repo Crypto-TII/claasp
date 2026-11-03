@@ -15,6 +15,7 @@ from claasp.graph import (
 )
 from claasp.graph.composite import CompositeInstance
 from claasp.provenance import TransformationRecord
+from claasp.transformations._observations import _boundary_bit_replacements, _preserve_observations
 from claasp.transformations.contracts import (
     TransformationError,
     TransformationFailureReason,
@@ -282,6 +283,20 @@ def slice_primitive(
     transformed_outputs = tuple(remap(selection) for selection in output_selections)
     derived._builder.set_output(
         transformed_outputs if len(transformed_outputs) > 1 else transformed_outputs[0]
+    )
+
+    observable_sources = {
+        source_id: array
+        for source_id, array in source_unit_arrays.items()
+        if source_id in required and source_id not in boundary_by_source
+    }
+    _preserve_observations(
+        primitive,
+        derived,
+        observable_sources,
+        derived_round_by_original,
+        replacements=_boundary_bit_replacements(primitive, derived, boundary_by_source),
+        outputs=output_selections,
     )
 
     # Complete composite scopes survive as hierarchy overlays; partial scopes

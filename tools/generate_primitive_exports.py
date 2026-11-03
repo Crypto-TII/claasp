@@ -18,6 +18,9 @@ def render_exports() -> tuple[str, int]:
     """Return the deterministic generated module and exported-class count."""
 
     payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    payload["records"] += json.loads(
+        (ROOT / "tools/data/legacy_inventory_delta.json").read_text(encoding="utf-8")
+    )["records"]
     rows = sorted(
         (
             item["primitive"]["primitive_category"],

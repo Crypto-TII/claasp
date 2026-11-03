@@ -700,6 +700,9 @@ def _tags(category: str, component_names: set[str]) -> list[str]:
 
 def build_catalogue() -> dict:
     inventory = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    inventory["records"] += json.loads(
+        (ROOT / "tools/data/legacy_inventory_delta.json").read_text(encoding="utf-8")
+    )["records"]
     realization_audit = json.loads(REALIZATIONS.read_text(encoding="utf-8"))
     single_components = json.loads(SINGLE_COMPONENTS.read_text(encoding="utf-8"))
     source_records = {

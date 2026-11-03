@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from types import MappingProxyType
 
-from claasp.graph import Primitive
+from claasp.graph import Primitive, Selection
 from claasp.provenance import TransformationRecord
 
 
@@ -80,6 +80,8 @@ class TransformationResult:
 
     primitive: Primitive
     sources: tuple[tuple[str, str], ...] = ()
+    input_boundaries: tuple[tuple[str, Selection], ...] = ()
+    source_primitive: Primitive | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.primitive, Primitive):
@@ -91,6 +93,44 @@ class TransformationResult:
             for item in self.sources
         ):
             raise TypeError("transformation sources must be non-empty string pairs")
+        if self.source_primitive is not None and not isinstance(self.source_primitive, Primitive):
+            raise TypeError("source_primitive must be a Primitive or None")
+        if not isinstance(self.input_boundaries, tuple) or any(
+            not isinstance(item, tuple)
+            or len(item) != 2
+            or not isinstance(item[0], str)
+            or not isinstance(item[1], Selection)
+            for item in self.input_boundaries
+        ):
+            raise TypeError("input_boundaries must contain name/Selection pairs")
+
+    def bind_inputs(self, *args, **kwargs):
+        """Bind transformed inputs from an original primitive evaluation.
+
+        This includes round-key slices exposed by key-schedule removal.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> from claasp.transformations import remove_key_schedule
+            >>> original = Speck(number_of_rounds=2)
+            >>> result = remove_key_schedule(original)
+            >>> inputs = result.bind_inputs(0x6574694c, 0x1918111009080100)
+            >>> result.primitive.evaluate(**inputs) == original.evaluate(0x6574694c, 0x1918111009080100)
+            True
+        """
+        if self.source_primitive is None:
+            raise ValueError("transformation does not retain input boundary correspondence")
+        if {name for name, _ in self.input_boundaries} != set(self.primitive.graph.input_arrays):
+            raise ValueError("transformation input boundary correspondence is incomplete")
+        trace = self.source_primitive.evaluate_with_trace(*args, **kwargs)
+        return {
+            name: self.source_primitive._encode_boundary(
+                self.source_primitive.graph.resolve_selection(selection, trace.values),
+                selection.array_type,
+            )
+            for name, selection in self.input_boundaries
+        }
 
     @property
     def source_map(self) -> Mapping[str, str]:

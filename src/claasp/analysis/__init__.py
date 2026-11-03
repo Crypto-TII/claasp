@@ -78,6 +78,7 @@ from claasp.analysis.datasets import (
     generate_avalanche_dataset,
     generate_random_dataset,
 )
+from claasp.analysis.division_property import DivisionPropertyPathSearch
 from claasp.analysis.facade import Analysis, AnalysisResult, TrailSearchBackend
 from claasp.analysis.legacy_evidence import (
     LegacyBoundedDifferentialCluster,
@@ -171,6 +172,7 @@ from claasp.analysis.truncated import (
     propagate_two_word_speck_round,
     truncated_modular_add,
 )
+from claasp.analysis.two_subset import TwoSubsetDivisionProperty, two_subset_transition_table
 from claasp.semantics.cryptanalysis import (
     BitPattern,
     ModularAddLinearSemantics,
@@ -200,6 +202,9 @@ __all__ = [
     "QuasidifferentialTrail",
     "QuasidifferentialEnumeration",
     "FixedKeyProbabilityResult",
+    "DivisionPropertyPathSearch",
+    "TwoSubsetDivisionProperty",
+    "two_subset_transition_table",
     "ContinuousDiffusionResult",
     "continuous_diffusion",
     "Analysis",

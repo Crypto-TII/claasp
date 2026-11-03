@@ -601,6 +601,12 @@
       "qualified_name": "claasp.analysis.DifferentialLinearSearchResult"
     },
     {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.DivisionPropertyPathSearch"
+    },
+    {
       "canonical_name": "claasp.analysis.constraints.Equal",
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
@@ -977,6 +983,12 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.TruncatedXorDifference"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.TwoSubsetDivisionProperty"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.XorDifference",
@@ -3058,6 +3070,85 @@
       "qualified_name": "claasp.analysis.deterministic_partition"
     },
     {
+      "canonical_name": "claasp.analysis.division_property",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.division_property"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.__init__",
+      "defined_in": "claasp.analysis.division_property",
+      "documented_by": "claasp.analysis.division_property.DivisionPropertyPathSearch",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_division_property_trail",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_division_property_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_integral_distinguishers",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_integral_distinguishers"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_minimum_data_for_rounds",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_minimum_data_for_rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_number_of_balanced_rounds",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.find_number_of_balanced_rounds"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.optimal_input",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.optimal_input"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.state_bit_size",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.state_bit_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.structure",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.structure"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.todo_input",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.division_property.DivisionPropertyPathSearch.todo_input"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.feistel_division_property_trail",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.division_property.feistel_division_property_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.division_property.spn_division_property_trail",
+      "defined_in": "claasp.analysis.division_property",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.division_property.spn_division_property_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.monomial.enumerate_optimal_monomial_parity",
       "defined_in": "claasp.analysis.monomial",
       "kind": "function",
@@ -3141,6 +3232,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.continuous_evaluate"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.division_property",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.division_property"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.enumerate_solutions",
@@ -3279,6 +3376,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.train_staged_neural_distinguisher"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.two_subset_division_property",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.two_subset_division_property"
     },
     {
       "canonical_name": "claasp.analysis.facade.AnalysisResult.__init__",
@@ -5804,6 +5907,61 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "function",
       "qualified_name": "claasp.analysis.truncated_modular_add"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.two_subset"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.__init__",
+      "defined_in": "claasp.analysis.two_subset",
+      "documented_by": "claasp.analysis.two_subset.TwoSubsetDivisionProperty",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_all_output_bits_over_cube",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_all_output_bits_over_cube"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_specific_output_bit_over_cube",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_at_specific_output_bit_over_cube"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_over_cube_scan",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.is_balanced_over_cube_scan"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.milp_model",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.two_subset.TwoSubsetDivisionProperty.milp_model"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.two_subset_transition_table",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.two_subset.two_subset_transition_table"
+    },
+    {
+      "canonical_name": "claasp.analysis.two_subset.two_subset_transition_table",
+      "defined_in": "claasp.analysis.two_subset",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.two_subset_transition_table"
     },
     {
       "canonical_name": "claasp.analysis.legacy_evidence.ublock_three_round_legacy_cluster",
@@ -10744,8 +10902,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -10772,6 +10932,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -10817,6 +10978,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -10907,8 +11069,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -10935,6 +11099,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -10980,6 +11145,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11070,8 +11236,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -11098,6 +11266,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -11143,6 +11312,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11233,8 +11403,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -11261,6 +11433,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -11306,6 +11479,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11396,8 +11570,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -11424,6 +11600,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -11469,6 +11646,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11559,8 +11737,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -11587,6 +11767,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -11632,6 +11813,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11722,8 +11904,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -11750,6 +11934,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -11795,6 +11980,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -11885,8 +12071,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -11913,6 +12101,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -11958,6 +12147,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12048,8 +12238,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -12076,6 +12268,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -12121,6 +12314,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12211,8 +12405,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -12239,6 +12435,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -12284,6 +12481,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12374,8 +12572,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -12402,6 +12602,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -12447,6 +12648,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12537,8 +12739,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -12565,6 +12769,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -12610,6 +12815,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12700,8 +12906,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -12728,6 +12936,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -12773,6 +12982,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -12863,8 +13073,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -12891,6 +13103,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -12936,6 +13149,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -13026,8 +13240,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -13054,6 +13270,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -13099,6 +13316,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -13189,8 +13407,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -13217,6 +13437,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -13262,6 +13483,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -13352,8 +13574,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -13380,6 +13604,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -13425,6 +13650,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -13515,8 +13741,10 @@
         "claasp.primitives.block_ciphers.baksheesh.Baksheesh",
         "claasp.primitives.block_ciphers.ballet.Ballet",
         "claasp.primitives.block_ciphers.bea1.BEA1",
+        "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
         "claasp.primitives.block_ciphers.gift.primitive.Gift",
@@ -13543,6 +13771,7 @@
         "claasp.primitives.block_ciphers.prince_v2.PrinceV2",
         "claasp.primitives.block_ciphers.raiden.Raiden",
         "claasp.primitives.block_ciphers.rc5.RC5",
+        "claasp.primitives.block_ciphers.rc6.RC6",
         "claasp.primitives.block_ciphers.rectangle.Rectangle",
         "claasp.primitives.block_ciphers.rijndael.Rijndael",
         "claasp.primitives.block_ciphers.saecham.Saecham",
@@ -13588,6 +13817,7 @@
         "claasp.primitives.functions.sha1.SHA1SingleBlockFunction",
         "claasp.primitives.functions.sha2.SHA2SingleBlockFunction",
         "claasp.primitives.functions.whirlpool.WhirlpoolSingleBlockFunction",
+        "claasp.primitives.permutations.alzette.Alzette",
         "claasp.primitives.permutations.ascon.primitive.Ascon",
         "claasp.primitives.permutations.ascon.sbox_sigma.AsconSboxSigma",
         "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix.AsconSboxSigmaNoMatrix",
@@ -15683,6 +15913,12 @@
       "qualified_name": "claasp.primitives.Add"
     },
     {
+      "canonical_name": "claasp.primitives.permutations.alzette.Alzette",
+      "defined_in": "claasp.primitives.permutations.alzette",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.Alzette"
+    },
+    {
       "canonical_name": "claasp.primitives.block_ciphers.aradi.primitive.Aradi",
       "defined_in": "claasp.primitives.block_ciphers.aradi.primitive",
       "kind": "class",
@@ -15797,6 +16033,12 @@
       "qualified_name": "claasp.primitives.Blink"
     },
     {
+      "canonical_name": "claasp.primitives.block_ciphers.blowfish.Blowfish",
+      "defined_in": "claasp.primitives.block_ciphers.blowfish",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.Blowfish"
+    },
+    {
       "canonical_name": "claasp.primitives.functions.bluetooth_e0.BluetoothE0KeystreamFunction",
       "defined_in": "claasp.primitives.functions.bluetooth_e0",
       "kind": "class",
@@ -15807,6 +16049,12 @@
       "defined_in": "claasp.primitives.block_ciphers.cham",
       "kind": "class",
       "qualified_name": "claasp.primitives.CHAM"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.crax.CRAX",
+      "defined_in": "claasp.primitives.block_ciphers.crax",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.CRAX"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.cast.Cast",
@@ -16191,6 +16439,12 @@
       "defined_in": "claasp.primitives.block_ciphers.rc5",
       "kind": "class",
       "qualified_name": "claasp.primitives.RC5"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.rc6.RC6",
+      "defined_in": "claasp.primitives.block_ciphers.rc6",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.RC6"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.raiden.Raiden",
@@ -16625,10 +16879,22 @@
       "qualified_name": "claasp.primitives.block_ciphers.Ballet"
     },
     {
+      "canonical_name": "claasp.primitives.block_ciphers.blowfish.Blowfish",
+      "defined_in": "claasp.primitives.block_ciphers.blowfish",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_ciphers.Blowfish"
+    },
+    {
       "canonical_name": "claasp.primitives.block_ciphers.cham.CHAM",
       "defined_in": "claasp.primitives.block_ciphers.cham",
       "kind": "class",
       "qualified_name": "claasp.primitives.block_ciphers.CHAM"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.crax.CRAX",
+      "defined_in": "claasp.primitives.block_ciphers.crax",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_ciphers.CRAX"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.cast.Cast",
@@ -16791,6 +17057,12 @@
       "defined_in": "claasp.primitives.block_ciphers.rc5",
       "kind": "class",
       "qualified_name": "claasp.primitives.block_ciphers.RC5"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.rc6.RC6",
+      "defined_in": "claasp.primitives.block_ciphers.rc6",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_ciphers.RC6"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.raiden.Raiden",
@@ -17246,6 +17518,13 @@
       "qualified_name": "claasp.primitives.block_ciphers.bea1.BEA1.xor_round_key"
     },
     {
+      "canonical_name": "claasp.primitives.block_ciphers.blowfish.Blowfish.__init__",
+      "defined_in": "claasp.primitives.block_ciphers.blowfish",
+      "documented_by": "claasp.primitives.block_ciphers.blowfish.Blowfish",
+      "kind": "constructor",
+      "qualified_name": "claasp.primitives.block_ciphers.blowfish.Blowfish.__init__"
+    },
+    {
       "canonical_name": "claasp.primitives.block_ciphers.cast.Cast.__init__",
       "defined_in": "claasp.primitives.block_ciphers.cast",
       "documented_by": "claasp.primitives.block_ciphers.cast.Cast",
@@ -17258,6 +17537,13 @@
       "documented_by": "claasp.primitives.block_ciphers.cham.CHAM",
       "kind": "constructor",
       "qualified_name": "claasp.primitives.block_ciphers.cham.CHAM.__init__"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.crax.CRAX.__init__",
+      "defined_in": "claasp.primitives.block_ciphers.crax",
+      "documented_by": "claasp.primitives.block_ciphers.crax.CRAX",
+      "kind": "constructor",
+      "qualified_name": "claasp.primitives.block_ciphers.crax.CRAX.__init__"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.des",
@@ -17854,6 +18140,13 @@
       "documented_by": "claasp.primitives.block_ciphers.rc5.RC5",
       "kind": "constructor",
       "qualified_name": "claasp.primitives.block_ciphers.rc5.RC5.__init__"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.rc6.RC6.__init__",
+      "defined_in": "claasp.primitives.block_ciphers.rc6",
+      "documented_by": "claasp.primitives.block_ciphers.rc6.RC6",
+      "kind": "constructor",
+      "qualified_name": "claasp.primitives.block_ciphers.rc6.RC6.__init__"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.rectangle.Rectangle.__init__",
@@ -19077,6 +19370,12 @@
       "qualified_name": "claasp.primitives.permutations"
     },
     {
+      "canonical_name": "claasp.primitives.permutations.alzette.Alzette",
+      "defined_in": "claasp.primitives.permutations.alzette",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.permutations.Alzette"
+    },
+    {
       "canonical_name": "claasp.primitives.permutations.ascon.primitive.Ascon",
       "defined_in": "claasp.primitives.permutations.ascon.primitive",
       "kind": "class",
@@ -19237,6 +19536,13 @@
       "defined_in": "claasp.primitives.permutations.xoodoo.sbox",
       "kind": "class",
       "qualified_name": "claasp.primitives.permutations.XoodooSbox"
+    },
+    {
+      "canonical_name": "claasp.primitives.permutations.alzette.Alzette.__init__",
+      "defined_in": "claasp.primitives.permutations.alzette",
+      "documented_by": "claasp.primitives.permutations.alzette.Alzette",
+      "kind": "constructor",
+      "qualified_name": "claasp.primitives.permutations.alzette.Alzette.__init__"
     },
     {
       "canonical_name": "claasp.primitives.permutations.ascon",
@@ -33018,6 +33324,19 @@
       "qualified_name": "claasp.transformations.contracts.TransformationResult.__init__"
     },
     {
+      "canonical_name": "claasp.transformations.contracts.TransformationResult.bind_inputs",
+      "defined_in": "claasp.transformations.contracts",
+      "kind": "method",
+      "qualified_name": "claasp.transformations.contracts.TransformationResult.bind_inputs"
+    },
+    {
+      "canonical_name": "claasp.transformations.contracts.TransformationResult.input_boundaries",
+      "defined_in": "claasp.transformations.contracts",
+      "documented_by": "claasp.transformations.contracts.TransformationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.transformations.contracts.TransformationResult.input_boundaries"
+    },
+    {
       "canonical_name": "claasp.transformations.contracts.TransformationResult.primitive",
       "defined_in": "claasp.transformations.contracts",
       "documented_by": "claasp.transformations.contracts.TransformationResult",
@@ -33029,6 +33348,13 @@
       "defined_in": "claasp.transformations.contracts",
       "kind": "property",
       "qualified_name": "claasp.transformations.contracts.TransformationResult.source_map"
+    },
+    {
+      "canonical_name": "claasp.transformations.contracts.TransformationResult.source_primitive",
+      "defined_in": "claasp.transformations.contracts",
+      "documented_by": "claasp.transformations.contracts.TransformationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.transformations.contracts.TransformationResult.source_primitive"
     },
     {
       "canonical_name": "claasp.transformations.contracts.TransformationResult.sources",

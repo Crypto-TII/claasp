@@ -13,7 +13,7 @@ QUALITY = ROOT / ".github" / "workflows" / "claasp-quality.yaml"
 RELEASE_IMAGE = ROOT / ".github" / "workflows" / "claasp-v5-release-image.yaml"
 REVIEW_CONDITION = (
     "if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || "
-    "github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')"
+    "github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')"
 )
 
 
@@ -39,6 +39,7 @@ def _job_blocks(workflow: Path) -> dict[str, str]:
 def test_review_workflows_accept_review_and_stack_bases():
     expected = {
         "claasp-v5",
+        "codex/**",
         "develop",
         "feat/latex-report-tables",
         "feat/statistical-supplied-datasets",

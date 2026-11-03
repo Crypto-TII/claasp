@@ -25,6 +25,12 @@ claasp.analysis.component_properties
 .. automodule:: claasp.analysis.component_properties
    :no-index:
 
+claasp.analysis.division_property
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.division_property
+   :no-index:
+
 claasp.analysis.linear_properties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -53,6 +59,12 @@ claasp.analysis.truncated
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.analysis.truncated
+   :no-index:
+
+claasp.analysis.two_subset
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.two_subset
    :no-index:
 
 claasp.annotations
