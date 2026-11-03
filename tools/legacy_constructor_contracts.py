@@ -8,11 +8,12 @@ from pathlib import Path
 
 from claasp.primitives._catalogue_exports import load_export
 
-snapshot = json.load(open("tools/data/legacy_current_snapshot.json"))
+ROOT = Path(__file__).resolve().parents[1]
+snapshot = json.loads((ROOT / "tools/data/legacy_current_snapshot.json").read_text())
 modules = {item["path"]: item for item in snapshot["python_files"]}
 records = (
-    json.load(open("tools/data/legacy_inventory.json"))["records"]
-    + json.load(open("tools/data/legacy_inventory_delta.json"))["records"]
+    json.loads((ROOT / "tools/data/legacy_inventory.json").read_text())["records"]
+    + json.loads((ROOT / "tools/data/legacy_inventory_delta.json").read_text())["records"]
 )
 contracts = {
     "cipher_family": "Primitive(family_name=...) and immutable graph metadata replace constructor string labels.",
@@ -88,7 +89,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
-    path = Path("tools/data/legacy_constructor_contracts.json")
+    path = ROOT / "tools/data/legacy_constructor_contracts.json"
     rendered = json.dumps(generate(), indent=2, sort_keys=True) + "\n"
     if args.check:
         if path.read_text() != rendered:

@@ -1,0 +1,3785 @@
+{
+  "groups": {
+    "activity": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/semantics/cryptanalysis/test_activity.py",
+        "tests/unit/representations/constraints/milp/test_trails.py",
+        "tests/integration/test_glpk_word_trails.py"
+      ],
+      "replacement_contract": "Typed activity MILP/CP models retain exact wiring and explicit branch-number relaxations. AES active-S-box sequences are solved; uBlock reference values are labeled lower bounds rather than exact concrete differential optima."
+    },
+    "algebraic": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_boolean_system.py",
+        "tests/unit/representations/constraints/polynomial/test_boolean_system.py",
+        "tests/unit/analysis/test_monomial__parity.py",
+        "tests/integration/test_monomial_parity_glpk.py"
+      ],
+      "replacement_contract": "Sparse Boolean polynomial systems and typed monomial models replace Sage-owned rings. Truth-table/cube evaluation checks small instances; solver completeness and limits are explicit. Licensed large legacy runs are not inferred from portable tests."
+    },
+    "avalanche": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_avalanche.py",
+        "tests/unit/analysis/test_avalanche__current_legacy.py"
+      ],
+      "replacement_contract": "Empirical paired flip counts and dependence/weight/entropy are retained. Shared explicit samples check numerical meaning. Sample-dependent significance rules and the seeded NumPy sampling stream are intentional v5 improvements."
+    },
+    "boomerang": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/representations/constraints/sat/test_boomerang.py",
+        "tests/integration/test_boomerang_search.py"
+      ],
+      "replacement_contract": "Restored whole-trail ARX search composes two outer characteristics with the original large-switch subset. Independent exact carry/borrow counts check switches. Outer weight, local probability and sampled full-quartet rate are distinct claims."
+    },
+    "catalogue": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/primitives/test_package__current_legacy_vectors.py",
+        "tests/unit/primitives/test_package__legacy_options.py",
+        "tests/unit/catalogue/test_catalogue__metadata.py"
+      ],
+      "replacement_contract": "Declared constructors and typed component metadata replace dynamic Sage/package scanning. Pinned paired vectors and explicit constructor contracts are separate from mere import/discovery checks."
+    },
+    "components": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_component_properties__lookup.py",
+        "tests/unit/analysis/test_component_properties__linear.py",
+        "tests/unit/semantics/cryptanalysis/test_trails__current_legacy_sbox.py",
+        "tests/unit/representations/constraints/sat/components/test_binary_field.py",
+        "tests/integration/test_component_backend_parity.py"
+      ],
+      "replacement_contract": "Typed semantic components replace legacy component subclasses. Exact small-width functional miters, lookup tables and property tests check behavior separately from SAT/SMT/MILP/CP serialization. Unsupported domains remain explicit errors."
+    },
+    "composed": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_composed_search.py",
+        "tests/unit/analysis/test_composed.py",
+        "tests/integration/test_sat_trail_assembly.py"
+      ],
+      "replacement_contract": "Differential-linear and shared-difference paired models retain their distinct constraints, signs and normalization; checked small examples and real solver witnesses replace old parser/string assertions."
+    },
+    "continuous": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/representations/execution/test_continuous__current_legacy.py",
+        "tests/unit/semantics/cryptanalysis/test_continuous__generalized_arithmetic.py",
+        "tests/unit/analysis/test_continuous_differential.py",
+        "tests/integration/test_continuous_differential_search.py"
+      ],
+      "replacement_contract": "The generalized evaluator and CP differential heuristic are different models. Both are retained separately; Boolean-correct default carries and explicit legacy traversal are tested against fixed legacy vectors. Float search results remain heuristic."
+    },
+    "editing": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/transformations/test_editing.py",
+        "tests/unit/transformations/test_editing__joined_key_views.py",
+        "tests/unit/transformations/test_slicing__current_legacy.py",
+        "tests/unit/transformations/test_slicing__observations.py",
+        "tests/integration/test_primitive_inverse_equivalents.py"
+      ],
+      "replacement_contract": "Typed immutable cuts, joined selections, key-injection removal and inversion replace editor mutations. Witnesses check evaluation and exact boundary values, not historical component IDs."
+    },
+    "evaluation": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/primitives/test_package__current_legacy_vectors.py",
+        "tests/unit/representations/execution/test_batch.py",
+        "tests/integration/test_current_legacy_generated_backends.py"
+      ],
+      "replacement_contract": "Scalar, batch and generated execution retain packed-bit meaning. Numerical fixtures and checked traces are the evidence; generated legacy source strings and compiler internals are intentionally replaced."
+    },
+    "functional": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_constraints.py",
+        "tests/integration/test_component_backend_parity.py",
+        "tests/integration/test_binary_field_recovery.py"
+      ],
+      "replacement_contract": "Graph-wide exact functional constraints replace backend-specific generated strings. Exhaustive small-input miters are solved by four backends, and recovered inputs are checked by scalar evaluation. Prime-field and unsupported component domains are rejected explicitly."
+    },
+    "graph": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/graph/test_primitive.py",
+        "tests/unit/graph/test_composite.py",
+        "tests/unit/graph/test_bit_builder__observations.py",
+        "tests/unit/primitives/test_package__native_round_observations.py"
+      ],
+      "replacement_contract": "Immutable typed graph and explicit selections replace mutable DTOs, rounds and component state. Graph construction, unit boundaries and observation values are checked; old mutable object layouts are not a compatibility contract."
+    },
+    "helpers": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/utils/test_package.py",
+        "tests/unit/graph/test_package__catalogue_migration.py",
+        "tests/unit/repository/test_tooling_inventory.py"
+      ],
+      "replacement_contract": "Typed boundary and arithmetic utilities replace legacy ID suffixes, name maps, and general mutable helper functions. Stable numerical/selection contracts are checked; obsolete storage and code-string conventions are not scientific capabilities."
+    },
+    "neural": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_neural__projections.py",
+        "tests/unit/analysis/test_neural_workflows.py",
+        "tests/unit/analysis/test_neural_experiments.py",
+        "tests/integration/test_tensorflow_neural_driver.py",
+        "tests/integration/test_legacy_neural_architectures.py"
+      ],
+      "replacement_contract": "MSB-first dataset projections, architecture/loss defaults and independent holdout decisions are retained or explicitly specified. Seeded streams and two-sided sample-dependent significance are deliberate improvements; stochastic learning curves need not be identical."
+    },
+    "paired": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/transformations/test_paired.py",
+        "tests/integration/test_paired_constraints.py"
+      ],
+      "replacement_contract": "Paired typed graphs retain the two related executions and explicit shared differences; generated mutable CompoundXorDifferentialCipher objects are replaced."
+    },
+    "reporting": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/presentation/test_adapters.py",
+        "tests/unit/presentation/test_exports.py",
+        "tests/unit/drivers/renderers/test_presentation.py",
+        "tests/unit/presentation/test_files.py"
+      ],
+      "replacement_contract": "Result-owned reports and typed tables preserve numerical content across terminal, CSV/dataframe, plots and LaTeX. Old mutable Report internals, templates and cosmetic strings are replaced rather than asserted byte-identical."
+    },
+    "solvers": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/drivers/solvers/test_minizinc__optimization_stream.py",
+        "tests/unit/drivers/solvers/test_minizinc__process_timeout.py",
+        "tests/unit/drivers/solvers/test_progress__legacy_parsers.py",
+        "tests/unit/drivers/solvers/test_progress__integer_solutions.py",
+        "tests/integration/test_glpk_progress.py"
+      ],
+      "replacement_contract": "Class-based solver drivers retain portable status, assignments, objective and limits. Last-incumbent parsing, UNKNOWN, partial output, primal validation and process cleanup are tested. A substituted executable is not claimed to reproduce every vendor tuning parameter."
+    },
+    "statistics": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_nist_sts__kat.py",
+        "tests/unit/analysis/test_nist_sts.py",
+        "tests/unit/analysis/test_statistical_datasets__supplied.py",
+        "tests/integration/test_nist_integration.py",
+        "tests/integration/test_dieharder_integration.py"
+      ],
+      "replacement_contract": "Native NIST numerical definitions, original API, 21 templates and 52 original tests remain distinct from external NIST/Dieharder drivers. Dataset partitions, bit order and non-byte-aligned transport are checked; process smoke tests are not statistical certification."
+    },
+    "trails": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/analysis/test_trail_search.py",
+        "tests/integration/test_fractional_trail_weights.py",
+        "tests/integration/test_word_differential.py",
+        "tests/integration/test_speck_trail_enumeration.py"
+      ],
+      "replacement_contract": "Exact rational component products, signs, bounded enumeration and checked decoded trails replace backend-owned dictionaries. The capability matrix records construction separately from materialization, solving and witness validation."
+    },
+    "truncated": {
+      "claim": "scoped executable replacement contracts, not whole-module or whole-legacy equivalence",
+      "evidence_files": [
+        "tests/unit/semantics/cryptanalysis/test_truncated__wordwise_relations.py",
+        "tests/unit/semantics/cryptanalysis/test__lookup_truncated.py",
+        "tests/unit/representations/constraints/sat/test_trails.py",
+        "tests/integration/test_sat_trail_assembly.py"
+      ],
+      "replacement_contract": "Bitwise and wordwise truncated domains are separate typed relations. Exhaustive local relations and checked impossible/paired witnesses replace helper string layouts; search restrictions are not promoted to concrete-security proofs."
+    }
+  },
+  "records": [
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "ComponentState"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/DTOs/component_state.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "8377fe6548441b0d93e92cd03b5323e5e4243bff27cb3e77ec7c3dba7b08da7b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "PowerOf2WordBasedDTO"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/DTOs/power_of_2_word_based_dto.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "e66e04b3cf100c228c79bc1b2d384963ce8c7b3674ac1c640960be692abacab5"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "ddaa32ce404a843832528e952a237bc5dceec2d7586857e9f194174f95a2a11d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "ContinuousDiffusionAnalysis"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/continuous_diffusion_analysis.py",
+      "review_group": "continuous",
+      "scientific_capability_removed": false,
+      "sha256": "f72729f8967650fc620fecc62af16ea837d7756a68d182f95908010d1c04c01a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "evaluate",
+        "evaluate_using_c",
+        "evaluate_vectorized",
+        "evaluate_with_intermediate_outputs_continuous_diffusion_analysis"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/evaluator.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "ae61ce1896b2ba66ac708322fe803a2a46c69fda650b8ba16117e756797143b3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "int_to_byte_array",
+        "set_from_hex_string",
+        "sbox",
+        "sbox_bool_func",
+        "linear_layer",
+        "permutation",
+        "mix_column_generalized",
+        "add_padding",
+        "convert_x_to_binary_matrix_given_polynomial_modulus",
+        "convert_polynomial_to_binary_matrix_given_polynomial_modulus",
+        "transform_GF2NMatrix_to_BinMatrix",
+        "mix_column_generalized_bool_func",
+        "padding",
+        "XOR",
+        "XOR_boolean_function",
+        "constant_bool_func",
+        "concatenate_bool_func",
+        "AND",
+        "OR",
+        "NOT",
+        "MODADD",
+        "MODMUL",
+        "MODSUB",
+        "idea_modmul",
+        "ROTATE",
+        "SIGMA",
+        "THETA_KECCAK",
+        "THETA_XOODOO",
+        "THETA_GASTON",
+        "ROTATE_BY_VARIABLE_AMOUNT",
+        "ROTATE_boolean_function",
+        "SHIFT",
+        "SHIFT_BY_VARIABLE_AMOUNT",
+        "select_bits",
+        "merge_bits",
+        "compute_indexed_sum",
+        "index_list_to_expression_str",
+        "fsr_binary",
+        "compute_word_indexed_sum",
+        "index_list_to_expression_str_word",
+        "fsr_word"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/generic_functions.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "9a05a123f28d49655098252191e1b045aeadd86e2e80fc05039243bc31703e08"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "AND_continuous_diffusion_analysis",
+        "CONSTANT_continuous_diffusion_analysis",
+        "LINEAR_LAYER_continuous_diffusion_analysis",
+        "MODADD_continuous_diffusion_analysis",
+        "MODADD_continuous_diffusion_analysis_two_words",
+        "MODSUB_continuous_diffusion_analysis",
+        "NOT_continuous_diffusion_analysis",
+        "OR_continuous_diffusion_analysis",
+        "ROTATE_continuous_diffusion_analysis",
+        "ROTATE_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis",
+        "SBOX_continuous_diffusion_analysis",
+        "SHIFT_continuous_diffusion_analysis",
+        "SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis",
+        "SIGMA_continuous_diffusion_analysis",
+        "XOR_continuous_diffusion_analysis",
+        "XOR_continuous_diffusion_analysis_two_words",
+        "MIX_COLUMN_generalized_continuous_diffusion_analysis",
+        "compute_sbox_precomputations",
+        "create_lookup_table_by_matrix",
+        "create_lookup_table_for_finite_field_element",
+        "extended_and_bit",
+        "extended_not_bit",
+        "extended_one_left_rotation_iteration",
+        "extended_one_left_shift_iteration",
+        "extended_one_right_rotation_iteration",
+        "extended_one_right_shift_iteration",
+        "extended_left_rotation_by_variable_amount",
+        "extended_left_shift_by_variable_amount",
+        "extended_right_rotation_by_variable_amount",
+        "extended_right_shift_by_variable_amount",
+        "extended_two_bit_multiplexer",
+        "get_mix_column_precomputations",
+        "get_sbox_precomputations",
+        "select_bits_continuous_diffusion_analysis"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/generic_functions_continuous_diffusion_analysis.py",
+      "review_group": "continuous",
+      "scientific_capability_removed": false,
+      "sha256": "2882463c26cd0a2a341f81bc5ce9dc526ecf35952445e7d94e33a1a817f0705d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "bit_vector_to_integer",
+        "bit_vector_print_as_hex_values",
+        "bit_vector_select_word",
+        "bit_vector_SBOX",
+        "bit_vector_XOR",
+        "print_component_info",
+        "bit_vector_CONCAT",
+        "bit_vector_AND",
+        "bit_vector_OR",
+        "bit_vector_NOT",
+        "bit_vector_SHIFT_BY_VARIABLE_AMOUNT",
+        "bit_vector_MODADD",
+        "bit_vector_MODMUL",
+        "bit_vector_MODSUB",
+        "bit_vector_idea_modmul",
+        "bit_vector_ROTATE",
+        "bit_vector_SHIFT",
+        "bit_vector_linear_layer",
+        "bit_vector_mix_column",
+        "bit_vector_mix_column_poly0",
+        "bit_vector_permutation"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/generic_functions_vectorized_bit.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "c4c7cae8671dd5e3b08f98467427bacb29e02cbf8457d29d80bbf621769d2c55"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "integer_array_to_evaluate_vectorized_input",
+        "cipher_inputs_to_evaluate_vectorized_inputs",
+        "get_number_of_bytes_needed_for_bit_size",
+        "evaluate_vectorized_outputs_to_integers",
+        "byte_vector_print_as_hex_values",
+        "byte_vector_is_consecutive",
+        "byte_vector_select_all_words",
+        "get_number_of_consecutive_bits",
+        "generate_formatted_inputs",
+        "byte_vector_SBOX",
+        "byte_vector_XOR",
+        "byte_vector_AND",
+        "byte_vector_OR",
+        "byte_vector_NOT",
+        "byte_vector_SHIFT_BY_VARIABLE_AMOUNT",
+        "byte_vector_MODADD",
+        "byte_vector_MODMUL",
+        "byte_vector_idea_modmul",
+        "byte_vector_MODSUB",
+        "byte_vector_ROTATE",
+        "byte_vector_SHIFT",
+        "byte_vector_linear_layer",
+        "byte_vector_mix_column",
+        "byte_vector_mix_column_poly0",
+        "byte_vector_permutation"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/generic_functions_vectorized_byte.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "7eff5f5f984fda1a7ddd89175247016c02ddd02cd941efa849b3d612e8a24f20"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "AlgebraicModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/algebraic/algebraic_model.py",
+      "review_group": "algebraic",
+      "scientific_capability_removed": false,
+      "sha256": "5bb64588d5427aec26d5cf022359bd0f2a7a5e4a4df5650c08d75bc5ea468e04"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "is_boolean_polynomial_ring"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/algebraic/boolean_polynomial_ring.py",
+      "review_group": "algebraic",
+      "scientific_capability_removed": false,
+      "sha256": "bb02985a4f4a32f5c40b2e4e4de36012b2fe1e233d2e7e6888df7222c766a29d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "mod_binary_operation_polynomials",
+        "mod_addition_polynomials",
+        "mod_subtraction_polynomials",
+        "equality_polynomials"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/algebraic/constraints.py",
+      "review_group": "algebraic",
+      "scientific_capability_removed": false,
+      "sha256": "697e6ce7ce148177086e0b537c9e1ca2d1961e9c382fd014fb9165f38c34d4b0"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "get_bct_operations"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/minizinc_utils/mzn_bct_predicates.py",
+      "review_group": "boomerang",
+      "scientific_capability_removed": false,
+      "sha256": "45ebe830a0dfe2a9435d4d3d2d49da0113f84bee336af8288399a801902df44b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/minizinc_utils/usefulfunctions.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "8882855c27e20a9db37c2e53dfa1cbd3b7c0db4cf5bf4f1ae217794d94a1eea2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MiniZincModelParts",
+        "MznModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_model.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "ecccc0b4e3c5109ecda40ed84aa18762f2df093bd8d32cf2f2c0b149797aa0c3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznBoomerangModelARXOptimized"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized.py",
+      "review_group": "boomerang",
+      "scientific_capability_removed": false,
+      "sha256": "36d71c6892f0bad88479ef991acf189711d7db07dfe8413ab9dcf1a46d55bcbb"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznCipherModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "2ffefdf55e9d078e3cd17aff60ad5e3129a696c4758f5043c61678c0465e7da8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznCipherModelARXOptimized"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "f1003ed5c293b6820da57158b25e5390d1c47a30bdfa8c603c04c0fea3ddef06"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "3ef1a251ee79de01182701d94b89b314bfeed9d94c2544eae945a70aed765a3f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznDeterministicTruncatedXorDifferentialModelARXOptimized"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "c8e612618b636fb5cfc5a8342a7caba97fe266446b2a12df74b1994419d6bc1d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznDifferentialLinearContinuousModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model.py",
+      "review_group": "continuous",
+      "scientific_capability_removed": false,
+      "sha256": "0e3a3737dfc4d3db48cbd60047707c9d5731a31d945fcfba7a10fb5970336b0a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznDifferentialLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "f3f96215cf6a4b3a1df18a4466237f7e480c62372cdedfb5f48ecdc8a10f6746"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznHybridImpossibleXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "bf97de3ca2e46b88c8e8b3f3695cb693169ec3595cf829cf91d04cec80fc956f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznImpossibleXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "c730641d7abcdf99b7a215d6c164d741a651b058e59677c1ca962fe88583c5f2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznWordwiseDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "2ab5f8feb6e5c6f5feb2ae62756923968b6e380cd56cb1a24177703f96ce95ea"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "and_xor_differential_probability_ddt",
+        "update_and_or_ddt_valid_probabilities",
+        "MznXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "f90759a2d60e3904b7ddbfac9b709f65c3e9c9f48b8bc5be7a78c5ec7ea3219d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznXorDifferentialModelARXOptimized"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "ded21956ff07eb92011931fde2564c5cc79331c3ea68015f3f084b428c50c4b7"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "build_xor_truncated_table",
+        "MznXorDifferentialNumberOfActiveSboxesModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "1c009e11da254eb5697a31f378b2057747129092612f48805a9228fa45ba1df4"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznXorDifferentialFixingNumberOfActiveSboxesModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "904d6cb7cc7f6b0a50f44cafe4da97932326b90482377d5341c9334b696dbd28"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MznXorLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "49323d543ba8a9ee22fef90e8251893b9e711be5d3eea843d24360db8fa1f80f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/cp/solvers.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "ae2d321c71e5580a4c1474d8a3608b3c2050cd7f7c3dd70346e4eed68ee5ed89"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "get_independent_input_output_variables",
+        "get_input_output_variables",
+        "MilpModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_model.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "91497610ecda06f1dca17431c26b5b337aaddfe742e3b700954c3b0d56dc3261"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpMonomialPredictionModel",
+        "check_correctness_of_partial_anf_or_superpoly"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction.py",
+      "review_group": "algebraic",
+      "scientific_capability_removed": false,
+      "sha256": "82a26e97819c6757d6edce05ca306050908759f73d94345ad85bfcfc0e1a7928"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpBitwiseDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "b3d53d13bd55bf414d48b21ba8b5f8508b4bec1dff7d4b749588dd6be20505f3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpBitwiseImpossibleXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "0b235c26147b61a76191df2b3c9b34fa83d9047d0ee53aee7a812eee6c24af42"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpCipherModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_cipher_model.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "b2e4c84fc75458d7c7b58a22613c1feca137383509912ffece7903b32dffd2e1"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpWordwiseBranchNumberNumberOfActiveSboxesModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "f8ba21f33f9752245d7258fbac100d0e508694e86006a6a50bcbac26f50015f5"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpWordwiseDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "15bf41ce67bae9cba95f7782999c8d7c54d224619d10dbf5f7ed7f967b0f0d91"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpWordwiseImpossibleXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_wordwise_impossible_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "9026e7f8e9cc8a1eb392281661cca4bb8ecf78a25522f0fe720e20158572a087"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "225c6bbf2b3fb5aa9a72388e6de169324992f4d48476c93f788d1d3ed7c1de58"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpXorDifferentialNumberOfActiveSboxesModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "0e2536ee9c73e1d7d1a2d2e9088ffc08bf97e7538a15cdfff3727fd4ab2ddc95"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MilpXorLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "f4a90502b24c73bca63a1e78b88ea368c047518ffa545660120384ff825a8756"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/solvers.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "8464e373fb5bfc41d6a4fe6a9dfcb45877395490b6ec6b4310c264b02f86c929"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "and_inequalities",
+        "and_LAT",
+        "convex_hull",
+        "cutting_off_greedy",
+        "cutting_off_milp"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_and_operation_2_input_bits.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "8026ebfccab52eefb664c9347c69d23b447ef44c31aaf3a7cd1b531c01d76386"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_espresso_input",
+        "generate_product_of_sum_from_espresso",
+        "get_dictionary_that_contains_inequalities_for_large_sboxes",
+        "update_dictionary_that_contains_inequalities_for_large_sboxes",
+        "delete_dictionary_that_contains_inequalities_for_large_sboxes"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_large_sboxes.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "b9809fd28b179d5d4c05b8055bc6910b09c0803a8d8f44b70da0a08afa7c192c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_valid_points_for_truncated_mds_matrix",
+        "update_dictionary_that_contains_wordwise_truncated_mds_inequalities",
+        "output_dictionary_that_contains_wordwise_truncated_mds_inequalities",
+        "delete_dictionary_that_contains_wordwise_truncated_mds_inequalities"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_mds_matrices.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "1b358888448cc54f9467bf136ec1caf309eeeb4646b782225ea35bc5e65c3936"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_valid_points_input_words",
+        "update_dictionary_that_contains_wordwise_truncated_input_inequalities",
+        "output_dictionary_that_contains_wordwise_truncated_input_inequalities",
+        "delete_dictionary_that_contains_wordwise_truncated_input_inequalities",
+        "get_valid_points_for_wordwise_xor",
+        "generate_valid_points_for_xor_between_n_input_words",
+        "update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs",
+        "update_dictionary_that_contains_xor_inequalities_for_specific_wordwise_matrix",
+        "output_dictionary_that_contains_wordwise_truncated_xor_inequalities",
+        "delete_dictionary_that_contains_wordwise_truncated_xor_inequalities"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "adc278671ee8dfb12132c6ef2366642324662bc9411ae809605009ab05939937"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_all_possible_points_with_n_bits",
+        "generate_impossible_points_for_xor_between_n_input_bits",
+        "update_dictionary_that_contains_xor_inequalities_between_n_input_bits",
+        "update_dictionary_that_contains_xor_inequalities_for_specific_matrix",
+        "output_dictionary_that_contains_xor_inequalities",
+        "delete_dictionary_that_contains_xor_inequalities"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_inequalities_for_xor_with_n_input_bits.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "a441d8ec5c5e478f0c8f0ccc6f9244561a16fcda28214dac44470f1a5c7e7c03"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "sbox_inequalities",
+        "convex_hull",
+        "cutting_off_greedy",
+        "cutting_off_milp",
+        "get_dictionary_that_contains_inequalities_for_small_sboxes",
+        "update_dictionary_that_contains_inequalities_for_small_sboxes",
+        "delete_dictionary_that_contains_inequalities_for_small_sboxes"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "d285cd9b8f87348095f3f8aba6861f68a5e3d8315e122e04574f7825ec1b540e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "get_transitions_for_single_output_bit",
+        "generate_dict_product_of_sum_from_espresso",
+        "get_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits",
+        "update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits",
+        "delete_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/generate_undisturbed_bits_inequalities_for_sboxes.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "35e554b956820fd2c6cb8920133db2578431c621411f3725a40b2170d56831f0"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_incompatiblity_constraints_for_component",
+        "generate_all_incompatibility_constraints_for_fully_automatic_model",
+        "fix_variables_value_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/milp_truncated_utils.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "45dba115fe71f44592379aec8ccf6196b1a2061bd02cfd57d299a7d87ae9a55b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_espresso_input",
+        "generate_product_of_sum_from_espresso",
+        "output_espresso_dictionary",
+        "delete_espresso_dictionary",
+        "milp_less",
+        "milp_leq",
+        "milp_greater",
+        "milp_geq",
+        "milp_and",
+        "milp_or",
+        "milp_generalized_and",
+        "milp_eq",
+        "milp_neq",
+        "milp_xor",
+        "milp_generalized_xor",
+        "milp_if_then",
+        "milp_else",
+        "milp_if_then_else",
+        "milp_if_elif_else",
+        "espresso_pos_to_constraints",
+        "milp_xor_truncated",
+        "milp_xor_truncated_wordwise"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/milp/utils/utils.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "89ec60a2c4edbe47d85ce27938e74130058fcc68e7ec7492822c658d2843bd64"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "CmsSatDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/cms_models/cms_bitwise_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "d8e9428e30e0482923f40d7b913bb96ce7df41fd44b23f4f3719a3ec042ac6b2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "CmsSatCipherModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/cms_models/cms_cipher_model.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "5c68aee265051d7867b018e23dda343bab795f76396e1913a12511f511ca37b0"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "CmsSatXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/cms_models/cms_xor_differential_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "8d25b0812b4e0e98145ba9e4d5211de24c1fff6f57434abe70185ee27f40c878"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "CmsSatXorLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/cms_models/cms_xor_linear_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "70a18c31440a4138d85f4aa079b0d6efb0e5b4254912eb653506de9258946fbc"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_model.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "5dff3b430ab0014f670b2417868acfd7c7fbd823eea967a708268f290271ff48"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatBitwiseDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "d83cec44c658e5b32c18a5c26c7e9f89b76492ef157a95e35d8f469d7ca6753d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatBitwiseImpossibleXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "5a7f1c4a2da399816aee0d0cc0c5334939f1304b9ef06ff84699daf70d46bac8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatCipherModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_cipher_model.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "7d55d1831d0c519cd10777bf366b46162afed137b672dde43b86a60f6a851575"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatDifferentialLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_differential_linear_model.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "9174f18994ac99589ff4274ab235d2b9a7e405ca07ee5a5cb5de7437ac3786b3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatProbabilisticXorTruncatedDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "55d9ba2cf07712c833052166802b901fcd9f99758e1dcb090ce0682c87713af4"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "group_triples",
+        "SatSemiDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_semi_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "4edb38359393f67dd40eb17ed9c723ce33f7ea8f8a79ca03172bf7fc96834d79"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SharedDifferencePairedInputDifferentialLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "8a47ae1036eb1c15ad2995e7e9c99bb68168ea9edd6b38c7a57119c711c3c557"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "add_prefix_id_to_components",
+        "SharedDifferencePairedInputDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "c11f4b2842988f90c7d8e424eb0719786a542abfd37ed79f09172f522b51d80e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "c882b595b3b9c57e52dd75fcca430af6cc445fa0b96e54a07ad4506a455b46c5"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "edc3bc126d9c74d558089f71ee3b08a32c0f537c06615c8e61e7053b127540fd"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SatXorLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "9da3b4d81480b76c9ce34412c9c36311459997dc4b1fdce9309ab2ad4645e53a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/solvers.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "1d7989711383df59cf7f532ffef7bfa26f415d7a5f5d8f650bf293f44077eb6d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "get_word_operations"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/utils/mzn_predicates.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "2c8a71ddb3d28863aa9c93f21833ad4f54484363e6cd3f765fee632ffb1bb55c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "cms_add_clauses_to_solver",
+        "create_numerical_cnf",
+        "numerical_cnf_to_dimacs",
+        "cnf_n_window_heuristic_on_w_vars",
+        "cnf_equivalent",
+        "cnf_inequality",
+        "cnf_and",
+        "cnf_and_seq",
+        "cnf_or",
+        "cnf_or_seq",
+        "cnf_xor",
+        "cnf_xor_seq",
+        "cnf_carry",
+        "cnf_carry_comp2",
+        "cnf_result_comp2",
+        "cnf_vshift_id",
+        "cnf_vshift_false",
+        "cnf_hw_lipmaa",
+        "cnf_lipmaa",
+        "cnf_modadd_inequality",
+        "cnf_and_differential",
+        "cnf_and_linear",
+        "cnf_xor_truncated",
+        "cnf_xor_truncated_seq",
+        "get_cnf_bitwise_truncate_constraints",
+        "get_cnf_truncated_linear_constraints",
+        "modadd_truncated_lsb",
+        "modadd_truncated",
+        "modadd_truncated_msb",
+        "incompatibility",
+        "run_sat_solver",
+        "run_minisat",
+        "run_parkissat",
+        "run_yices",
+        "get_semi_deterministic_cnf_window_0",
+        "get_cnf_semi_deterministic_window_1",
+        "get_cnf_semi_deterministic_window_2",
+        "get_cnf_semi_deterministic_window_3"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/sat/utils/utils.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "817ce0f3404f3b03a1d88769bdb88f7403f6991d1049af438395d78533784ce5"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SmtModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/smt_model.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "8c4314cc7507fa077052d84cb2517d310eb4d5d7efa1ee9699b6a310b1258d06"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SmtCipherModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/smt_models/smt_cipher_model.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "b6b5a404772f8189f2f6326bb1fd7a6d04dc806935daa2c97670875b3f157274"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SmtDeterministicTruncatedXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/smt_models/smt_deterministic_truncated_xor_differential_model.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "b406073c2c19aec2244a83b13bd3da862ab2aa0c11d0b9d3a6747b2eef6499d3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SmtXorDifferentialModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "0c320abff71aae3efdc9195e9c3bd64cc3f3764efb83074695549b5457e97cee"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "SmtXorLinearModel"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "96c224f6b332bed206574c0dfd452f570948cbc52d63744489245b66986ec2ce"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/solvers.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "01823366c591c4f1fabf967bc30a62b47f3590c61776122c5a25a7cd95754d2b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/utils/constants.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "286f5ca9b6bf9c26722250a2a74b4d8ce46beacefd907717d6b210af19aa6976"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "smt_and",
+        "smt_assert",
+        "smt_distinct",
+        "smt_equivalent",
+        "smt_implies",
+        "smt_ite",
+        "smt_not",
+        "smt_or",
+        "smt_xor",
+        "smt_carry",
+        "smt_lipmaa",
+        "get_component_hex_value"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/smt/utils/utils.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "c6e6590d7a2b5a15bc724573451d9011077ebba947ebcad5437647c42e844e80"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "hex_to_bitlist",
+        "add_arcs",
+        "check_if_implemented_component",
+        "convert_solver_solution_to_dictionary",
+        "get_previous_output_bit_ids",
+        "integer_to_bit_list",
+        "print_components_values",
+        "set_component_value_weight_sign",
+        "set_component_solution",
+        "set_fixed_variables",
+        "join_and_sanitize_strings",
+        "write_model_to_file",
+        "write_solution_to_file",
+        "to_bias_for_xor_linear_trail",
+        "to_bias_for_correlation_measure",
+        "to_bias_for_probability_measure",
+        "to_probability_for_xor_linear_trail",
+        "to_probability_for_correlation_measure",
+        "to_probability_for_bias_measure",
+        "to_correlation_for_xor_linear_trail",
+        "to_correlation_for_bias_measure",
+        "to_correlation_for_probability_measure",
+        "find_sign_for_one_xor_linear_trail",
+        "find_sign_for_xor_linear_trails",
+        "get_bit_bindings",
+        "get_single_key_scenario_format_for_fixed_values",
+        "get_related_key_scenario_format_for_fixed_values",
+        "differential_linear_checker_for_block_cipher_single_key",
+        "linear_checker_for_block_cipher_single_key",
+        "boomerang_checker_for_block_cipher_single_key",
+        "differential_checker_permutation",
+        "differential_truncated_checker_permutation",
+        "differential_truncated_checker_single_key",
+        "shared_difference_paired_input_differential_checker_permutation",
+        "shared_difference_paired_input_differential_linear_checker_permutation",
+        "differential_truncated_checker_permutation_input_and_output_truncated",
+        "truncated_differential_linear_checker_permutation"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/models/utils.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "a4af80c371e8e07042cc31809aa6a6cb8e2ff94187a82e8ec9cfa2fe896bd55b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Report"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/report.py",
+      "review_group": "reporting",
+      "scientific_capability_removed": false,
+      "sha256": "7734eb0107a38070ebc834bc6b288df360ed69fd7bc5fab8dabea6d824aa195f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "NISTStatisticalTestsReport"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/statistical_tests/nist_statistical_tests_report.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "beabf156b5a92ca227c560b066bebe74d5b07313592871ad025923c923098d38"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "NISTTests",
+        "parse_nist_stats",
+        "parse_final_analysis_report"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/statistical_tests/nist_sts.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "54691815d80c1437bf499747ce9c01893e51066fd19a73f9819da4a0df668461"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_against_reference_code",
+        "test_vector_check"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/cipher_modules/tester.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "12b7ca30d036f2679f2671564199537bbbe4c8f1d528ccd6ff684d3cd787b648"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "check_size",
+        "linear_layer_to_binary_matrix",
+        "free_input",
+        "Component"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "fc8259963512f1e26ceb87ae35cac0cd5fb102d9b06f5eaa33e021a00783bca2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "CipherOutput"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/cipher_output_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "ae010980a51e07bd107cfb7dc231d9d7387a0a1379e4f53d0a3029e8e3797f58"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "update_xor_linear_constraints_for_more_than_one_bit",
+        "IntermediateOutput"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/intermediate_output_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "f43de90028ed66c0c25e3fdebffd56c6a9b45eb5512cc2326be6f27379d95e3f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "sat_generate_ids_for_linear_layer",
+        "update_constraints_for_more_than_one_bit",
+        "LinearLayer"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/linear_layer_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "30fea42a57c070800613f3e603b98a4c3265be8d5de89775a916e9a6645edbd3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "add_xor_components",
+        "calculate_input_bit_positions",
+        "cp_get_all_inputs",
+        "MixColumn"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/mix_column_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "d8780084a641d6e2a307ab56b9cb254349056d0e787d226bd23a304a8caa00d0"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "milp_n_window_heuristic",
+        "generic_sign_linear_constraints",
+        "Modular"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/modular_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "691fe42fa682d36141773b75ec7d1df88c2bfdaced0d34ce0551cb410cd0c15c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "MultiInputNonlinearLogicalOperator"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/multi_input_non_linear_logical_operator_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "da76fc755bf5caf593833cacc7b6d99d6e077722ba59abaec453f2e634bad70e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Reverse"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/reverse_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "9283cd2525afc140caf3b926251676509a0c58c27a6f1d0a0f36b0f1081ca73a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "ShiftRows"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/shift_rows_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "f6193149c543e1a06115c663298bf35f68be9d034ce95cf800eee4889b462420"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Sigma"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/sigma_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "e63ba0df0850475b8fbc0eb80b9a95f07b38bd251ca269241d4534f7f5112591"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "ThetaGaston"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/theta_gaston_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "229bdd84a1afdcbf701467255fc1eeb21411dd3caa9a15cad935190aab0f8ad3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "ThetaKeccak"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/theta_keccak_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "722fbe87045841e8318678d0fefd06f25bf41be837bd79533fe293993d6177f7"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "ThetaXoodoo"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/theta_xoodoo_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "89ad36ed6309f0f0ea0e19243c755d5707c7dca03a221f53bb642f02ef338abb"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "WordPermutation"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/components/word_permutation_component.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "cb485e8cad4e05b39b5203d5ea501826c1e21eddbb719e71e028f076985df49d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "get_component_pair",
+        "update_input_id_links",
+        "update_cipher_inputs",
+        "create_xor_component_inputs",
+        "create_xor_component",
+        "convert_to_compound_xor_cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/compound_xor_differential_cipher.py",
+      "review_group": "paired",
+      "scientific_capability_removed": false,
+      "sha256": "63def11a0c94091318fc7358416cb9a8a012622070470a009f4a1ccdc4a79a43"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "add_and_component",
+        "add_cipher_output_component",
+        "add_component",
+        "add_constant_component",
+        "add_fsr_component",
+        "add_intermediate_output_component",
+        "add_linear_layer_component",
+        "add_mix_column_component",
+        "add_modadd_component",
+        "add_modmul_component",
+        "add_modsub_component",
+        "add_idea_modmul_component",
+        "add_not_component",
+        "add_or_component",
+        "add_permutation_component",
+        "add_reverse_component",
+        "add_rotate_component",
+        "add_round",
+        "add_round_key_output_component",
+        "add_round_output_component",
+        "add_sbox_component",
+        "add_shift_component",
+        "add_shift_rows_component",
+        "add_sigma_component",
+        "add_theta_gaston_component",
+        "add_theta_keccak_component",
+        "add_theta_xoodoo_component",
+        "add_variable_rotate_component",
+        "add_variable_shift_component",
+        "add_word_permutation_component",
+        "add_xor_component",
+        "generate_expanded_links",
+        "get_final_input_positions",
+        "get_unique_links_information",
+        "is_linear_layer_permutation",
+        "get_linear_layer_permutation_mapping",
+        "is_fixed_rotate_component",
+        "get_component_reordering",
+        "make_cipher_id",
+        "make_file_name",
+        "next_component_index_from",
+        "propagate_equivalences",
+        "propagate_reorder_only_components",
+        "remove_cipher_input_keys",
+        "get_key_schedule_component_ids",
+        "remove_forbidden_parents",
+        "remove_key_schedule",
+        "remove_orphan_components",
+        "replace_bit_reordering_components_as_direct_wiring",
+        "remove_round_component",
+        "remove_round_component_from_id",
+        "remove_components",
+        "sort_cipher",
+        "update_cipher_inputs",
+        "update_component_inputs",
+        "update_inputs",
+        "get_output_bit_size_from_id"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/editor.py",
+      "review_group": "editing",
+      "scientific_capability_removed": false,
+      "sha256": "5d34100bca3dc037a50af1edf7d71b136a68640f4c043b10d6ea1ae800c1df46"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Input"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/input.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "6a34f17038aac833182179e45361201627c76fa1d18706d143d83aafa3a61fcc"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/name_mappings.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "70ea772ea9c3a81067891a0aa6bf01df6e2de79ff35ea5e25d1346b2075a62e7"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Round"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/round.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "24244ed7a8cb5f9f786acb8ee3a8c215f502d8886203490e66aef034e849d9e3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "Rounds"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/rounds.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "b8a1750841730331d914810b554df4f85c66f79f760b9a962a7523bcb965d3f8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "aggregate_list_of_dictionary",
+        "bytes_positions_to_little_endian_for_32_bits",
+        "bytes_positions_to_little_endian_for_multiple_of_32",
+        "calculate_inputs",
+        "convert_2d_index_to_1d_index",
+        "create_new_state_for_calculation",
+        "extract_inputs",
+        "generate_sample_from_gf_2_n",
+        "get_2d_array_element_from_1d_array_index",
+        "get_ci",
+        "get_inputs_parameter",
+        "get_ith_word",
+        "get_number_of_rounds_from",
+        "group_list_by_key",
+        "int_to_poly",
+        "layer_and_lane_initialization",
+        "merging_list_of_lists",
+        "pprint_dictionary",
+        "pprint_dictionary_to_file",
+        "set_2d_array_element_from_1d_array_index",
+        "sgn_function",
+        "signed_distance",
+        "simplify_inputs",
+        "point_pair",
+        "poly_to_int",
+        "coerce_exact_int"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "claasp/utils/utils.py",
+      "review_group": "helpers",
+      "scientific_capability_removed": false,
+      "sha256": "c432e328b6d7f8ac3895494c3d01e0f319a9fb7b3214d44e70db1da7c64fa515"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_evaluate_with_speck_cipher",
+        "test_evaluate_with_aes_cipher",
+        "test_evaluate_using_c_with_speck_cipher",
+        "test_evaluate_using_c_with_aes_cipher",
+        "test_evaluate_vectorized_with_speck_cipher",
+        "test_evaluate_vectorized_with_aes_cipher",
+        "test_avalanche_tests_with_speck_cipher",
+        "test_avalanche_tests_with_aes_cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/benchmark/cipher_test.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "87564dae117b87c10cc3a5e93c7949d007eeb7685ba3cdb114c818c94a755ebc"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_xor_differential_trail_model_with_speck_cipher",
+        "test_build_xor_differential_trail_model_with_aes_cipher",
+        "test_find_all_xor_differential_trails_with_fixed_weight_with_speck_cipher",
+        "test_find_all_xor_differential_trails_with_fixed_weight_with_aes_cipher",
+        "test_find_lowest_weight_xor_differential_trail_with_speck_cipher",
+        "test_find_one_xor_differential_trail_with_fixed_weight",
+        "test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/benchmark/sat_xor_differential_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "54268ec520c4fa165ccd7683b2cf912b3580750ad4e309d2c909a0f6c4b4e168"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_run_avalanche_nist_statistics_test_with_speck_cipher",
+        "test_run_avalanche_nist_statistics_test_with_aes_cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/benchmark/statistical_tests_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "f6b7bcb7492ea4b2035c1426dfcae89866b912f4665fdfcdd5891c426aee19ff"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_ciphers_filter_by_required_components_and_aliases",
+        "test_ciphers_include_metadata_success_path",
+        "test_ciphers_include_metadata_error_path",
+        "test_ciphers_returns_empty_rows_for_unmatched_component_filter",
+        "test_ciphers_contains_known_classes_table",
+        "test_ciphers_filter_and_qualified_mode",
+        "test_ciphers_filter_arx_includes_known_arx_block_ciphers",
+        "test_ciphers_filter_purearx_reports_only_exact_modadd_rotate_xor_ciphers",
+        "test_ciphers_filter_andrx_includes_pureandrx_and_excludes_mixed_designs",
+        "test_ciphers_filter_pureandrx_reports_only_exact_and_rotate_xor_ciphers",
+        "test_ciphers_filter_fsr_based_reports_only_fsr_ciphers",
+        "test_components_default_excludes_abstract_and_io",
+        "test_components_can_include_abstract_and_io",
+        "test_implemented_methods_per_component_shape_and_content",
+        "test_solvers_contains_known_entries_and_availability",
+        "test_table_render_and_write",
+        "test_catalog_import_resolution_helpers_cover_relative_and_absolute_paths",
+        "test_catalog_source_file_and_category_helpers",
+        "test_catalog_discover_cipher_infos_from_file",
+        "test_catalog_collect_imported_components_and_filters",
+        "test_catalog_cipher_metadata_and_row_helpers",
+        "test_catalog_helper_normalization_and_projection_branches",
+        "test_catalog_filter_component_and_solver_helpers",
+        "test_catalog_ast_and_path_helpers",
+        "test_allowed_cipher_component_names_includes_component_modules",
+        "test_catalog_module_resolution_and_import_helpers",
+        "test_catalog_collect_components_from_module_branches_and_tags",
+        "test_catalog_dataframe_render_write_and_show_helpers",
+        "test_catalog_solvers_flat_and_empty_modes"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/catalog_test.py",
+      "review_group": "catalogue",
+      "scientific_capability_removed": false,
+      "sha256": "7186dfc36d88de1c20f394d4ea1e070e092386f0d694b148897f837cb315677b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_avalanche_probability_vectors",
+        "test_compute_criterion_from_avalanche_probability_vectors",
+        "test_diffusion_tests"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/avalanche_tests_test.py",
+      "review_group": "avalanche",
+      "scientific_capability_removed": false,
+      "sha256": "f6510f99edc0077208dd7356fe96abca7ebba32191522bdd2455db91a7385a2d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_generate_bit_based_vectorized_python_code_string",
+        "test_generic_c_functions_o_name",
+        "test_get_padding_component_bit_based_c_code",
+        "test_generate_evaluate_c_code_shared_library_word_based"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/code_generator_test.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "dd01f054d231e3618322a238015bc1fc0438b7403af880d3f5134febe395f324"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "aes_mix_column_component",
+        "aes_small_mix_column_component",
+        "fancy_cipher",
+        "fancy_analysis",
+        "fancy_component_analysis_results",
+        "aes_small_analysis_results",
+        "test_get_all_operations",
+        "test_component_analysis_tests",
+        "test_print_component_analysis_as_radar_charts",
+        "test_fsr_properties",
+        "test_compute_branch_number_from_binary_matrix_differential",
+        "test_compute_branch_number_from_binary_matrix_linear",
+        "test_compute_branch_number_from_binary_matrix_larger_matrix",
+        "test_compute_branch_number_from_binary_matrix_large_128_fast_case",
+        "test_compute_branch_number_from_binary_matrix_type_parameter",
+        "test_branch_number_with_bit_format",
+        "test_branch_number_with_word_format_exact_mix_column",
+        "TestBinaryMatrixWithSage",
+        "TestBinaryMatrixWithBoundedEnumeration",
+        "TestBinaryMatrixWithMiniZinc",
+        "TestWordBranchNumberFromBinaryMatrixWithMiniZinc",
+        "test_compute_branch_number_from_field_matrix_with_minizinc_demo_cases",
+        "TestBranchNumberMethodConsistency",
+        "TestBinaryMatrixWithMethodParameter",
+        "TestFieldMatrixWithSage",
+        "TestFieldMatrixWithBoundedEnumeration",
+        "TestFieldMatrixWithMethodParameter",
+        "TestMapMatrixToConwayField",
+        "TestInternalEnumerationHelpers",
+        "TestEdgeCases",
+        "TestBranchNumberHelperEdgePaths",
+        "TestConsistency"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/component_analysis_tests_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "34cb9768cc1da9bf91fc3a65151abf464c162e00be9c72777b898fc748e8f860"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_continuous_tests",
+        "test_continuous_tests_report",
+        "test_continuous_avalanche_factor",
+        "test_continuous_diffusion_factor",
+        "test_continuous_diffusion_tests",
+        "test_continuous_neutrality_measure_for_bit_j"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/continuous_diffusion_analysis_test.py",
+      "review_group": "continuous",
+      "scientific_capability_removed": false,
+      "sha256": "a37c2a20ae22e9d3a418075278f4a206eef9c7ccd6dcc14d14ad833c581b7b40"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_SBOX_continuous_diffusion_analysis",
+        "test_SHIFT_BY_VARIABLE_AMOUNT_continuous_diffusion_analysis",
+        "test_MIX_COLUMN_generalized_continuous_diffusion_analysis"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/generic_functions_continuous_diffusion_analysis_test.py",
+      "review_group": "continuous",
+      "scientific_capability_removed": false,
+      "sha256": "361c5044a2fe3f0ff57807ea08df66e2ce11e8f65b333cbf27e2f6e415ca1e8e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_ROTATE",
+        "test_SIGMA",
+        "test_THETA_KECCAK",
+        "test_THETA_XOODOO",
+        "test_SHIFT",
+        "test_fsr_binary",
+        "test_fsr_word",
+        "test_index_list_to_expression_str",
+        "test_index_list_to_expression_str_word",
+        "test_modmul"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/generic_functions_test.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "7f7d89739ac0ca351247318c1cdd7fe2b9e0e00adc6c1673bb5f4a96d8ee53d3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_bit_vector_modmul",
+        "test_bit_vector_modmul_standard",
+        "test_bit_vector_to_integer_and_concat",
+        "test_bit_vector_select_word_and_sbox",
+        "test_bit_vector_xor_and_or_not",
+        "test_bit_vector_rotate_shift_and_permutation",
+        "test_bit_vector_modadd_modsub_and_idea_modmul",
+        "test_bit_vector_debug_branches_and_print_helpers",
+        "test_bit_vector_mix_column_poly0"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/generic_functions_vectorized_bit_test.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "2b6d14ccd8f1ea02869017d7132f629f0e1d95fd63c73e3ba6aecb76bb4016a6"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_byte_vector_is_consecutive",
+        "test_integer_array_to_evaluate_vectorized_input",
+        "test_cipher_inputs_to_evaluate_vectorized_inputs",
+        "test_get_number_of_bytes_needed_for_bit_size",
+        "test_evaluate_vectorized_outputs_to_integers",
+        "test_byte_vector_select_all_words",
+        "test_byte_vector_linear_layer",
+        "test_byte_vector_SBOX",
+        "test_byte_vector_idea_modmul",
+        "test_byte_vector_XOR",
+        "test_byte_vector_OR",
+        "test_byte_vector_AND",
+        "test_byte_vector_NOT",
+        "test_byte_vector_MODADD",
+        "test_byte_vector_MODMUL",
+        "test_byte_vector_MODSUB",
+        "test_byte_vector_ROTATE"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/generic_functions_vectorized_byte_test.py",
+      "review_group": "evaluation",
+      "scientific_capability_removed": false,
+      "sha256": "ff2ebe3463cfbd5b4d35335a603f92c25db75b5be7bf59d721e9c8f25d11782f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_split_cipher_graph_into_top_bottom",
+        "test_get_descendants_subgraph"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/graph_generator_test.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "69659691bf77908d5f035bc1b3b7c9107e6bb8485795b209ca31e1c3079f8355"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_connection_polynomials",
+        "test_nvars",
+        "test_polynomial_system",
+        "test_polynomial_system_at_round",
+        "test_ring",
+        "test_var_names"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/algebraic/algebraic_model_test.py",
+      "review_group": "algebraic",
+      "scientific_capability_removed": false,
+      "sha256": "8d7302f8cd41e4efaa63846cb7d6ed8b09b4cea36f6e2702291b1c1d00d31a20"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_assemble_model_orders_variables_constraints_outputs",
+        "test_minizinc_model_parts_lines_concatenates_in_order",
+        "test_parse_solver_output_time_stat_fallbacks",
+        "test_solver_names",
+        "test_model_uses_sbox_word_size_for_two_step_friendly_cipher",
+        "test_first_step_fixed_variables_use_two_step_friendly_check",
+        "test_build_mix_column_truncated_table",
+        "test_find_possible_number_of_active_sboxes",
+        "test_fix_variables_value_constraints",
+        "test_model_constraints",
+        "test_build_generic_cp_model_from_dictionary_xor_differential",
+        "test_build_generic_cp_model_from_dictionary_xor_linear",
+        "test_build_generic_cp_model_with_unknown_component_type",
+        "test_get_command_for_solver_process_invalid_solver_name",
+        "test_get_command_for_solver_process_intermediate_solutions_flag",
+        "test_mzn_model_rejects_invalid_solver_type",
+        "test_build_generic_cp_model_with_fixed_variables_non_arx"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_model_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "af2da2017656c3f20bf250b562617fbe1bb83642848c26aa5a512ccf26b68d02"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "speck32_64_rol",
+        "speck32_64_ror",
+        "speck32_64_decrypt",
+        "speck32_64_enc_one_round",
+        "speck32_64_expand_key",
+        "speck32_64_encrypt",
+        "speck32_64_bct_distinguisher_verifier",
+        "split_32bit_to_16bit",
+        "test_build_boomerang_model_speck_single_key",
+        "test_build_boomerang_model_chacha"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_boomerang_model_arx_optimized_test.py",
+      "review_group": "boomerang",
+      "scientific_capability_removed": false,
+      "sha256": "9104c45225acaec13cd88f7584e4e26b818f8579ae869b3eb0851ed4e853f5c7"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_cipher_model"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_cipher_model_arx_optimized_test.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "bf1cba9c7817cbfd0e4ddda480fe801e7386db0d0ad0b01e8e2d8c0d8c1a4895"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_deterministic_truncated_xor_differential_trail_model",
+        "test_find_all_deterministic_truncated_xor_differential_trails",
+        "test_find_one_deterministic_truncated_xor_differential_trail"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "34ab865e608260176577d66dac508214bc8677653b1c5eeacac12fa848cca613"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cp_modadd_test_vectors",
+        "test_cp_xor_test_vectors",
+        "test_cp_rotate_test_vectors",
+        "test_generic_cp_modadd_test_vectors",
+        "test_generic_cp_full_round_pipeline",
+        "test_full_search_continuous_propagation_only",
+        "test_full_search_continuous_propagation_two_rounds",
+        "test_find_lowest_continuous_propagation",
+        "test_find_lowest_continuous_propagation_with_fixed_masks"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_continuous_model_test.py",
+      "review_group": "continuous",
+      "scientific_capability_removed": false,
+      "sha256": "c5a732c372a292065c587a637cac19c68331f9391d933b4d072fa985e1796c85"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_get_truncated_xor_differential_components_in_border",
+        "test_parse_linear_bit_id_handles_valid_and_invalid_formats",
+        "test_normalize_middle_part_components_values_hex_and_unknown_bits",
+        "test_component_and_probability_values_example_prints",
+        "test_differential_linear_trail_with_fixed_weight_6_rounds_speck_cp",
+        "test_differential_linear_trail_6_rounds_ballet_cp_case",
+        "test_differential_linear_trail_6_rounds_speck_cp_case_2",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden",
+        "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case",
+        "test_diff_lin_chacha_permutation_cases",
+        "test_optimal_semi_deterministic_differential_linear_trail_siphash"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_differential_linear_model_test.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "dceae2263587f5b35ddae0eba44e83fc5246771d8e5280e7dd612dec5222153b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_impossible_xor_differential_trail_model",
+        "test_find_all_impossible_xor_differential_trails",
+        "test_find_all_improbable_xor_differential_trails",
+        "test_find_one_impossible_xor_differential_trail",
+        "test_find_one_improbable_xor_differential_trail"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_hybrid_impossible_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "395d272d28c2c96ef6a38729b142a680e87181366d865cbdfd1a2a4ff2647ffa"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_impossible_xor_differential_trail_with_extensions_model",
+        "test_build_impossible_xor_differential_trail_model",
+        "test_find_all_impossible_xor_differential_trails",
+        "test_find_lowest_complexity_impossible_xor_differential_trail",
+        "test_find_one_impossible_xor_differential_trail",
+        "test_find_one_impossible_xor_differential_trail_with_fully_automatic_model",
+        "test_find_one_impossible_xor_differential_trail_with_initial_and_final_round",
+        "test_find_one_impossible_xor_differential_trail_with_extensions",
+        "test_find_one_impossible_xor_differential_cluster"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_impossible_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "ac806874ca24a8be0ee207b7af0b86808d56920325e8e4d852ee35cc116757ba"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_semi_deterministic_truncated_xor_differential_trail_model",
+        "test_find_one_semi_deterministic_truncated_xor_differential_trail_external",
+        "test_find_optimal_cp_semi_deterministic_truncated_xor_differential_trail",
+        "test_counter_based_modadd_semideterministic_probability_sample",
+        "test_modular_component_semideterministic_probability_sample",
+        "test_counter_based_modadd_semideterministic_probability_700_sample",
+        "test_modular_component_semideterministic_multiple_addends_constraints",
+        "test_find_lowest_semi_deterministic_truncated_xor_differential_trail_speck",
+        "test_find_lowest_semi_deterministic_truncated_xor_differential_trail_chacha",
+        "test_find_lowest_four_round_semi_deterministic_truncated_xor_differential_trail_chacha_with_fixed_variables"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_semi_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "f6d91f68207032319532253202c12bd7720c7c1d27856eee6bf4c7fabcabe61a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_one_wordwise_deterministic_truncated_xor_differential_trail"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_wordwise_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "5a3736fdc5326be1bbcf98a15aacd5338b96114901923538ee52a5082273591a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "generate_fixed_variables",
+        "test_build_lowest_weight_xor_differential_trail_model",
+        "test_build_lowest_xor_differential_trails_with_at_most_weight",
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_find_all_xor_differential_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_lowest_weight_for_short_xor_differential_trail",
+        "test_get_probability_vars_from_key_schedule",
+        "test_get_probability_vars_from_permutation",
+        "test_find_min_of_max_xor_differential_between_permutation_and_key_schedule"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "1703ab117c2e0eae1ce9cf35121a39753b08d703aefc6183eb9512c35756bcde"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_and_xor_differential_probability_ddt",
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_solving_unsatisfiability",
+        "test_find_all_xor_differential_trails_with_weight_at_most",
+        "test_find_all_xor_differential_trails_with_weight_at_most_unsat_returns_empty_list",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_one_xor_differential_trail",
+        "test_find_one_xor_differential_trail_with_fixed_weight"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "65589f534f29a3bfb4504ec4b51e56ce59f0f806fc37f17712fad21bcceff208"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_add_additional_xor_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_number_of_active_sboxes_model_test.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "4d4f68eff12a064766f0743045bff726c2b695327d7337543b2015482395c8bf"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_one_xor_differential_trail",
+        "test_find_one_xor_differential_trail_with_fixed_weight",
+        "test_solve_full_two_steps_xor_differential_model",
+        "test_solve_full_two_steps_retries_unsat_active_sbox_count",
+        "test_solve_full_two_steps_returns_unsat_for_fixed_weight",
+        "test_solve_full_two_steps_warns_about_non_word_aligned_key_schedule_rotations",
+        "test_solve_full_two_steps_does_not_warn_for_word_aligned_key_schedule"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_trail_search_fixing_number_of_active_sboxes_model_test.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "82b125793fa3e559403f96b906d163774b9779e235849fc6c31654c6de95da6b"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_and_xor_linear_probability_lat",
+        "test_final_xor_linear_constraints",
+        "test_find_all_xor_linear_trails_with_fixed_weight",
+        "test_find_all_xor_linear_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_linear_trail",
+        "test_find_one_xor_linear_trail",
+        "test_find_one_xor_linear_trail_with_fixed_weight",
+        "test_find_one_xor_linear_trail_with_fixed_weight_solve_with_api",
+        "test_fix_variables_value_xor_linear_constraints",
+        "test_input_xor_linear_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "f6dde7f5c86411b566b05367fcd4b2de5eb84cb7aba62195a9e9a2b530015cc2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_solver_names",
+        "test_get_independent_input_output_variables",
+        "test_get_input_output_variables",
+        "test_fix_variables_value_constraints",
+        "test_model_constraints",
+        "test_solve"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_model_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "e4187495e0e6cc15c485e2edde1fe7ec34f048901abce4f7d34faa422452bd1e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_anf_of_specific_output_bit",
+        "test_find_upper_bound_degree_of_specific_output_bit",
+        "test_find_partial_anf_at_cube_of_specific_output_bit",
+        "test_find_tight_upper_bound_degree_via_parity_of_superpoly_of_all_output_bits",
+        "test_find_tight_upper_bound_degree_via_parity_of_superpoly_of_specific_output_bit_trivium_200",
+        "test_find_tight_upper_bound_degree_via_parity_of_partial_anf_at_cube_of_all_output_bits",
+        "test_find_tight_upper_bound_degree_via_parity_of_all_output_bits",
+        "test_check_anf_correctness",
+        "test_find_upper_bound_degree_of_cube_monomial_of_specific_output_bit",
+        "test_is_balanced_at_specific_output_bit_over_cube",
+        "test_is_cube_monomial_feasible_at_specific_output_bit_over_cube_keyless_ublock_6",
+        "test_is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys_simon_4",
+        "test_find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys_simon_4",
+        "test_find_upper_bound_degree_of_all_output_bits_with_independent_round_keys_simon_4",
+        "test_find_upper_bound_degree_in_cube_vars_of_specific_output_bit_with_independent_round_keys_simon_13",
+        "test_find_superpoly_of_specific_output_bit",
+        "test_check_correctness_of_superpoly",
+        "test_modmul_modeling_correctness_via_anf_exhaustive",
+        "test_msx64_degree_upper_bound",
+        "test_find_upper_bound_degree_in_cube_vars_of_specific_output_bit",
+        "test_find_anf_simon_1",
+        "test_check_anf_correctness_simon_2",
+        "test_find_partial_anf_at_cube_trivium_590",
+        "test_find_upper_bound_degree_trivium_508",
+        "test_find_upper_bound_degree_all_output_bits_simon_4",
+        "test_find_tight_upper_bound_degree_via_parity_trivium_508",
+        "test_find_tight_upper_bound_degree_via_parity_all_output_bits_simon_4_p",
+        "test_find_superpoly_trivium_200",
+        "test_find_superpoly_simon_13",
+        "test_check_correctness_of_partial_anf_or_superpoly_trivium_200",
+        "test_find_coefficient_of_cube_by_divide_and_conquer_gaston",
+        "test_find_superpoly_by_divide_and_conquer_speck",
+        "test_solution_pool_validation_rejection",
+        "test_sbox_milp_modeling_correctness"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/Gurobi/monomial_prediction_test.py",
+      "review_group": "algebraic",
+      "scientific_capability_removed": false,
+      "sha256": "3617b29a2f609d06a9209d5f094c1813cf246e906373a5f9f3505f9179197653"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
+        "test_find_one_bitwise_deterministic_truncated_xor_differential_trail",
+        "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "b43ee972cdeec6092405fd0697b523fde164bcde74ae68bb5615c7b775a13910"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_bitwise_impossible_xor_differential_trail_model",
+        "test_find_one_bitwise_impossible_xor_differential_trail_model",
+        "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model",
+        "test_find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components",
+        "test_find_one_bitwise_impossible_xor_differential_trail_model_with_external_solver",
+        "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model_with_external_solver"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_bitwise_impossible_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "1d4a4eacb1ba48a47b89de94766ce5ca5395d6d7518a8f83502b248ec7d40b7c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_cipher_model"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_cipher_model_test.py",
+      "review_group": "functional",
+      "scientific_capability_removed": false,
+      "sha256": "06ab83eaf8b7751f15944aa108067cdef0f1d2fe91f6e4b272121e745e5cb42d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_lowest_number_of_active_sboxes_toyaes",
+        "test_find_lowest_number_of_active_sboxes_real_aes",
+        "test_find_lowest_number_of_active_sboxes_real_aes_is_fast",
+        "test_find_lowest_number_of_active_sboxes_ublock_round_1",
+        "test_find_lowest_number_of_active_sboxes_ublock_round_2_is_a_loose_lower_bound",
+        "test_find_lowest_number_of_active_sboxes_ublock_single_linear_layer_rounds_1_and_2",
+        "test_find_lowest_number_of_active_sboxes_ublock_single_linear_layer_round_3_is_still_a_loose_lower_bound",
+        "test_init_model_requires_uniform_sbox_word_size",
+        "test_wordwise_helpers_reject_unaligned_or_unsupported_cases",
+        "test_wordwise_permutation_helpers_reject_non_word_permutations",
+        "test_word_branch_number_is_cached",
+        "test_build_model_delegates_wordwise_constraints_to_components"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_branch_number_number_of_active_sboxes_model_test.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "ff5ebac7becfea75e0a1915620edf5e23595749661c9785a974b892424390654"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_wordwise_deterministic_truncated_xor_differential_trail_model",
+        "test_find_one_wordwise_deterministic_truncated_xor_differential_trail_model",
+        "test_find_lowest_varied_patterns_wordwise_deterministic_truncated_xor_differential_trail_model"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_wordwise_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "9983382d2423ef0daf47619dbb5668d1baf67130192329300246afda4bcef36d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_find_all_xor_differential_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_one_xor_differential_trail",
+        "test_find_one_xor_differential_trail_with_fixed_weight",
+        "test_find_one_xor_differential_trail_with_weight_at_most"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "c15f588db41ed0e434983c453be638f95aa1329429abc6b6bcf6ccffb53aa780"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_lowest_number_of_active_sboxes_toyaes_internal_solver",
+        "test_find_lowest_number_of_active_sboxes_toyaes",
+        "test_find_lowest_number_of_active_sboxes_ublock"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_number_of_active_sboxes_model_test.py",
+      "review_group": "activity",
+      "scientific_capability_removed": false,
+      "sha256": "9bc0705d05276c2f12143418ecf344bfd77599d841bc5bbcb7c5f36b3941bd26"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_xor_linear_trail_model",
+        "test_find_all_xor_linear_trails_with_fixed_weight",
+        "test_find_all_xor_linear_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_linear_trail",
+        "test_find_one_xor_linear_trail",
+        "test_find_one_xor_linear_trail_with_fixed_weight",
+        "test_find_one_xor_linear_trail_with_weight_at_most",
+        "test_find_one_xor_linear_trail_with_fixed_weight_with_external_solver",
+        "test_find_one_xor_linear_trail_with_fixed_weight_with_supported_but_not_installed_external_solver",
+        "test_find_one_xor_linear_trail_with_fixed_weight_with_installed_external_solver_but_missing_license",
+        "test_find_one_xor_linear_trail_with_fixed_weight_with_unsupported_external_solver",
+        "test_fix_variables_value_xor_linear_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_linear_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "6333ca05a02df904764c0458ab5d5707b530e42c3779f0b957ecc525aaec83fd"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_generate_valid_points_input_words",
+        "test_update_dictionary_that_contains_wordwise_truncated_input_inequalities",
+        "test_generate_valid_points_for_xor_between_n_input_words",
+        "test_update_dictionary_that_contains_wordwise_truncated_xor_inequalities_between_n_inputs"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/utils/generate_inequalities_for_wordwise_truncated_xor_with_n_input_bits_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "e1aae8adb00e0ab0abc6b9c2a45d34fddc5a71a58335c37a4327a8ed6963a415"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_generate_sbox_inequalities_for_trail_search"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/utils/generate_sbox_inequalities_for_trail_search_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "3309249a4341c5fed5a4a34b58b32f9132564cc3d2a8a257029bc71fe9240ca2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_update_dictionary_that_contains_inequalities_for_sboxes_with_undisturbed_bits"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/milp/utils/generate_undisturbed_bits_inequalities_for_sboxes_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "d4f03d094a029598db6f3e00743c044fe09ddee8a017b11b5d0fc9054ef252da"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "DummyIdentityBlockCipher",
+        "DummyComponent",
+        "DummyCipherForMeasures",
+        "test_hex_to_bitlist",
+        "test_hex_to_bitlist_invalid_prefix_raises",
+        "test_check_if_implemented_component_invalid_word_operation",
+        "test_join_and_sanitize_strings_and_write_model_to_file",
+        "test_to_bias_and_probability_measure_conversion_branches",
+        "test_set_component_solution_helpers",
+        "test_sample_truncated_difference_from_string_validation_and_bits",
+        "test_parallel_and_validation_paths_for_checker_helpers",
+        "test_boomerang_checker_for_block_cipher_single_key",
+        "test_print_components_values",
+        "test_write_solution_to_file",
+        "test_to_bias_for_xor_linear_trail",
+        "test_to_probability_for_xor_linear_trail",
+        "test_to_correlation_for_xor_linear_trail",
+        "test_find_sign_for_xor_linear_trails",
+        "test_get_related_key_scenario_format_for_fixed_values",
+        "test_get_single_key_scenario_format_for_fixed_values",
+        "test_differential_checker_permutation",
+        "test_differential_truncated_checker_permutation",
+        "test_differential_truncated_checker_permutation_input_and_output_truncated_inv",
+        "test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated",
+        "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated",
+        "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated_2_rounds",
+        "test_truncated_differential_linear_checker_permutation",
+        "test_linear_checker_for_block_cipher_single_key_zero_masks",
+        "test_differential_linear_continuous_checker_speck_block_cipher",
+        "test_to_correlation_measure_branches",
+        "test_worker_functions_direct",
+        "test_sample_truncated_difference_all_wildcard",
+        "test_sequential_shared_difference_and_truncated_sk_checkers"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/models_utils_test.py",
+      "review_group": "helpers",
+      "scientific_capability_removed": false,
+      "sha256": "635969e28ecbdae69b37248241ef406018fbde8bd4a08b85214481b9943a4c49"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_bitwise_deterministic_truncated_xor_differential_trail_model"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "651a852a268a8eda3a7908735c6faa30a9fc67a5c48e57056ac5971fe529014c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_xor_differential_trail_model",
+        "test_build_xor_differential_trail_model_with_weight_adds_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_xor_differential_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "f814460e7d204ec32b304a480708a2a862ee090b9874b3285ca0d488d0371a23"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_solve",
+        "test_solver_names",
+        "test_fix_variables_value_constraints",
+        "test_build_xor_differential_sat_model_from_dictionary",
+        "test_build_generic_sat_model_from_dictionary",
+        "test_model_constraints",
+        "test_weight_constraints",
+        "test_parallel_counter_branch"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_model_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "1045c5ba0ef2ccea6747f7a88a8c220f2020117481e16a9dea9b91abcd06e042"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
+        "test_find_one_bitwise_deterministic_truncated_xor_differential_trail",
+        "test_find_lowest_varied_patterns_bitwise_deterministic_truncated_xor_differential_trail"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_deterministic_truncated_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "a79dece661b0ced5e85558330c6ef48e8405e880db11c76429923b9455bbe80d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_build_bitwise_deterministic_truncated_xor_differential_trail_model",
+        "test_find_one_bitwise_impossible_xor_differential_trail_model",
+        "test_find_one_bitwise_impossible_xor_differential_trail_with_chosen_incompatible_components",
+        "test_find_one_bitwise_impossible_xor_differential_trail_with_fully_automatic_model"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_bitwise_impossible_xor_differential_model_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "bf523a022ffc2f0297789313ff88d45031e29441fdbdbbe2c6d7fef7065c4b81"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_differential_linear_trail_with_fixed_weight_6_rounds_speck",
+        "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck",
+        "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_aradi",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case",
+        "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden",
+        "test_diff_lin_chacha",
+        "test_diff_lin_chacha_8",
+        "test_diff_lin_speck",
+        "test_diff_lin_aradi"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_differential_linear_test.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "9e63f3c9ae8ab7bcf736ab38aa6209628751b6fb42115f208220186c5be738b0"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_differential_truncated_in_single_key_scenario_speck3264",
+        "test_differential_in_single_key_scenario_aradi",
+        "test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_4_rounds",
+        "test_find_one_xor_probabilistic_truncated_differential_trail_with_fixed_weight_5_rounds",
+        "test_find_lowest_xor_probabilistic_truncated_differential_trail_with_fixed_weight_5_rounds",
+        "test_wrong_fixed_variables_assignment",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_aradi",
+        "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_probabilistic_xor_truncated_differential_test.py",
+      "review_group": "truncated",
+      "scientific_capability_removed": false,
+      "sha256": "95d6b6d41829176f52849ee4a097716fb188f3372916c1802dc0f4ea1d34e80f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_one_semi_deterministic_truncated_xor_differential_trail",
+        "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration",
+        "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration_unsat",
+        "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_configuration_chacha",
+        "test_find_one_semi_deterministic_truncated_xor_differential_trail_with_window_size_for_chacha_1_round_satisfiable"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_semi_deterministic_xor_differential_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "ea9692462c881164f2c878559c592bf3a55ed909026da40742db92864e5b4604"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "add_prefix_id_to_inputs",
+        "add_ciphertext_and_new_plaintext_to_inputs",
+        "add_prefix_id_to_components",
+        "construct_backward_chacha",
+        "test_backward_direction_distinguisher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_linear_model_test.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "1b549a0fff7f82bde3bbbfe323f490d29716b2b53ab2e29209b2512d7e19769e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_sat_shared_difference_paired_input_differential_model_on_chacha_permutation"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_shared_difference_paired_input_differential_model_test.py",
+      "review_group": "composed",
+      "scientific_capability_removed": false,
+      "sha256": "3d1e4291f695814d45d785286981bc6f986b4e6f5d21f4e139d4df0ac697fc65"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "count_sequences_of_ones",
+        "binary_list_to_int",
+        "extract_bits_from_hex",
+        "compute_modadd_xor",
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_find_all_xor_differential_trails_with_weight_at_most",
+        "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_one_xor_differential_trail",
+        "test_find_one_xor_differential_trail_with_fixed_weight",
+        "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_2_window",
+        "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_three_full_2_window",
+        "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_full_3_window",
+        "test_find_one_xor_differential_trail_with_fixed_weight_9_rounds",
+        "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel",
+        "test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component",
+        "test_build_xor_differential_trail_model_fixed_weight_and_parkissat",
+        "repeat_input_difference",
+        "test_compute_xor_differential_weight"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_differential_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "d133c35329d146a2ef5abdf8aa72c01016a631c4c316ae1a0cfa733416acc38f"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_branch_xor_linear_constraints",
+        "test_find_all_xor_linear_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_linear_trail",
+        "test_find_one_xor_linear_trail",
+        "test_find_one_xor_linear_trail_with_fixed_weight",
+        "test_fix_variables_value_xor_linear_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_linear_model_test.py",
+      "review_group": "trails",
+      "scientific_capability_removed": false,
+      "sha256": "9987c4641ecaafa496e813c9ffc0e3b37e4c30d47f943fcb227413892343bf63"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cnf_or",
+        "test_cnf_xor_seq"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/sat/utils/sat_model_utils_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "d57df936cd2dbfd1ff00e8b4f20ea7375d33150d9162c597e03bb7835dac3e82"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_solver_names",
+        "test_fix_variables_value_constraints",
+        "test_model_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/models/smt/smt_model_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "618f3805ccf03f224dd572ca203930c81dc7c1eb9d0ede0d8f2d36a0a16c2037"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_find_good_input_difference_for_neural_distinguisher",
+        "test_get_neural_network",
+        "test_neural_staged_training",
+        "test_train_gohr_neural_distinguisher",
+        "test_run_autond_pipeline",
+        "test_get_differential_dataset",
+        "test_neural_network_blackbox_distinguisher_tests",
+        "test_neural_network_differential_distinguisher_tests"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/neural_network_tests_test.py",
+      "review_group": "neural",
+      "scientific_capability_removed": false,
+      "sha256": "cceb77888be5ff840e44981e547e90241cfa6ef9815f32192e063362a1991c23"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_save_as_image",
+        "test_save_as_latex_table",
+        "test_save_as_dataframe",
+        "test_save_as_json",
+        "test_show",
+        "test_report_accepts_cp_trail_output",
+        "test_save_as_dataframe_uses_runtime_cwd_default",
+        "test_clean_reports_uses_runtime_cwd_default",
+        "test_show_rejects_invalid_hex_word_size"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/report_test.py",
+      "review_group": "reporting",
+      "scientific_capability_removed": false,
+      "sha256": "5000d64bd24145b87fef448446a196c055a1175c5e04047f474b3f324a143f53"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_generate_avalanche_dataset",
+        "test_generate_cbc_dataset",
+        "test_generate_correlation_dataset",
+        "test_generate_high_density_dataset",
+        "test_generate_low_density_dataset",
+        "test_generate_random_dataset"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/statistical_tests/dataset_generator_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "22714355d79ec084dd3ce03659dac29ed212221b59df170f264e39e6bcadd7aa"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_run_dieharder_statistical_tests_tool",
+        "test_dieharder_statistical_tests",
+        "test_parse_report",
+        "test_generate_chart_round",
+        "test_generate_chart_all"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/statistical_tests/dieharder_statistical_tests_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "f856129944475f1b451dcd1f0546321b8c6383a94fdc8ce2caf5ee5905536c4a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_generate_reports_and_charts"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_report_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "a84da7894b3f84dd6659b6b45bdb17d7ca870c27161a8962fc1f4afa173ae96c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "cleanup_test_reports",
+        "test_run_nist_statistical_tests_tool",
+        "test_run_avalanche_nist_statistics_test",
+        "test_run_correlation_nist_statistics_test",
+        "test_run_cbc_nist_statistics_test",
+        "test_run_cbc_nist_statistics_test_small",
+        "test_run_random_nist_statistics_test",
+        "test_run_low_density_nist_statistics_test",
+        "test_run_high_density_nist_statistics_test",
+        "test_format_test_result",
+        "test_run_cumsum_both_modes",
+        "test_invalid_test_type",
+        "test_multiple_statistical_tests",
+        "test_multiple_rounds"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/statistical_tests/nist_statistical_tests_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "46ee663118ef0dc9a76fa5ca32156385326ce51dad500643f1e241819c89efbd"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_nist_sts_kat_matches_claasp"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/statistical_tests/nist_sts_kat_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "800cbbf6bd64b4a6bffa3c2bad22c26030babf6be3059d5dc450b0acbbcb714c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "TestNISTTests"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_modules/statistical_tests/nist_sts_test.py",
+      "review_group": "statistics",
+      "scientific_capability_removed": false,
+      "sha256": "3a5b31c45769b8ae1950c55ed384e3294c00f73afd8ea102ffc7fc38922f4424"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_tests",
+        "test_algebraic_tests_toy_aes",
+        "test_delete_generated_evaluate_c_shared_library",
+        "test_evaluate_using_c",
+        "test_evaluate_vectorized",
+        "test_evaluate_with_intermediate_outputs_continuous_diffusion_analysis",
+        "test_get_model",
+        "test_generate_bit_based_c_code",
+        "test_generate_word_based_c_code",
+        "test_component_from_id",
+        "test_get_current_component_id",
+        "test_get_round_from_component_id",
+        "test_get_partial_cipher_has_no_dangling_input_links",
+        "test_get_partial_cipher_removes_expected_components_for_chacha_6_rounds",
+        "test_get_partial_cipher_removes_picture_component_subset_for_speck",
+        "test_is_algebraically_secure",
+        "test_is_andrx",
+        "test_is_arx",
+        "test_is_power_of_2_word_based",
+        "test_is_shift_arx",
+        "test_is_spn",
+        "test_has_uniform_sboxes_accepts_permutation_diffusion_ciphers",
+        "test_has_uniform_sboxes_rejects_mixed_sbox_sizes",
+        "test_has_uniform_sboxes_rejects_unsupported_component_types",
+        "test_has_uniform_sboxes_accepts_shift_components",
+        "test_has_uniform_sboxes_rejects_linear_layer_components",
+        "test_is_two_step_trail_search_friendly_checks_mix_column_cell_alignment",
+        "test_polynomial_system",
+        "test_polynomial_system_at_round",
+        "test_print",
+        "test_print_as_python_dictionary_to_file",
+        "test_print_evaluation_python_code",
+        "test_print_evaluation_python_code_to_file",
+        "test_print_input_information",
+        "test_print_as_python_dictionary",
+        "test_inputs_size_to_dict",
+        "test_vector_check",
+        "test_zero_correlation_linear_search",
+        "test_cipher_inverse"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/cipher_test.py",
+      "review_group": "graph",
+      "scientific_capability_removed": false,
+      "sha256": "9ffa78e8254b618c4b0a4474c664ef375a215d66b54e257f0ffea9655c61086e"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cipherfour_block_cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/ciphers/toys/cipherfour_block_cipher_tests.py",
+      "review_group": "catalogue",
+      "scientific_capability_removed": false,
+      "sha256": "39905c70cccd9e1a6f32e856b659f80ec7dab8529d1fb104b7e4248f2f1956a8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_heys_block_cipher"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/ciphers/toys/heys_block_cipher_tests.py",
+      "review_group": "catalogue",
+      "scientific_capability_removed": false,
+      "sha256": "d434d6000842861662bcc6e0ed4c4353ccfa4e61bc89b9b6fcb27b35fa8f0446"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "DummyComponent",
+        "make_component",
+        "test_unimplemented_component_method_raises_not_implemented_error",
+        "test_alias_method_falls_back_to_unimplemented_error_message",
+        "test_alias_method_uses_common_base_implementation_when_available",
+        "test_unimplemented_component_methods_accept_documented_arguments",
+        "test_linear_mask_alias_methods_execute_updated_paths",
+        "test_sat_linear_alias_uses_sat_constraints_fallback_when_available"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "4c7f9d42a91fe8690bb5cee2977a4ebb6954d8442a1cc98dd91678838e561594"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cp_xor_differential_probability_ddt",
+        "test_cp_xor_linear_probability_lat",
+        "test_cp_constraints",
+        "test_cp_wordwise_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_generic_sign_linear_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/and_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "fbe8200ea57b9aef6f3c3d4c81cf0b85eae257945dd5d83a9dde6b7970ca5cc4"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cp_constraints",
+        "test_cp_wordwise_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/cipher_output_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "aed8e3354b65be4f98e0b10a0516eb001f262b07939fdb4d1911ab1779abafd8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cp_wordwise_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_smt_constraints",
+        "test_smt_xor_differential_propagation_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/constant_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "b9af05025ae7574b1dbd2561eb2f90bbe7a4bd64b84748d1606fd70875516b77"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_fsr_algebraic_polynomials"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/fsr_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "2407d472ceb9110370c6ae2b19d6cc2b3caa2de9f66d4efde18226c1307a4d66"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_modmul_component_creation",
+        "test_modmul_component_vectorized_code"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/idea_modmul_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "260aaad96137962e29469198a65ce5f494d0de83c09098d1a34173835cc756a3"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "DummyCpModel",
+        "DummySatModel",
+        "DummySmtModel",
+        "DummyMilpModel",
+        "make_component",
+        "test_cp_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_milp_xor_linear_mask_propagation_constraints",
+        "test_sat_xor_linear_mask_propagation_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/intermediate_output_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "e5526f4e3497dc480f2c6f5ae4727a1702e9a6512c614387d5b2ea9d89d98869"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_linear_layer_component",
+        "make_linear_layer_cipher",
+        "test_cms_constraints",
+        "test_cms_xor_linear_mask_propagation_constraints",
+        "test_cp_constraints",
+        "test_cp_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_milp_constraints",
+        "test_milp_xor_linear_mask_propagation_constraints",
+        "test_sat_constraints",
+        "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_sat_xor_linear_mask_propagation_constraints",
+        "test_smt_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/linear_layer_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "a08eba0662d47af4059b6b321d19b41360db2eb36105f5388ad20b88ae35905d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_mix_column_component",
+        "make_mix_column_cipher",
+        "test_algebraic_polynomials",
+        "test_cp_create_component",
+        "test_cms_constraints",
+        "test_cp_constraints",
+        "test_cp_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_is_permutation_matrix",
+        "test_cp_xor_differential_first_step_uses_equalities_for_permutation_matrix",
+        "test_cp_xor_differential_first_step_uses_table_for_non_permutation_matrix",
+        "test_milp_constraints",
+        "test_milp_xor_linear_mask_propagation_constraints",
+        "test_sat_constraints",
+        "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_sat_xor_linear_mask_propagation_constraints",
+        "test_smt_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/mix_column_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "055ccc470500b4b5c43cc0189dc137c22a00e515712e4abbc6900b588302df0d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_polynomials",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/modadd_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "c0500a08122a514de9a65b71fad5667bec776a343fad836869c2b1063151cd41"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_modmul_component_creation",
+        "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/modmul_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "d7e07877f4ad800b354c7cc19e4a53cb5fbdf8f2b1134e8ea8d0a5f025d19780"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_polynomials",
+        "test_cms_constraints",
+        "test_cp_constraints",
+        "test_cp_xor_differential_propagation_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/modsub_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "bde639ef00e9f52c53b23ce9b3310b07787ea27a773d87033b4638c25708685d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_modular_component",
+        "test_constructor_infers_operand_count_from_inputs",
+        "test_cms_xor_differential_propagation_constraints_delegates_to_sat",
+        "test_cp_deterministic_trail_alias_matches_base_constraints",
+        "test_cp_deterministic_truncated_constraints_build_chain_for_three_inputs",
+        "test_generic_sign_linear_constraints_edge_patterns"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/modular_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "2ea33a7ab3f336c4a759e8ced24441c8fd5bd4e166ecc0fefcd7eed50186a438"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_component",
+        "test_constructor_infers_operand_count_from_inputs",
+        "test_cms_delegates_to_sat_methods",
+        "test_cp_deterministic_truncated_constraints_base_logic",
+        "test_cp_deterministic_trail_alias_matches_base_constraints",
+        "test_cp_xor_differential_updates_model_counter_and_probability_map",
+        "test_cp_wordwise_deterministic_constraints_use_model_word_size"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/multi_input_non_linear_logical_operator_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "521e12e55ab1f1c54af81650bc17383ad0d40f9679bc5d20eb78c97871259d65"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_polynomials",
+        "test_cms_constraints",
+        "test_cp_constraints",
+        "test_cp_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_differential_first_step_constraints",
+        "test_cp_xor_differential_propagation_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_generic_sign_linear_constraints",
+        "test_milp_constraints",
+        "test_milp_xor_differential_propagation_constraints",
+        "test_milp_xor_linear_mask_propagation_constraints",
+        "test_sat_constraints",
+        "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_sat_xor_differential_propagation_constraints",
+        "test_sat_xor_linear_mask_propagation_constraints",
+        "test_smt_constraints",
+        "test_smt_xor_differential_propagation_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints",
+        "test_milp_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/not_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "44d14e486e2882cfa23442c84b21f9f467389fc0d9bdf1c15c0bc50240069423"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_polynomials",
+        "test_cp_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_generic_sign_linear_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/or_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "139354f2f2eef8d30435e8cf29aed2151969c5eccbadd8e01e5bd1062f6055d5"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_permutation_component",
+        "test_constructor_builds_permutation_component",
+        "test_cp_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_sat_constraints",
+        "test_cms_constraints_match_sat_constraints",
+        "test_cms_xor_wrappers_match_cms_constraints",
+        "test_smt_constraints",
+        "test_sat_semi_deterministic_wrapper_matches_bitwise",
+        "test_cp_deterministic_wrapper_matches_trail",
+        "test_cp_semi_deterministic_wrapper_matches_trail",
+        "test_smt_xor_differential_wrapper_matches_smt_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints",
+        "test_cp_wordwise_deterministic_truncated_constraints",
+        "test_cp_wordwise_deterministic_truncated_constraints_raises_on_cross_word_mix",
+        "test_cp_xor_differential_wrapper_matches_cp_constraints",
+        "test_cp_xor_differential_first_step_constraints_for_word_permutation",
+        "test_cp_xor_differential_first_step_constraints_or_mixed_input_words",
+        "test_cp_xor_differential_first_step_constraints_with_multiple_input_links",
+        "test_algebraic_polynomials",
+        "test_validation_zero_word_size",
+        "test_validation_negative_word_size",
+        "test_validation_non_integer_word_size",
+        "test_validation_output_bit_size_not_divisible_by_word_size",
+        "test_validation_permutation_description_wrong_length",
+        "test_validation_permutation_description_duplicates",
+        "test_validation_permutation_description_out_of_range",
+        "test_validation_permutation_description_missing_values",
+        "test_validation_word_size_valid",
+        "test_milp_and_vectorized_helpers",
+        "test_milp_bitwise_deterministic_truncated_constraints",
+        "test_milp_bitwise_deterministic_truncated_binary_constraints",
+        "test_milp_wordwise_deterministic_truncated_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/permutation_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "4f942a343f5561c160dfeac80642681f9e02686242abe56ec02c5d83b0d554ba"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_reverse_component",
+        "test_constructor_builds_reverse_matrix",
+        "test_cp_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/reverse_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "74f42e73f9efd5f0e3be55751ee3f7a88bea7c6415626c7c7e04e950d034fdbc"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_polynomials",
+        "test_cp_inverse_constraints",
+        "test_cp_xor_differential_first_step_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/rotate_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "381932c13e06db8302693b548d9c933cf84931163f3cde9fc5cba02decc707ac"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_algebraic_polynomials",
+        "test_cms_constraints",
+        "test_cp_constraints",
+        "test_cp_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_differential_propagation_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_milp_large_xor_differential_probability_constraints",
+        "test_milp_large_xor_linear_probability_constraints",
+        "test_milp_small_xor_differential_probability_constraints",
+        "test_milp_small_xor_linear_probability_constraints",
+        "test_milp_xor_differential_propagation_constraints",
+        "test_milp_xor_linear_mask_propagation_constraints",
+        "test_sat_constraints",
+        "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_sat_xor_differential_propagation_constraints",
+        "test_sat_xor_linear_mask_propagation_constraints",
+        "test_smt_constraints",
+        "test_smt_xor_differential_propagation_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/sbox_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "38b153172f6f2cd3eb9926b8040407c147efe2a0bddabe3092825379f29d2ae2"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_shift_component",
+        "test_algebraic_polynomials",
+        "test_cms_constraints",
+        "test_cp_constraints",
+        "test_cp_inverse_constraints",
+        "test_cp_wordwise_deterministic_truncated_xor_differential_constraints",
+        "test_cp_xor_differential_first_step_constraints",
+        "test_cp_xor_linear_mask_propagation_constraints",
+        "test_milp_constraints",
+        "test_milp_xor_linear_mask_propagation_constraints",
+        "test_minizinc_constraints",
+        "test_sat_constraints",
+        "test_sat_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_sat_xor_linear_mask_propagation_constraints",
+        "test_smt_constraints",
+        "test_smt_xor_linear_mask_propagation_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/shift_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "c96534a35db14216803136d8b6f47e69f39e27ff9c555b2fbd03beffa85ca12a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_shift_rows_component",
+        "make_shift_rows_cipher",
+        "test_constructor_sets_shift_rows_identity",
+        "test_cp_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/shift_rows_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "5a35db5877bcf0682b22bf9f18bd2bd421c9d950d45145dcf8b001e3dc194e47"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_sigma_component",
+        "test_constructor_sets_sigma_identity",
+        "test_cp_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/sigma_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "31a2498a43bb10c737dea7a5e74e9a93d9999ad01fd05d00f868cb5b4fd3b980"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_theta_gaston_component",
+        "test_constructor_sets_theta_gaston_identity"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/theta_gaston_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "1ff2a156b87689498888ee647a021cafdd0df1cc6bca07199a13ed305162d91d"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_theta_keccak_component",
+        "test_constructor_sets_theta_keccak_identity",
+        "test_cp_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/theta_keccak_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "21a11f1bcaa6c2c1358cc644861bc06fc22d6360f83eabd0d28aefc77967a4e8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_theta_xoodoo_component",
+        "test_constructor_sets_theta_xoodoo_identity"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/theta_xoodoo_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "c4c49a24322f81e2a282eecd2aad0c04863101c6d8d974bb048d067c8fe812f8"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_variable_rotate_component",
+        "test_constructor_sets_variable_rotate_identity",
+        "test_get_word_based_c_code_direction",
+        "test_get_word_operation_sign_updates_solution"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/variable_rotate_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "079b99846322df33761a0380327d876911e152e7cbffc88e7596581ebb3f753c"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cms_constraints",
+        "test_cp_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/variable_shift_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "4fb2213e2f196cdc5843d259aa0a0d911ee7e16c371d989d31bed1fb7bb66185"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "make_word_permutation_component",
+        "test_constructor_builds_word_permutation_description",
+        "test_cp_constraints",
+        "test_sat_constraints",
+        "test_smt_constraints",
+        "test_algebraic_polynomials_word_size_greater_than_one",
+        "test_milp_constraints_word_size_greater_than_one"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/word_permutation_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "66bd00532f7bf415e312fabb53694db6fa1ed74a4eb6e1caefecc708d814ef6a"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_cp_build_truncated_table",
+        "test_generic_with_constant_sign_linear_constraints",
+        "test_algebraic_polynomials",
+        "test_cp_xor_differential_propagation_first_step_constraints",
+        "test_cp_xor_differential_propagation_first_step_constraints_truncates_partial_word",
+        "test_smt_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_binary_constraints",
+        "test_milp_bitwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_sequential_constraints",
+        "test_milp_wordwise_deterministic_truncated_xor_differential_simple_constraints"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/components/xor_component_test.py",
+      "review_group": "components",
+      "scientific_capability_removed": false,
+      "sha256": "c9fe5c00e480dbc2ee75de26c3064a4c4446096135f14fb6602d8df8e631dcc6"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "get_round_key_values",
+        "get_round_data_values",
+        "get_intermediate_component_id_from_key_schedule",
+        "get_intermediate_component_id_from_main_process",
+        "get_constraint",
+        "get_constraints",
+        "test_satisfiable_differential_trail_related_key",
+        "test_satisfiable_differential_trail_single_key",
+        "test_unsatisfiable_differential_trail_related_key",
+        "test_satisfiable_differential_trail_single_key_generated_using_claasp",
+        "test_build_xor_differential_model_and_checker_unsat",
+        "test_build_xor_differential_model_and_checker_sat"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/compound_xor_differential_cipher_test.py",
+      "review_group": "paired",
+      "scientific_capability_removed": false,
+      "sha256": "16619fb9e694f9561310e0e15dc7e410ede818b01837d8bd71705e43265a7194"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_add_shift_rows_component",
+        "test_add_variable_rotate_component",
+        "test_remove_key_schedule",
+        "test_remove_key_schedule_without_round_key_injection_evaluate",
+        "test_replace_bit_reordering_components_as_direct_wiring_for_permutations",
+        "test_replace_bit_reordering_components_as_direct_wiring_rewires_permutation_component",
+        "test_replace_bit_reordering_components_as_direct_wiring_for_rotations",
+        "test_replace_bit_reordering_components_as_direct_wiring_removes_only_reorder_only_components",
+        "test_get_component_reordering_for_permutation_component",
+        "test_get_component_reordering_for_rotate_component",
+        "test_get_component_reordering_for_permutation_matrix_linear_layer",
+        "test_get_component_reordering_returns_none_for_non_reorder_component",
+        "test_add_fsr_component",
+        "test_add_components_without_round_returns_none"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/editor_test.py",
+      "review_group": "editing",
+      "scientific_capability_removed": false,
+      "sha256": "7163745d6246eef00d40ce36a956be768a0bc00d2c60268bc431eb13cc4ac719"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_scip_tpi_support",
+        "test_scip_parallel_configuration"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/utils/scip_tpi_test.py",
+      "review_group": "solvers",
+      "scientific_capability_removed": false,
+      "sha256": "a265bfa217ff550e5d0dac2cc3728861218714d030f6971a293611585284abd1"
+    },
+    {
+      "decision": "typed_semantic_replacement",
+      "legacy_public_entries": [
+        "test_bytes_positions_to_little_endian_for_32_bits",
+        "test_pprint_dictionary",
+        "test_pprint_dictionary_to_file",
+        "test_sgn_function",
+        "test_signed_distance",
+        "test_point_pair",
+        "test_coerce_exact_int_with_positive_integer",
+        "test_coerce_exact_int_with_negative_integer",
+        "test_coerce_exact_int_with_zero",
+        "test_coerce_exact_int_with_large_integer",
+        "test_coerce_exact_int_with_exact_float",
+        "test_coerce_exact_int_with_non_exact_float",
+        "test_coerce_exact_int_with_boolean_true",
+        "test_coerce_exact_int_with_boolean_false",
+        "test_coerce_exact_int_with_string",
+        "test_coerce_exact_int_with_none",
+        "test_coerce_exact_int_with_list",
+        "test_coerce_exact_int_with_dict",
+        "test_coerce_exact_int_preserves_value",
+        "test_coerce_exact_int_parameter_name_in_error"
+      ],
+      "original_api_compatibility": false,
+      "original_disposition": "supersede",
+      "path": "tests/unit/utils/utils_test.py",
+      "review_group": "helpers",
+      "scientific_capability_removed": false,
+      "sha256": "b6ec5e743a260e082b10700d863842dbe527e8e29081605db2cb87b36f3066e4"
+    }
+  ],
+  "review_date": "2026-11-03",
+  "schema_version": 1,
+  "scope": "207 historical supersede decisions reviewed as scoped semantic replacements; eight historical remove decisions are reviewed separately. New or changed source needs renewed review, not an automatically inherited parity label.",
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387"
+}

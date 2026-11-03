@@ -45,6 +45,8 @@ def test_legacy_gohr_and_dbitnet_architectures_build_and_train():
     assert result.driver == "tensorflow-gohr_resnet"
     assert len(result.validation_accuracy) == 1
     assert driver.model is not None
+    assert driver.model.loss == "mse"
+    assert driver.model.optimizer.get_config()["amsgrad"] is True
     driver.reset()
     assert driver.model is None
     tf.keras.backend.clear_session()

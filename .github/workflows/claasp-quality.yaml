@@ -138,6 +138,8 @@ jobs:
           python tools/legacy_inventory.py --check
           python tools/legacy_parity_gate.py
           python tools/legacy_constructor_contracts.py --check
+          python tools/legacy_dispositions.py --check
+          python tools/legacy_native_nist.py --check
           python tools/legacy_inventory.py --check-model-closure
           python tools/legacy_inventory.py --check-catalogue-classification
           python tools/legacy_inventory.py --check-component-closure
@@ -459,3 +461,29 @@ jobs:
 
       - name: Execute downloadable neural guide scripts
         run: MPLBACKEND=Agg OPENBLAS_NUM_THREADS=1 python -m pytest tests/examples/test_neural_examples.py tests/unit/analysis/test_neural_distinguisher.py tests/unit/analysis/test_neural_workflows.py -q
+
+  tensorflow-parity:
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
+    name: Legacy neural architecture parity
+    runs-on: ubuntu-latest
+    env:
+      CUDA_VISIBLE_DEVICES: "-1"
+      TF_NUM_INTRAOP_THREADS: "1"
+      TF_NUM_INTEROP_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install the pinned optional TensorFlow runtime
+        run: python -m pip install -e '.[dev,ml-tensorflow]' 'tensorflow==2.20.0'
+      - name: Record runtime and execute paired architecture and training checks
+        run: |
+          python -c "import tensorflow as tf; print(tf.__version__)"
+          python -m pytest -m external tests/integration/test_legacy_neural_architectures.py tests/integration/test_tensorflow_neural_driver.py -q --junitxml=neural-parity.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neural-parity-evidence
+          path: neural-parity.xml
