@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "scope": "Eight old remove labels reviewed as explicit architecture replacements; no scientific capability is approved for deletion.",
+  "records": [
+    {
+      "path": "claasp/cipher_modules/models/cp/minizinc_utils/utils.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "Typed CP model parts replace string declarations.",
+      "evidence": [
+        "tests/unit/representations/constraints/cp/test_model.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "claasp/cipher_modules/models/milp/utils/milp_name_mappings.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "Typed objectives and model metadata replace string keys; exact rational coefficients own scientific weights.",
+      "evidence": [
+        "tests/unit/representations/constraints/milp/test_model.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "claasp/cipher_modules/models/milp/utils/mzn_predicates.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "The MiniZinc predicate moved into the CP representation.",
+      "evidence": [
+        "tests/unit/representations/constraints/cp/test_trails.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "claasp/cipher_modules/models/sat/utils/constants.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "Immutable selections replace input/output suffix conventions.",
+      "evidence": [
+        "tests/unit/graph/test_package.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "claasp/cipher_modules/models/sat/utils/n_window_heuristic_helper.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "N-window search restrictions are retained explicitly by NWindowSATStrategy, not removed.",
+      "evidence": [
+        "tests/unit/representations/constraints/sat/test_trails.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "claasp/utils/sage_scripts.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "The explicit typed catalogue replaces directory scanning and class-name matching.",
+      "evidence": [
+        "tests/unit/repository/test_legacy_inventory.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "claasp/utils/templates.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "Typed report sections and class-based export APIs replace the mutable report builder.",
+      "evidence": [
+        "tests/unit/presentation/test_contracts.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    },
+    {
+      "path": "tests/unit/cipher_modules/models/cp/mzn_models/mzn_deterministic_truncated_xor_differential_model_arx_optimized_test.py",
+      "old_disposition": "remove",
+      "reviewed_disposition": "architecture_replacement",
+      "capability_removal": false,
+      "replacement_contract": "The assertion-free legacy smoke test is replaced by semantic transition and solver checks.",
+      "evidence": [
+        "tests/unit/semantics/cryptanalysis/test_truncated.py"
+      ],
+      "scope": "Listed typed contract and tests; this is not a claim that raw legacy string APIs are preserved.",
+      "removal_approval_required": false
+    }
+  ]
+}

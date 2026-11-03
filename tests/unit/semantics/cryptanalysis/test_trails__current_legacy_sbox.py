@@ -22,3 +22,14 @@ def test_complete_ddt_and_signed_walsh_tables_match_current_legacy(name):
         tuple(row) for row in DATA[name]["ddt"]
     )
     assert semantics.walsh_correlation_table() == tuple(tuple(row) for row in DATA[name]["walsh"])
+
+
+EXTENDED = json.loads(Path("tests/fixtures/legacy_parity/extended_sboxes.json").read_text())
+
+
+@pytest.mark.parametrize("name", EXTENDED["boxes"])
+def test_aes_and_all_eight_rectangular_des_signed_tables(name):
+    case = EXTENDED["boxes"][name]
+    semantics = SBoxTransitionSemantics(case["table"])
+    assert semantics.difference_distribution_table() == tuple(tuple(row) for row in case["ddt"])
+    assert semantics.walsh_correlation_table() == tuple(tuple(row) for row in case["walsh"])

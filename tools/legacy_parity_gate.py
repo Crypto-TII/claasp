@@ -55,10 +55,10 @@ def validate(root=ROOT, legacy_root=None):
         )
     if legacy_root is not None:
         legacy_root = Path(legacy_root)
-        tracked = (
+        tracked_names = (
             subprocess.check_output(["git", "ls-files", "-z"], cwd=legacy_root).decode().split("\0")
         )
-        tracked = {name for name in tracked if name}
+        tracked = {name for name in tracked_names if name}
         recorded = set(current) | {item["path"] for item in snapshot["resources"]}
         if tracked != recorded:
             raise ValueError(
