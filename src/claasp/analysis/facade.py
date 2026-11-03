@@ -703,6 +703,19 @@ class Analysis:
             solver=solver,
         )
 
+    def boomerang(self, *, switch_round=None, components=None):
+        """Create a restricted ARX boomerang search with checked middle switches.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> ToySpeck(3).analysis.boomerang(switch_round=1).model().switches
+            ('modular_add_1_1',)
+        """
+        from claasp.analysis.boomerang_search import BoomerangAnalysis
+
+        return BoomerangAnalysis(self.primitive, switch_round=switch_round, components=components)
+
     def find_sbox_boomerang_transition(self, component, **options):
         """Optimize or check an exact S-box boomerang-connectivity entry."""
 

@@ -285,7 +285,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Z3 integration
-        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py -q
+        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py tests/integration/test_boomerang_search.py -q
 
   glpk-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')

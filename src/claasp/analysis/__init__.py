@@ -23,6 +23,11 @@ from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp.analysis.boomerang_search import (
+    BoomerangAnalysis,
+    BoomerangSearchResult,
+    BoomerangSearchStatus,
+)
 from claasp.analysis.component_inspection import (
     ComponentAnalysis,
     ComponentPropertiesResult,
@@ -202,6 +207,9 @@ def __getattr__(name):
 
 
 __all__ = [
+    "BoomerangAnalysis",
+    "BoomerangSearchResult",
+    "BoomerangSearchStatus",
     "ContinuousDifferentialAnalysis",
     "ContinuousCorrelationResult",
     "QuasidifferentialAnalysis",
