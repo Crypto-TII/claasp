@@ -19,6 +19,9 @@ SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 def check() -> tuple[int, int, int, int, int]:
     catalogue = json.loads(CATALOGUE.read_text(encoding="utf-8"))
     inventory = json.loads(INVENTORY.read_text(encoding="utf-8"))
+    inventory["records"] += json.loads(
+        (ROOT / "tools/data/legacy_inventory_delta.json").read_text(encoding="utf-8")
+    )["records"]
     realization_audit = json.loads(REALIZATIONS.read_text(encoding="utf-8"))
     single_components = json.loads(SINGLE_COMPONENTS.read_text(encoding="utf-8"))
     from claasp.primitives._catalogue_exports import ALL_EXPORTS
@@ -26,7 +29,7 @@ def check() -> tuple[int, int, int, int, int]:
     primitives = catalogue["primitives"]
     by_name = {item["name"]: item for item in primitives}
     assert catalogue["schema_version"] == 2
-    assert len(by_name) == len(primitives) == len(ALL_EXPORTS) == 143
+    assert len(by_name) == len(primitives) == len(ALL_EXPORTS) == 147
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
     assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
     assert len(catalogue["components"]) == 23

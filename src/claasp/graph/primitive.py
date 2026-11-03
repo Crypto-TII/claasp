@@ -745,6 +745,7 @@ class Primitive:
         self._rounds: list[Round] = []
         self._components: dict[str, Component] = {}
         self._bindings: dict[str, ValueBinding] = {}
+        self._bit_source_cache: tuple[dict[str, tuple], dict[str, tuple]] | None = None
         self._scopes: dict[str, object] = {}
         self._output: Selection | None = None
         self._graph = PrimitiveGraph(self)
@@ -1193,6 +1194,7 @@ class Primitive:
                 )
 
         target_round._append(component)
+        self._bit_source_cache = None
         self._components[component.component_id] = component
         self._unit_arrays[component.component_id] = component.output
         return component.output
@@ -1376,20 +1378,27 @@ class Primitive:
     def _selection_bit_sources(self, selection: Selection) -> tuple[tuple[str, int], ...]:
         """Flatten a selection to the encoded bits of semantic graph sources."""
 
-        values = {}
-        unit_arrays = tuple(self._input_arrays.values()) + tuple(
-            component.output for component in self._components.values()
-        )
-        for unit_array in unit_arrays:
-            width = unit_array.array_type.unit_type.encoded_bit_size
-            if width is None:
-                raise TypeError("graph wiring requires canonically encoded unit types")
-            units = []
-            for position in range(unit_array.array_type.unit_count):
-                refs = tuple((unit_array.source_id, position * width + bit) for bit in range(width))
-                units.append(refs[0] if width == 1 else refs)
-            values[unit_array.source_id] = tuple(units)
-        selected = self._resolve_selection(selection, values)
+        cached = self._bit_source_cache
+        if cached is None:
+            values = {}
+            unit_arrays = tuple(self._input_arrays.values()) + tuple(
+                component.output for component in self._components.values()
+            )
+            for unit_array in unit_arrays:
+                width = unit_array.array_type.unit_type.encoded_bit_size
+                if width is None:
+                    raise TypeError("graph wiring requires canonically encoded unit types")
+                units = []
+                for position in range(unit_array.array_type.unit_count):
+                    refs = tuple(
+                        (unit_array.source_id, position * width + bit) for bit in range(width)
+                    )
+                    units.append(refs[0] if width == 1 else refs)
+                values[unit_array.source_id] = tuple(units)
+            cached = values, {}
+            self._bit_source_cache = cached
+        values, binding_cache = cached
+        selected = self._resolve_selection(selection, values, binding_cache)
         return tuple(
             ref
             for unit in selected

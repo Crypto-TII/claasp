@@ -22,6 +22,7 @@ on:
       - feat/fractional-trail-queries
       - feat/boolean-algebraic-systems
       - feat/monomial-analysis-workflows
+      - codex/**
     paths:
       - "docker/v5/**"
       - "**"
@@ -32,7 +33,7 @@ permissions:
 
 jobs:
   multiarch-build:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -48,7 +49,7 @@ jobs:
           cache-to: type=gha,scope=claasp-v5-release,mode=max
 
   architecture-validation:
-    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/')
+    if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
     needs: multiarch-build
     runs-on: ubuntu-latest
     strategy:
