@@ -18,6 +18,7 @@ CATEGORY_EXPORTS = {
         "CHAM": "claasp.primitives.block_ciphers.cham",
         "CRAX": "claasp.primitives.block_ciphers.crax",
         "Cast": "claasp.primitives.block_ciphers.cast",
+        "Craft": "claasp.primitives.block_ciphers.craft",
         "DES": "claasp.primitives.block_ciphers.des",
         "DESExactKeyLength": "claasp.primitives.block_ciphers.des.exact_key_length",
         "Gift": "claasp.primitives.block_ciphers.gift",

@@ -23,6 +23,12 @@ from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp.analysis.circle_linear import (
+    CircleApproximation,
+    CircleCorrelationEstimate,
+    CircleLinearAnalysis,
+)
+from claasp.analysis.circle_linear_spn import FreeSubgroupSPN, SubgroupSearchResult, SubgroupTrail
 from claasp.analysis.component_inspection import (
     ComponentAnalysis,
     ComponentPropertiesResult,
@@ -198,6 +204,12 @@ def __getattr__(name):
 
 
 __all__ = [
+    "CircleApproximation",
+    "CircleCorrelationEstimate",
+    "CircleLinearAnalysis",
+    "FreeSubgroupSPN",
+    "SubgroupSearchResult",
+    "SubgroupTrail",
     "QuasidifferentialAnalysis",
     "QuasidifferentialTrail",
     "QuasidifferentialEnumeration",

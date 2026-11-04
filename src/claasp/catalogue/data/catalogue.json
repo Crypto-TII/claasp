@@ -2,6 +2,21 @@
   "analyses": [
     {
       "drivers": [
+        "python_scalar"
+      ],
+      "entry_point": "Primitive.analysis.circle_linear",
+      "evidence": "qualified",
+      "kind": "circle_linear",
+      "name": "circle_linear",
+      "primitives": [],
+      "representations": [
+        "concrete_execution"
+      ],
+      "required_components": [],
+      "restriction": "binary character bases; exact bounded endpoints or seeded estimates; subgroup search has explicit applicability"
+    },
+    {
+      "drivers": [
         "component_bounded",
         "component_minizinc"
       ],
@@ -1472,6 +1487,83 @@
           "values": {
             "key_bit_size": 40,
             "number_of_rounds": 12
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Constant",
+        "Permutation",
+        "SBox",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "family": "craft",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/test_craft.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key",
+        "tweak"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        },
+        {
+          "name": "tweak",
+          "role": "tweak",
+          "visibility": "public"
+        }
+      ],
+      "kind": "tweakable_block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.craft",
+      "name": "Craft",
+      "official_name": "Craft",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "number_of_rounds": 32,
+            "round_offset": 0
           }
         }
       ],

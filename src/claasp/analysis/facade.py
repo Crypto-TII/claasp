@@ -90,6 +90,21 @@ class Analysis:
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive
 
+    def circle_linear(self, **configuration):
+        """Measure binary circle-linear endpoint correlations with explicit bases.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Craft
+            >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
+            >>> a = Craft(number_of_rounds=8).analysis.circle_linear(bibrace=BinaryBibrace.craft())
+            >>> a.input_basis.width
+            64
+        """
+        from claasp.analysis.circle_linear import CircleLinearAnalysis
+
+        return CircleLinearAnalysis(self.primitive, **configuration)
+
     def quasidifferential(self):
         """Inspect signed trails and recover exact fixed-key probabilities.
 

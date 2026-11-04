@@ -487,6 +487,24 @@
       "qualified_name": "claasp.analysis.CPCharacteristicResult"
     },
     {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.CircleApproximation"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.CircleCorrelationEstimate"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.CircleLinearAnalysis"
+    },
+    {
       "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis",
       "defined_in": "claasp.analysis.component_inspection",
       "kind": "dataclass",
@@ -635,6 +653,12 @@
       "defined_in": "claasp.analysis.constraints",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.FixedValue"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.FreeSubgroupSPN"
     },
     {
       "canonical_name": "claasp.analysis.boolean_system.GroebnerResult",
@@ -935,6 +959,18 @@
       "defined_in": "claasp.analysis.statistical_results",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.StatisticalTestRun"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SubgroupSearchResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SubgroupTrail"
     },
     {
       "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
@@ -1570,6 +1606,319 @@
       "defined_in": "claasp.analysis.composed",
       "kind": "function",
       "qualified_name": "claasp.analysis.check_speck32_differential_linear_fixture"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.circle_linear"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_linear.CircleApproximation"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation.__init__",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleApproximation",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_linear.CircleApproximation.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation.coefficient",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleApproximation",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleApproximation.coefficient"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation.complete",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleApproximation",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleApproximation.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation.input_mask",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleApproximation",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleApproximation.input_mask"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleApproximation.output_mask",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleApproximation",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleApproximation.output_mask"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.__init__",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.complete",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.confidence",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.confidence"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.lower",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.lower"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.samples",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.samples"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.seed",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.standard_error",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.standard_error"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.upper",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.upper"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.value",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate.value"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.circle_linear.CircleLinearAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.__init__",
+      "defined_in": "claasp.analysis.circle_linear",
+      "documented_by": "claasp.analysis.circle_linear.CircleLinearAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.best_approximation",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.best_approximation"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.correlation",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.correlation"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.estimate_correlation",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.estimate_correlation"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.lookup_layer",
+      "defined_in": "claasp.analysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear.CircleLinearAnalysis.lookup_layer"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.circle_linear_spn"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.__init__",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.binary_rows",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.binary_rows"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.search",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.search"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.trail",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear_spn.FreeSubgroupSPN.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.__init__",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.complete",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.cost",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.cost"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.optimal_mask_count",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.optimal_mask_count"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.representative",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.representative"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.scope",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupSearchResult.scope"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.__init__",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail._affine_steps",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail._affine_steps"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail._sbox_sign",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail._sbox_sign"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.conditions",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.conditions"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.contribution",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.contribution"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.cost",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.cost"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.input_code",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.input_code"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.input_mask",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.input_mask"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.output_code",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.output_code"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.output_mask",
+      "defined_in": "claasp.analysis.circle_linear_spn",
+      "documented_by": "claasp.analysis.circle_linear_spn.SubgroupTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_linear_spn.SubgroupTrail.output_mask"
     },
     {
       "canonical_name": "claasp.analysis.component_inspection",
@@ -3221,6 +3570,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.avalanche"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.circle_linear",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.circle_linear"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.component",
@@ -11344,6 +11699,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -11511,6 +11867,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -11678,6 +12035,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -11845,6 +12203,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -12012,6 +12371,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -12179,6 +12539,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -12346,6 +12707,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -12513,6 +12875,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -12680,6 +13043,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -12847,6 +13211,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -13014,6 +13379,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -13181,6 +13547,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -13348,6 +13715,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -13515,6 +13883,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -13682,6 +14051,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -13849,6 +14219,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -14016,6 +14387,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -14183,6 +14555,7 @@
         "claasp.primitives.block_ciphers.blowfish.Blowfish",
         "claasp.primitives.block_ciphers.cast.Cast",
         "claasp.primitives.block_ciphers.cham.CHAM",
+        "claasp.primitives.block_ciphers.craft.Craft",
         "claasp.primitives.block_ciphers.crax.CRAX",
         "claasp.primitives.block_ciphers.des.exact_key_length.DESExactKeyLength",
         "claasp.primitives.block_ciphers.des.primitive.DES",
@@ -16538,6 +16911,12 @@
       "qualified_name": "claasp.primitives.Constant"
     },
     {
+      "canonical_name": "claasp.primitives.block_ciphers.craft.Craft",
+      "defined_in": "claasp.primitives.block_ciphers.craft",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.Craft"
+    },
+    {
       "canonical_name": "claasp.primitives.block_ciphers.aes.custom.CustomAES",
       "defined_in": "claasp.primitives.block_ciphers.aes.custom",
       "kind": "class",
@@ -17342,6 +17721,12 @@
       "qualified_name": "claasp.primitives.block_ciphers.Cast"
     },
     {
+      "canonical_name": "claasp.primitives.block_ciphers.craft.Craft",
+      "defined_in": "claasp.primitives.block_ciphers.craft",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_ciphers.Craft"
+    },
+    {
       "canonical_name": "claasp.primitives.block_ciphers.aes.custom.CustomAES",
       "defined_in": "claasp.primitives.block_ciphers.aes.custom",
       "kind": "class",
@@ -17976,6 +18361,31 @@
       "documented_by": "claasp.primitives.block_ciphers.cham.CHAM",
       "kind": "constructor",
       "qualified_name": "claasp.primitives.block_ciphers.cham.CHAM.__init__"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.craft",
+      "defined_in": "claasp.primitives.block_ciphers.craft",
+      "kind": "module",
+      "qualified_name": "claasp.primitives.block_ciphers.craft"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.craft.Craft",
+      "defined_in": "claasp.primitives.block_ciphers.craft",
+      "kind": "class",
+      "qualified_name": "claasp.primitives.block_ciphers.craft.Craft"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.craft.Craft.__init__",
+      "defined_in": "claasp.primitives.block_ciphers.craft",
+      "documented_by": "claasp.primitives.block_ciphers.craft.Craft",
+      "kind": "constructor",
+      "qualified_name": "claasp.primitives.block_ciphers.craft.Craft.__init__"
+    },
+    {
+      "canonical_name": "claasp.primitives.block_ciphers.craft.Craft.circle_linear_model",
+      "defined_in": "claasp.primitives.block_ciphers.craft",
+      "kind": "method",
+      "qualified_name": "claasp.primitives.block_ciphers.craft.Craft.circle_linear_model"
     },
     {
       "canonical_name": "claasp.primitives.block_ciphers.crax.CRAX.__init__",
@@ -31531,6 +31941,139 @@
       "qualified_name": "claasp.semantics.cryptanalysis.aes_two_round_differential_evidence"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "module",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace._refinements",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace._refinements"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.annihilator_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.annihilator_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.character",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.character"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.character_polynomial",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.character_polynomial"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.circle",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.circle"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.craft",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.craft"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.forms",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.forms"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.outputs",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.outputs"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.theta",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.theta"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.walsh_table",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.walsh_table"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.width",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.BinaryBibrace.width"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.CircleBasis",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.cells",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "documented_by": "claasp.semantics.cryptanalysis.bibrace.CircleBasis",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.cells"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.character",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.character"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.character_polynomial",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.character_polynomial"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.theta",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.theta"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.width",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.width"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics.__init__",
       "defined_in": "claasp.semantics.cryptanalysis.bitwise",
       "documented_by": "claasp.semantics.cryptanalysis.bitwise.BitwiseAndSemantics",
@@ -31588,6 +32131,332 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "function",
       "qualified_name": "claasp.semantics.cryptanalysis.check_probabilistic_truncated_modular_add"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "module",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition._polynomial",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition._polynomial"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.coefficient",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.coefficient"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.conditions",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.conditions"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.input_mask",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.input_mask"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.magnitude",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.magnitude"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.output_mask",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.output_mask"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.state_width",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineCircleTransition.state_width"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.consistent",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.consistent"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.contains",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.contains"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.equations",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.equations"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.intersect",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.intersect"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.key_count",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.key_count"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.project",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.project"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.pullback",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.pullback"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.rank",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.rank"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.width",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.AffineKeyConditions.width"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.coefficient",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.coefficient"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.input_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.input_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.key_rows",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.key_rows"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.key_width",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.key_width"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.offset",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.offset"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.output_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.output_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.rows",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.rows"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.transition",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleAffineLayer.transition"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.coefficient",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.coefficient"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.input_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.input_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.key_width",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.key_width"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.maximum_inputs",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.maximum_inputs"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.output_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.output_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.table",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleLookupLayer.table"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "class",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.best_trail",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.best_trail"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.correlation",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.correlation"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.trail",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleNetwork.trail"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.coefficient",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.coefficient"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.coefficients",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.coefficients"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.masks",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.masks"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.weight",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_linear",
+      "kind": "property",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_linear.CircleTrail.weight"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.composed.BoomerangConnectivity.__init__",

@@ -13,6 +13,18 @@ claasp.analysis
 .. automodule:: claasp.analysis
    :no-index:
 
+claasp.analysis.circle_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.circle_linear
+   :no-index:
+
+claasp.analysis.circle_linear_spn
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.circle_linear_spn
+   :no-index:
+
 claasp.analysis.component_inspection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -293,6 +305,12 @@ claasp.primitives.block_ciphers.aradi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.primitives.block_ciphers.aradi
+   :no-index:
+
+claasp.primitives.block_ciphers.craft
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.block_ciphers.craft
    :no-index:
 
 claasp.primitives.block_ciphers.des
@@ -851,6 +869,18 @@ claasp.semantics.cryptanalysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.semantics.cryptanalysis
+   :no-index:
+
+claasp.semantics.cryptanalysis.bibrace
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.bibrace
+   :no-index:
+
+claasp.semantics.cryptanalysis.circle_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.circle_linear
    :no-index:
 
 claasp.semantics.cryptanalysis.quasidifferential
