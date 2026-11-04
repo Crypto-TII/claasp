@@ -147,3 +147,18 @@ def test_explicit_layout_validation_and_fixed_input_contracts():
     for sampling_options in ({"samples": 0}, {"samples": True}, {"confidence": 1}, {"seed": True}):
         with pytest.raises(ValueError):
             a.estimate_correlation(1, 1, **sampling_options)
+
+
+def test_basic_guides_downloadable_examples_return_reportable_results():
+    import runpy
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[3]
+    for name, expected in (
+        ("basic_circle_linear.py", 8),
+        ("basic_circle_linear_correlations.py", -1),
+    ):
+        example = runpy.run_path(str(root / "docs" / "examples" / name))
+        result = example["run_example"]()
+        assert callable(result.to_terminal) and callable(result.plot)
+        assert (result.cost if hasattr(result, "cost") else result.coefficient) == expected

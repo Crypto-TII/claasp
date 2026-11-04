@@ -8,6 +8,8 @@ operations require explicit finite budgets; binary affine transitions do not.
 from dataclasses import dataclass, field
 from fractions import Fraction
 from math import log2
+from pathlib import Path
+from typing import TYPE_CHECKING, TextIO
 
 from claasp.semantics.cryptanalysis._circle_algebra import (
     Polynomial,
@@ -22,6 +24,9 @@ from claasp.semantics.cryptanalysis._circle_algebra import (
     substitute,
 )
 from claasp.semantics.cryptanalysis.bibrace import CircleBasis
+
+if TYPE_CHECKING:
+    from claasp.drivers.renderers.presentation import FigureArtifact
 
 
 @dataclass(frozen=True, slots=True)
@@ -425,6 +430,43 @@ class CircleTrail:
             inf
         """
         return -log2(abs(self.coefficient)) if self.coefficient else float("inf")
+
+    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
+        """Print retained circle-linear evidence without repeating the analysis.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from fractions import Fraction
+            >>> result = CircleTrail((1, 1), (Fraction(1, 2),))
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "trail contribution" in output.getvalue()
+            True
+        """
+        from claasp.presentation._circle_linear import trail_section as result_section
+        from claasp.presentation._terminal import to_terminal
+
+        to_terminal(result_section(self, details=details), file=file)
+
+    def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
+        """Plot retained relative and cumulative trail weights in bits.
+
+        Requires the optional ``presentation`` extra. ``show=False`` returns
+        the figure without displaying it; ``save_to`` saves it before display.
+        Weights describe a selected trail, not a full endpoint correlation.
+        Analysis and search are never repeated.
+
+        EXAMPLES::
+
+            >>> from fractions import Fraction
+            >>> result = CircleTrail((1, 1), (Fraction(1, 2),))
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_circle_trail
+
+        return _plot_circle_trail(self, show=show, save_to=save_to)
 
 
 class CircleNetwork:

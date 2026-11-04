@@ -10,13 +10,18 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from fractions import Fraction
 from math import log, sqrt
+from pathlib import Path
 from random import Random
+from typing import TYPE_CHECKING, TextIO
 
 from claasp.graph import Primitive
 from claasp.semantics.cryptanalysis._circle_algebra import integer
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
 from claasp.semantics.cryptanalysis.circle_linear import CircleLookupLayer
 from claasp.unit_types import BinaryExtensionField, Bit, Word
+
+if TYPE_CHECKING:
+    from claasp.drivers.renderers.presentation import FigureArtifact
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,6 +51,43 @@ class CircleCorrelationEstimate:
     confidence: float
     complete: bool = False
 
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print retained circle-linear evidence without repeating the analysis.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.analysis.circle_linear import CircleCorrelationEstimate
+            >>> result = CircleCorrelationEstimate(0.5, 100, 7, 0.05, 0.2, 0.8, 0.95)
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "endpoint" in output.getvalue()
+            True
+        """
+        from claasp.presentation._circle_linear import correlation_section as result_section
+        from claasp.presentation._terminal import to_terminal
+
+        to_terminal(result_section(self), file=file)
+
+    def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
+        """Plot retained agreement probabilities with uncertainty when sampled.
+
+        Requires the optional ``presentation`` extra. ``show=False`` returns
+        the figure without displaying it; ``save_to`` saves it before display.
+        These are endpoint probabilities, not a selected trail contribution.
+        Analysis and search are never repeated.
+
+        EXAMPLES::
+
+            >>> from claasp.analysis.circle_linear import CircleCorrelationEstimate
+            >>> result = CircleCorrelationEstimate(0.5, 100, 7, 0.05, 0.2, 0.8, 0.95)
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_circle_correlation
+
+        return _plot_circle_correlation(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class CircleApproximation:
@@ -62,6 +104,43 @@ class CircleApproximation:
     output_mask: int
     coefficient: Fraction
     complete: bool = True
+
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print retained circle-linear evidence without repeating the analysis.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.analysis.circle_linear import CircleApproximation
+            >>> result = CircleApproximation(1, 1, Fraction(1, 2))
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "endpoint" in output.getvalue()
+            True
+        """
+        from claasp.presentation._circle_linear import correlation_section as result_section
+        from claasp.presentation._terminal import to_terminal
+
+        to_terminal(result_section(self), file=file)
+
+    def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
+        """Plot retained agreement probabilities with uncertainty when sampled.
+
+        Requires the optional ``presentation`` extra. ``show=False`` returns
+        the figure without displaying it; ``save_to`` saves it before display.
+        These are endpoint probabilities, not a selected trail contribution.
+        Analysis and search are never repeated.
+
+        EXAMPLES::
+
+            >>> from claasp.analysis.circle_linear import CircleApproximation
+            >>> result = CircleApproximation(1, 1, Fraction(1, 2))
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_circle_correlation
+
+        return _plot_circle_correlation(self, show=show, save_to=save_to)
 
 
 class CircleLinearAnalysis:

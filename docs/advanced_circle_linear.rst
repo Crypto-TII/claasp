@@ -1,9 +1,44 @@
 Circle-linear cryptanalysis: advanced
 =====================================
 
-The :doc:`basic_circle_linear` walkthrough introduces masks, characters,
-correlation, trails and linear hulls. This page explains the algebraic terms
-used by the configurable interfaces before applying them.
+The introductory guides cover :doc:`basic_circle_linear` and
+:doc:`basic_circle_linear_correlations` using the same analyze, print and
+plot workflow. This page defines the terminology, explores parameters and
+checks numerical CRAFT results.
+
+What is a character?
+--------------------
+
+In ordinary linear analysis, a **mask** selects some bits and XORs them
+together. This gives their **parity**: zero for an even number of selected
+one-bits, one for an odd number. For example, the mask ``0101`` selects bits
+0 and 2, so its check on ``1101`` is :math:`1\oplus1=0`.
+
+A **character** is a parity-like check compatible with the chosen addition.
+CLAASP represents it as a one-bit function :math:`\ell` satisfying
+
+.. math::
+
+   \ell(x\circ y)=\ell(x)\oplus\ell(y).
+
+Mathematically, the character itself is the sign :math:`(-1)^{\ell(x)}`;
+``character(label, value)`` returns the bit :math:`\ell(value)`. For XOR,
+these checks are the usual parities of selected bits. For the alternative
+addition, some also contain products (ANDs) of pairs of bits; such checks
+are called **quadratic**. They can reveal relationships ordinary XOR masks miss.
+The **label** is the integer identifying which check to use.
+
+The **correlation** between two checks is the fraction of inputs on which
+they agree minus the fraction on which they disagree. A correlation of 1
+means always equal, -1 means always opposite, and 0 means agreement on
+exactly half the inputs. A relation with correlation 1 or -1 is **perfect**.
+Its **magnitude** is its absolute value, so both 1 and -1 have magnitude 1.
+
+A **trail** specifies the checks followed through successive layers. All
+trails with the same input/output checks form a **linear hull**: their
+signed contributions sum to the actual endpoint correlation. A **weak-key
+class** is the set of keys on which the selected trail contributes. The
+**tweak** is a public input selecting an encryption variant.
 
 Choose a basis and a cell layout
 --------------------------------
@@ -138,6 +173,35 @@ requires order :math:`c^{-2}` samples. In the usual terminology, **bias** is
 agreement probability minus one half, so it equals half the correlation.
 Very small long-round correlations are too expensive to validate by this
 sampling approach.
+
+Report and plot retained results
+--------------------------------
+
+Every endpoint result supports ``to_terminal()`` and ``plot()``. For an
+estimate, the plot converts the measured correlation to agreement and
+disagreement probabilities and retains the Hoeffding confidence intervals.
+
+.. doctest::
+
+   >>> from io import StringIO
+   >>> output = StringIO()
+   >>> estimate.to_terminal(file=output)
+   >>> "Empirical" in output.getvalue()
+   True
+
+.. code-block:: python
+
+   figure = estimate.plot(show=False, save_to="endpoint-estimate.png")
+
+A subgroup search result and its selected ``representative`` both provide
+these methods. ``to_terminal(details=True)`` adds the round profile;
+``plot()`` shows relative and cumulative trail weights. ``CircleNetwork``'s
+``best_trail`` returns a ``CircleTrail`` with the same reporting methods,
+using layers rather than rounds on the horizontal axis. Plotting needs the
+optional ``presentation`` extra and never repeats an analysis or search.
+A zero local coefficient has infinite weight and cannot be shown as a finite
+weight profile; a subgroup trail with an empty key class is also rejected
+by the weight plot.
 
 Generic affine diffusion and weak-key classes
 ---------------------------------------------

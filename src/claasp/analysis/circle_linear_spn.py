@@ -9,6 +9,8 @@ them. Outside this subgroup use the general CircleNetwork semantics.
 from dataclasses import dataclass, field
 from fractions import Fraction
 from functools import cached_property
+from pathlib import Path
+from typing import TYPE_CHECKING, TextIO
 
 from claasp.semantics.cryptanalysis._circle_algebra import (
     bits,
@@ -21,6 +23,9 @@ from claasp.semantics.cryptanalysis.circle_linear import (
     AffineKeyConditions,
     CircleAffineLayer,
 )
+
+if TYPE_CHECKING:
+    from claasp.drivers.renderers.presentation import FigureArtifact
 
 
 @dataclass(frozen=True, slots=True)
@@ -66,6 +71,43 @@ class SubgroupTrail:
             result *= transition.coefficient(key)
         return result
 
+    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
+        """Print retained circle-linear evidence without repeating the analysis.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.primitives import Craft
+            >>> result = Craft(number_of_rounds=8).circle_linear_model().search().representative
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "trail contribution" in output.getvalue()
+            True
+        """
+        from claasp.presentation._circle_linear import trail_section as result_section
+        from claasp.presentation._terminal import to_terminal
+
+        to_terminal(result_section(self, details=details), file=file)
+
+    def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
+        """Plot retained relative and cumulative trail weights in bits.
+
+        Requires the optional ``presentation`` extra. ``show=False`` returns
+        the figure without displaying it; ``save_to`` saves it before display.
+        Weights describe a selected trail, not a full endpoint correlation.
+        Analysis and search are never repeated.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Craft
+            >>> result = Craft(number_of_rounds=8).circle_linear_model().search().representative
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_circle_trail
+
+        return _plot_circle_trail(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class SubgroupSearchResult:
@@ -86,6 +128,43 @@ class SubgroupSearchResult:
     representative: SubgroupTrail
     complete: bool = True
     scope: str = "four-element perfect subgroup"
+
+    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
+        """Print retained circle-linear evidence without repeating the analysis.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.primitives import Craft
+            >>> result = Craft(number_of_rounds=8).circle_linear_model().search()
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "trail contribution" in output.getvalue()
+            True
+        """
+        from claasp.presentation._circle_linear import trail_section as result_section
+        from claasp.presentation._terminal import to_terminal
+
+        to_terminal(result_section(self, details=details), file=file)
+
+    def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
+        """Plot retained relative and cumulative trail weights in bits.
+
+        Requires the optional ``presentation`` extra. ``show=False`` returns
+        the figure without displaying it; ``save_to`` saves it before display.
+        Weights describe a selected trail, not a full endpoint correlation.
+        Analysis and search are never repeated.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Craft
+            >>> result = Craft(number_of_rounds=8).circle_linear_model().search()
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_circle_trail
+
+        return _plot_circle_trail(self, show=show, save_to=save_to)
 
 
 class FreeSubgroupSPN:

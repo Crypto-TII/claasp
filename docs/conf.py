@@ -71,6 +71,7 @@ else:
             "linear_trail_search.rst",
             "circle_linear.rst",
             "basic_circle_linear.rst",
+            "basic_circle_linear_correlations.rst",
             "advanced_circle_linear.rst",
             "truncated_differences.rst",
             "impossible_differentials.rst",

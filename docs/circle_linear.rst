@@ -9,5 +9,6 @@ primitives, conditions on keys, and complete sums over trails.
 .. toctree::
    :maxdepth: 2
 
-   Introduction <basic_circle_linear>
+   Trail search: introduction <basic_circle_linear>
+   Endpoint correlations: introduction <basic_circle_linear_correlations>
    Advanced <advanced_circle_linear>
