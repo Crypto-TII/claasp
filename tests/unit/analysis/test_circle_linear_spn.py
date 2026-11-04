@@ -208,3 +208,24 @@ def test_missing_perfect_subgroup_and_search_limits_are_explicit():
         Craft(number_of_rounds=8).circle_linear_model().search(maximum_factor_states=100)
     with pytest.raises(ValueError, match="special final round"):
         Craft().circle_linear_model()
+
+
+def test_type_flip_alone_is_not_enough_for_complete_deterministic_search():
+    brace = BinaryBibrace.craft()
+
+    def conjugated(x):
+        a, b, c, d = ((x >> i) & 1 for i in range(4))
+        return a | ((b ^ (a & c)) << 1) | ((c ^ a) << 2) | ((d ^ (a & b)) << 3)
+
+    table = tuple(brace.theta(conjugated(brace.theta(x))) for x in range(16))
+    walsh = brace.walsh_table(table)
+    assert {(a, b) for a in range(16) for b in range(16) if abs(walsh[a][b]) == 16} == {
+        (0, 0),
+        (1, 1),
+        (4, 5),
+        (5, 4),
+    }
+    # Here eta=5 lies in Lambda: other nonzero diffusion entries can stay in F.
+    # Exact bounded networks remain applicable, but the factor search is not.
+    with pytest.raises(ValueError, match="mask-displacement"):
+        FreeSubgroupSPN(brace, table, (3, 2), (1, 0), 2)

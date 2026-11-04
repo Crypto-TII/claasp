@@ -12,6 +12,7 @@ from functools import cached_property
 
 from claasp.semantics.cryptanalysis._circle_algebra import (
     bits,
+    parity,
     radical,
     reduce_equations,
 )
@@ -155,6 +156,14 @@ class FreeSubgroupSPN:
             or perfect.get(self.gamma ^ self.eta) != self.eta
         ):
             raise ValueError("perfect S-box masks do not have the required type flip")
+        # Otherwise additional diffusion branches can remain inside F, and
+        # deterministic M^T propagation would not search the whole subgroup.
+        gamma_radical = radical(bibrace.character_polynomial(self.gamma), bibrace.width)
+        eta_linear = sum(bibrace.character_polynomial(self.eta))
+        if all(not parity(eta_linear & vector) for vector in gamma_radical):
+            raise ValueError(
+                "perfect subgroup intersects its mask-displacement space; use CircleNetwork"
+            )
         self.form_rank = bibrace.width - len(
             radical(bibrace.character_polynomial(self.gamma), bibrace.width)
         )

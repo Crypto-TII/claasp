@@ -183,6 +183,9 @@ S-box, cell-XOR diffusion, cell permutation, round count and optional grouped
 affine key/constant layers. It checks the four-element perfect subgroup and
 its type flip. S-boxes without that structure are rejected by this backend;
 they remain usable in general lookup and network analysis.
+It also verifies that the subgroup intersects the relevant mask-displacement
+space only at zero. Without that condition, additional diffusion branches
+could stay inside the subgroup and deterministic propagation would be incomplete.
 
 The backward spatial map acts identically on both mask coordinates and
 commutes with the type flip. Thus the cost separates into functions of
