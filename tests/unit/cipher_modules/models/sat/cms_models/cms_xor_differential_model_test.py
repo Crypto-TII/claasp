@@ -23,3 +23,10 @@ def test_build_xor_differential_trail_model_with_weight_adds_constraints():
 
     assert len(cms_with_weight.model_constraints) > len(cms_without_weight.model_constraints)
     assert len(cms_with_weight._variables_list) >= len(cms_without_weight._variables_list)
+
+
+def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds():
+    speck = SpeckBlockCipher(number_of_rounds=5)
+    cms = CmsSatXorDifferentialModel(speck)
+    trail = cms.find_lowest_weight_xor_differential_trail_with_matsui_bounds([0, 1, 3, 5])
+    assert trail["total_weight"] == 9
