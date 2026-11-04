@@ -1,9 +1,10 @@
 Circle-linear cryptanalysis
 ===========================
 
-Study signed correlations in the character basis of a binary bibrace. Start
-with exact S-box relations and a paper-based trail search, then explore general
-binary primitives, affine weak-key classes and complete small linear hulls.
+Study correlations between parity-like bit checks defined by a binary
+bibrace, which provides a compatible alternative to XOR addition. Start with
+exact S-box relations and a CRAFT trail search, then explore general binary
+primitives, conditions on keys, and complete sums over trails.
 
 .. toctree::
    :maxdepth: 2

@@ -1,7 +1,7 @@
 """Exact free-subgroup search for parallel binary SPNs, independent of primitive name.
 
-The optimized backend requires a four-element perfect S-box subgroup with the
-paper's flat/curved type flip, binary cell diffusion and a cell permutation.
+The optimized backend requires a four-element perfect S-box subgroup with
+a flat/curved type flip, binary cell diffusion and a cell permutation.
 It verifies these properties instead of assuming that an arbitrary S-box has
 them. Outside this subgroup use the general CircleNetwork semantics.
 """
@@ -28,7 +28,7 @@ class SubgroupTrail:
     """A canonical subgroup trail, with exact local survival conditions.
 
     Codes have cell-0 in bit 0, q in the low half and s in the high half,
-    as in the paper. ``input_mask`` and ``output_mask`` are ordinary packed
+    using this module's coordinate convention. ``input_mask`` and ``output_mask`` are ordinary packed
     character labels, with cell 0 most significant. No hull claim is made.
 
     EXAMPLES::

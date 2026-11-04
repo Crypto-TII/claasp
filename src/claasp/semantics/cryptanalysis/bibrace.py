@@ -89,7 +89,7 @@ class BinaryBibrace:
 
     @classmethod
     def craft(cls) -> "BinaryBibrace":
-        """Return the paper's four-bit bibrace (b=5, Ann={0,2,5,7}).
+        """Return the configured four-bit CRAFT bibrace (b=5, Ann={0,2,5,7}).
 
         EXAMPLES::
 

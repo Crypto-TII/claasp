@@ -1,4 +1,7 @@
-"""November 2 draft, Tables 4/5/8, plus independent non-CRAFT SPN checks."""
+"""CRAFT numerical regression cases and independent non-CRAFT SPN checks.
+
+TODO: Add a public reference for the CRAFT-specific regression cases when available.
+"""
 
 from fractions import Fraction
 from itertools import product
@@ -11,7 +14,7 @@ from claasp.primitives.block_ciphers.craft import CRAFT_SBOX, CRAFT_TWEAK_PERMUT
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
 from claasp.semantics.cryptanalysis.circle_linear import CircleAffineLayer
 
-PAPER = (
+REFERENCE_CASES = (
     (8, 0x725A0000, 0x01190000, 8, 24, 120),
     (10, 0x45050000, 0x10050000, 12, 16, 118),
     (12, 0x2B8E0000, 0x10050000, 18, 16, 116),
@@ -21,8 +24,8 @@ PAPER = (
 )
 
 
-@pytest.mark.parametrize("rounds,input_code,output_code,cost,count,key_bits", PAPER)
-def test_paper_table_5_complete_search_and_exact_key_classes(
+@pytest.mark.parametrize("rounds,input_code,output_code,cost,count,key_bits", REFERENCE_CASES)
+def test_reference_complete_search_and_exact_key_classes(
     rounds, input_code, output_code, cost, count, key_bits
 ):
     model = Craft(number_of_rounds=rounds).circle_linear_model()
@@ -37,7 +40,7 @@ def test_paper_table_5_complete_search_and_exact_key_classes(
     assert result.representative.conditions == trail.conditions
 
 
-def test_table_8_18_round_first_row_and_wrong_key_exclusion():
+def test_reference_18_round_masks_and_wrong_key_exclusion():
     trail = Craft(number_of_rounds=18).circle_linear_model().trail(0x00670000)
     assert trail.input_mask == 0x7077007077707000
     assert trail.output_mask == 0x7770077000000000
@@ -46,7 +49,7 @@ def test_table_8_18_round_first_row_and_wrong_key_exclusion():
     assert trail.contribution(1) == 0
 
 
-def test_paper_theorem_1_all_type_patterns_and_key_quotient_classes():
+def test_affine_column_all_type_patterns_and_key_quotient_classes():
     brace = BinaryBibrace.craft()
     basis = CircleBasis((brace,) * 4)
     cell_rows = (13, 10, 4, 8)
@@ -143,7 +146,7 @@ def test_round_offset_changes_key_half_but_not_cost_or_class_size():
 
 
 def test_tweak_can_make_key_conditions_inconsistent_and_is_never_averaged():
-    # Table 5's 8-round representative constrains repeated K1 nibble 10.
+    # The 8-round reference case constrains repeated K1 nibble 10.
     zero = Craft(number_of_rounds=8).circle_linear_model(tweak=0).trail(0x01190000)
     assert zero.conditions.consistent
     saw_incompatible = False
@@ -166,7 +169,7 @@ def test_tweak_can_make_key_conditions_inconsistent_and_is_never_averaged():
         (18, 0x00670000, 52),
     ],
 )
-def test_paper_exact_admissible_tweak_counts_by_existential_key_elimination(
+def test_reference_admissible_tweak_counts_by_existential_key_elimination(
     rounds, output_code, tweak_bits
 ):
     base = Craft(number_of_rounds=rounds).circle_linear_model()

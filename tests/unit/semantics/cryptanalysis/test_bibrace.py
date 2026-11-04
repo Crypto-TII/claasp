@@ -13,7 +13,7 @@ def _parity(x):
     return x.bit_count() & 1
 
 
-def test_paper_operation_characters_and_orthogonality():
+def test_configured_operation_characters_and_orthogonality():
     brace = BinaryBibrace.craft()
     for x, y in product(range(16), repeat=2):
         psi = (((x ^ (x >> 2)) & 1) * (y >> 3)) ^ ((x >> 3) * ((y ^ (y >> 2)) & 1))
@@ -33,7 +33,7 @@ def test_paper_operation_characters_and_orthogonality():
         )
 
 
-def test_paper_table_2_against_direct_character_sum():
+def test_configured_sbox_walsh_table_against_direct_character_sum():
     brace = BinaryBibrace.craft()
     walsh = brace.walsh_table(CRAFT_SBOX)
     direct = tuple(
