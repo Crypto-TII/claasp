@@ -21,6 +21,7 @@ from claasp.analysis.statistical_results import (
 )
 from claasp.presentation.contracts import EvidenceClass
 from claasp.provenance import DriverIdentity, DriverKind
+from claasp.semantics.cryptanalysis import TrailKind, TrailSearchResult
 
 
 class NormalizationDirection(str, Enum):
@@ -251,6 +252,38 @@ def _finish_figure(figure, *, show, save_to):
         figure.savefig(save_to)
     if show:
         _matplotlib().show()
+
+
+def _plot_trail(
+    result: TrailSearchResult, *, show: bool, save_to: str | Path | None
+) -> FigureArtifact:
+    if not result.round_transitions:
+        raise ValueError("trail weight plots require recorded round transitions")
+    rounds = (0, *(item.round_number + 1 for item in result.round_transitions))
+    relative = (0.0, *(item.weight for item in result.round_transitions))
+    cumulative = [0.0]
+    for weight in relative[1:]:
+        cumulative.append(cumulative[-1] + weight)
+    pyplot = _matplotlib()
+    figure, axis = pyplot.subplots(figsize=(9, 4), layout="constrained")
+    axis.plot(rounds, relative, marker="o", label="Relative weight")
+    axis.plot(rounds, cumulative, marker="s", label="Cumulative weight")
+    axis.set_xticks(rounds)
+    axis.set_xlabel("Round")
+    axis.set_ylabel("Weight (bits)")
+    kind = "differential" if result.trail.kind is TrailKind.XOR_DIFFERENTIAL else "linear"
+    axis.set_title(f"XOR {kind} trail weight")
+    axis.set_ylim(bottom=0)
+    axis.grid(alpha=0.25)
+    axis.legend()
+    artifact = FigureArtifact(
+        figure,
+        "trail_weights",
+        (("relative_weight", relative), ("cumulative_weight", tuple(cumulative))),
+        MatplotlibPresentationDriver.identity,
+    )
+    _finish_figure(figure, show=show, save_to=save_to)
+    return artifact
 
 
 def _plot_avalanche(
