@@ -71,6 +71,12 @@ class CmsSatXorLinearModel(SatXorLinearModel):
         """
         utils.cms_add_clauses_to_solver(numerical_cnf, solver)
 
+    def _component_propagation_variables(self, component):
+        """Return the variables of the XOR linear mask propagation constraints of ``component``."""
+        variables, _ = component.cms_xor_linear_mask_propagation_constraints(self)
+
+        return variables
+
     @staticmethod
     def branch_xor_linear_constraints(bit_bindings):
         """
