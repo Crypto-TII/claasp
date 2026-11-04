@@ -407,6 +407,8 @@ def test_compute_xor_differential_weight():
     assert round(weight,2) == 29.47 # matches the differential weight reported in Table 2 of https://eprint.iacr.org/2016/209.pdf
 
 
+# Goal: the search with Matsui bounds finds the same optimum as the plain search and only adds weight constraints
+# to the unchanged propagation model.
 @pytest.mark.parametrize(
     "cipher, matsui_bounds, lowest_weight",
     [
@@ -433,6 +435,7 @@ def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds(cipher, ma
     assert new_variables and all(variable.startswith("matsui_") for variable in new_variables)
 
 
+# Goal: the search starting from a given weight still finds the optimum and writes the solver log file.
 def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weight_and_log():
     speck = SpeckBlockCipher(number_of_rounds=5)
     sat = SatXorDifferentialModel(speck)
@@ -450,6 +453,7 @@ def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weig
             remove(log_file_name)
 
 
+# Goal: the weight variables are correctly grouped by round, and a mismatch with the model raises an error.
 def test_hw_variables_by_round():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(speck)
@@ -464,6 +468,8 @@ def test_hw_variables_by_round():
         sat._hw_variables_by_round()
 
 
+# Goal: the documented round-by-round loop, feeding each optimum as the next Matsui bound, gives the known lowest
+# weights.
 @pytest.mark.parametrize(
     "cipher_class, lowest_weights",
     [

@@ -25,6 +25,7 @@ def test_build_xor_differential_trail_model_with_weight_adds_constraints():
     assert len(cms_with_weight._variables_list) >= len(cms_without_weight._variables_list)
 
 
+# Goal: the search with Matsui bounds is inherited by the CryptoMiniSat model and finds the optimum.
 def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds():
     speck = SpeckBlockCipher(number_of_rounds=5)
     cms = CmsSatXorDifferentialModel(speck)

@@ -56,6 +56,74 @@ clause with ``t = P + S - Y`` (valid, since ``P + S <= W``) requires ``s[a - 1][
 least ``P + S - Y > P`` before the window. The counter propagates the claim through the window, so that the claimed
 sum at ``b`` grows by ``S`` and the clauses require a higher claim at ``a - 1`` again: each step raises the claim by
 ``S - Y >= 1`` until it exceeds ``W``, where the counter clauses ``-x_i -s[i - 1][W - 1]`` give a conflict.
+
+**Worked example.** Consider 4 rounds of PRESENT in the single-key setting, with the lowest weights
+`B_1, B_2, B_3 = 2, 4, 8`. The bounds are the input of the search and are the same for all the iterations: only the
+tested weight `W` changes. The search starts from `W = \max(B_1 + B_3, B_2 + B_2) = 10` and tries `W = 10, 11, 12`,
+finding a trail at `W = 12`: it makes 3 solver calls, while
+:py:meth:`~claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_lowest_weight_xor_differential_trail`
+makes 13 (for `W = 0, \ldots, 12`). Each round has 68 weight variables (17 S-boxes, 16 in the state and 1 in the
+key schedule, with 4 weight variables each), so that the weight variables of round `k` have indices
+``68(k - 1), ..., 68k - 1`` and the rounds end at the indices ``67``, ``135``, ``203`` and ``271``. With the default
+prefix, the counter variable ``s[i][j]`` is ``matsui_i_j``.
+
+The propagation model is the same in both searches; only the weight constraints differ. At ``W = 12``, the classical
+model has a single counter for ``sum(weight variables) <= 12``, which does not say how the weight is distributed among
+the rounds, while the Matsui model has 12 more counter variables and 57 more clauses::
+
+    sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+    sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+    sage: from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_weight_constraints
+    sage: sat = SatXorDifferentialModel(PresentBlockCipher(number_of_rounds=4))
+    sage: sat.build_xor_differential_trail_model()
+    sage: hw_variables_by_round = sat._hw_variables_by_round()
+    sage: [len(round_variables) for round_variables in hw_variables_by_round]
+    [68, 68, 68, 68]
+    sage: classical_variables, classical_constraints = sat.weight_constraints(12)
+    sage: len(classical_variables), len(classical_constraints)
+    (3252, 6763)
+    sage: matsui_variables, matsui_constraints = matsui_weight_constraints(hw_variables_by_round, 12, [2, 4, 8])
+    sage: len(matsui_variables), len(matsui_constraints)
+    (3264, 6820)
+
+* **Counter: 12 more variables and 24 more clauses.** It is the same counter by Sinz, but it also keeps the
+  row of the sum of all the weight variables (``matsui_271_0, ..., matsui_271_11``), needed by the windows ending
+  at the last round::
+
+      sage: matsui_variables[-12:] == [f"matsui_271_{j}" for j in range(12)]
+      True
+
+* **Windows: 33 more clauses.** Each window of rounds `p, \ldots, q` is bounded by `Y = W - B_{p-1} - B_{4-q}`
+  (with `B_0 = 0`) and needs `W - Y = B_{p-1} + B_{4-q}` clauses, i.e. the same number for every `W`: the windows
+  starting from the first round need a single unit clause ``-s[b][Y]``, the other ones the clauses
+  ``-s[b][t + Y - 1] s[a - 1][t - 1]``, one for each ``t = 1, ..., W - Y`` (see the encoding above).
+
+  ===============  =============================  ==========================  =========
+  window           `Y = W - B_{p-1} - B_{4-q}`    `Y` for `W = 10, 11, 12`    clauses
+  ===============  =============================  ==========================  =========
+  round 1          `W - 0 - 8`                    2, 3, 4                     1 (unit)
+  rounds 1 to 2    `W - 0 - 4`                    6, 7, 8                     1 (unit)
+  rounds 1 to 3    `W - 0 - 2`                    8, 9, 10                    1 (unit)
+  round 2          `W - 2 - 4`                    4, 5, 6                     6
+  rounds 2 to 3    `W - 2 - 2`                    6, 7, 8                     4
+  rounds 2 to 4    `W - 2 - 0`                    8, 9, 10                    2
+  round 3          `W - 4 - 2`                    4, 5, 6                     6
+  rounds 3 to 4    `W - 4 - 0`                    6, 7, 8                     4
+  round 4          `W - 8 - 0`                    2, 3, 4                     8
+  ===============  =============================  ==========================  =========
+
+  The window made of all the rounds is not in the table, since it is bounded by the counter. At ``W = 12``, the
+  first three clauses bound round 1 by 4, rounds 1 to 2 by 8 and rounds 1 to 3 by 10::
+
+      sage: matsui_constraints[-33:-30]
+      ['-matsui_67_4', '-matsui_135_8', '-matsui_203_10']
+
+  The window made of rounds 2 and 3 covers the weight variables of indices ``a = 68, ..., b = 203`` and is
+  bounded by `Y = 12 - 2 - 2 = 8`, giving the 4 clauses ``-matsui_203_{t + 7} matsui_67_{t - 1}`` for
+  ``t = 1, ..., 4``: if rounds 1 to 3 weigh at least ``t + 8``, round 1 weighs at least ``t``. A partial trail in
+  which round 1 weighs 2 and rounds 2 and 3 weigh 9 violates the clause with ``t = 3`` (rounds 1 to 3 weigh 11, but
+  round 1 weighs less than 3), so it is discarded as soon as the first 3 rounds are known, while the classical model
+  only discards it when the weight of round 4 (at least `B_1 = 2`) exceeds the total weight 12.
 """
 
 INFEASIBLE_SUFFIX = "infeasible"
