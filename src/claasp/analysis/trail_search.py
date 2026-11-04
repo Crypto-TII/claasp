@@ -23,6 +23,7 @@ from claasp.components import (
     Xor,
 )
 from claasp.drivers.solvers import KissatSolver, SatStatus
+from claasp.graph import as_selection
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -562,9 +563,18 @@ def _evidence(primitive, kind, model, characteristic):
             )
         )
     rounds = []
+    boundaries = dict(primitive.graph.round_output_boundaries)
     for primitive_round in primitive.graph.rounds:
-        component = primitive_round.components[-1]
-        names = model._unit_arrays[component.component_id]
+        selections = boundaries.get(primitive_round.number)
+        if selections is None:
+            selections = (
+                primitive.graph.output
+                if primitive_round is primitive.graph.rounds[-1]
+                else primitive_round.components[-1].output,
+            )
+        output_pattern = _round_output_pattern(
+            primitive, kind, model, assignment, primitive_round.number, selections, round_by_id
+        )
         ratio, sign = Fraction(1), 1
         for step in characteristic.steps:
             if round_by_id[step.component_id.split("[")[0]] == primitive_round.number:
@@ -573,13 +583,46 @@ def _evidence(primitive, kind, model, characteristic):
         rounds.append(
             TrailRoundTransition(
                 primitive_round.number,
-                pattern(_packed(names, assignment), len(names)),
+                output_pattern,
                 ratio.numerator,
                 ratio.denominator,
                 sign,
             )
         )
     return tuple(components), tuple(rounds)
+
+
+def _round_output_pattern(
+    primitive, kind, model, assignment, round_number, selections, round_by_id
+):
+    sources = tuple(
+        source
+        for selection in selections
+        for source in primitive.graph.selection_bit_sources(as_selection(selection))
+    )
+    if kind is TrailKind.XOR_DIFFERENTIAL:
+        names = tuple(model._unit_arrays[source_id][bit] for source_id, bit in sources)
+        return XorDifference(_packed(names, assignment), len(names))
+
+    # A source mask sums every consumer, including operations inside this round.
+    # The mask at the round cut sums only consumers beyond the boundary.
+    masks = dict.fromkeys(sources, 0)
+    for component in primitive.graph.components:
+        if round_by_id[component.component_id] <= round_number:
+            continue
+        for selection, names in zip(component.inputs, model._edges[component.component_id]):
+            for source, name in zip(primitive.graph.selection_bit_sources(selection), names):
+                if source in masks:
+                    masks[source] ^= assignment[name]
+    for source, name in zip(
+        primitive.graph.selection_bit_sources(primitive.graph.output), model._output
+    ):
+        if source in masks:
+            masks[source] ^= assignment[name]
+    value = 0
+    for source in sources:
+        value = (value << 1) | masks[source]
+    return XorMask(value, len(sources))
 
 
 __all__ = [
