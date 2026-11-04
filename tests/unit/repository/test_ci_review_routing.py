@@ -93,7 +93,9 @@ def test_queue_rule_preserves_stack_ancestry_and_targets_only_claasp_v5():
     assert rule["conditions"]["ref_name"] == {"include": ["refs/heads/claasp-v5"], "exclude": []}
     assert rule["target"] == "branch"
     assert rule["enforcement"] == "active"
-    assert rule["bypass_actors"] == []
+    assert rule["bypass_actors"] == [
+        {"actor_id": 5, "actor_type": "RepositoryRole", "bypass_mode": "pull_request"}
+    ]
     (queue,) = rule["rules"]
     assert queue["type"] == "merge_queue"
     assert queue["parameters"]["merge_method"] == "MERGE"

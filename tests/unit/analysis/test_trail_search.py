@@ -153,3 +153,95 @@ def test_fractional_support_preserves_the_dense_walsh_table_capability_limit():
     primitive = BitVectorSBox(11, tuple(range(2048)))
     with pytest.raises(NotImplementedError, match="dense Walsh-table materialization"):
         primitive.analysis.find_optimal_trail(kind="xor_linear")
+
+
+@pytest.mark.parametrize("kind", tuple(TrailKind))
+def test_round_evidence_uses_complete_published_speck_states(kind):
+    from types import SimpleNamespace
+
+    from claasp.analysis.trail_search import _evidence
+
+    primitive = Speck(number_of_rounds=2)
+    model = (
+        WordDifferentialSATModel(primitive, fixed_input_differences={"key": 0})
+        if kind is TrailKind.XOR_DIFFERENTIAL
+        else WordLinearSATModel(primitive, maximum_weight=None, fixed_inputs={"key": 0})
+    )
+    formula = model.cnf_formula()
+    shared = model._shared
+    assignment = dict.fromkeys(formula.variables, 0)
+
+    def assign(names, value):
+        for bit, name in enumerate(reversed(names)):
+            assignment[name] = (value >> bit) & 1
+
+    first = primitive.graph.rounds[0].components
+    second = primitive.graph.rounds[1].components
+    first_ids = [str(component.component_id) for component in first]
+    second_ids = [str(component.component_id) for component in second]
+    if kind is TrailKind.XOR_DIFFERENTIAL:
+        assign(shared._unit_arrays[first_ids[2]], 0x1234)
+        assign(shared._unit_arrays[first_ids[4]], 0x5678)
+        assign(shared._unit_arrays[second_ids[2]], 0x9ABC)
+        assign(shared._unit_arrays[second_ids[4]], 0xDEF0)
+    else:
+        from claasp.representations.constraints.smt.word_linear import WordLinearSMTModel
+
+        assert isinstance(shared, WordLinearSMTModel)
+        # Deliberately different source masks catch accidental inclusion of
+        # consumers inside the round (x also feeds the round's final XOR).
+        assign(shared._unit_arrays[first_ids[2]], 0xFFFF)
+        assign(shared._edges[second_ids[0]][0], 0x1234)
+        assign(shared._edges[second_ids[1]][1], 0x5600)
+        assign(shared._edges[second_ids[3]][0], 0x0078)
+        assign(shared._output, 0x9ABCDEF0)
+    characteristic = SimpleNamespace(semantic_assignment=tuple(assignment.items()), steps=())
+    components, rounds = _evidence(primitive, kind, shared, characteristic)
+
+    assert [item.output_pattern.width for item in rounds] == [32, 32]
+    assert [item.output_pattern.value for item in rounds] == [0x12345678, 0x9ABCDEF0]
+    assert [item.round_number for item in rounds] == [0, 1]
+    assert all(item.numerator == item.denominator == 1 for item in rounds)
+    if kind is TrailKind.XOR_DIFFERENTIAL:
+        evidence = {item.component_id: item.output_pattern.value for item in components}
+        assert rounds[0].output_pattern.value == (
+            evidence[first_ids[2]] << 16 | evidence[first_ids[4]]
+        )
+
+
+def test_round_evidence_preserves_sparse_publications_and_final_output_order():
+    from types import SimpleNamespace
+
+    from claasp.analysis.trail_search import _evidence
+    from claasp.components import Identity
+    from claasp.graph import Primitive, UnitArrayType, as_selection
+    from claasp.unit_types import Word
+
+    primitive = Primitive("sparse_boundaries", {"state": UnitArrayType(Word(4), (2,))})
+    x, y = primitive.graph.input("state")[0], primitive.graph.input("state")[1]
+    for number in range(3):
+        primitive._builder.add_round()
+        x = as_selection(primitive._builder.add_component(Identity(x)))
+        if number == 1:
+            primitive._builder.set_round_output(y, x)
+    primitive._builder.set_output((y, x))
+    model = WordDifferentialSATModel(primitive)
+    formula = model.cnf_formula()
+    assignment = dict.fromkeys(formula.variables, 0)
+    for source_id, value in (
+        ("state", 0x0A),
+        *(
+            (component.component_id, number + 1)
+            for number, component in enumerate(primitive.graph.components)
+        ),
+    ):
+        for bit, name in enumerate(reversed(model._shared._unit_arrays[source_id])):
+            assignment[name] = (value >> bit) & 1
+    characteristic = SimpleNamespace(semantic_assignment=tuple(assignment.items()), steps=())
+    _, rounds = _evidence(primitive, TrailKind.XOR_DIFFERENTIAL, model._shared, characteristic)
+
+    assert [(item.output_pattern.value, item.output_pattern.width) for item in rounds] == [
+        (0x1, 4),
+        (0xA2, 8),
+        (0xA3, 8),
+    ]

@@ -4,10 +4,14 @@ from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
 from math import inf, log2
-from typing import TextIO
+from pathlib import Path
+from typing import TYPE_CHECKING, TextIO
 
 from claasp.representations.constraints import ConstraintModelApplication
 from claasp.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
+
+if TYPE_CHECKING:
+    from claasp.drivers.renderers.presentation import FigureArtifact
 
 
 class TrailKind(str, Enum):
@@ -432,6 +436,32 @@ class TrailSearchResult:
         from claasp.presentation._terminal import to_terminal
 
         to_terminal(trail_section(self, details=details), file=file)
+
+    def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
+        """Plot relative and cumulative trail weight against round number.
+
+        Round zero is the input, with both weights zero. Relative weight is
+        the contribution of one round; cumulative weight sums contributions
+        through that round. Linear weight uses absolute correlation, not
+        squared correlation. Recorded round transitions are required.
+
+        ``show=False`` creates the plot without displaying it. ``save_to``
+        saves the figure before display. Returns a ``FigureArtifact`` with
+        the Matplotlib figure and both series. Install the ``presentation``
+        extra to plot; Matplotlib is imported on demand and the search is
+        never repeated.
+
+        EXAMPLES::
+
+            >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL,
+            ...     XorDifference(1, 4), XorDifference(2, 4), ())
+            >>> result = TrailSearchResult(trail, 0.0, TrailSearchMetadata("example"))
+            >>> callable(result.plot)
+            True
+        """
+        from claasp.drivers.renderers.presentation import _plot_trail
+
+        return _plot_trail(self, show=show, save_to=save_to)
 
 
 class SBoxTransitionSemantics:
