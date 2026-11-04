@@ -504,6 +504,12 @@
         Differential Probabilities and Linear Correlations (Long Paper)* :
         Cryptology ePrint Archive, 2023.
 
+.. [SWW2021]
+        Sun L., Wang W., Wang M. : *Accelerating the Search of Differential and
+        Linear Characteristics with the SAT Method* : IACR Transactions on
+        Symmetric Cryptology, 2021 (1), 269--315 :
+        https://doi.org/10.46586/tosc.v2021.i1.269-315
+
 .. _claasp-ref-T:
 
 .. only:: html

@@ -69,6 +69,12 @@ class CmsSatXorDifferentialModel(SatXorDifferentialModel):
         """
         utils.cms_add_clauses_to_solver(numerical_cnf, solver)
 
+    def _component_propagation_variables(self, component):
+        """Return the variables of the XOR differential propagation constraints of ``component``."""
+        variables, _ = component.cms_xor_differential_propagation_constraints(self)
+
+        return variables
+
     def build_xor_differential_trail_model(self, weight=-1, fixed_variables=[]):
         """
         Build the model for the search of XOR differential trails.
