@@ -52,3 +52,72 @@ def test_infeasible_returned_assignment_is_rejected(monkeypatch):
     )
     with pytest.raises(RuntimeError, match="infeasible assignment"):
         HighsSolver().solve(_model())
+
+
+@pytest.mark.parametrize("clauses,satisfiable", [(((1,),), True), (((1,), (-1,)), False)])
+def test_boolean_constraints_return_checked_sat_results(clauses, satisfiable):
+    from claasp.drivers.solvers import SatStatus
+    from claasp.representations.constraints.sat import CNFFormula
+
+    formula = CNFFormula(("x",), clauses, ("clause",) * len(clauses))
+    result = HighsSolver().solve(formula)
+    assert result.is_satisfiable == satisfiable
+    if satisfiable:
+        assert result.assignment is not None and formula.is_satisfied(result.assignment)
+    else:
+        assert result.status is SatStatus.UNSATISFIABLE and result.assignment is None
+
+
+def test_boolean_timeout_without_witness_is_not_unsat(monkeypatch):
+    from claasp.representations.constraints.sat import CNFFormula
+
+    monkeypatch.setattr(
+        scipy,
+        "milp",
+        lambda *args, **kwargs: SimpleNamespace(status=1, x=None, fun=None, message="time limit"),
+    )
+    formula = CNFFormula(("x",), ((1,),), ("clause",))
+    with pytest.raises(RuntimeError, match="unknown.*not proved"):
+        HighsSolver().solve(formula)
+
+
+def test_boolean_time_limit_with_checked_incumbent_proves_sat(monkeypatch):
+    from claasp.representations.constraints.sat import CNFFormula
+
+    monkeypatch.setattr(
+        scipy,
+        "milp",
+        lambda *args, **kwargs: SimpleNamespace(status=1, x=[1.0], fun=0.0, message="time limit"),
+    )
+    formula = CNFFormula(("x",), ((1,),), ("clause",))
+    result = HighsSolver().solve(formula)
+    assert result.is_satisfiable and result.assignment == {"x": 1}
+
+
+def test_fractional_boolean_incumbent_is_rejected_before_rounding(monkeypatch):
+    from claasp.representations.constraints.sat import CNFFormula
+
+    # A feasible LP relaxation is insufficient for a Boolean witness.
+    count = 20
+    monkeypatch.setattr(
+        scipy,
+        "milp",
+        lambda *args, **kwargs: SimpleNamespace(
+            status=1, x=[0.05] * count, fun=0.0, message="time limit"
+        ),
+    )
+    formula = CNFFormula(
+        tuple(f"x{i}" for i in range(count)), (tuple(range(1, count + 1)),), ("clause",)
+    )
+    # Integrality is checked by the MILP validator before Boolean validation.
+    with pytest.raises(RuntimeError, match="infeasible assignment"):
+        HighsSolver().solve(formula)
+
+
+def test_empty_boolean_conjunction_has_the_empty_satisfying_assignment():
+    from claasp.representations.constraints.sat import CNFFormula
+
+    formula = CNFFormula((), (), ())
+    result = HighsSolver().solve(formula)
+    assert result.is_satisfiable and result.assignment == {}
+    assert formula.is_satisfied(result.assignment)

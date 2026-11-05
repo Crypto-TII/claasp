@@ -1,7 +1,9 @@
 """Optional HiGHS MILP execution through SciPy, without a solver license."""
 
 from time import monotonic
+from typing import overload
 
+from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.representations.constraints.milp.model import (
     ConstraintSense,
@@ -9,6 +11,7 @@ from claasp.representations.constraints.milp.model import (
     ObjectiveSense,
     VariableKind,
 )
+from claasp.representations.constraints.sat import CNFFormula
 
 
 class HighsSolver:
@@ -29,10 +32,53 @@ class HighsSolver:
             raise ValueError("timeout_seconds must be positive")
         self.timeout_seconds = timeout_seconds
 
-    def solve(self, model: MILPModel) -> MILPResult:
-        """Optimize and independently check the returned assignment and objective."""
+    @overload
+    def solve(self, model: MILPModel) -> MILPResult: ...
+
+    @overload
+    def solve(self, model: CNFFormula) -> SatResult: ...
+
+    def solve(self, model: MILPModel | CNFFormula) -> MILPResult | SatResult:
+        """Solve MILP or Boolean constraints and independently check witnesses.
+
+        Trail search supplies a CNF relation. Each clause is translated to
+        an exact binary linear inequality before invoking HiGHS. A checked
+        feasible witness establishes SAT, even when optimization was interrupted;
+        an interrupted run without a witness never establishes UNSAT.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> from claasp.drivers.solvers import HighsSolver
+            >>> result = Speck(number_of_rounds=1).analysis.find_lowest_weight_xor_linear_trail(  # doctest: +SKIP
+            ...     solver=HighsSolver(timeout_seconds=30))
+            >>> result.is_optimal  # doctest: +SKIP
+            True
+        """
+        if isinstance(model, CNFFormula):
+            if not model.variables:
+                return SatResult(SatStatus.SATISFIABLE, {}, 0.0, "empty conjunction", "")
+            from claasp.representations.constraints.milp.boolean import cnf_to_milp
+
+            solved = self.solve(cnf_to_milp(model))
+            if solved.status is MILPStatus.UNKNOWN:
+                raise RuntimeError("HiGHS returned unknown; Boolean infeasibility is not proved")
+            assignment = (
+                None
+                if solved.assignment is None
+                else {name: round(value) for name, value in solved.assignment.items()}
+            )
+            if assignment is not None and not model.is_satisfied(assignment):
+                raise RuntimeError("HiGHS binary witness violates the original Boolean clauses")
+            return SatResult(
+                SatStatus.SATISFIABLE if solved.is_feasible else SatStatus.UNSATISFIABLE,
+                assignment,
+                solved.runtime_seconds,
+                solved.stdout,
+                solved.stderr,
+            )
         if not isinstance(model, MILPModel):
-            raise TypeError("model must be an MILPModel")
+            raise TypeError("model must be an MILPModel or CNFFormula")
         try:
             import numpy as np
             from scipy.optimize import Bounds, LinearConstraint, milp
