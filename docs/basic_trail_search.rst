@@ -10,9 +10,9 @@ from a proven optimum.
    trail_search_introduction
    differential_trail_search
    linear_trail_search
-   circle_linear
    truncated_differences
    impossible_differentials
    differential_linear
    boomerang
    quasi_differential
+   circle_linear
