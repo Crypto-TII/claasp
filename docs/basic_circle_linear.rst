@@ -15,7 +15,7 @@ The search is exact within its supported set of checks and needs no solver.
    primitive = Craft(number_of_rounds=8)
    result = primitive.circle_linear_model().search()
 
-Print the search scope, trail weight and the keys on which it contributes:
+Print the round masks and relative and cumulative contribution magnitudes:
 
 .. code-block:: python
 
@@ -36,6 +36,10 @@ Print the search scope, trail weight and the keys on which it contributes:
 
 .. literalinclude:: _build/circle_linear_basic_terminal.txt
    :language: text
+
+The magnitudes apply on the reported key class; signs can depend on the key.
+Use ``result.to_terminal(details=True)`` to also inspect search metadata, key
+constraints and the weight of each round.
 
 Plot the weight contributed by each round and its running total:
 

@@ -309,6 +309,31 @@ zero element belongs to the selected subgroup. Otherwise an additional
 propagation path (a **branch**) could remain inside the subgroup, and
 following one mask sequence would not search it completely.
 
+For a compatible CLAASP primitive, derive this representation directly from
+its graph instead of supplying a second description of its rounds:
+
+.. doctest::
+
+   >>> from claasp.primitives import Craft
+   >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
+   >>> primitive = Craft(number_of_rounds=8)
+   >>> model = primitive.analysis.circle_linear_model(
+   ...     bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": 0})
+   >>> model.trail(0x01190000).cost
+   8
+
+This adapter uses the shared graph propagation runner. It derives binary
+affine state maps, affine master-key expressions, fixed public-input offsets,
+S-box tables and published round boundaries from the actual operations.
+It accepts bit and word layouts, including parallel S-box components and
+structural bit/word conversions. It requires a complete substitution layer
+at each round boundary, affine key handling, and the same cell-XOR diffusion
+and cell permutation in each round. A nonlinear key schedule, bit-mixing
+diffusion or another unsupported structure raises an explicit capability
+error. The bibrace and the public inputs to fix must be supplied explicitly;
+secret inputs remain symbolic. The convenience method
+``Craft(...).circle_linear_model(tweak=...)`` delegates to this adapter.
+
 Each cell's check is written :math:`q\gamma\oplus s\eta`, with
 :math:`q,s\in\{0,1\}`. Here :math:`\gamma` is a curved check preserved by
 the S-box, and :math:`\eta` is the flat check exchanged with

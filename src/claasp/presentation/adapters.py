@@ -380,17 +380,9 @@ def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
     notes = [f"Total weight: {trail.total_weight:g}."]
     if isinstance(result, TrailSearchResult):
         notes.insert(0, "Proved optimal." if result.is_optimal else "Optimality not proved.")
-    table = Table(
-        (
-            TableColumn("round", "Round", Alignment.RIGHT),
-            TableColumn("pattern", pattern),
-            TableColumn("relative", f"Relative {quantity}", Alignment.RIGHT),
-            TableColumn("cumulative", f"Cumulative {quantity}", Alignment.RIGHT),
-        ),
-        tuple(rows),
-        "Round trail",
-        tuple(notes),
-    )
+    from claasp.presentation._trail import round_table
+
+    table = round_table(rows, pattern=pattern, quantity=quantity, notes=notes)
     return ReportSection("Trail", tables=(table,))
 
 

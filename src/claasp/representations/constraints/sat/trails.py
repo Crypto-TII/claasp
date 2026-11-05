@@ -25,15 +25,17 @@ from claasp.components import (
     Xor,
 )
 from claasp.drivers.solvers import SatStatus
-from claasp.graph.binding import BindingKind
+from claasp.graph import GraphPropagation
 from claasp.primitives import Speck
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    ConstraintModelProvenance,
     _direct_model,
     _unaudited_model,
     _verified_model,
+)
+from claasp.representations.constraints._propagation import (
+    component_applications as _component_applications,
 )
 from claasp.representations.constraints.sat.components import (
     DifferentialToTruncatedSATModel,
@@ -70,26 +72,6 @@ from claasp.semantics.cryptanalysis import (
 )
 from claasp.transformations import invert_primitive, slice_rounds
 from claasp.unit_types import BinaryExtensionField, Bit, Word
-
-
-def _component_applications(primitive, default, specialized):
-    grouped: dict[ConstraintModelProvenance, list[str]] = {model: [] for _, model in specialized}
-    grouped[default] = []
-    for component in primitive.graph.components:
-        model = next(
-            (
-                model
-                for component_type, model in specialized
-                if isinstance(component, component_type)
-            ),
-            default,
-        )
-        grouped[model].append(component.component_id)
-    return tuple(
-        ConstraintModelApplication(model, tuple(component_ids))
-        for model, component_ids in grouped.items()
-        if component_ids
-    )
 
 
 def _cnf(formula, constraint_models) -> CNFFormula:
@@ -632,33 +614,16 @@ class WordDeterministicTruncatedSATModel:
                         label,
                     )
 
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
-        unit_arrays = {}
-        for name, array_type in sources:
-            _truncated_width(array_type)
-            unit_arrays[name] = tuple(
-                pair(f"truncated_{name}_{bit}")
-                for bit in range(array_type.unit_count * _truncated_width(array_type))
-            )
+        propagation = GraphPropagation(self.primitive)
+        unit_arrays, operands_by_id, output, _ = propagation.bit_wiring(
+            pair,
+            source_names=lambda name, vt: tuple(
+                f"truncated_{name}_{bit}" for bit in range(vt.unit_count * _truncated_width(vt))
+            ),
+        )
 
-        def selected(selection):
-            return tuple(
-                unit_arrays[source_id][bit]
-                for source_id, bit in self.primitive.graph.selection_bit_sources(selection)
-            )
-
-        operands_by_id = {}
-        for component in self.primitive.graph.components:
+        def rule(component, operands, output):
             component_id = component.component_id
-            operands = tuple(selected(selection) for selection in component.inputs)
-            operands_by_id[component_id] = operands
-            output = unit_arrays[component_id]
             width = _truncated_width(component.output_type)
             if isinstance(component, Add) and not isinstance(component.output_type.unit_type, Bit):
                 raise NotImplementedError(
@@ -795,7 +760,7 @@ class WordDeterministicTruncatedSATModel:
                     f"no deterministic-truncated SAT semantics for {type(component).__name__}"
                 )
 
-        output = selected(self.primitive.graph.output)
+        propagation.relations(rule, unit_arrays, operands_by_id)
         if self.nonzero_input is not None:
             add(
                 (
@@ -1222,35 +1187,8 @@ class WordwiseDeterministicTruncatedSATModel:
                     label,
                 )
 
-        bindings = {item.binding_id: item for item in self.primitive.graph.bindings}
-
-        def resolve(owner, position):
-            binding = bindings.get(owner)
-            if binding is None:
-                return owner, position
-            if binding.kind is BindingKind.JOIN:
-                offset = 0
-                for selection in binding.inputs:
-                    if position < offset + len(selection.positions):
-                        return resolve(
-                            selection.source.source_id,
-                            selection.positions[position - offset],
-                        )
-                    offset += len(selection.positions)
-            elif binding.kind is BindingKind.VIEW:
-                selection = binding.inputs[0]
-                return resolve(selection.source.source_id, selection.positions[position])
-            raise NotImplementedError(
-                f"wordwise propagation does not support {binding.kind.value} binding {owner!r}"
-            )
-
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
+        propagation = GraphPropagation(self.primitive)
+        sources = propagation.sources
         unit_arrays = {
             name: tuple(
                 word(f"wordwise_{name}_{position}", array_type.unit_type.encoded_bit_size)
@@ -1259,18 +1197,14 @@ class WordwiseDeterministicTruncatedSATModel:
             for name, array_type in sources
         }
 
-        def selected(selection):
-            return tuple(
-                unit_arrays[owner][source_position]
-                for position in selection.positions
-                for owner, source_position in (resolve(selection.source.source_id, position),)
-            )
+        def unsupported_conversion(*args):
+            raise NotImplementedError("wordwise propagation does not support pack/unpack bindings")
 
-        operands_by_id = {}
-        for component in self.primitive.graph.components:
-            operands = tuple(selected(selection) for selection in component.inputs)
-            operands_by_id[component.component_id] = operands
-            output = unit_arrays[component.component_id]
+        operands_by_id, output = propagation.unit_wiring(
+            unit_arrays, pack=unsupported_conversion, unpack=unsupported_conversion
+        )
+
+        def rule(component, operands, output):
             if isinstance(component, (Add, Xor)):
                 if isinstance(component, Add) and not isinstance(
                     component.output_type.unit_type, (Bit, BinaryExtensionField)
@@ -1340,7 +1274,7 @@ class WordwiseDeterministicTruncatedSATModel:
                     f"no wordwise deterministic semantics for {type(component).__name__}"
                 )
 
-        output = selected(self.primitive.graph.output)
+        propagation.relations(rule, unit_arrays, operands_by_id)
 
         def fix(words, differences, label):
             for encoded, difference in zip(words, differences):

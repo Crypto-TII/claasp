@@ -4,6 +4,7 @@ import re
 from dataclasses import dataclass
 
 from claasp.components import ModularAdd, ModularSubtract
+from claasp.graph import GraphPropagation
 from claasp.representations.constraints.polynomial.boolean import (
     BooleanPolynomial,
     modular_addition_polynomials,
@@ -103,12 +104,8 @@ class BooleanEquationSystem:
             for component in round_.components
         }
         evaluator = BooleanSymbolicEvaluator()
-        cache: dict = {}
-        for component in primitive.graph.components:
-            operands = tuple(
-                primitive.graph.resolve_selection(selection, values, cache)
-                for selection in component.inputs
-            )
+
+        def rule(component, operands):
             output = fresh(component.output_type)
             local: list[BooleanPolynomial] = []
             if isinstance(component, (ModularAdd, ModularSubtract)):
@@ -134,14 +131,12 @@ class BooleanEquationSystem:
             else:
                 expected = evaluator._component(component, operands)
                 local.extend(a + b for a, b in zip(_flatten(output), _flatten(expected)))
-            values[component.component_id] = output
             equations.extend(local)
             rounds.extend([owner[component.component_id]] * len(local))
-        outputs = (
-            ()
-            if primitive.graph.output is None
-            else _flatten(primitive.graph.resolve_selection(primitive.graph.output, values, cache))
-        )
+            return output
+
+        propagated = GraphPropagation(primitive).run(values, rule)
+        outputs = () if propagated.output is None else _flatten(propagated.output)
         return cls(tuple(equations), tuple(rounds), tuple(variables), tuple(inputs), outputs)
 
     def singular_program(self, *, fixed_variables=None) -> str:

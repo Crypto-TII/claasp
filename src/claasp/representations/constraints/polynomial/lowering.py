@@ -4,7 +4,7 @@ from enum import Enum
 
 from claasp.components.algebraic import Add, LinearMap, Multiply, Power
 from claasp.components.structural import Constant, Identity, Permutation
-from claasp.graph import Primitive, Selection
+from claasp.graph import GraphPropagation, Primitive, Selection
 from claasp.representations.constraints.polynomial.expression import Polynomial
 from claasp.representations.constraints.polynomial.system import PolynomialSystem
 from claasp.unit_types import PrimeField
@@ -86,27 +86,29 @@ class PrimeFieldPolynomialModel:
     def polynomial_system(self) -> PolynomialSystem:
         """Compute the polynomial system for this public typed contract."""
 
-        variables = []
-        for name, unit_array in self._primitive.graph.input_arrays.items():
-            variables.extend(
-                self.variable_name(name, position)
-                for position in range(unit_array.array_type.unit_count)
-            )
-        for component in self._primitive.graph.components:
-            variables.extend(
-                self.variable_name(component.component_id, position)
-                for position in range(component.output_type.unit_count)
-            )
-
+        propagation = GraphPropagation(self._primitive)
+        source_variables = {
+            name: tuple(self._variable(name, i) for i in range(vt.unit_count))
+            for name, vt in propagation.sources
+        }
+        operands, _ = propagation.unit_wiring(source_variables)
+        variables = [
+            self.variable_name(name, i)
+            for name, vt in propagation.sources
+            for i in range(vt.unit_count)
+        ]
         self._used_variables = set(variables)
         self._auxiliary_variables = []
         self._auxiliary_powers = {}
         equations = []
         provenance = []
-        for component in self._primitive.graph.components:
-            lowered, lowered_provenance = self._lower_component(component)
+
+        def rule(component, selected, outputs):
+            lowered, lowered_provenance = self._lower_component(component, selected, outputs)
             equations.extend(lowered)
             provenance.extend(lowered_provenance)
+
+        propagation.relations(rule, source_variables, operands)
         variables.extend(self._auxiliary_variables)
         return PolynomialSystem(self._field, tuple(variables), tuple(equations), tuple(provenance))
 
@@ -131,18 +133,16 @@ class PrimeFieldPolynomialModel:
             for position in range(component.output_type.unit_count)
         )
 
-    def _lower_component(self, component: object) -> tuple[tuple[Polynomial, ...], tuple[str, ...]]:
+    def _lower_component(self, component, selected_inputs, outputs):
         if not isinstance(component, self._supported_components):
             raise NotImplementedError(
                 f"PrimeFieldPolynomialModel does not support {type(component).__name__}"
             )
-        outputs = self._outputs(component)
 
         if isinstance(component, Constant):
             equations = tuple(output - value for output, value in zip(outputs, component.values))
             return equations, (component.component_id,) * len(equations)
 
-        selected_inputs = tuple(self._selection(item) for item in component.inputs)
         if isinstance(component, Identity):
             expressions = selected_inputs[0]
         elif isinstance(component, Permutation):

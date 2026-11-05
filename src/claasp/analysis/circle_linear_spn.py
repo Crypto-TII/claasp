@@ -20,12 +20,40 @@ from claasp.semantics.cryptanalysis._circle_algebra import (
 )
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
 from claasp.semantics.cryptanalysis.circle_linear import (
+    AffineCircleTransition,
     AffineKeyConditions,
     CircleAffineLayer,
 )
 
 if TYPE_CHECKING:
     from claasp.drivers.renderers.presentation import FigureArtifact
+
+
+@dataclass(frozen=True, slots=True)
+class SubgroupRoundTransition:
+    """One round's masks, magnitude and retained symbolic key dependence.
+
+    ``sbox_sign * affine.coefficient(key)`` is the signed round contribution.
+    Multiplying these contributions reproduces the selected trail, including
+    zero for a key that violates a local condition.
+
+    EXAMPLES::
+
+        >>> from claasp.primitives import Craft
+        >>> trail = Craft(number_of_rounds=8).circle_linear_model().trail(0x01190000)
+        >>> step = trail.round_transitions[0]
+        >>> step.round_number, step.input_mask == trail.input_mask
+        (0, True)
+        >>> abs(step.sbox_sign * step.affine.coefficient(0)) == step.magnitude
+        True
+    """
+
+    round_number: int
+    input_mask: int
+    output_mask: int
+    magnitude: Fraction
+    sbox_sign: int
+    affine: AffineCircleTransition
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,6 +82,8 @@ class SubgroupTrail:
     conditions: AffineKeyConditions
     _affine_steps: tuple = field(repr=False)
     _sbox_sign: int = field(repr=False)
+    round_transitions: tuple[SubgroupRoundTransition, ...] = ()
+    state_width: int = 0
 
     def contribution(self, key: int) -> Fraction:
         """Evaluate the signed trail product for one key in global coordinates.
@@ -316,15 +346,18 @@ class FreeSubgroupSPN:
         output_label = self._labels(q, s)
         conditions = AffineKeyConditions(self.key_width)
         transitions = []
+        round_transitions = []
         sign = 1
         cost = 0
-        for layer in reversed(self.affine_layers):
+        for round_number, layer in reversed(tuple(enumerate(self.affine_layers))):
+            round_output = self._labels(q, s)
+            round_sign = 1
             # Backward S-box: sigma is an involution on this validated F.
             before_q = q ^ s
             for i in range(self.cells):
                 a = (self.gamma if before_q >> i & 1 else 0) ^ (self.eta if s >> i & 1 else 0)
                 b = (self.gamma if q >> i & 1 else 0) ^ (self.eta if s >> i & 1 else 0)
-                sign *= 1 if self.walsh[a][b] > 0 else -1
+                round_sign *= 1 if self.walsh[a][b] > 0 else -1
             q = self._permute_backward(before_q)
             s = self._permute_backward(s)
             after = self._labels(q, s)
@@ -337,6 +370,17 @@ class FreeSubgroupSPN:
             cost += (state_width - len(radical(state_poly, state_width))) // 2
             conditions = conditions.intersect(transition.conditions)
             transitions.append(transition)
+            sign *= round_sign
+            round_transitions.append(
+                SubgroupRoundTransition(
+                    round_number,
+                    self._labels(q, s),
+                    round_output,
+                    transition.magnitude,
+                    round_sign,
+                    transition,
+                )
+            )
         return SubgroupTrail(
             q | (s << self.cells),
             output_code,
@@ -346,6 +390,8 @@ class FreeSubgroupSPN:
             conditions,
             tuple(transitions),
             sign,
+            tuple(reversed(round_transitions)),
+            self.basis.width,
         )
 
     @cached_property
@@ -441,4 +487,4 @@ class FreeSubgroupSPN:
         return SubgroupSearchResult(minimum, len(valid), representative)
 
 
-__all__ = ["FreeSubgroupSPN", "SubgroupSearchResult", "SubgroupTrail"]
+__all__ = ["FreeSubgroupSPN", "SubgroupRoundTransition", "SubgroupSearchResult", "SubgroupTrail"]

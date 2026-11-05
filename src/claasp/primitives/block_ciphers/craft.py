@@ -88,57 +88,13 @@ class Craft(Primitive):
             >>> t.cost, t.conditions.key_count == 2**108
             (22, True)
         """
-        from claasp.analysis.circle_linear_spn import FreeSubgroupSPN
-        from claasp.semantics.cryptanalysis._circle_algebra import integer
-        from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
-        from claasp.semantics.cryptanalysis.circle_linear import CircleAffineLayer
+        from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
-        integer(tweak, 64, "tweak")
         if self.round_offset + self.number_of_rounds == 32:
             raise ValueError("the free-subgroup backend excludes CRAFT's special final round")
-        brace = BinaryBibrace.craft() if bibrace is None else bibrace
-        if brace.width != 4:
-            raise ValueError("CRAFT's parallel circle layout has four-bit cells")
-        diffusion = tuple(
-            ((1 << i) | (1 << (i + 8)) | (1 << (i + 12)))
-            if i < 4
-            else (((1 << i) | (1 << (i + 8))) if i < 8 else 1 << i)
-            for i in range(16)
-        )
-        basis = CircleBasis((brace,) * 16)
-        rows = [0] * 64
-        for i, row in enumerate(diffusion):
-            for b in range(4):
-                rows[4 * (15 - i) + b] = sum(
-                    1 << (4 * (15 - j) + b) for j in range(16) if row >> j & 1
-                )
-        layers = []
-        for r in range(self.round_offset, self.round_offset + self.number_of_rounds):
-            tw = [(tweak >> (4 * (15 - i))) & 15 for i in range(16)]
-            if r % 4 >= 2:
-                tw = [tw[i] for i in CRAFT_TWEAK_PERMUTATION]
-            tw[4] ^= _RC4[r % 15]
-            tw[5] ^= _RC3[r % 7]
-            offset = 0
-            for value in tw:
-                offset = (offset << 4) | value
-            layers.append(
-                CircleAffineLayer(
-                    basis,
-                    basis,
-                    tuple(rows),
-                    offset=offset,
-                    key_width=128,
-                    key_rows=tuple(1 << (bit + (64 if r % 2 == 0 else 0)) for bit in range(64)),
-                )
-            )
-        return FreeSubgroupSPN(
-            brace,
-            CRAFT_SBOX,
-            diffusion,
-            CRAFT_PERMUTATION,
-            self.number_of_rounds,
-            affine_layers=tuple(layers),
+        return self.analysis.circle_linear_model(
+            bibrace=BinaryBibrace.craft() if bibrace is None else bibrace,
+            fixed_inputs={"tweak": tweak},
         )
 
 

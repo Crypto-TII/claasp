@@ -15,8 +15,7 @@ from claasp.components import (
     SBox,
     Xor,
 )
-from claasp.graph import Primitive
-from claasp.graph.binding import BindingKind
+from claasp.graph import GraphPropagation, Primitive
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -356,37 +355,18 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 variables.append(LinearVariable(name, VariableKind.BINARY))
             return name
 
-        for owner, unit_array in self.primitive.graph.input_arrays.items():
-            for position in range(unit_array.array_type.unit_count):
-                binary(self._name(owner, position))
-        for component in self.primitive.graph.components:
-            for position in range(component.output_type.unit_count):
-                binary(self._name(component.component_id, position))
+        propagation = GraphPropagation(self.primitive)
+        source_variables = {
+            owner: tuple(binary(self._name(owner, i)) for i in range(vt.unit_count))
+            for owner, vt in propagation.sources
+        }
 
-        bindings = {item.binding_id: item for item in self.primitive.graph.bindings}
+        def unsupported_conversion(*args):
+            raise NotImplementedError("wordwise activity does not support pack/unpack bindings")
 
-        def resolve(owner, position):
-            binding = bindings.get(owner)
-            if binding is None:
-                return self._name(owner, position)
-            if binding.kind is BindingKind.JOIN:
-                offset = 0
-                for selection in binding.inputs:
-                    if position < offset + len(selection.positions):
-                        local = position - offset
-                        return resolve(selection.source.source_id, selection.positions[local])
-                    offset += len(selection.positions)
-            elif binding.kind is BindingKind.VIEW:
-                selection = binding.inputs[0]
-                return resolve(selection.source.source_id, selection.positions[position])
-            raise NotImplementedError(
-                f"wordwise activity does not support {binding.kind.value} binding {owner!r}"
-            )
-
-        def selected(selection):
-            return tuple(
-                resolve(selection.source.source_id, position) for position in selection.positions
-            )
+        operand_variables, _ = propagation.unit_wiring(
+            source_variables, pack=unsupported_conversion, unpack=unsupported_conversion
+        )
 
         def equality(left, right, label):
             constraints.append(
@@ -399,12 +379,8 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
             )
 
         sbox_variables = []
-        for component in self.primitive.graph.components:
-            output = tuple(
-                self._name(component.component_id, position)
-                for position in range(component.output_type.unit_count)
-            )
-            operands = tuple(selected(item) for item in component.inputs)
+
+        def rule(component, operands, output):
             if isinstance(component, SBox):
                 if sorted(component.table) != list(range(len(component.table))):
                     raise NotImplementedError("wordwise activity requires bijective S-boxes")
@@ -512,6 +488,8 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
                 raise NotImplementedError(
                     f"no wordwise activity semantics for {type(component).__name__}"
                 )
+
+        propagation.relations(rule, source_variables, operand_variables)
 
         for owner in self.zero_difference_inputs:
             for position in range(self.primitive.graph.input_arrays[owner].array_type.unit_count):

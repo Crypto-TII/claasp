@@ -41,7 +41,10 @@ def test_search_and_selected_trail_report_distinguish_scope_without_research(mon
         assert "2^120" in text and "Cumulative weight (bits)" in text
     output = StringIO()
     result.to_terminal(file=output)
-    assert result.scope in output.getvalue() and "Optimal masks" in output.getvalue()
+    text = output.getvalue()
+    assert result.scope in text and "Round trail" in text
+    assert "Relative magnitude" in text and "Cumulative magnitude" in text
+    assert "Optimal masks" not in text  # Search metadata belongs to details=True.
     output = StringIO()
     result.representative.to_terminal(file=output)
     assert "no optimality claim" in output.getvalue()

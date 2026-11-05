@@ -24,7 +24,7 @@ from claasp.components.word import (
     VariableShift,
     Xor,
 )
-from claasp.graph import Primitive
+from claasp.graph import GraphPropagation, Primitive
 from claasp.semantics.cryptanalysis.continuous import (
     continuous_and,
     continuous_differential_add,
@@ -125,22 +125,14 @@ class ContinuousExecutionDriver:
         for name, unit_array in primitive.graph.input_arrays.items():
             values[name] = _pack(unit_array.array_type, inputs[name], name)
 
-        binding_cache: dict[str, CorrelationValue] = {}
-        for component in primitive.graph.components:
-            selected = tuple(
-                primitive.graph.resolve_selection(item, values, binding_cache)
-                for item in component.inputs
-            )
-            if component.component_id is None:
-                raise ValueError("primitive contains an unbound component")
-            values[component.component_id] = self._component(primitive, component, selected)
-
-        output = None
-        if primitive.graph.output is not None:
-            output = _flatten(
-                primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
-            )
-        flattened = {name: _flatten(value) for name, value in (values | binding_cache).items()}
+        propagated = GraphPropagation(primitive).run(
+            values, lambda component, operands: self._component(primitive, component, operands)
+        )
+        output = None if propagated.output is None else _flatten(propagated.output)
+        flattened = {
+            name: _flatten(value)
+            for name, value in (propagated.values | propagated.bindings).items()
+        }
         return ContinuousEvaluationResult(
             flattened,
             output,

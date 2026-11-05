@@ -27,6 +27,7 @@ from claasp.components import (
     Shift,
     Xor,
 )
+from claasp.graph import GraphPropagation
 from claasp.representations.constraints.milp import (
     ConstraintSense,
     LinearConstraint,
@@ -260,36 +261,25 @@ class TwoSubsetDivisionProperty:
         ):
             raise ValueError("output_bit must fit primitive output")
         build = _Builder()
-        wires: dict[str, list[str]] = {}
-        uses: dict[str, list[str]] = {}
-        for name, array in graph.input_arrays.items():
-            wires[name] = [build.variable() for _ in range(array.array_type.encoded_bit_size)]
-        for component in graph.components:
-            wires[component.component_id] = [
-                build.variable() for _ in range(component.output_type.encoded_bit_size)
-            ]
-        for row in wires.values():
-            for wire in row:
-                uses[wire] = []
-        for component in graph.components:
-            operands = []
-            for selection in component.inputs:
-                edges = []
-                for source, bit in graph.selection_bit_sources(selection):
-                    edge = build.variable()
-                    uses[wires[source][bit]].append(edge)
-                    edges.append(edge)
-                operands.append(edges)
-            output = wires[component.component_id]
-            self._component_rules(build, component, operands, output)
+        propagation = GraphPropagation(self.primitive)
+        wires, operands, output, consumers = propagation.bit_wiring(
+            lambda _: build.variable(),
+            source_names=lambda name, vt: range(vt.encoded_bit_size),
+            edge_names=lambda c, i, selection: range(selection.array_type.encoded_bit_size),
+            output_names=lambda vt: range(vt.encoded_bit_size),
+        )
+        propagation.relations(
+            lambda c, inputs, target: self._component_rules(build, c, inputs, target),
+            wires,
+            operands,
+        )
         output_constraints = []
-        for index, (source, bit) in enumerate(graph.selection_bit_sources(graph.output)):
-            sink = build.variable()
-            uses[wires[source][bit]].append(sink)
+        for index, sink in enumerate(output):
             output_constraints.append(len(build.constraints))
             build.row([(sink, 1)], int(index == output_bit))
-        for wire, copies in uses.items():
-            build.row([(wire, -1)] + [(edge, 1) for edge in copies])
+        for name, row in wires.items():
+            for bit, wire in enumerate(row):
+                build.row([(wire, -1)] + [(edge, 1) for edge in consumers[name][bit]])
         for name, row in wires.items():
             if name not in graph.input_arrays:
                 continue

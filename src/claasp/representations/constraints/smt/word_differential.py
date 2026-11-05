@@ -24,7 +24,10 @@ from claasp.components import (
     Xor,
 )
 from claasp.drivers.solvers import SatStatus
+from claasp.graph import GraphPropagation
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints._propagation import component_applications
+from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt._probability_encoding import (
     _add_weight_interval,
     _encode_probability_product,
@@ -33,7 +36,6 @@ from claasp.representations.constraints.smt._probability_encoding import (
 )
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
-from claasp.representations.constraints.smt.trails import _at_most
 from claasp.representations.constraints.smt.transitions import (
     ModularAddDifferentialSMTModel,
     _xor_equivalence,
@@ -188,34 +190,24 @@ class WordDifferentialSMTModel:
             clauses.append(tuple(literals))
             provenance.append(label)
 
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
-        unit_arrays = {}
-        for name, array_type in sources:
+        propagation = GraphPropagation(self.primitive)
+
+        def source_names(name, array_type):
             self._validate(0, array_type)
-            unit_arrays[name] = tuple(
-                allocate(f"difference_{name}_{bit}")
+            return tuple(
+                f"difference_{name}_{bit}"
                 for bit in range(array_type.unit_count * array_type.unit_type.encoded_bit_size)
             )
 
-        def selected(selection):
-            return tuple(
-                unit_arrays[source_id][bit]
-                for source_id, bit in self.primitive.graph.selection_bit_sources(selection)
-            )
-
-        weights, operands_by_id = [], {}
+        unit_arrays, operands_by_id, output, _ = propagation.bit_wiring(
+            allocate, source_names=source_names
+        )
+        weights = []
         probability_factors: list[tuple[int, tuple[int, ...]]] = []
-        for component in self.primitive.graph.components:
-            operands = tuple(selected(selection) for selection in component.inputs)
-            operands_by_id[component.component_id] = operands
-            output = unit_arrays[component.component_id]
+
+        def rule(component, operands, output):
             width = component.output_type.unit_type.encoded_bit_size
+            assert width is not None
             if isinstance(component, (ModularAdd, ModularSubtract)):
                 if len(operands) != 2:
                     raise NotImplementedError("differential modular addition requires two operands")
@@ -375,7 +367,8 @@ class WordDifferentialSMTModel:
                 raise NotImplementedError(
                     f"no word differential semantics for {type(component).__name__}"
                 )
-        output = selected(self.primitive.graph.output)
+
+        propagation.relations(rule, unit_arrays, operands_by_id)
         if self.nonzero_input is not None:
             add(
                 (indices[name] for name in unit_arrays[self.nonzero_input]),
@@ -438,13 +431,23 @@ class WordDifferentialSMTModel:
                         add,
                     )
         self._unit_arrays, self._operands, self._output = unit_arrays, operands_by_id, output
-        self._formula = SMTFormula(tuple(variables), tuple(clauses), tuple(provenance))
+        self._formula = SMTFormula(
+            tuple(variables),
+            tuple(clauses),
+            tuple(provenance),
+            component_applications(
+                self.primitive,
+                self.model_provenance,
+                ((ModularAdd, ModularAddDifferentialSMTModel.model_provenance),),
+            ),
+        )
         return self._formula
 
     def _steps_and_wiring(self, values):
         steps = []
-        for component in self.primitive.graph.components:
+        for component in GraphPropagation(self.primitive).components:
             width = component.output_type.unit_type.encoded_bit_size
+            assert width is not None
 
             def units(names, width=width):
                 return tuple(

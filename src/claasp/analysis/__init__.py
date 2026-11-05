@@ -28,7 +28,12 @@ from claasp.analysis.circle_linear import (
     CircleCorrelationEstimate,
     CircleLinearAnalysis,
 )
-from claasp.analysis.circle_linear_spn import FreeSubgroupSPN, SubgroupSearchResult, SubgroupTrail
+from claasp.analysis.circle_linear_spn import (
+    FreeSubgroupSPN,
+    SubgroupRoundTransition,
+    SubgroupSearchResult,
+    SubgroupTrail,
+)
 from claasp.analysis.component_inspection import (
     ComponentAnalysis,
     ComponentPropertiesResult,
@@ -208,6 +213,7 @@ __all__ = [
     "CircleCorrelationEstimate",
     "CircleLinearAnalysis",
     "FreeSubgroupSPN",
+    "SubgroupRoundTransition",
     "SubgroupSearchResult",
     "SubgroupTrail",
     "QuasidifferentialAnalysis",

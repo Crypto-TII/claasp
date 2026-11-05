@@ -264,26 +264,17 @@ def _plot_trail(
     cumulative = [0.0]
     for weight in relative[1:]:
         cumulative.append(cumulative[-1] + weight)
-    pyplot = _matplotlib()
-    figure, axis = pyplot.subplots(figsize=(9, 4), layout="constrained")
-    axis.plot(rounds, relative, marker="o", label="Relative weight")
-    axis.plot(rounds, cumulative, marker="s", label="Cumulative weight")
-    axis.set_xticks(rounds)
-    axis.set_xlabel("Round")
-    axis.set_ylabel("Weight (bits)")
     kind = "differential" if result.trail.kind is TrailKind.XOR_DIFFERENTIAL else "linear"
-    axis.set_title(f"XOR {kind} trail weight")
-    axis.set_ylim(bottom=0)
-    axis.grid(alpha=0.25)
-    axis.legend()
-    artifact = FigureArtifact(
-        figure,
-        "trail_weights",
-        (("relative_weight", relative), ("cumulative_weight", tuple(cumulative))),
-        MatplotlibPresentationDriver.identity,
+    return _trail_weight_figure(
+        rounds,
+        relative,
+        tuple(cumulative),
+        xlabel="Round",
+        title=f"XOR {kind} trail weight",
+        artifact_kind="trail_weights",
+        show=show,
+        save_to=save_to,
     )
-    _finish_figure(figure, show=show, save_to=save_to)
-    return artifact
 
 
 def _plot_circle_trail(result, *, show, save_to):
@@ -291,21 +282,36 @@ def _plot_circle_trail(result, *, show, save_to):
     from claasp.presentation._circle_linear import trail_profile
 
     unit, relative, cumulative = trail_profile(result)
-    steps = tuple(range(len(relative)))
+    return _trail_weight_figure(
+        tuple(range(len(relative))),
+        relative,
+        cumulative,
+        xlabel=unit + " (relative to the selected segment)",
+        title="Circle-linear trail contribution (not endpoint correlation)",
+        artifact_kind="circle_trail_weights",
+        show=show,
+        save_to=save_to,
+    )
+
+
+def _trail_weight_figure(
+    rounds, relative, cumulative, *, xlabel, title, artifact_kind, show, save_to
+):
+    """Share plotting logic across trail semantics; render only retained data."""
     pyplot = _matplotlib()
     figure, axis = pyplot.subplots(figsize=(9, 4), layout="constrained")
-    axis.plot(steps, relative, marker="o", label="Relative weight")
-    axis.plot(steps, cumulative, marker="s", label="Cumulative weight")
-    axis.set_xticks(steps)
-    axis.set_xlabel(unit + " (relative to the selected segment)")
+    axis.plot(rounds, relative, marker="o", label="Relative weight")
+    axis.plot(rounds, cumulative, marker="s", label="Cumulative weight")
+    axis.set_xticks(rounds)
+    axis.set_xlabel(xlabel)
     axis.set_ylabel("Weight (bits)")
-    axis.set_title("Circle-linear trail contribution (not endpoint correlation)")
+    axis.set_title(title)
     axis.set_ylim(bottom=0)
     axis.grid(alpha=0.25)
     axis.legend()
     artifact = FigureArtifact(
         figure,
-        "circle_trail_weights",
+        artifact_kind,
         (("relative_weight", relative), ("cumulative_weight", cumulative)),
         MatplotlibPresentationDriver.identity,
     )

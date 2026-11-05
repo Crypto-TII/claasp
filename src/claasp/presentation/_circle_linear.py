@@ -114,7 +114,52 @@ def trail_section(result, *, details=False):
             ("Trail weight (bits)", f"{trail.weight:g}"),
             ("Search scope", "supplied layer sequence; no optimality claim"),
         ]
-    tables = [_summary(rows)]
+    from claasp.presentation._trail import round_table
+
+    if isinstance(trail, SubgroupTrail) and trail.round_transitions:
+        masks = (trail.input_mask, *(r.output_mask for r in trail.round_transitions))
+        magnitudes = (Fraction(1), *(r.magnitude for r in trail.round_transitions))
+        numbers = ("input", *(r.round_number + 1 for r in trail.round_transitions))
+    elif not isinstance(trail, SubgroupTrail):
+        masks = trail.masks
+        magnitudes = (Fraction(1), *(abs(c) for c in trail.coefficients))
+        numbers = ("input", *range(1, len(masks)))
+    else:
+        masks = (trail.input_mask, trail.output_mask)
+        magnitudes = (Fraction(1), Fraction(1, 1 << trail.cost))
+        numbers = ("input", "output")
+    cumulative_magnitude = Fraction(1)
+    round_rows = []
+    for number, mask, magnitude in zip(numbers, masks, magnitudes):
+        cumulative_magnitude *= magnitude
+        width = (trail.state_width + 3) // 4 if isinstance(trail, SubgroupTrail) else 0
+        round_rows.append(
+            TableRow.of(
+                number,
+                f"0x{mask:0{width}x}",
+                f"{magnitude.numerator}/{magnitude.denominator}",
+                f"{cumulative_magnitude.numerator}/{cumulative_magnitude.denominator}",
+            )
+        )
+    notes = [f"Total weight: {trail.cost if isinstance(trail, SubgroupTrail) else trail.weight:g}."]
+    if searched:
+        notes.insert(
+            0, f"Optimal within {result.scope}." if result.complete else "Optimality not proved."
+        )
+    else:
+        notes.insert(0, "Supplied trail; no optimality claim.")
+    tables = [round_table(round_rows, pattern="Mask", quantity="magnitude", notes=notes)]
+    if isinstance(trail, SubgroupTrail):
+        key_class = (
+            f"2^{trail.conditions.width - trail.conditions.rank}"
+            if trail.conditions.consistent
+            else "0"
+        )
+        scope_note = f"Magnitudes apply on the satisfying key class ({key_class} keys). Signs depend on the key."
+    else:
+        scope_note = f"Signed trail contribution: {trail.coefficient}."
+    if details:
+        tables.append(_summary(rows))
     if details:
         unit, relative, cumulative = trail_profile(result)
         tables.append(
@@ -134,6 +179,7 @@ def trail_section(result, *, details=False):
         "Circle-linear trail contribution",
         tables=tuple(tables),
         paragraphs=(
+            scope_note,
             "A selected trail contributes to a signed hull sum; its magnitude is not an endpoint-correlation lower bound.",
         ),
     )

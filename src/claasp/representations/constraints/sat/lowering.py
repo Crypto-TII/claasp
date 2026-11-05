@@ -23,7 +23,7 @@ from claasp.components import (
     VariableShift,
     Xor,
 )
-from claasp.graph import Primitive
+from claasp.graph import GraphPropagation, Primitive
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -244,31 +244,32 @@ class BooleanCNFModel:
         if len(domains) != 1:
             raise ValueError("Boolean CNF requires a homogeneous Bit or Word graph")
 
-        variables = [
-            name
-            for unit_array in sources
-            for position in range(unit_array.array_type.unit_count)
-            for name in unit_variable_names(unit_array.source_id, unit_array.array_type, position)
-        ]
+        propagation = GraphPropagation(self.primitive)
+        source_variables, operands, _, _ = propagation.bit_wiring(
+            lambda name: name,
+            source_names=lambda name, vt: tuple(
+                variable
+                for i in range(vt.unit_count)
+                for variable in unit_variable_names(name, vt, i)
+            ),
+        )
+        variables = [name for names in source_variables.values() for name in names]
         context = (
             _NativeXorEncodingContext(variables)
             if self.native_xor
             else _CNFEncodingContext(variables)
         )
 
-        for component in self.primitive.graph.components:
+        def rule(component, input_variables, output_variables):
             label = cast(str, component.component_id)
+            width = component.output_type.unit_type.encoded_bit_size
             outputs = [
-                unit_variable_names(label, component.output_type, i)
-                for i in range(component.output_type.unit_count)
+                tuple(output_variables[start : start + width])
+                for start in range(0, len(output_variables), width)
             ]
             selected = []
-            for item in component.inputs:
+            for item, names in zip(component.inputs, input_variables):
                 width = item.array_type.unit_type.encoded_bit_size
-                names = [
-                    self._bit_name(source_id, bit)
-                    for source_id, bit in self.primitive.graph.selection_bit_sources(item)
-                ]
                 selected.append(
                     [tuple(names[start : start + width]) for start in range(0, len(names), width)]
                 )
@@ -320,6 +321,7 @@ class BooleanCNFModel:
                 ConstraintModelApplication(encoding.model_provenance, (label,))
             )
 
+        propagation.relations(rule, source_variables, operands)
         self._auxiliary_definitions = tuple(context.auxiliary)
         arguments = (
             tuple(context.variables),

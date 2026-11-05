@@ -253,6 +253,12 @@ claasp.graph.binding
 .. automodule:: claasp.graph.binding
    :no-index:
 
+claasp.graph.propagation
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.graph.propagation
+   :no-index:
+
 claasp.parameters
 ~~~~~~~~~~~~~~~~~
 
