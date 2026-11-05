@@ -3,7 +3,9 @@ Circle-linear correlation evaluation
 
 Which input/output checks have the strongest relationship across a small
 S-box? Search its complete circle-linear approximation table, using the
-CRAFT/Midori S-box and an explicit bibrace (the compatible alternative sum):
+CRAFT/Midori S-box and ``BinaryBibrace.craft()``. The concrete four-bit
+addition is defined in :doc:`basic_circle_linear`; the advanced guide shows
+how to select and compare other operations:
 
 .. plot::
    :context: reset

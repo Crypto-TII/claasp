@@ -6,6 +6,15 @@ The :doc:`basic_circle_linear` introduction covers trail search.
 endpoint correlation evaluation. This advanced guide defines the terminology,
 explores parameters and checks numerical CRAFT results.
 
+The operation used in the introductory example
+----------------------------------------------
+
+.. include:: _includes/craft_circle_operation.txt
+
+Different choices of operation define different analyses of the same
+primitive. The operation is a parameter of the analysis; each call to ``search()``
+keeps this parameter fixed.
+
 What is a character?
 --------------------
 
@@ -97,6 +106,144 @@ most significant bits**. Cell layouts are explicit: do not reinterpret a
 nibble-based operation as a byte-based one. An empty list of forms,
 ``BinaryBibrace(width)``, gives ordinary XOR characters and is useful as an
 independent control.
+
+Select a different operation
+-----------------------------
+
+Use ``BinaryBibrace(width)`` for ordinary XOR, select the CRAFT preset, or
+supply validated bilinear forms and correction outputs. For example, the
+following custom four-bit addition is
+:math:`x\circ y=x\oplus y\oplus(x_0y_1\oplus x_1y_0)(0100)_2`:
+
+.. doctest::
+
+   >>> xor_operation = BinaryBibrace(4)
+   >>> custom_operation = BinaryBibrace(4, ((2, 1, 0, 0),), (4,))
+   >>> xor_operation.circle(1, 2), custom_operation.circle(1, 2)
+   (3, 7)
+   >>> from claasp.primitives import BitVectorSBox
+   >>> from claasp.primitives.block_ciphers.craft import CRAFT_SBOX
+   >>> sbox_primitive = BitVectorSBox(4, CRAFT_SBOX)
+   >>> custom_analysis = sbox_primitive.analysis.circle_linear(
+   ...     input_name="input", bibrace=custom_operation)
+   >>> custom_analysis.best_approximation().coefficient
+   Fraction(-3, 4)
+
+For trail search, pass the selected operation as
+``primitive.analysis.circle_linear_trail_model(bibrace=operation, ...)``.
+Every supplied operation is validated. The endpoint tools support the valid
+binary bibraces represented by this API; the current optimised trail backend
+additionally requires its perfect-subgroup structure. An operation rejected
+by that backend can still be evaluated with the endpoint tools.
+
+Compare operations with a stated objective
+------------------------------------------
+
+``best_approximation()`` optimises endpoint masks for a fixed operation;
+``search()`` optimises a trail within a fixed operation's reported subgroup.
+There is currently no built-in unrestricted optimiser over operations.
+A finite comparison can be automated by calling these methods for each
+candidate and ranking their results.
+
+Specify the candidate family, cell layout, primitive, rounds and key/tweak
+setting before interpreting a winner. Two useful objectives are the largest
+absolute endpoint correlation and the lowest supported trail weight. They
+measure different quantities; a strong local S-box correlation alone does
+not determine a strong multi-round trail. Key-class size can also matter.
+
+The following generator enumerates the 105 nontrivial four-bit operations
+with one nonzero alternating bilinear form and one nonzero correction vector
+in its radical. Adding ordinary XOR gives 106 candidates. This is an explicit
+candidate family, not a search over every possible addition or cell layout:
+
+.. doctest::
+
+   >>> from itertools import combinations
+   >>> def four_bit_operations():
+   ...     yield BinaryBibrace(4)
+   ...     pairs = tuple(combinations(range(4), 2))
+   ...     for code in range(1, 1 << len(pairs)):
+   ...         rows = [0] * 4
+   ...         for bit, (i, j) in enumerate(pairs):
+   ...             if code >> bit & 1:
+   ...                 rows[i] |= 1 << j
+   ...                 rows[j] |= 1 << i
+   ...         for output in range(1, 16):
+   ...             if all((row & output).bit_count() % 2 == 0 for row in rows):
+   ...                 yield BinaryBibrace(4, (tuple(rows),), (output,))
+   >>> operations = list(four_bit_operations())
+   >>> len(operations)
+   106
+
+For the strongest exact endpoint relation on the four-bit S-box, ask CLAASP
+to optimise the nonzero input/output masks for each operation, then choose
+the largest magnitude. All input values are enumerated:
+
+.. doctest::
+
+   >>> endpoint_results = [
+   ...     (operation, sbox_primitive.analysis.circle_linear(
+   ...         input_name="input", bibrace=operation).best_approximation())
+   ...     for operation in operations]
+   >>> selected_operation, selected_approximation = max(
+   ...     endpoint_results, key=lambda item: abs(item[1].coefficient))
+   >>> abs(selected_approximation.coefficient)
+   Fraction(1, 1)
+   >>> selected_operation.forms, selected_operation.outputs
+   (((4, 0, 1, 0),), (2,))
+   >>> (selected_approximation.input_mask, selected_approximation.output_mask,
+   ...  selected_approximation.coefficient)
+   (5, 11, Fraction(-1, 1))
+
+This selected addition is
+:math:`x\circ y=x\oplus y\oplus(x_0y_2\oplus x_2y_0)(0010)_2`.
+It attains a perfect S-box relation. Ties are possible; the code returns the
+first maximiser in the declared enumeration order.
+
+For eight-round CRAFT, compare the operations accepted by the current trail
+backend instead. Keep the public tweak at zero, minimise the reported trail
+weight, and use the largest satisfying key class to break weight ties.
+Retain rejection reasons so that the accepted search space stays explicit:
+
+.. doctest::
+
+   >>> from claasp.primitives import Craft
+   >>> craft_for_operations = Craft(number_of_rounds=8)
+   >>> compatible_models, rejected_operations = [], []
+   >>> for operation in operations:
+   ...     try:
+   ...         model = craft_for_operations.analysis.circle_linear_trail_model(
+   ...             bibrace=operation, fixed_inputs={"tweak": 0})
+   ...     except ValueError as error:
+   ...         rejected_operations.append((operation, str(error)))
+   ...     else:
+   ...         compatible_models.append((operation, model))
+   >>> len(compatible_models), len(rejected_operations)
+   (2, 104)
+   >>> trail_results = [(operation, model.search())
+   ...                  for operation, model in compatible_models]
+   >>> selected_trail_operation, selected_trail_result = min(
+   ...     trail_results,
+   ...     key=lambda item: (item[1].cost,
+   ...                       -item[1].representative.conditions.key_count,
+   ...                       item[0].forms, item[0].outputs))
+   >>> selected_trail_result.cost
+   8
+   >>> selected_trail_result.representative.conditions.key_count == 2**120
+   True
+   >>> selected_trail_operation == BinaryBibrace.craft()
+   True
+
+Both accepted operations have weight 8 and a satisfying key class of size
+:math:`2^{120}`. The final form/output ordering chooses one reproducibly.
+The result is optimal among the accepted candidates' reported subgroup
+trails under this objective and setting. Rejection means that an operation
+is unsupported by this backend, rather than cryptanalytically unhelpful.
+A search budget failure or an unresolved key-class case must be resolved
+before making the comparison; the code lets search failures propagate.
+Different round counts, key criteria, candidate families or layouts require
+a new comparison. Endpoint correlation evaluation remains separate from
+this trail-weight comparison.
 
 Analyze another binary primitive
 --------------------------------

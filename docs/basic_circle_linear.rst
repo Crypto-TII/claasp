@@ -2,8 +2,10 @@ Circle-linear trails: introduction
 ==================================
 
 Find a strong trail through eight rounds of CRAFT using circle-linear bit
-checks: parity-like checks defined by a compatible alternative to XOR.
-The search is exact within its supported set of checks and needs no solver.
+checks. This example keeps the alternative addition fixed while searching
+for the trail, and needs no solver.
+
+.. include:: _includes/craft_circle_operation.txt
 
 .. plot::
    :context: reset
@@ -11,9 +13,14 @@ The search is exact within its supported set of checks and needs no solver.
    :include-source:
 
    from claasp.primitives import Craft
+   from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
    primitive = Craft(number_of_rounds=8)
-   result = primitive.circle_linear_trail_model().search()
+   result = primitive.circle_linear_trail_model(bibrace=BinaryBibrace.craft()).search()
+
+The explicit ``bibrace`` argument selects the displayed operation. It is also
+the default of CRAFT's convenience method. The advanced guide shows how to
+select and compare other operations.
 
 Print the round masks and relative and cumulative contribution magnitudes:
 
