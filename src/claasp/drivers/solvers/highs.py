@@ -46,13 +46,15 @@ class HighsSolver:
         feasible witness establishes SAT, even when optimization was interrupted;
         an interrupted run without a witness never establishes UNSAT.
 
+        This example requires SciPy (install the ``analysis`` extra).
+
         EXAMPLES::
 
             >>> from claasp.primitives import Speck
             >>> from claasp.drivers.solvers import HighsSolver
-            >>> result = Speck(number_of_rounds=1).analysis.find_lowest_weight_xor_linear_trail(  # doctest: +SKIP
+            >>> result = Speck(number_of_rounds=1).analysis.find_lowest_weight_xor_linear_trail(
             ...     solver=HighsSolver(timeout_seconds=30))
-            >>> result.is_optimal  # doctest: +SKIP
+            >>> result.is_optimal
             True
         """
         if isinstance(model, CNFFormula):

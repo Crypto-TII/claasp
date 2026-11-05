@@ -47,8 +47,6 @@ def test_highs_public_query_doctest_runs_with_scipy():
         method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
     )
     assert test.examples
-    for example in test.examples:
-        example.options[doctest.SKIP] = False
     runner = doctest.DocTestRunner()
     runner.run(test)
     assert runner.summarize().failed == 0
