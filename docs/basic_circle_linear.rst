@@ -23,7 +23,8 @@ The explicit ``bibrace`` argument selects the displayed operation. It is also
 the default of CRAFT's convenience method. The advanced guide shows how to
 select and compare other operations.
 
-Print the round masks and relative and cumulative contribution magnitudes:
+Print the round masks, absolute correlations and cumulative absolute trail
+contributions:
 
 .. code-block:: python
 
@@ -45,7 +46,12 @@ Print the round masks and relative and cumulative contribution magnitudes:
 .. literalinclude:: _build/circle_linear_basic_terminal.txt
    :language: text
 
-The magnitudes apply on the reported key class; signs can depend on the key.
+``Relative |correlation|`` is :math:`|c_i|`, the absolute correlation of
+round transition :math:`i`. ``Cumulative |trail contribution|`` is
+:math:`|\prod_{j=1}^{i} c_j|`, the absolute product along the selected trail.
+These absolute values apply on the reported key class; signs can depend on
+the key. The cumulative column is the selected trail's contribution, rather
+than the full endpoint correlation summed over all compatible trails.
 Use ``result.to_terminal(details=True)`` to also inspect search metadata, key
 constraints and the weight of each round.
 

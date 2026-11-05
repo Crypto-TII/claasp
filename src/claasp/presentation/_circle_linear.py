@@ -88,7 +88,7 @@ def trail_section(result, *, details=False):
             ("Output mask", hex(trail.output_mask)),
             ("Trail weight (bits)", str(trail.cost)),
             (
-                "Contribution magnitude on key class",
+                "|Trail contribution| on key class",
                 str(Fraction(1, 1 << trail.cost) if trail.conditions.consistent else 0),
             ),
             (
@@ -157,14 +157,22 @@ def trail_section(result, *, details=False):
         )
     else:
         notes.insert(0, "Supplied trail; no optimality claim.")
-    tables = [round_table(round_rows, pattern="Mask", quantity="magnitude", notes=notes)]
+    tables = [
+        round_table(
+            round_rows,
+            pattern="Mask",
+            quantity="|correlation|",
+            cumulative_quantity="|trail contribution|",
+            notes=notes,
+        )
+    ]
     if isinstance(trail, CircleLinearTrail):
         key_class = (
             f"2^{trail.conditions.width - trail.conditions.rank}"
             if trail.conditions.consistent
             else "0"
         )
-        scope_note = f"Magnitudes apply on the satisfying key class ({key_class} keys). Signs depend on the key."
+        scope_note = f"Absolute correlations and trail contributions apply on the satisfying key class ({key_class} keys). Signs depend on the key."
     else:
         scope_note = f"Signed trail contribution: {trail.coefficient}."
     if details:
@@ -189,6 +197,6 @@ def trail_section(result, *, details=False):
         tables=tuple(tables),
         paragraphs=(
             scope_note,
-            "A selected trail contributes to a signed hull sum; its magnitude is not an endpoint-correlation lower bound.",
+            "A selected trail contributes to a signed hull sum; its absolute contribution is not an endpoint-correlation lower bound.",
         ),
     )

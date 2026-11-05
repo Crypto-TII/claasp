@@ -43,7 +43,7 @@ def test_search_and_selected_trail_report_distinguish_scope_without_research(mon
     result.to_terminal(file=output)
     text = output.getvalue()
     assert result.scope in text and "Round trail" in text
-    assert "Relative magnitude" in text and "Cumulative magnitude" in text
+    assert "Relative |correlation|" in text and "Cumulative |trail contribution|" in text
     assert "Optimal masks" not in text  # Search metadata belongs to details=True.
     output = StringIO()
     result.representative.to_terminal(file=output)
