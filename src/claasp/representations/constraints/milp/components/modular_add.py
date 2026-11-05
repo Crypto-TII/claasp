@@ -14,15 +14,15 @@ from claasp.representations.constraints.milp.model import (
     ObjectiveSense,
     VariableKind,
 )
-from claasp.semantics.cryptanalysis import ModularAddLinearSemantics
+from claasp.semantics.cryptanalysis import ModularAddXorLinearSemantics
 
 
-class ModularAddLinearMILPModel:
+class ModularAddXorLinearMILPModel:
     """Exact XOR-linear mask relation for addition modulo ``2**width``.
 
     EXAMPLES::
 
-        >>> model = ModularAddLinearMILPModel(4).milp_model(
+        >>> model = ModularAddXorLinearMILPModel(4).milp_model(
         ...     left_mask=1, right_mask=0, output_mask=1
         ... )
         >>> tuple(variable.name for variable in model.variables[:4])
@@ -33,7 +33,7 @@ class ModularAddLinearMILPModel:
 
     model_provenance = _verified_model(
         ConstraintBackend.MILP,
-        "ModularAddLinearMILPModel",
+        "ModularAddXorLinearMILPModel",
         "xor_linear",
         "exact finite modular-add mask relation",
         "10.1007/978-3-319-39555-5_26",
@@ -115,7 +115,7 @@ class ModularAddLinearMILPModel:
         values = tuple(
             _integer(round(assignment[name]) for name in group) for group in self._groups
         )
-        transition = ModularAddLinearSemantics(self.width).xor_linear(*values)
+        transition = ModularAddXorLinearSemantics(self.width).xor_linear(*values)
         if not transition.is_possible:
             raise ValueError("assignment does not describe a possible modular-add transition")
         return transition

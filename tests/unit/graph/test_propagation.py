@@ -151,13 +151,20 @@ def test_forward_rule_is_independent_of_numeric_unit_type():
     assert visited == [component.component_id for component in primitive.graph.components]
 
 
-def test_legacy_and_canonical_word_models_are_identical_objects():
-    from claasp.representations.constraints.smt import trails, word_differential, word_linear
+def test_word_models_have_one_canonical_implementation():
+    from claasp.representations.constraints.smt import (
+        trails,
+        word_xor_differential,
+        word_xor_linear,
+    )
 
-    assert trails.WordDifferentialSMTModel is word_differential.WordDifferentialSMTModel
-    assert trails.WordLinearSMTModel is word_linear.WordLinearSMTModel
-    assert trails.WordDifferentialCharacteristic is word_differential.WordDifferentialCharacteristic
-    assert trails.WordLinearCharacteristic is word_linear.WordLinearCharacteristic
+    assert trails.WordXorDifferentialSMTModel is word_xor_differential.WordXorDifferentialSMTModel
+    assert trails.WordXorLinearSMTModel is word_xor_linear.WordXorLinearSMTModel
+    assert (
+        trails.WordXorDifferentialCharacteristic
+        is word_xor_differential.WordXorDifferentialCharacteristic
+    )
+    assert trails.WordXorLinearCharacteristic is word_xor_linear.WordXorLinearCharacteristic
 
 
 def test_batch_execution_reuses_registered_scalar_rules():

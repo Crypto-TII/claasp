@@ -12873,7 +12873,7 @@
       "drivers": [
         "minisat"
       ],
-      "implementation": "claasp.representations.constraints.sat:WordDifferentialSATModel",
+      "implementation": "claasp.representations.constraints.sat:WordXorDifferentialSATModel",
       "kind": "constraint",
       "name": "word_differential_sat",
       "scope": "generic_graph"
@@ -12898,7 +12898,7 @@
       "drivers": [
         "minisat"
       ],
-      "implementation": "claasp.representations.constraints.sat:WordLinearSATModel",
+      "implementation": "claasp.representations.constraints.sat:WordXorLinearSATModel",
       "kind": "constraint",
       "name": "word_linear_sat",
       "scope": "generic_graph"
@@ -12923,7 +12923,7 @@
       "drivers": [
         "z3"
       ],
-      "implementation": "claasp.representations.constraints.smt:WordDifferentialSMTModel",
+      "implementation": "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
       "kind": "constraint",
       "name": "word_differential_smt",
       "scope": "generic_graph"
@@ -12948,7 +12948,7 @@
       "drivers": [
         "z3"
       ],
-      "implementation": "claasp.representations.constraints.smt:WordLinearSMTModel",
+      "implementation": "claasp.representations.constraints.smt:WordXorLinearSMTModel",
       "kind": "constraint",
       "name": "word_linear_smt",
       "scope": "generic_graph"

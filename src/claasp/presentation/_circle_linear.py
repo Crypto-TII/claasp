@@ -51,10 +51,13 @@ def correlation_section(result):
 
 def trail_profile(result):
     """Read retained transitions; do not repeat a search or run a primitive."""
-    from claasp.analysis.circle_linear_spn import SubgroupSearchResult, SubgroupTrail
+    from claasp.analysis.circle_linear_trails import (
+        CircleLinearTrail,
+        CircleLinearTrailSearchResult,
+    )
 
-    trail = result.representative if isinstance(result, SubgroupSearchResult) else result
-    if isinstance(trail, SubgroupTrail):
+    trail = result.representative if isinstance(result, CircleLinearTrailSearchResult) else result
+    if isinstance(trail, CircleLinearTrail):
         if not trail.conditions.consistent:
             raise ValueError("trail has no satisfying key; no nonzero contribution to plot")
         coefficients = tuple(t.magnitude for t in reversed(trail._affine_steps))
@@ -72,11 +75,14 @@ def trail_profile(result):
 
 
 def trail_section(result, *, details=False):
-    from claasp.analysis.circle_linear_spn import SubgroupSearchResult, SubgroupTrail
+    from claasp.analysis.circle_linear_trails import (
+        CircleLinearTrail,
+        CircleLinearTrailSearchResult,
+    )
 
-    searched = isinstance(result, SubgroupSearchResult)
+    searched = isinstance(result, CircleLinearTrailSearchResult)
     trail = result.representative if searched else result
-    if isinstance(trail, SubgroupTrail):
+    if isinstance(trail, CircleLinearTrail):
         rows = [
             ("Input mask", hex(trail.input_mask)),
             ("Output mask", hex(trail.output_mask)),
@@ -99,6 +105,7 @@ def trail_section(result, *, details=False):
         if searched:
             rows.extend(
                 (
+                    ("Search backend", result.backend),
                     ("Search scope", result.scope),
                     ("Complete within scope", str(result.complete)),
                     ("Optimal masks", str(result.optimal_mask_count)),
@@ -116,11 +123,11 @@ def trail_section(result, *, details=False):
         ]
     from claasp.presentation._trail import round_table
 
-    if isinstance(trail, SubgroupTrail) and trail.round_transitions:
+    if isinstance(trail, CircleLinearTrail) and trail.round_transitions:
         masks = (trail.input_mask, *(r.output_mask for r in trail.round_transitions))
         magnitudes = (Fraction(1), *(r.magnitude for r in trail.round_transitions))
         numbers = ("input", *(r.round_number + 1 for r in trail.round_transitions))
-    elif not isinstance(trail, SubgroupTrail):
+    elif not isinstance(trail, CircleLinearTrail):
         masks = trail.masks
         magnitudes = (Fraction(1), *(abs(c) for c in trail.coefficients))
         numbers = ("input", *range(1, len(masks)))
@@ -132,7 +139,7 @@ def trail_section(result, *, details=False):
     round_rows = []
     for number, mask, magnitude in zip(numbers, masks, magnitudes):
         cumulative_magnitude *= magnitude
-        width = (trail.state_width + 3) // 4 if isinstance(trail, SubgroupTrail) else 0
+        width = (trail.state_width + 3) // 4 if isinstance(trail, CircleLinearTrail) else 0
         round_rows.append(
             TableRow.of(
                 number,
@@ -141,7 +148,9 @@ def trail_section(result, *, details=False):
                 f"{cumulative_magnitude.numerator}/{cumulative_magnitude.denominator}",
             )
         )
-    notes = [f"Total weight: {trail.cost if isinstance(trail, SubgroupTrail) else trail.weight:g}."]
+    notes = [
+        f"Total weight: {trail.cost if isinstance(trail, CircleLinearTrail) else trail.weight:g}."
+    ]
     if searched:
         notes.insert(
             0, f"Optimal within {result.scope}." if result.complete else "Optimality not proved."
@@ -149,7 +158,7 @@ def trail_section(result, *, details=False):
     else:
         notes.insert(0, "Supplied trail; no optimality claim.")
     tables = [round_table(round_rows, pattern="Mask", quantity="magnitude", notes=notes)]
-    if isinstance(trail, SubgroupTrail):
+    if isinstance(trail, CircleLinearTrail):
         key_class = (
             f"2^{trail.conditions.width - trail.conditions.rank}"
             if trail.conditions.consistent

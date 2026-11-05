@@ -6,3 +6,4 @@ Quasi-differential analysis
 
    Introduction <basic_quasi_differential>
    Advanced <advanced_quasi_differential>
+   Verification <verification_quasi_differential>

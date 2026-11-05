@@ -9,7 +9,7 @@ core graph nor the representation imports the MiniZinc Python package.
 Generic weighted Word trails
 ----------------------------
 
-``WordDifferentialCPModel`` and ``WordLinearCPModel`` provide portable generic
+``WordXorDifferentialCPModel`` and ``WordXorLinearCPModel`` provide portable generic
 MiniZinc searches for the reviewed Word-graph subset. They translate the exact
 Boolean relations, retain stable logical names, and independently recheck the
 decoded characteristic.
@@ -17,8 +17,8 @@ decoded characteristic.
 .. doctest::
 
    >>> from claasp.primitives import ToySpeck
-   >>> from claasp.representations.constraints.cp import WordDifferentialCPModel
-   >>> model = WordDifferentialCPModel(
+   >>> from claasp.representations.constraints.cp import WordXorDifferentialCPModel
+   >>> model = WordXorDifferentialCPModel(
    ...     ToySpeck(2), fixed_weight=1,
    ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
    ... )
@@ -41,9 +41,9 @@ every transition and checks the requested boundaries and weight bound.
    >>> from claasp.primitives import Speck
    >>> from claasp.semantics import XOR_DIFFERENTIAL
    >>> from claasp.semantics.cryptanalysis import PropagationProblem
-   >>> from claasp.representations.constraints.cp import SpeckDifferentialCPModel
+   >>> from claasp.representations.constraints.cp import SpeckXorDifferentialCPModel
    >>> problem = PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=3)
-   >>> fixed = SpeckDifferentialCPModel(problem, input_difference=0x00400000, output_difference=0x8000840A)
+   >>> fixed = SpeckXorDifferentialCPModel(problem, input_difference=0x00400000, output_difference=0x8000840A)
    >>> "constraint x_3[0] = true;" in fixed.cp_model().constraints
    True
 
@@ -59,7 +59,7 @@ relation and UNSAT when equal fixed boundaries are required to differ.
 Typed exact/truncated composition
 ---------------------------------
 
-``SpeckHybridDifferentialProblem`` replaces mutable per-component method-name
+``SpeckHybridXorDifferentialProblem`` replaces mutable per-component method-name
 dictionaries with an explicit phase boundary. A separate CP solver searches
 the exact prefix; solver-independent paired-carry semantics derive a sound
 truncated suffix. The result keeps those meanings distinct: suffix unknowns
@@ -67,8 +67,8 @@ are not exact witnesses and no combined probability or optimum is claimed.
 
 .. doctest::
 
-   >>> from claasp.analysis import SpeckHybridDifferentialProblem
-   >>> hybrid = SpeckHybridDifferentialProblem(Speck(number_of_rounds=3), exact_rounds=2, input_difference=0x00400000)
+   >>> from claasp.analysis import SpeckHybridXorDifferentialProblem
+   >>> hybrid = SpeckHybridXorDifferentialProblem(Speck(number_of_rounds=3), exact_rounds=2, input_difference=0x00400000)
    >>> hybrid.prefix_model.round_count
    2
    >>> "x_3" in hybrid.prefix_model.cp_model().source()
@@ -142,7 +142,7 @@ fixture are checked with scalar evaluation rather than trusting solver status.
 Shared differential trails
 --------------------------
 
-``PresentDifferentialCPModel`` consumes a backend-neutral
+``PresentXorDifferentialCPModel`` consumes a backend-neutral
 ``PropagationProblem`` and emits native MiniZinc table constraints. The table
 rows come from the selected component semantic provider, so per-component
 research overrides are honored consistently with SMT and MILP.
@@ -152,7 +152,7 @@ unsatisfiable and weight bound 4 satisfiable using a real MiniZinc solver. Its
 decoded 32-step trail is checked independently against every DDT transition
 and permutation boundary.
 
-``PresentLinearCPModel`` applies the same design to signed LAT semantics. The
+``PresentXorLinearCPModel`` applies the same design to signed LAT semantics. The
 PRESENT-3 regression proves the legacy weight-4 optimum, reconstructs the
 sign of each of its 48 correlations, and independently checks all transitions
 and graph boundaries.
@@ -187,7 +187,7 @@ explicit four-difference ``BoomerangSwitchBoundary``. Its ``total_weight`` is
 the probability exponent ``2 * w_upper + w_switch + 2 * w_lower``; CP search
 results keep the cheaper one-pass objective ``w_upper + w_lower`` separately
 as ``search_weight``. A
-``DifferentialLinearTrail`` keeps its differential prefix,
+``XorDifferentialLinearTrail`` keeps its differential prefix,
 probabilistic-truncated connector, and linear suffix separate and reports the
 legacy exact objective rather than the cheaper search approximation. Solver
 status and statistical corroboration therefore remain distinct evidence.
@@ -247,7 +247,7 @@ exact impossibility result on their own.
 Exact ARX differential optimization
 -----------------------------------
 
-``SpeckDifferentialCPModel`` composes the exact bit relation for modular-add
+``SpeckXorDifferentialCPModel`` composes the exact bit relation for modular-add
 XOR differences with rotations and XOR wiring read from the typed Speck graph.
 It currently supports the reviewed Speck32/64 slice with zero key difference.
 The external regression uses Chuffed to prove weight 8 unsatisfiable and

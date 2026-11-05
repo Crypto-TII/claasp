@@ -19,10 +19,10 @@ claasp.analysis.circle_linear
 .. automodule:: claasp.analysis.circle_linear
    :no-index:
 
-claasp.analysis.circle_linear_spn
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+claasp.analysis.circle_linear_trails
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. automodule:: claasp.analysis.circle_linear_spn
+.. automodule:: claasp.analysis.circle_linear_trails
    :no-index:
 
 claasp.analysis.component_inspection
@@ -739,12 +739,6 @@ claasp.representations.constraints.sat.components.boolean
 .. automodule:: claasp.representations.constraints.sat.components.boolean
    :no-index:
 
-claasp.representations.constraints.sat.components.differential_linear
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: claasp.representations.constraints.sat.components.differential_linear
-   :no-index:
-
 claasp.representations.constraints.sat.components.modular_add
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -779,6 +773,12 @@ claasp.representations.constraints.sat.components.wiring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.components.wiring
+   :no-index:
+
+claasp.representations.constraints.sat.components.xor_differential_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.xor_differential_linear
    :no-index:
 
 claasp.representations.constraints.sat.exporters

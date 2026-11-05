@@ -8,7 +8,7 @@ from itertools import product
 
 import pytest
 
-from claasp.analysis.circle_linear_spn import FreeSubgroupSPN
+from claasp.analysis.circle_linear_trails import CircleLinearTrailModel
 from claasp.primitives import Craft
 from claasp.primitives.block_ciphers.craft import CRAFT_SBOX, CRAFT_TWEAK_PERMUTATION
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
@@ -28,7 +28,7 @@ REFERENCE_CASES = (
 def test_reference_complete_search_and_exact_key_classes(
     rounds, input_code, output_code, cost, count, key_bits
 ):
-    model = Craft(number_of_rounds=rounds).circle_linear_model()
+    model = Craft(number_of_rounds=rounds).circle_linear_trail_model()
     trail = model.trail(output_code)
     assert (trail.input_code, trail.cost) == (input_code, cost)
     assert trail.conditions.key_count == 1 << key_bits
@@ -41,7 +41,7 @@ def test_reference_complete_search_and_exact_key_classes(
 
 
 def test_reference_18_round_masks_and_wrong_key_exclusion():
-    trail = Craft(number_of_rounds=18).circle_linear_model().trail(0x00670000)
+    trail = Craft(number_of_rounds=18).circle_linear_trail_model().trail(0x00670000)
     assert trail.input_mask == 0x7077007077707000
     assert trail.output_mask == 0x7770077000000000
     assert trail.conditions.contains(0)
@@ -97,17 +97,19 @@ def test_affine_column_all_type_patterns_and_key_quotient_classes():
 
 def test_other_spn_matches_full_unsplit_enumeration_and_handles_zero_cost_kernel():
     for rounds in (1, 2, 3, 4):
-        model = FreeSubgroupSPN(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2), (1, 0), rounds)
+        model = CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2), (1, 0), rounds)
         all_trails = [model.trail(code) for code in range(1, 16)]
         best = min(t.cost for t in all_trails)
         result = model.search()
         assert result.cost == best
         assert result.optimal_mask_count == sum(t.cost == best for t in all_trails)
-    assert FreeSubgroupSPN(BinaryBibrace.craft(), CRAFT_SBOX, (1,), (0,), 1).search().cost == 0
+    assert (
+        CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (1,), (0,), 1).search().cost == 0
+    )
 
 
 def test_no_craft_assumption_about_involutory_cell_permutation():
-    model = FreeSubgroupSPN(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2, 4), (1, 2, 0), 3)
+    model = CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2, 4), (1, 2, 0), 3)
     trails = [model.trail(code) for code in range(1, 64)]
     result = model.search()
     assert result.cost == min(t.cost for t in trails)
@@ -117,7 +119,7 @@ def test_no_craft_assumption_about_involutory_cell_permutation():
 def test_generic_round_products_against_independent_complete_truth_tables():
     from claasp.semantics.cryptanalysis.circle_linear import CircleLookupLayer
 
-    model = FreeSubgroupSPN(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2), (1, 0), 3)
+    model = CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2), (1, 0), 3)
 
     def one_round(x):
         left, right = x >> 4, x & 15
@@ -138,8 +140,10 @@ def test_generic_round_products_against_independent_complete_truth_tables():
 
 
 def test_round_offset_changes_key_half_but_not_cost_or_class_size():
-    zero = Craft(number_of_rounds=8).circle_linear_model().trail(0x01190000)
-    shifted = Craft(number_of_rounds=8, round_offset=1).circle_linear_model().trail(0x01190000)
+    zero = Craft(number_of_rounds=8).circle_linear_trail_model().trail(0x01190000)
+    shifted = (
+        Craft(number_of_rounds=8, round_offset=1).circle_linear_trail_model().trail(0x01190000)
+    )
     assert shifted.cost == zero.cost
     assert shifted.conditions.key_count == zero.conditions.key_count
     assert shifted.conditions != zero.conditions
@@ -147,11 +151,15 @@ def test_round_offset_changes_key_half_but_not_cost_or_class_size():
 
 def test_tweak_can_make_key_conditions_inconsistent_and_is_never_averaged():
     # The 8-round reference case constrains repeated K1 nibble 10.
-    zero = Craft(number_of_rounds=8).circle_linear_model(tweak=0).trail(0x01190000)
+    zero = Craft(number_of_rounds=8).circle_linear_trail_model(tweak=0).trail(0x01190000)
     assert zero.conditions.consistent
     saw_incompatible = False
     for i in range(16):
-        trail = Craft(number_of_rounds=8).circle_linear_model(tweak=1 << (4 * i)).trail(0x01190000)
+        trail = (
+            Craft(number_of_rounds=8)
+            .circle_linear_trail_model(tweak=1 << (4 * i))
+            .trail(0x01190000)
+        )
         if not trail.conditions.consistent:
             saw_incompatible = True
             assert trail.contribution(0) == 0
@@ -172,7 +180,7 @@ def test_tweak_can_make_key_conditions_inconsistent_and_is_never_averaged():
 def test_reference_admissible_tweak_counts_by_existential_key_elimination(
     rounds, output_code, tweak_bits
 ):
-    base = Craft(number_of_rounds=rounds).circle_linear_model()
+    base = Craft(number_of_rounds=rounds).circle_linear_trail_model()
     layers = []
     for r, layer in enumerate(base.affine_layers):
         key_rows = []
@@ -190,7 +198,7 @@ def test_reference_admissible_tweak_counts_by_existential_key_elimination(
                 tuple(key_rows),
             )
         )
-    model = FreeSubgroupSPN(
+    model = CircleLinearTrailModel(
         base.bibrace,
         base.sbox,
         base.diffusion_rows,
@@ -206,11 +214,11 @@ def test_reference_admissible_tweak_counts_by_existential_key_elimination(
 
 def test_missing_perfect_subgroup_and_search_limits_are_explicit():
     with pytest.raises(ValueError, match="free type flip"):
-        FreeSubgroupSPN(BinaryBibrace.craft(), tuple(range(16)), (1,), (0,), 1)
+        CircleLinearTrailModel(BinaryBibrace.craft(), tuple(range(16)), (1,), (0,), 1)
     with pytest.raises(ValueError, match="maximum_factor_states"):
-        Craft(number_of_rounds=8).circle_linear_model().search(maximum_factor_states=100)
+        Craft(number_of_rounds=8).circle_linear_trail_model().search(maximum_factor_states=100)
     with pytest.raises(ValueError, match="special final round"):
-        Craft().circle_linear_model()
+        Craft().circle_linear_trail_model()
 
 
 def test_type_flip_alone_is_not_enough_for_complete_deterministic_search():
@@ -231,4 +239,4 @@ def test_type_flip_alone_is_not_enough_for_complete_deterministic_search():
     # Here eta=5 lies in Lambda: other nonzero diffusion entries can stay in F.
     # Exact bounded networks remain applicable, but the factor search is not.
     with pytest.raises(ValueError, match="mask-displacement"):
-        FreeSubgroupSPN(brace, table, (3, 2), (1, 0), 2)
+        CircleLinearTrailModel(brace, table, (3, 2), (1, 0), 2)

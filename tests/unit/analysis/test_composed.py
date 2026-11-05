@@ -3,17 +3,16 @@ from math import isclose, log2
 import pytest
 
 from claasp.analysis import (
-    check_speck32_differential_linear_fixture,
-    run_chacha_differential_linear_experiment,
+    check_speck32_xor_differential_linear_fixture,
+    run_chacha_xor_differential_linear_experiment,
     run_speck32_boomerang_experiment,
-    run_speck32_differential_linear_experiment,
-    speck32_differential_linear_legacy_fixture,
+    run_speck32_xor_differential_linear_experiment,
+    speck32_xor_differential_linear_legacy_fixture,
 )
 from claasp.primitives import Present
 from claasp.semantics.cryptanalysis import (
     BoomerangSwitchBoundary,
     BoomerangTrail,
-    DifferentialLinearTrail,
     ModularAddBoomerangAutomaton,
     ModularAddBoomerangSemantics,
     ProbabilisticTruncatedTrail,
@@ -24,6 +23,7 @@ from claasp.semantics.cryptanalysis import (
     Transition,
     TruncatedXorDifference,
     XorDifference,
+    XorDifferentialLinearTrail,
     XorMask,
 )
 
@@ -79,7 +79,7 @@ def test_differential_linear_composition_uses_exact_legacy_formula():
         TruncatedXorDifference.parse("????"),
         (),
     )
-    composed = DifferentialLinearTrail(
+    composed = XorDifferentialLinearTrail(
         _trail(TrailKind.XOR_DIFFERENTIAL, 1, 2),
         connector,
         _trail(TrailKind.XOR_LINEAR, 4, 8),
@@ -87,7 +87,7 @@ def test_differential_linear_composition_uses_exact_legacy_formula():
 
     assert isclose(composed.total_weight, 0.0)
     with pytest.raises(TypeError, match="prefix"):
-        DifferentialLinearTrail(
+        XorDifferentialLinearTrail(
             _trail(TrailKind.XOR_LINEAR, 1, 2), connector, _trail(TrailKind.XOR_LINEAR, 4, 8)
         )
 
@@ -171,9 +171,9 @@ def test_legacy_speck_boomerang_empirical_fixture_is_seeded_and_fixed():
 
 
 def test_fixed_speck_differential_linear_fixture_separates_search_and_exact_weights():
-    fixture = speck32_differential_linear_legacy_fixture()
+    fixture = speck32_xor_differential_linear_legacy_fixture()
 
-    assert check_speck32_differential_linear_fixture(fixture)
+    assert check_speck32_xor_differential_linear_fixture(fixture)
     assert fixture.trail.differential.total_weight == 1
     assert fixture.trail.connector.weight == 7
     assert fixture.trail.linear.total_weight == 3
@@ -237,7 +237,7 @@ def test_fixed_speck_differential_linear_fixture_separates_search_and_exact_weig
 def test_fixed_chacha_differential_linear_pairs_remain_seeded_empirical_evidence(
     input_difference, output_mask, rounds, samples, maximum_weight, even_parities
 ):
-    result = run_chacha_differential_linear_experiment(
+    result = run_chacha_xor_differential_linear_experiment(
         input_difference, output_mask, rounds=rounds, samples=samples, seed=42
     )
 
@@ -247,7 +247,7 @@ def test_fixed_chacha_differential_linear_pairs_remain_seeded_empirical_evidence
 
 
 def test_fixed_speck_differential_linear_pair_remains_seeded_empirical_evidence():
-    result = run_speck32_differential_linear_experiment(
+    result = run_speck32_xor_differential_linear_experiment(
         0x02110A04, 0x02000201, rounds=6, samples=1 << 15, seed=42
     )
 

@@ -2,7 +2,7 @@ from itertools import product
 
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.smt import (
-    ModularAddLinearSMTModel,
+    ModularAddXorLinearSMTModel,
     SBoxTransitionSMTModel,
 )
 from claasp.semantics.cryptanalysis import TrailKind
@@ -63,7 +63,7 @@ def test_rectangular_sbox_smt_uses_the_output_width():
 
 
 def test_modular_add_linear_smt_matches_every_four_bit_mask_triple():
-    model = ModularAddLinearSMTModel(4)
+    model = ModularAddXorLinearSMTModel(4)
     formula = model.smt_formula()
     solutions = list(_solutions(formula))
     decoded = {

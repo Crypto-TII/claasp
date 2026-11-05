@@ -43,7 +43,7 @@ def _spn(rounds=3, *, offset=0, constant=1, permutation=(1, 0), diffuse=True):
 
 
 def _model(primitive, tweak=0x12):
-    return primitive.analysis.circle_linear_model(
+    return primitive.analysis.circle_linear_trail_model(
         bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": tweak}
     )
 
@@ -96,17 +96,17 @@ def test_craft_convenience_method_delegates_to_graph_extraction(monkeypatch):
         calls.append((actual, brace, options))
         return expected
 
-    monkeypatch.setattr(_circle_graph, "subgroup_model_from_graph", extract)
-    assert primitive.circle_linear_model(tweak=7) is expected
+    monkeypatch.setattr(_circle_graph, "circle_linear_trail_model_from_graph", extract)
+    assert primitive.circle_linear_trail_model(tweak=7) is expected
     assert calls[0][0] is primitive
     assert calls[0][2] == {"input_name": "plaintext", "fixed_inputs": {"tweak": 7}}
 
 
 def test_graph_adapter_checks_fixed_inputs_and_non_affine_key_schedules():
     with pytest.raises(ValueError, match="fixed_inputs"):
-        _spn().analysis.circle_linear_model(bibrace=BinaryBibrace.craft())
+        _spn().analysis.circle_linear_trail_model(bibrace=BinaryBibrace.craft())
     with pytest.raises(ValueError, match="public"):
-        _spn().analysis.circle_linear_model(bibrace=BinaryBibrace.craft(), input_name="key")
+        _spn().analysis.circle_linear_trail_model(bibrace=BinaryBibrace.craft(), input_name="key")
     primitive = _spn(1)
     # An S-box in the key schedule is not an affine master-key map.
     b = primitive._builder
@@ -131,7 +131,7 @@ def test_graph_adapter_accepts_parallel_bit_sboxes_and_structural_cell_conversio
     out = b.join(*outputs)
     b.set_round_output(out)
     b.set_output(out)
-    model = primitive.analysis.circle_linear_model(bibrace=BinaryBibrace.craft())
+    model = primitive.analysis.circle_linear_trail_model(bibrace=BinaryBibrace.craft())
     whole = CircleLookupLayer(
         model.basis, model.basis, tuple(_evaluate(primitive, plaintext=x) for x in range(256))
     )
@@ -141,7 +141,7 @@ def test_graph_adapter_accepts_parallel_bit_sboxes_and_structural_cell_conversio
 
 
 def test_retained_round_masks_magnitudes_and_key_dependent_signs_reproduce_trail():
-    model = Craft(number_of_rounds=8).circle_linear_model()
+    model = Craft(number_of_rounds=8).circle_linear_trail_model()
     trail = model.trail(0x01190000)
     assert len(trail.round_transitions) == 8
     assert trail.round_transitions[0].input_mask == trail.input_mask

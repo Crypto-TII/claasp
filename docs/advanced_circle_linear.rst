@@ -1,10 +1,10 @@
-Circle-linear cryptanalysis: advanced
-=====================================
+Circle-linear trails: advanced
+==============================
 
-The introductory guides cover :doc:`basic_circle_linear` and
-:doc:`basic_circle_linear_correlations` using the same analyze, print and
-plot workflow. This page defines the terminology, explores parameters and
-checks numerical CRAFT results.
+The :doc:`basic_circle_linear` introduction covers trail search.
+:doc:`verification_circle_linear` covers characteristic reconstruction and
+endpoint correlation evaluation. This advanced guide defines the terminology,
+explores parameters and checks numerical CRAFT results.
 
 What is a character?
 --------------------
@@ -296,7 +296,7 @@ Check CRAFT results and transfer the optimized search
 -----------------------------------------------------
 
 An **SPN** (substitution-permutation network) combines S-box substitutions
-with layers that mix or rearrange cells. The ``FreeSubgroupSPN`` backend is
+with layers that mix or rearrange cells. The ``CircleLinearTrailModel`` backend is
 primitive independent. It accepts a supplied S-box, cell-XOR diffusion, cell
 permutation, round count and optional grouped affine key/constant layers. It
 checks the four-element perfect subgroup and its **type flip**: an S-box
@@ -317,7 +317,7 @@ its graph instead of supplying a second description of its rounds:
    >>> from claasp.primitives import Craft
    >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
    >>> primitive = Craft(number_of_rounds=8)
-   >>> model = primitive.analysis.circle_linear_model(
+   >>> model = primitive.analysis.circle_linear_trail_model(
    ...     bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": 0})
    >>> model.trail(0x01190000).cost
    8
@@ -332,7 +332,7 @@ and cell permutation in each round. A nonlinear key schedule, bit-mixing
 diffusion or another unsupported structure raises an explicit capability
 error. The bibrace and the public inputs to fix must be supplied explicitly;
 secret inputs remain symbolic. The convenience method
-``Craft(...).circle_linear_model(tweak=...)`` delegates to this adapter.
+``Craft(...).circle_linear_trail_model(tweak=...)`` delegates to this adapter.
 
 Each cell's check is written :math:`q\gamma\oplus s\eta`, with
 :math:`q,s\in\{0,1\}`. Here :math:`\gamma` is a curved check preserved by
@@ -354,7 +354,7 @@ fact rather than asserting an optimum at an unsearched higher cost.
 .. doctest::
 
    >>> from claasp.primitives import Craft
-   >>> result = Craft(number_of_rounds=14).circle_linear_model().search()
+   >>> result = Craft(number_of_rounds=14).circle_linear_trail_model().search()
    >>> result.cost, result.optimal_mask_count
    (22, 16)
    >>> result.representative.conditions.key_count == 2**108
@@ -401,7 +401,7 @@ cost formula.
      - :math:`2^{110}`
 
 CRAFT's ``round_offset`` keeps genuine absolute constants and key parity.
-``circle_linear_model(tweak=...)`` fixes the public tweak and derives affine
+``circle_linear_trail_model(tweak=...)`` fixes the public tweak and derives affine
 conditions. Its optimized backend excludes the special final round 31, which
 omits the S-box and permutation; the concrete primitive and endpoint
 measurements support the full CRAFT block cipher. The model's mask codes use

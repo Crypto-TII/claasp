@@ -37,14 +37,14 @@ from claasp.representations.constraints.smt._probability_encoding import (
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
 from claasp.representations.constraints.smt.transitions import (
-    ModularAddLinearSMTModel,
+    ModularAddXorLinearSMTModel,
     _xor_equivalence,
 )
 from claasp.semantics.cryptanalysis import (
     BitwiseAndSemantics,
     BitwiseOrSemantics,
-    ModularAddLinearSemantics,
-    ModularSubtractLinearSemantics,
+    ModularAddXorLinearSemantics,
+    ModularSubtractXorLinearSemantics,
     SBoxTransitionSemantics,
     TrailKind,
     TrailStep,
@@ -54,7 +54,7 @@ from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 @dataclass(frozen=True, slots=True)
-class WordLinearCharacteristic:
+class WordXorLinearCharacteristic:
     """Exact component characteristic, not a whole-primitive linear hull."""
 
     input_masks: tuple[tuple[str, int], ...]
@@ -76,10 +76,10 @@ class WordLinearCharacteristic:
 
 
 @dataclass(frozen=True, slots=True)
-class WordLinearEnumeration:
+class WordXorLinearEnumeration:
     """Enumeration is proof-complete only after terminal solver UNSAT."""
 
-    trails: tuple[WordLinearCharacteristic, ...]
+    trails: tuple[WordXorLinearCharacteristic, ...]
     complete: bool
     runtime_seconds: float
     reproducibility: tuple[tuple[str, str], ...] = ()
@@ -90,7 +90,7 @@ class WordLinearEnumeration:
         return self
 
 
-class WordLinearSMTModel:
+class WordXorLinearSMTModel:
     """Exact XOR/rotation/addition mask wiring with explicit external masks.
 
     Constants contribute a sign and zero weight. Fanout XORs all consumer
@@ -100,7 +100,7 @@ class WordLinearSMTModel:
     EXAMPLES::
 
         >>> try:
-        ...     WordLinearSMTModel()
+        ...     WordXorLinearSMTModel()
         ... except TypeError:
         ...     print("required configuration rejected")
         required configuration rejected
@@ -108,7 +108,7 @@ class WordLinearSMTModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "WordLinearSMTModel",
+        "WordXorLinearSMTModel",
         "xor_linear",
         "direct word-graph mask composition",
         "Component relations are derived directly from graph wiring and truth tables.",
@@ -227,7 +227,7 @@ class WordLinearSMTModel:
                 if len(operands) != 2:
                     raise NotImplementedError("linear modular addition requires two operands")
                 for unit in range(component.output_type.unit_count):
-                    local = ModularAddLinearSMTModel(width).smt_formula()
+                    local = ModularAddXorLinearSMTModel(width).smt_formula()
                     prefix = f"add_{component.component_id}_{unit}"
                     local_names = {name: allocate(f"{prefix}_{name}") for name in local.variables}
                     mapping = {
@@ -460,7 +460,7 @@ class WordLinearSMTModel:
             component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddLinearSMTModel.model_provenance),),
+                ((ModularAdd, ModularAddXorLinearSMTModel.model_provenance),),
             ),
         )
         return self._formula
@@ -498,7 +498,7 @@ class WordLinearSMTModel:
                 left_mask, right_mask = masks
                 transition = semantics.xor_linear(left_mask, right_mask, output)
             else:
-                local = ModularAddLinearSMTModel(width)
+                local = ModularAddXorLinearSMTModel(width)
                 projected = {
                     name: assignment[f"{prefix}_{name}"] for name in local.smt_formula().variables
                 }
@@ -509,7 +509,7 @@ class WordLinearSMTModel:
                     if item.component_id == component_id
                 )
                 if isinstance(component, ModularSubtract):
-                    transition = ModularSubtractLinearSemantics(width).xor_linear(
+                    transition = ModularSubtractXorLinearSemantics(width).xor_linear(
                         transition.input_pattern.value >> width,
                         transition.input_pattern.value & ((1 << width) - 1),
                         transition.output_pattern.value,
@@ -566,7 +566,7 @@ class WordLinearSMTModel:
                     )
                     if (mask & offset).bit_count() % 2:
                         constant_sign *= -1
-        result = WordLinearCharacteristic(
+        result = WordXorLinearCharacteristic(
             tuple(
                 (
                     name,
@@ -654,9 +654,9 @@ class WordLinearSMTModel:
             elif isinstance(component, (ModularAdd, ModularSubtract)):
                 for unit, mask in enumerate(output):
                     arithmetic_semantics = (
-                        ModularSubtractLinearSemantics(width)
+                        ModularSubtractXorLinearSemantics(width)
                         if isinstance(component, ModularSubtract)
-                        else ModularAddLinearSemantics(width)
+                        else ModularAddXorLinearSemantics(width)
                     )
                     transition = arithmetic_semantics.xor_linear(
                         operands[0][unit], operands[1][unit], mask
@@ -851,7 +851,7 @@ class WordLinearSMTModel:
             name for operands in self._edges.values() for names in operands for name in names
         )
         indices = {name: i for i, name in enumerate(formula.variables, 1)}
-        trails: list[WordLinearCharacteristic] = []
+        trails: list[WordXorLinearCharacteristic] = []
         blocks: list[tuple[int, ...]] = []
         runtime = 0.0
         context = (
@@ -869,11 +869,11 @@ class WordLinearSMTModel:
                 result = execution.solve(current)
                 runtime += result.runtime_seconds
                 if result.status is SatStatus.UNSATISFIABLE:
-                    return WordLinearEnumeration(tuple(trails), True, runtime, metadata)
+                    return WordXorLinearEnumeration(tuple(trails), True, runtime, metadata)
                 if result.status is not SatStatus.SATISFIABLE:
-                    return WordLinearEnumeration(tuple(trails), False, runtime, metadata)
+                    return WordXorLinearEnumeration(tuple(trails), False, runtime, metadata)
                 if len(trails) == limit:
-                    return WordLinearEnumeration(tuple(trails), False, runtime, metadata)
+                    return WordXorLinearEnumeration(tuple(trails), False, runtime, metadata)
                 trail = self.decode_characteristic(result.assignment)
                 trails.append(trail)
                 blocks.append(

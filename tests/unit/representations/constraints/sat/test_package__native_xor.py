@@ -15,10 +15,10 @@ from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
     WordDeterministicTruncatedNativeXorSATModel,
     WordDeterministicTruncatedSATModel,
-    WordDifferentialNativeXorSATModel,
-    WordDifferentialSATModel,
-    WordLinearNativeXorSATModel,
-    WordLinearSATModel,
+    WordXorDifferentialNativeXorSATModel,
+    WordXorDifferentialSATModel,
+    WordXorLinearNativeXorSATModel,
+    WordXorLinearSATModel,
 )
 from claasp.representations.execution import ScalarEvaluator
 
@@ -76,13 +76,13 @@ def test_cryptominisat_export_uses_documented_extended_dimacs_records():
     "ordinary,native,expected_native_count",
     (
         (
-            WordDifferentialSATModel(
+            WordXorDifferentialSATModel(
                 ToySpeck(2),
                 fixed_weight=1,
                 nonzero_input="plaintext",
                 fixed_input_differences={"key": 0},
             ),
-            WordDifferentialNativeXorSATModel(
+            WordXorDifferentialNativeXorSATModel(
                 ToySpeck(2),
                 fixed_weight=1,
                 nonzero_input="plaintext",
@@ -91,13 +91,13 @@ def test_cryptominisat_export_uses_documented_extended_dimacs_records():
             60,
         ),
         (
-            WordLinearSATModel(
+            WordXorLinearSATModel(
                 ToySpeck(3),
                 maximum_weight=1,
                 nonzero_input="plaintext",
                 fixed_inputs={"key": 0},
             ),
-            WordLinearNativeXorSATModel(
+            WordXorLinearNativeXorSATModel(
                 ToySpeck(3),
                 maximum_weight=1,
                 nonzero_input="plaintext",
@@ -124,8 +124,8 @@ def test_native_xor_reencoding_composes_with_n_window_and_rejects_other_solvers(
         "fixed_input_differences": {"key": 0},
         "n_window": NWindowSATStrategy(1),
     }
-    ordinary = WordDifferentialSATModel(ToySpeck(2), **options).cnf_formula()
-    model = WordDifferentialNativeXorSATModel(ToySpeck(2), **options)
+    ordinary = WordXorDifferentialSATModel(ToySpeck(2), **options).cnf_formula()
+    model = WordXorDifferentialNativeXorSATModel(ToySpeck(2), **options)
     native = model.cnf_formula()
     canonical = lambda clauses: {frozenset(clause) for clause in clauses}
     assert canonical(native.expanded_cnf().clauses) == canonical(ordinary.clauses)

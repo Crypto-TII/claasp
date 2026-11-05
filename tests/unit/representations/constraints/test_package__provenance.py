@@ -37,11 +37,11 @@ from claasp.representations.constraints.cp.trails import (
     SpeckContinuousMaskOptimizationCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
-    WordSemiDeterministicDifferentialLinearCPModel,
+    WordSemiDeterministicXorDifferentialLinearCPModel,
     WordwiseDeterministicTruncatedCPModel,
 )
 from claasp.representations.constraints.milp.components import (
-    ModularAddLinearMILPModel,
+    ModularAddXorLinearMILPModel,
     MonomialTransitionMILPModel,
     SBoxUndisturbedBitsEspressoMILPModel,
     SBoxXorDifferentialConvexHullMILPModel,
@@ -72,36 +72,36 @@ from claasp.representations.constraints.milp.queries import (
 from claasp.representations.constraints.milp.trails import (
     PresentMonomialTrailMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
-    WordSemiDeterministicDifferentialLinearMILPModel,
+    WordSemiDeterministicXorDifferentialLinearMILPModel,
     WordwiseDeterministicTruncatedMILPModel,
 )
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.sat.components import (
-    DifferentialToTruncatedSATModel,
-    ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
-    ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
     ModularAddSemiDeterministicTruncatedSATModel,
+    ModularAddXorDifferentialSATModel,
+    ModularAddXorLinearSATModel,
     ProbabilisticTruncatedModularAddSATModel,
     SBoxFunctionalSATModel,
-    TruncatedToLinearSATModel,
+    TruncatedToXorLinearSATModel,
     WiringFunctionalSATModel,
+    XorDifferentialToTruncatedSATModel,
 )
 from claasp.representations.constraints.sat.trails import (
     SpeckSemiDeterministicTruncatedSATModel,
-    WordDeterministicDifferentialLinearSATModel,
-    WordSemiDeterministicDifferentialLinearSATModel,
+    WordDeterministicXorDifferentialLinearSATModel,
+    WordSemiDeterministicXorDifferentialLinearSATModel,
     WordwiseDeterministicTruncatedSATModel,
 )
 from claasp.representations.constraints.smt.components import (
-    ModularAddDifferentialSMTModel,
-    ModularAddLinearSMTModel,
+    ModularAddXorDifferentialSMTModel,
+    ModularAddXorLinearSMTModel,
     SBoxXorDifferentialSMTModel,
     SBoxXorLinearSMTModel,
 )
 from claasp.representations.constraints.smt.model import SMTFormula
-from claasp.representations.constraints.smt.trails import WordDifferentialSMTModel
+from claasp.representations.constraints.smt.trails import WordXorDifferentialSMTModel
 from claasp.semantics.cryptanalysis import (
     Trail,
     TrailKind,
@@ -166,11 +166,11 @@ def test_direct_and_audited_modular_add_models_declare_their_reference_status():
         ConstraintReferenceStatus.NOT_APPLICABLE
     )
     for model in (
-        ModularAddDifferentialSATModel,
-        ModularAddDifferentialSMTModel,
-        ModularAddLinearSATModel,
-        ModularAddLinearSMTModel,
-        ModularAddLinearMILPModel,
+        ModularAddXorDifferentialSATModel,
+        ModularAddXorDifferentialSMTModel,
+        ModularAddXorLinearSATModel,
+        ModularAddXorLinearSMTModel,
+        ModularAddXorLinearMILPModel,
         ModularAddNWindowSATModel,
     ):
         assert model.model_provenance.reference_status is ConstraintReferenceStatus.VERIFIED
@@ -186,15 +186,15 @@ def test_direct_and_audited_modular_add_models_declare_their_reference_status():
 
 
 def test_audited_modular_add_models_name_the_verified_primary_source_and_locator():
-    for model in (ModularAddDifferentialSATModel, ModularAddDifferentialSMTModel):
+    for model in (ModularAddXorDifferentialSATModel, ModularAddXorDifferentialSMTModel):
         differential = model.model_provenance
         assert differential.reference_identifier == "https://eprint.iacr.org/2001/001"
         assert differential.source_locator == "section 4, Algorithm 2 and Theorem 1"
 
     for linear_model in (
-        ModularAddLinearSATModel,
-        ModularAddLinearSMTModel,
-        ModularAddLinearMILPModel,
+        ModularAddXorLinearSATModel,
+        ModularAddXorLinearSMTModel,
+        ModularAddXorLinearMILPModel,
     ):
         provenance = linear_model.model_provenance
         assert provenance.reference_identifier == "10.1007/978-3-319-39555-5_26"
@@ -274,9 +274,9 @@ def test_continuous_equations_are_verified_but_fixed_mask_selection_is_direct():
 
 def test_differential_linear_connectors_and_direct_composition_are_not_literature_claims():
     for model in (
-        DifferentialToTruncatedSATModel,
-        TruncatedToLinearSATModel,
-        WordDeterministicDifferentialLinearSATModel,
+        XorDifferentialToTruncatedSATModel,
+        TruncatedToXorLinearSATModel,
+        WordDeterministicXorDifferentialLinearSATModel,
     ):
         assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
 
@@ -289,9 +289,9 @@ def test_semi_deterministic_wrappers_are_direct_while_the_local_relation_stays_t
         SpeckSemiDeterministicTruncatedSATModel,
         SpeckSemiDeterministicTruncatedCPModel,
         SpeckSemiDeterministicTruncatedMILPModel,
-        WordSemiDeterministicDifferentialLinearSATModel,
-        WordSemiDeterministicDifferentialLinearCPModel,
-        WordSemiDeterministicDifferentialLinearMILPModel,
+        WordSemiDeterministicXorDifferentialLinearSATModel,
+        WordSemiDeterministicXorDifferentialLinearCPModel,
+        WordSemiDeterministicXorDifferentialLinearMILPModel,
     ):
         assert model.model_provenance.reference_status is (ConstraintReferenceStatus.NOT_APPLICABLE)
 
@@ -454,14 +454,14 @@ def test_lowering_propagates_component_model_and_component_ids():
 
 
 def test_complete_trail_lowering_retains_the_modular_add_model_declaration():
-    formula = WordDifferentialSMTModel(
+    formula = WordXorDifferentialSMTModel(
         ToySpeck(), maximum_weight=2, nonzero_input="plaintext"
     ).smt_formula()
 
     modular_add = next(
         application
         for application in formula.constraint_models
-        if application.model is ModularAddDifferentialSMTModel.model_provenance
+        if application.model is ModularAddXorDifferentialSMTModel.model_provenance
     )
     assert modular_add.component_ids
     assert modular_add.model.reference_status is ConstraintReferenceStatus.VERIFIED

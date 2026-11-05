@@ -1,5 +1,5 @@
-Circle-linear endpoint correlations: introduction
-=================================================
+Circle-linear correlation evaluation
+====================================
 
 Which input/output checks have the strongest relationship across a small
 S-box? Search its complete circle-linear approximation table, using the
@@ -60,6 +60,7 @@ returns a figure, and ``result.plot(save_to="circle-correlation.png")`` saves
 it. Both reporting calls reuse the computed result.
 
 Download :download:`the script <examples/basic_circle_linear_correlations.py>`.
+For characteristic reconstruction see :doc:`verification_circle_linear_characteristic`.
 For a round-by-round trail search see :doc:`basic_circle_linear`.
 For sampled correlations, confidence intervals, mathematical definitions and
 larger configurations, continue to :doc:`advanced_circle_linear`.

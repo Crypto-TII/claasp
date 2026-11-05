@@ -26,3 +26,27 @@ making the main Python interface easier to discover and use.
 The following pages introduce these ideas gradually. See :doc:`concepts` for
 the common vocabulary and :doc:`parameters` for arithmetization-oriented
 primitives and verified parameter sets.
+
+Explicit propagation names
+--------------------------
+
+Propagation model names identify the difference or mask semantics explicitly.
+For example, use ``WordXorDifferentialSATModel`` and
+``WordXorLinearSATModel``; SMT, MILP and CP use the same convention.
+Composed models use ``XorDifferentialLinear``, as in
+``WordDeterministicXorDifferentialLinearSATModel``. XOR refers to the
+difference definition or parity checks, even when the primitive contains
+modular addition. It does not assert that the primitive itself is linear.
+
+Circle trail search uses ``CircleLinearTrailModel`` and
+``primitive.analysis.circle_linear_trail_model(...)``. The current backend
+is reported as ``perfect_subgroup_spn`` and its result states the restricted
+search scope. Endpoint correlations remain available through
+``primitive.analysis.circle_linear(...)``. These are direct API renames;
+the earlier v5 spellings are not retained as aliases. Update imports and
+call sites when moving from an earlier v5 checkout.
+
+The user guide's **Trail search and verification** group now separates search guides from
+characteristic validation, concrete realizability and actual endpoint
+probability/correlation evaluation. Each Verification page states the
+capabilities currently available for its analysis.

@@ -450,7 +450,7 @@ REPRESENTATIONS = (
     (
         "word_differential_sat",
         "constraint",
-        "claasp.representations.constraints.sat:WordDifferentialSATModel",
+        "claasp.representations.constraints.sat:WordXorDifferentialSATModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"minisat"},
@@ -459,7 +459,7 @@ REPRESENTATIONS = (
     (
         "word_linear_sat",
         "constraint",
-        "claasp.representations.constraints.sat:WordLinearSATModel",
+        "claasp.representations.constraints.sat:WordXorLinearSATModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"minisat"},
@@ -468,7 +468,7 @@ REPRESENTATIONS = (
     (
         "word_differential_smt",
         "constraint",
-        "claasp.representations.constraints.smt:WordDifferentialSMTModel",
+        "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"z3"},
@@ -477,7 +477,7 @@ REPRESENTATIONS = (
     (
         "word_linear_smt",
         "constraint",
-        "claasp.representations.constraints.smt:WordLinearSMTModel",
+        "claasp.representations.constraints.smt:WordXorLinearSMTModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"z3"},

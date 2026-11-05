@@ -37,7 +37,7 @@ from claasp.representations.constraints.smt._probability_encoding import (
 from claasp.representations.constraints.smt._sbox_encoding import _add_sbox_relation
 from claasp.representations.constraints.smt.formula import SMTFormula
 from claasp.representations.constraints.smt.transitions import (
-    ModularAddDifferentialSMTModel,
+    ModularAddXorDifferentialSMTModel,
     _xor_equivalence,
 )
 from claasp.semantics.cryptanalysis import (
@@ -51,11 +51,11 @@ from claasp.semantics.cryptanalysis import (
 )
 from claasp.unit_types import BinaryExtensionField, Bit, Word
 
-from .word_linear import _packed
+from .word_xor_linear import _packed
 
 
 @dataclass(frozen=True, slots=True)
-class WordDifferentialCharacteristic:
+class WordXorDifferentialCharacteristic:
     """Component-product differential evidence, not an aggregated differential."""
 
     input_differences: tuple[tuple[str, int], ...]
@@ -69,8 +69,8 @@ class WordDifferentialCharacteristic:
 
 
 @dataclass(frozen=True, slots=True)
-class WordDifferentialEnumeration:
-    trails: tuple[WordDifferentialCharacteristic, ...]
+class WordXorDifferentialEnumeration:
+    trails: tuple[WordXorDifferentialCharacteristic, ...]
     complete: bool
     runtime_seconds: float
     reproducibility: tuple[tuple[str, str], ...] = ()
@@ -100,13 +100,13 @@ class WordDifferentialEnumeration:
         return total
 
 
-class WordDifferentialSMTModel:
+class WordXorDifferentialSMTModel:
     """Forward difference wiring with explicit input and weight restrictions.
 
     EXAMPLES::
 
         >>> try:
-        ...     WordDifferentialSMTModel()
+        ...     WordXorDifferentialSMTModel()
         ... except TypeError:
         ...     print("required configuration rejected")
         required configuration rejected
@@ -114,7 +114,7 @@ class WordDifferentialSMTModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "WordDifferentialSMTModel",
+        "WordXorDifferentialSMTModel",
         "xor_differential",
         "direct word-graph difference composition",
         "Component relations are derived directly from graph wiring and truth tables.",
@@ -212,7 +212,7 @@ class WordDifferentialSMTModel:
                 if len(operands) != 2:
                     raise NotImplementedError("differential modular addition requires two operands")
                 for unit in range(component.output_type.unit_count):
-                    local = ModularAddDifferentialSMTModel(width).smt_formula()
+                    local = ModularAddXorDifferentialSMTModel(width).smt_formula()
                     local_names = {}
                     for prefix, names in zip(("left", "right", "output"), (*operands, output)):
                         for bit in range(width):
@@ -438,7 +438,7 @@ class WordDifferentialSMTModel:
             component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddDifferentialSMTModel.model_provenance),),
+                ((ModularAdd, ModularAddXorDifferentialSMTModel.model_provenance),),
             ),
         )
         return self._formula
@@ -587,7 +587,7 @@ class WordDifferentialSMTModel:
             self._formula.variables, self._formula.assertions, self._formula.provenance
         ).is_satisfied(assignment):
             raise ValueError("invalid word differential witness")
-        result = WordDifferentialCharacteristic(
+        result = WordXorDifferentialCharacteristic(
             tuple(
                 (name, _packed(self._unit_arrays[name], assignment))
                 for name in self.primitive.graph.input_arrays
@@ -670,7 +670,7 @@ class WordDifferentialSMTModel:
         )
         blocking_names = {name for names in self._unit_arrays.values() for name in names}
         indices = {name: index for index, name in enumerate(formula.variables, 1)}
-        trails: list[WordDifferentialCharacteristic] = []
+        trails: list[WordXorDifferentialCharacteristic] = []
         blocks: list[tuple[int, ...]] = []
         runtime = 0.0
         context = (
@@ -688,9 +688,9 @@ class WordDifferentialSMTModel:
                 result = execution.solve(current)
                 runtime += result.runtime_seconds
                 if result.status is SatStatus.UNSATISFIABLE:
-                    return WordDifferentialEnumeration(tuple(trails), True, runtime, metadata)
+                    return WordXorDifferentialEnumeration(tuple(trails), True, runtime, metadata)
                 if result.status is not SatStatus.SATISFIABLE or len(trails) == limit:
-                    return WordDifferentialEnumeration(tuple(trails), False, runtime, metadata)
+                    return WordXorDifferentialEnumeration(tuple(trails), False, runtime, metadata)
                 trail = self.decode_characteristic(result.assignment)
                 trails.append(trail)
                 blocks.append(

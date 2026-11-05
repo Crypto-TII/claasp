@@ -236,7 +236,7 @@ class ContinuousExecutionDriver:
         )
 
 
-class ContinuousDifferentialExecutionDriver(ContinuousExecutionDriver):
+class ContinuousXorDifferentialExecutionDriver(ContinuousExecutionDriver):
     """Evaluate the legacy ARX differential-correlation heuristic separately.
 
     Round-key constants have zero difference, whatever their concrete value.
@@ -246,7 +246,7 @@ class ContinuousDifferentialExecutionDriver(ContinuousExecutionDriver):
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> result = ContinuousDifferentialExecutionDriver().evaluate(
+        >>> result = ContinuousXorDifferentialExecutionDriver().evaluate(
         ...     Speck(number_of_rounds=1), {"plaintext": (-1.,)*32, "key": (-1.,)*64}
         ... )
         >>> result.claim_kind

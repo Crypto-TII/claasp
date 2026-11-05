@@ -67,6 +67,7 @@ else:
             "polynomial_system_graphs.rst",
             "monomial_prediction.rst",
             "trail_search_introduction.rst",
+            "verification_*.rst",
             "differential_trail_search.rst",
             "linear_trail_search.rst",
             "circle_linear.rst",

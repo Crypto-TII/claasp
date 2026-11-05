@@ -1,4 +1,4 @@
-Differential-linear distinguishers: introduction
-================================================
+XOR differential-linear trails: introduction
+============================================
 
 **TODO**

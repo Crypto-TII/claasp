@@ -15,7 +15,7 @@ pyplot = pytest.importorskip("matplotlib.pyplot")
 
 
 def test_subgroup_weight_plot_matches_round_costs_and_never_researches(tmp_path, monkeypatch):
-    model = Craft(number_of_rounds=8).circle_linear_model()
+    model = Craft(number_of_rounds=8).circle_linear_trail_model()
     result = model.search()
     monkeypatch.setattr(type(model), "search", lambda *a, **k: pytest.fail("search repeated"))
     monkeypatch.setattr(pyplot, "show", lambda: pytest.fail("show=False ignored"))

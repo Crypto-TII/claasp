@@ -3774,21 +3774,21 @@
       "code": "union-attr",
       "column": 13,
       "line": 272,
-      "message": "Item \"ModularAddLinearSemantics\" of \"ModularAddTransitionSemantics | ModularAddLinearSemantics\" has no attribute \"xor_differential\"",
+      "message": "Item \"ModularAddXorLinearSemantics\" of \"ModularAddTransitionSemantics | ModularAddXorLinearSemantics\" has no attribute \"xor_differential\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "union-attr",
       "column": 18,
       "line": 274,
-      "message": "Item \"ModularAddTransitionSemantics\" of \"ModularAddTransitionSemantics | ModularAddLinearSemantics\" has no attribute \"xor_linear\"",
+      "message": "Item \"ModularAddTransitionSemantics\" of \"ModularAddTransitionSemantics | ModularAddXorLinearSemantics\" has no attribute \"xor_linear\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "assignment",
       "column": 37,
       "line": 282,
-      "message": "Incompatible types in assignment (expression has type \"BitwiseAndSemantics\", variable has type \"ModularAddTransitionSemantics | ModularAddLinearSemantics\")",
+      "message": "Incompatible types in assignment (expression has type \"BitwiseAndSemantics\", variable has type \"ModularAddTransitionSemantics | ModularAddXorLinearSemantics\")",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
@@ -5014,7 +5014,7 @@
       "column": 20,
       "line": 101,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
+      "path": "tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },
     {
       "code": "arg-type",

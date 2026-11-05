@@ -6,8 +6,8 @@ from claasp.analysis._trail_propagation import xor_differential_component_transi
 from claasp.analysis.arx import check_speck_linear_trail, check_speck_trail
 from claasp.primitives import Speck
 from claasp.semantics.cryptanalysis import (
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    ModularAddXorLinearSemantics,
     Trail,
     TrailKind,
     TrailStep,
@@ -101,7 +101,7 @@ def test_three_round_speck_sat_search_finds_exact_optimum():
 
 
 def test_modular_add_linear_correlation_retains_exact_sign():
-    transition = ModularAddLinearSemantics(16).xor_linear(0x0800, 0x0800, 0x0C00)
+    transition = ModularAddXorLinearSemantics(16).xor_linear(0x0800, 0x0800, 0x0C00)
 
     assert (transition.numerator, transition.denominator, transition.weight) == (
         1 << 31,

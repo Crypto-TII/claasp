@@ -43,13 +43,13 @@ from claasp.semantics.cryptanalysis import (
 )
 
 
-class PresentDifferentialMILPModel:
+class PresentXorDifferentialMILPModel:
     """Exact two-round PRESENT XOR-differential optimization model.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Present
-        >>> lowering = PresentDifferentialMILPModel(Present(number_of_rounds=2))
+        >>> lowering = PresentXorDifferentialMILPModel(Present(number_of_rounds=2))
         >>> model = lowering.milp_model()
         >>> (model.objective_sense.value, len(model.constraints))
         ('minimize', 289)
@@ -57,7 +57,7 @@ class PresentDifferentialMILPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.MILP,
-        "PresentDifferentialMILPModel",
+        "PresentXorDifferentialMILPModel",
         "xor_differential",
         "one-hot exhaustive DDT row selection",
         "The S-box support and weights are enumerated directly from the supplied table.",
@@ -181,7 +181,7 @@ class PresentDifferentialMILPModel:
         )
 
 
-class PresentActiveSBoxesMILPModel(PresentDifferentialMILPModel):
+class PresentActiveSBoxesMILPModel(PresentXorDifferentialMILPModel):
     """Minimize active S-boxes over the exact two-round PRESENT relation.
 
     EXAMPLES::
@@ -222,7 +222,7 @@ class PresentActiveSBoxesMILPModel(PresentDifferentialMILPModel):
         )
 
 
-class PresentFixedActiveSBoxesMILPModel(PresentDifferentialMILPModel):
+class PresentFixedActiveSBoxesMILPModel(PresentXorDifferentialMILPModel):
     """Minimize exact weight after fixing the PRESENT active-S-box count.
 
     EXAMPLES::
@@ -547,7 +547,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
 def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
     """Independently check a decoded trail using shared semantics and wiring.
 
-    The checker is used after :meth:`PresentDifferentialMILPModel.decode_trail`
+    The checker is used after :meth:`PresentXorDifferentialMILPModel.decode_trail`
     to verify the decoded transitions and PRESENT permutation boundaries
     independently of the MILP constraints.
 
@@ -582,13 +582,13 @@ def check_present_milp_trail(primitive: Primitive, trail: Trail) -> bool:
     return check_present_smt_trail(primitive, trail)
 
 
-class WordDifferentialMILPModel:
+class WordXorDifferentialMILPModel:
     """Assemble exact XOR-differential Word graphs as portable MILP.
 
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordDifferentialMILPModel(
+        >>> model = WordXorDifferentialMILPModel(
         ...     ToySpeck(2), fixed_weight=1,
         ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
         ... )
@@ -599,7 +599,7 @@ class WordDifferentialMILPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.MILP,
-        "WordDifferentialMILPModel",
+        "WordXorDifferentialMILPModel",
         "xor_differential",
         "exact MILP translation of the reviewed Boolean Word-graph relation",
         "The portable formulation preserves every clause as one linear inequality.",
@@ -615,9 +615,9 @@ class WordDifferentialMILPModel:
         fixed_input_differences=None,
         output_difference=None,
     ) -> None:
-        from claasp.representations.constraints.sat.trails import WordDifferentialSATModel
+        from claasp.representations.constraints.sat.trails import WordXorDifferentialSATModel
 
-        self._sat_model = WordDifferentialSATModel(
+        self._sat_model = WordXorDifferentialSATModel(
             primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
@@ -1071,13 +1071,13 @@ class SpeckSemiDeterministicTruncatedMILPModel:
         )
 
 
-class WordDeterministicDifferentialLinearMILPModel:
+class WordDeterministicXorDifferentialLinearMILPModel:
     """Assemble deterministic-middle differential-linear trails as MILP.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = WordDeterministicDifferentialLinearMILPModel(
+        >>> model = WordDeterministicXorDifferentialLinearMILPModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
         ...     differential_maximum_weight=16, linear_maximum_weight=16,
         ... )
@@ -1088,7 +1088,7 @@ class WordDeterministicDifferentialLinearMILPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.MILP,
-        "WordDeterministicDifferentialLinearMILPModel",
+        "WordDeterministicXorDifferentialLinearMILPModel",
         "differential_linear",
         "exact MILP translation of the reviewed deterministic-middle composition",
         "The objective is differential weight plus twice the linear-correlation weight.",
@@ -1106,10 +1106,10 @@ class WordDeterministicDifferentialLinearMILPModel:
         output_mask=None,
     ) -> None:
         from claasp.representations.constraints.sat.trails import (
-            WordDeterministicDifferentialLinearSATModel,
+            WordDeterministicXorDifferentialLinearSATModel,
         )
 
-        self._sat_model = WordDeterministicDifferentialLinearSATModel(
+        self._sat_model = WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,
@@ -1157,13 +1157,13 @@ class WordDeterministicDifferentialLinearMILPModel:
         )
 
 
-class WordSemiDeterministicDifferentialLinearMILPModel:
+class WordSemiDeterministicXorDifferentialLinearMILPModel:
     """Assemble semi-deterministic differential-linear trails as MILP.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = WordSemiDeterministicDifferentialLinearMILPModel(
+        >>> model = WordSemiDeterministicXorDifferentialLinearMILPModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
         ...     differential_maximum_weight=16,
         ...     middle_maximum_scaled_weight=None,
@@ -1176,7 +1176,7 @@ class WordSemiDeterministicDifferentialLinearMILPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.MILP,
-        "WordSemiDeterministicDifferentialLinearMILPModel",
+        "WordSemiDeterministicXorDifferentialLinearMILPModel",
         "differential_linear",
         "exact MILP translation of the recovered semi-deterministic composition",
         "Mechanical MILP lowering; the nested middle relation retains the unresolved source status.",
@@ -1195,10 +1195,10 @@ class WordSemiDeterministicDifferentialLinearMILPModel:
         output_mask=None,
     ) -> None:
         from claasp.representations.constraints.sat.trails import (
-            WordSemiDeterministicDifferentialLinearSATModel,
+            WordSemiDeterministicXorDifferentialLinearSATModel,
         )
 
-        self._sat_model = WordSemiDeterministicDifferentialLinearSATModel(
+        self._sat_model = WordSemiDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,
@@ -1247,13 +1247,13 @@ class WordSemiDeterministicDifferentialLinearMILPModel:
         )
 
 
-class WordLinearMILPModel:
+class WordXorLinearMILPModel:
     """Assemble exact XOR-linear Word graphs as portable MILP.
 
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordLinearMILPModel(
+        >>> model = WordXorLinearMILPModel(
         ...     ToySpeck(3), maximum_weight=1,
         ...     fixed_inputs={"key": 0}, nonzero_input="plaintext",
         ... )
@@ -1264,7 +1264,7 @@ class WordLinearMILPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.MILP,
-        "WordLinearMILPModel",
+        "WordXorLinearMILPModel",
         "xor_linear",
         "exact MILP translation of the reviewed Boolean Word-graph relation",
         "The portable formulation preserves every clause as one linear inequality.",
@@ -1279,9 +1279,9 @@ class WordLinearMILPModel:
         fixed_input_masks=None,
         fixed_inputs=None,
     ) -> None:
-        from claasp.representations.constraints.sat.trails import WordLinearSATModel
+        from claasp.representations.constraints.sat.trails import WordXorLinearSATModel
 
-        self._sat_model = WordLinearSATModel(
+        self._sat_model = WordXorLinearSATModel(
             primitive,
             maximum_weight=maximum_weight,
             nonzero_input=nonzero_input,

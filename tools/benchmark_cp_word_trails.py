@@ -14,18 +14,18 @@ from time import monotonic
 
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import ToySpeck
-from claasp.representations.constraints.cp import WordDifferentialCPModel, WordLinearCPModel
+from claasp.representations.constraints.cp import WordXorDifferentialCPModel, WordXorLinearCPModel
 
 
 def _models():
     return {
-        "xor_differential": lambda: WordDifferentialCPModel(
+        "xor_differential": lambda: WordXorDifferentialCPModel(
             ToySpeck(2),
             fixed_weight=1,
             fixed_input_differences={"key": 0},
             nonzero_input="plaintext",
         ),
-        "xor_linear": lambda: WordLinearCPModel(
+        "xor_linear": lambda: WordXorLinearCPModel(
             ToySpeck(3),
             maximum_weight=1,
             fixed_inputs={"key": 0},

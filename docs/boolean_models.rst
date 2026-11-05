@@ -79,7 +79,7 @@ malformed output, and nonstandard exit codes are reported explicitly.
 Weighted SAT trails
 -------------------
 
-``WordDifferentialSATModel`` and ``WordLinearSATModel`` compose local
+``WordXorDifferentialSATModel`` and ``WordXorLinearSATModel`` compose local
 component relations, graph wiring, boundary conditions, and weight bounds into
 complete ordinary-CNF searches. They reuse the same backend-neutral Boolean
 relations as the SMT forms, while publishing SAT constraint provenance and a
@@ -91,8 +91,8 @@ characteristics of exact weight one:
 .. doctest::
 
    >>> from claasp.primitives import ToySpeck
-   >>> from claasp.representations.constraints.sat import WordDifferentialSATModel
-   >>> trail_model = WordDifferentialSATModel(
+   >>> from claasp.representations.constraints.sat import WordXorDifferentialSATModel
+   >>> trail_model = WordXorDifferentialSATModel(
    ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
    ...     fixed_input_differences={"key": 0},
    ... )
@@ -367,7 +367,7 @@ identified constraint layer:
 .. doctest::
 
    >>> from claasp.representations.constraints.sat import NWindowSATStrategy
-   >>> bounded_model = WordDifferentialSATModel(
+   >>> bounded_model = WordXorDifferentialSATModel(
    ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
    ...     fixed_input_differences={"key": 0},
    ...     n_window=NWindowSATStrategy(2),
@@ -430,7 +430,7 @@ offset real encoding overhead on the intended larger searches.
 Native-XOR trail formulas
 -------------------------
 
-``WordDifferentialNativeXorSATModel`` and ``WordLinearNativeXorSATModel`` are
+``WordXorDifferentialNativeXorSATModel`` and ``WordXorLinearNativeXorSATModel`` are
 explicit CryptoMiniSat alternatives to the portable ordinary-CNF trail
 models. The lowering replaces a clause group only after proving that the whole
 group is one canonical even- or odd-parity relation. Its independent
@@ -438,8 +438,8 @@ group is one canonical even- or odd-parity relation. Its independent
 
 .. doctest::
 
-   >>> from claasp.representations.constraints.sat import WordDifferentialNativeXorSATModel
-   >>> native_model = WordDifferentialNativeXorSATModel(
+   >>> from claasp.representations.constraints.sat import WordXorDifferentialNativeXorSATModel
+   >>> native_model = WordXorDifferentialNativeXorSATModel(
    ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
    ...     fixed_input_differences={"key": 0},
    ... )
@@ -526,7 +526,7 @@ Shared-difference paired characteristics
 ----------------------------------------
 
 Shared-difference paired characteristics are exposed separately through
-``SharedDifferencePairedWordDifferentialSATModel``. The model builds two
+``SharedDifferencePairedWordXorDifferentialSATModel``. The model builds two
 differential characteristics, makes every external input difference identical,
 and forbids corresponding modular-add output bits from being active in both
 copies.
@@ -534,9 +534,9 @@ copies.
 .. doctest::
 
    >>> from claasp.representations.constraints.sat import (
-   ...     SharedDifferencePairedWordDifferentialSATModel,
+   ...     SharedDifferencePairedWordXorDifferentialSATModel,
    ... )
-   >>> paired = SharedDifferencePairedWordDifferentialSATModel(
+   >>> paired = SharedDifferencePairedWordXorDifferentialSATModel(
    ...     ToySpeck(2), maximum_total_weight=5,
    ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
    ... )
@@ -558,9 +558,9 @@ difference bit to be zero in both differential characteristics.
 
    >>> from claasp.primitives import Speck
    >>> from claasp.representations.constraints.sat import (
-   ...     SharedDifferencePairedWordDifferentialLinearSATModel,
+   ...     SharedDifferencePairedWordXorDifferentialLinearSATModel,
    ... )
-   >>> paired_dl = SharedDifferencePairedWordDifferentialLinearSATModel(
+   >>> paired_dl = SharedDifferencePairedWordXorDifferentialLinearSATModel(
    ...     Speck(number_of_rounds=3), prefix_rounds=2,
    ...     paired_differential_maximum_weight=32,
    ...     linear_maximum_weight=16, fixed_total_weight=8,
@@ -584,9 +584,9 @@ that fixed-point estimate with exact differential and linear weights.
 
    >>> from claasp.primitives import Speck
    >>> from claasp.representations.constraints.sat import (
-   ...     WordSemiDeterministicDifferentialLinearSATModel,
+   ...     WordSemiDeterministicXorDifferentialLinearSATModel,
    ... )
-   >>> semi_dl = WordSemiDeterministicDifferentialLinearSATModel(
+   >>> semi_dl = WordSemiDeterministicXorDifferentialLinearSATModel(
    ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
    ...     differential_maximum_weight=16,
    ...     middle_maximum_scaled_weight=None, linear_maximum_weight=16,
@@ -599,7 +599,7 @@ Set ``middle_maximum_scaled_weight`` when a bound on the historical
 hundredths-of-a-bit cost is desired. Leaving it as ``None`` preserves all
 middle transitions and avoids the large repeated-literal cardinality counter.
 
-``DifferentialToTruncatedSATModel`` and ``TruncatedToLinearSATModel`` expose
+``XorDifferentialToTruncatedSATModel`` and ``TruncatedToXorLinearSATModel`` expose
 the two boundary relations recovered from the legacy differential-linear SAT
 model. The upper relation keeps an incoming XOR difference exact in the
 truncated representation. The lower relation permits an active linear mask
@@ -608,15 +608,15 @@ only where the truncated difference is known.
 .. doctest::
 
    >>> from claasp.representations.constraints.sat import (
-   ...     DifferentialToTruncatedSATModel, TruncatedToLinearSATModel,
+   ...     XorDifferentialToTruncatedSATModel, TruncatedToXorLinearSATModel,
    ... )
    >>> from claasp.semantics.cryptanalysis import XorDifference, XorMask
-   >>> upper = DifferentialToTruncatedSATModel(
+   >>> upper = XorDifferentialToTruncatedSATModel(
    ...     4, difference=XorDifference(10, 4), truncated_pattern="1010"
    ... )
    >>> (upper.cnf_formula().variable_count, upper.cnf_formula().clause_count)
    (12, 24)
-   >>> lower = TruncatedToLinearSATModel(
+   >>> lower = TruncatedToXorLinearSATModel(
    ...     4, truncated_pattern="?010", mask=XorMask(2, 4)
    ... )
    >>> (lower.cnf_formula().variable_count, lower.cnf_formula().clause_count)
@@ -637,7 +637,7 @@ times are recorded for reproducibility, but this local benchmark does not
 establish whole-trail performance or change a default.
 
 Complete deterministic-middle composition is available as
-``WordDeterministicDifferentialLinearSATModel``. Round counts explicitly split
+``WordDeterministicXorDifferentialLinearSATModel``. Round counts explicitly split
 the primitive into a differential prefix, deterministic-truncated middle, and
 linear suffix. Each section reuses its standalone model, and a decoded result
 contains all three independently checked characteristics:
@@ -646,9 +646,9 @@ contains all three independently checked characteristics:
 
    >>> from claasp.primitives import Speck
    >>> from claasp.representations.constraints.sat import (
-   ...     WordDeterministicDifferentialLinearSATModel,
+   ...     WordDeterministicXorDifferentialLinearSATModel,
    ... )
-   >>> composed = WordDeterministicDifferentialLinearSATModel(
+   >>> composed = WordDeterministicXorDifferentialLinearSATModel(
    ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
    ...     differential_maximum_weight=16, linear_maximum_weight=16,
    ... )

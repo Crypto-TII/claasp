@@ -57,7 +57,9 @@ def _units(bits, array_type):
     return tuple(tuple(bits[i : i + width]) for i in range(0, len(bits), width))
 
 
-def subgroup_model_from_graph(primitive, bibrace, *, input_name="plaintext", fixed_inputs=None):
+def circle_linear_trail_model_from_graph(
+    primitive, bibrace, *, input_name="plaintext", fixed_inputs=None
+):
     """Extract a homogeneous, binary cell-XOR SPN or reject its capability.
 
     Fixed public inputs are substituted, secret inputs remain symbolic in a
@@ -65,7 +67,7 @@ def subgroup_model_from_graph(primitive, bibrace, *, input_name="plaintext", fix
     parallel substitution layer. Key schedules must be affine. Cell diffusion
     and the cell permutation must be identical across the selected rounds.
     """
-    from claasp.analysis.circle_linear_spn import FreeSubgroupSPN
+    from claasp.analysis.circle_linear_trails import CircleLinearTrailModel
 
     plan = GraphPropagation(primitive)
     graph = primitive.graph
@@ -271,7 +273,7 @@ def subgroup_model_from_graph(primitive, bibrace, *, input_name="plaintext", fix
     # Accessing propagated output ensures the complete graph, including all
     # structural conversions and key-schedule components, has been interpreted.
     assert propagated.output is not None
-    return FreeSubgroupSPN(
+    return CircleLinearTrailModel(
         bibrace,
         tables[0],
         diffusions[0],

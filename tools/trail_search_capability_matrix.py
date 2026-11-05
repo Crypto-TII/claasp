@@ -12,7 +12,10 @@ from claasp.analysis.trail_search import (
     _require_exact_trail_capability,
 )
 from claasp.primitives._catalogue_exports import ALL_EXPORTS, load_export
-from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
+from claasp.representations.constraints.sat import (
+    WordXorDifferentialSATModel,
+    WordXorLinearSATModel,
+)
 from claasp.semantics.cryptanalysis import TrailKind
 
 OUTPUT = Path("tests/fixtures/analysis/trail_search_capability_matrix.json")
@@ -78,8 +81,8 @@ def generate():
             "configuration": options or "default",
         }
         for kind, model_type in (
-            (TrailKind.XOR_DIFFERENTIAL, WordDifferentialSATModel),
-            (TrailKind.XOR_LINEAR, WordLinearSATModel),
+            (TrailKind.XOR_DIFFERENTIAL, WordXorDifferentialSATModel),
+            (TrailKind.XOR_LINEAR, WordXorLinearSATModel),
         ):
             try:
                 _require_exact_trail_capability(primitive, kind, backend="sat")

@@ -6,7 +6,7 @@ from claasp.primitives import Craft
 def run_example():
     """Search eight-round CRAFT within its validated perfect subgroup."""
     primitive = Craft(number_of_rounds=8)
-    return primitive.circle_linear_model().search()
+    return primitive.circle_linear_trail_model().search()
 
 
 if __name__ == "__main__":

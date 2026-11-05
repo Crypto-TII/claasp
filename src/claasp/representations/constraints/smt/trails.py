@@ -17,27 +17,27 @@ from claasp.representations.constraints._propagation import (
 )
 from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt.components.modular_add import (
-    ModularAddLinearSMTModel,
+    ModularAddXorLinearSMTModel,
     _xor_equivalence,
 )
 from claasp.representations.constraints.smt.model import SMTFormula
-from claasp.representations.constraints.smt.word_differential import (
-    WordDifferentialCharacteristic as WordDifferentialCharacteristic,
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialCharacteristic as WordXorDifferentialCharacteristic,
 )
-from claasp.representations.constraints.smt.word_differential import (
-    WordDifferentialEnumeration as WordDifferentialEnumeration,
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialEnumeration as WordXorDifferentialEnumeration,
 )
-from claasp.representations.constraints.smt.word_differential import (
-    WordDifferentialSMTModel as WordDifferentialSMTModel,
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialSMTModel as WordXorDifferentialSMTModel,
 )
-from claasp.representations.constraints.smt.word_linear import (
-    WordLinearCharacteristic as WordLinearCharacteristic,
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearCharacteristic as WordXorLinearCharacteristic,
 )
-from claasp.representations.constraints.smt.word_linear import (
-    WordLinearEnumeration as WordLinearEnumeration,
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearEnumeration as WordXorLinearEnumeration,
 )
-from claasp.representations.constraints.smt.word_linear import (
-    WordLinearSMTModel as WordLinearSMTModel,
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearSMTModel as WordXorLinearSMTModel,
 )
 from claasp.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp.semantics.cryptanalysis import (
@@ -52,13 +52,13 @@ from claasp.semantics.cryptanalysis import (
 from claasp.unit_types import Word
 
 
-class PresentDifferentialSMTModel:
+class PresentXorDifferentialSMTModel:
     """Exact two-round PRESENT XOR-differential model with a weight bound.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Present
-        >>> model = PresentDifferentialSMTModel(Present(number_of_rounds=2), 4)
+        >>> model = PresentXorDifferentialSMTModel(Present(number_of_rounds=2), 4)
         >>> formula = model.smt_formula()
         >>> (len(formula.variables) < 700, formula.assertion_count < 30000)
         (True, True)
@@ -66,7 +66,7 @@ class PresentDifferentialSMTModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "PresentDifferentialSMTModel",
+        "PresentXorDifferentialSMTModel",
         "xor_differential",
         "exhaustive S-box transition clauses",
         "The S-box support and weights are enumerated directly from the supplied table.",
@@ -211,13 +211,13 @@ class PresentDifferentialSMTModel:
         )
 
 
-class PresentLinearSMTModel:
+class PresentXorLinearSMTModel:
     """Exact three-round PRESENT XOR-linear model with a weight bound.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Present
-        >>> model = PresentLinearSMTModel(Present(number_of_rounds=3), 4)
+        >>> model = PresentXorLinearSMTModel(Present(number_of_rounds=3), 4)
         >>> formula = model.smt_formula()
         >>> (len(formula.variables) < 1000, formula.assertion_count < 40000)
         (True, True)
@@ -225,7 +225,7 @@ class PresentLinearSMTModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "PresentLinearSMTModel",
+        "PresentXorLinearSMTModel",
         "xor_linear",
         "exhaustive S-box transition clauses",
         "The signed S-box support and weights are enumerated directly from the supplied table.",
@@ -463,7 +463,7 @@ def _permute(value, mapping):
     return _integer(tuple(bits[position] for position in mapping))
 
 
-class SpeckLinearSMTModel:
+class SpeckXorLinearSMTModel:
     """Compose data-path masks with zero round-key masks and explicit weights.
 
     The plaintext mask is nonzero. Key-schedule masks and related-key linear
@@ -473,14 +473,14 @@ class SpeckLinearSMTModel:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = SpeckLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
+        >>> model = SpeckXorLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
         >>> "nonzero_linear_input" in model.smt_formula().provenance
         True
     """
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "SpeckLinearSMTModel",
+        "SpeckXorLinearSMTModel",
         "xor_linear",
         "direct graph-mask composition",
         "Rotation and XOR mask relations are expressed directly from graph wiring.",
@@ -546,7 +546,7 @@ class SpeckLinearSMTModel:
         )
         weights = []
         for r in range(len(self.primitive.graph.rounds)):
-            local = ModularAddLinearSMTModel(width).smt_formula()
+            local = ModularAddXorLinearSMTModel(width).smt_formula()
             mapping = {
                 i: indices[allocate(f"round_{r}_{name}")]
                 for i, name in enumerate(local.variables, 1)
@@ -607,7 +607,7 @@ class SpeckLinearSMTModel:
             _component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddLinearSMTModel.model_provenance),),
+                ((ModularAdd, ModularAddXorLinearSMTModel.model_provenance),),
             ),
         )
 
@@ -620,7 +620,7 @@ class SpeckLinearSMTModel:
             raise ValueError("build the SMT formula before decoding a trail")
         steps = []
         for r in range(len(self.primitive.graph.rounds)):
-            local = ModularAddLinearSMTModel(self.width)
+            local = ModularAddXorLinearSMTModel(self.width)
             projected = {
                 name: assignment[f"round_{r}_{name}"] for name in local.smt_formula().variables
             }

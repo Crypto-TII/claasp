@@ -30,7 +30,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True, slots=True)
-class SubgroupRoundTransition:
+class CircleLinearRoundTransition:
     """One round's masks, magnitude and retained symbolic key dependence.
 
     ``sbox_sign * affine.coefficient(key)`` is the signed round contribution.
@@ -40,7 +40,7 @@ class SubgroupRoundTransition:
     EXAMPLES::
 
         >>> from claasp.primitives import Craft
-        >>> trail = Craft(number_of_rounds=8).circle_linear_model().trail(0x01190000)
+        >>> trail = Craft(number_of_rounds=8).circle_linear_trail_model().trail(0x01190000)
         >>> step = trail.round_transitions[0]
         >>> step.round_number, step.input_mask == trail.input_mask
         (0, True)
@@ -57,7 +57,7 @@ class SubgroupRoundTransition:
 
 
 @dataclass(frozen=True, slots=True)
-class SubgroupTrail:
+class CircleLinearTrail:
     """A canonical subgroup trail, with exact local survival conditions.
 
     Codes have cell-0 in bit 0, q in the low half and s in the high half,
@@ -67,7 +67,7 @@ class SubgroupTrail:
     EXAMPLES::
 
         >>> from claasp.primitives import Craft
-        >>> trail = Craft(number_of_rounds=8).circle_linear_model().trail(0x01190000)
+        >>> trail = Craft(number_of_rounds=8).circle_linear_trail_model().trail(0x01190000)
         >>> trail.cost, trail.input_code, trail.conditions.key_count == 2**120
         (8, 1918500864, True)
         >>> trail.contribution(0) in (Fraction(1, 256), Fraction(-1, 256))
@@ -82,7 +82,7 @@ class SubgroupTrail:
     conditions: AffineKeyConditions
     _affine_steps: tuple = field(repr=False)
     _sbox_sign: int = field(repr=False)
-    round_transitions: tuple[SubgroupRoundTransition, ...] = ()
+    round_transitions: tuple[CircleLinearRoundTransition, ...] = ()
     state_width: int = 0
 
     def contribution(self, key: int) -> Fraction:
@@ -91,7 +91,7 @@ class SubgroupTrail:
         EXAMPLES::
 
             >>> from claasp.primitives import Craft
-            >>> Craft(number_of_rounds=8).circle_linear_model().trail(0x01190000).contribution(0) != 0
+            >>> Craft(number_of_rounds=8).circle_linear_trail_model().trail(0x01190000).contribution(0) != 0
             True
         """
         if not self.conditions.contains(key):
@@ -108,7 +108,7 @@ class SubgroupTrail:
 
             >>> from io import StringIO
             >>> from claasp.primitives import Craft
-            >>> result = Craft(number_of_rounds=8).circle_linear_model().search().representative
+            >>> result = Craft(number_of_rounds=8).circle_linear_trail_model().search().representative
             >>> output = StringIO()
             >>> result.to_terminal(file=output)
             >>> "trail contribution" in output.getvalue()
@@ -130,7 +130,7 @@ class SubgroupTrail:
         EXAMPLES::
 
             >>> from claasp.primitives import Craft
-            >>> result = Craft(number_of_rounds=8).circle_linear_model().search().representative
+            >>> result = Craft(number_of_rounds=8).circle_linear_trail_model().search().representative
             >>> callable(result.plot)
             True
         """
@@ -140,13 +140,13 @@ class SubgroupTrail:
 
 
 @dataclass(frozen=True, slots=True)
-class SubgroupSearchResult:
+class CircleLinearTrailSearchResult:
     """Certified optimum only inside a validated four-element free subgroup.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Craft
-        >>> result = Craft(number_of_rounds=8).circle_linear_model().search()
+        >>> result = Craft(number_of_rounds=8).circle_linear_trail_model().search()
         >>> result.cost, result.optimal_mask_count, result.complete
         (8, 24, True)
         >>> result.scope
@@ -155,9 +155,10 @@ class SubgroupSearchResult:
 
     cost: int
     optimal_mask_count: int
-    representative: SubgroupTrail
+    representative: CircleLinearTrail
     complete: bool = True
     scope: str = "four-element perfect subgroup"
+    backend: str = "perfect_subgroup_spn"
 
     def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
         """Print retained circle-linear evidence without repeating the analysis.
@@ -166,7 +167,7 @@ class SubgroupSearchResult:
 
             >>> from io import StringIO
             >>> from claasp.primitives import Craft
-            >>> result = Craft(number_of_rounds=8).circle_linear_model().search()
+            >>> result = Craft(number_of_rounds=8).circle_linear_trail_model().search()
             >>> output = StringIO()
             >>> result.to_terminal(file=output)
             >>> "trail contribution" in output.getvalue()
@@ -188,7 +189,7 @@ class SubgroupSearchResult:
         EXAMPLES::
 
             >>> from claasp.primitives import Craft
-            >>> result = Craft(number_of_rounds=8).circle_linear_model().search()
+            >>> result = Craft(number_of_rounds=8).circle_linear_trail_model().search()
             >>> callable(result.plot)
             True
         """
@@ -197,8 +198,14 @@ class SubgroupSearchResult:
         return _plot_circle_trail(self, show=show, save_to=save_to)
 
 
-class FreeSubgroupSPN:
-    """A supplied binary SPN with a verified free flat/curved type flip.
+class CircleLinearTrailModel:
+    """Circle-linear trail search with an explicitly restricted SPN backend.
+
+    The current ``perfect_subgroup_spn`` backend searches only the validated
+    four-element perfect subgroup. The public name identifies the analysis;
+    ``backend`` and the result's ``scope`` identify this implementation's
+    restrictions. "Free" means that no additional affine-propagation branch
+    remains within the selected subgroup, as checked by the model.
 
     Each round applies diffusion, an optional affine key/constant addition,
     ``permutation`` (output[i]=input[permutation[i]]), then the S-box. Supply
@@ -208,12 +215,14 @@ class FreeSubgroupSPN:
     EXAMPLES::
 
         >>> from claasp.primitives import Craft
-        >>> craft = Craft(number_of_rounds=14).circle_linear_model()
+        >>> craft = Craft(number_of_rounds=14).circle_linear_trail_model()
         >>> craft.gamma, craft.eta
         (9, 7)
         >>> craft.trail(0x00720000).cost
         22
     """
+
+    backend = "perfect_subgroup_spn"
 
     def __init__(
         self,
@@ -299,7 +308,7 @@ class FreeSubgroupSPN:
         EXAMPLES::
 
             >>> from claasp.primitives import Craft
-            >>> len(Craft(number_of_rounds=1).circle_linear_model().binary_rows())
+            >>> len(Craft(number_of_rounds=1).circle_linear_trail_model().binary_rows())
             64
         """
         w = self.bibrace.width
@@ -328,13 +337,13 @@ class FreeSubgroupSPN:
             )
         return result
 
-    def trail(self, output_code: int) -> SubgroupTrail:
+    def trail(self, output_code: int) -> CircleLinearTrail:
         """Verify a canonical trail and derive its combined affine key class.
 
         EXAMPLES::
 
             >>> from claasp.primitives import Craft
-            >>> t = Craft(number_of_rounds=12).circle_linear_model().trail(0x10050000)
+            >>> t = Craft(number_of_rounds=12).circle_linear_trail_model().trail(0x10050000)
             >>> hex(t.input_code), t.cost, t.conditions.rank
             ('0x2b8e0000', 18, 12)
         """
@@ -372,7 +381,7 @@ class FreeSubgroupSPN:
             transitions.append(transition)
             sign *= round_sign
             round_transitions.append(
-                SubgroupRoundTransition(
+                CircleLinearRoundTransition(
                     round_number,
                     self._labels(q, s),
                     round_output,
@@ -381,7 +390,7 @@ class FreeSubgroupSPN:
                     transition,
                 )
             )
-        return SubgroupTrail(
+        return CircleLinearTrail(
             q | (s << self.cells),
             output_code,
             self._labels(q, s),
@@ -429,7 +438,7 @@ class FreeSubgroupSPN:
             for _, outputs, table in self._column_costs
         )
 
-    def search(self, *, maximum_factor_states: int = 1 << 16) -> SubgroupSearchResult:
+    def search(self, *, maximum_factor_states: int = 1 << 16) -> CircleLinearTrailSearchResult:
         """Certify the subgroup optimum by two independent n-cell searches.
 
         The spatial map commutes with sigma, so alternating round costs
@@ -441,7 +450,7 @@ class FreeSubgroupSPN:
         EXAMPLES::
 
             >>> from claasp.primitives import Craft
-            >>> r = Craft(number_of_rounds=8).circle_linear_model().search()
+            >>> r = Craft(number_of_rounds=8).circle_linear_trail_model().search()
             >>> r.cost, r.optimal_mask_count, hex(r.representative.output_code)
             (8, 24, '0x1190000')
         """
@@ -484,7 +493,12 @@ class FreeSubgroupSPN:
         representative = min(
             valid, key=lambda trail: (-trail.conditions.key_count, trail.output_code)
         )
-        return SubgroupSearchResult(minimum, len(valid), representative)
+        return CircleLinearTrailSearchResult(minimum, len(valid), representative)
 
 
-__all__ = ["FreeSubgroupSPN", "SubgroupRoundTransition", "SubgroupSearchResult", "SubgroupTrail"]
+__all__ = [
+    "CircleLinearTrailModel",
+    "CircleLinearRoundTransition",
+    "CircleLinearTrailSearchResult",
+    "CircleLinearTrail",
+]

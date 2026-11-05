@@ -1,11 +1,11 @@
-Trail search
-============
+Trail search and verification
+=============================
 
-Search for characteristics and distinguishers, and distinguish a feasible result
-from a proven optimum.
+Search for characteristics and distinguishers, understand what their weights
+mean, and check the evidence returned by an analysis.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    trail_search_introduction
    differential_trail_search

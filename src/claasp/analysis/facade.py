@@ -90,7 +90,7 @@ class Analysis:
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive
 
-    def circle_linear_model(self, *, bibrace, input_name="plaintext", fixed_inputs=None):
+    def circle_linear_trail_model(self, *, bibrace, input_name="plaintext", fixed_inputs=None):
         """Derive a compatible circle subgroup search model from this graph.
 
         The shared graph propagation runner derives affine state/key maps and
@@ -101,14 +101,14 @@ class Analysis:
 
             >>> from claasp.primitives import Craft
             >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
-            >>> model = Craft(number_of_rounds=8).analysis.circle_linear_model(
+            >>> model = Craft(number_of_rounds=8).analysis.circle_linear_trail_model(
             ...     bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": 0})
             >>> model.trail(0x01190000).cost
             8
         """
-        from claasp.analysis._circle_graph import subgroup_model_from_graph
+        from claasp.analysis._circle_graph import circle_linear_trail_model_from_graph
 
-        return subgroup_model_from_graph(
+        return circle_linear_trail_model_from_graph(
             self.primitive, bibrace, input_name=input_name, fixed_inputs=fixed_inputs
         )
 
@@ -595,10 +595,10 @@ class Analysis:
             'heuristic'
         """
         from claasp.representations.execution.continuous import (
-            ContinuousDifferentialExecutionDriver,
+            ContinuousXorDifferentialExecutionDriver,
         )
 
-        return ContinuousDifferentialExecutionDriver().evaluate(
+        return ContinuousXorDifferentialExecutionDriver().evaluate(
             self.primitive, inputs, tolerance=tolerance
         )
 
@@ -673,7 +673,7 @@ class Analysis:
             limit=limit,
         )
 
-    def find_optimal_differential_linear_trail(
+    def find_optimal_xor_differential_linear_trail(
         self,
         *,
         prefix_rounds=None,
@@ -691,13 +691,13 @@ class Analysis:
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+            >>> result = ToySpeck(3).analysis.find_optimal_xor_differential_linear_trail().require_complete()  # doctest: +SKIP
             >>> result.partition, result.score  # doctest: +SKIP
             ((1, 1, 1), Fraction(1, 1))
         """
-        from claasp.analysis.composed_search import find_optimal_differential_linear_trail
+        from claasp.analysis.composed_search import find_optimal_xor_differential_linear_trail
 
-        return find_optimal_differential_linear_trail(
+        return find_optimal_xor_differential_linear_trail(
             self.primitive,
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,
@@ -1064,7 +1064,7 @@ class Analysis:
         """
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
-        from claasp.representations.constraints.smt import WordDifferentialSMTModel
+        from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
 
         if fixed_input_differences is None:
             fixed_input_differences = (
@@ -1077,7 +1077,7 @@ class Analysis:
             nonzero_input,
             fixed_input_differences,
         )
-        model = WordDifferentialSMTModel(
+        model = WordXorDifferentialSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
@@ -1125,7 +1125,7 @@ class Analysis:
         """
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
-        from claasp.representations.constraints.smt import WordLinearSMTModel
+        from claasp.representations.constraints.smt import WordXorLinearSMTModel
 
         policy = resolve_input_policy(
             self.primitive,
@@ -1139,7 +1139,7 @@ class Analysis:
                 if "key" in self.primitive.graph.input_arrays and nonzero_input != "key"
                 else {}
             )
-        model = WordLinearSMTModel(
+        model = WordXorLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
             minimum_weight=minimum_weight,

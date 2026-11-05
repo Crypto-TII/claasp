@@ -10,7 +10,6 @@ from claasp.drivers.solvers import (
 )
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
-    DifferentialToTruncatedSATModel,
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
     ModularAddSemiDeterministicTruncatedSATModel,
@@ -19,9 +18,10 @@ from claasp.representations.constraints.sat import (
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
     SpeckSemiDeterministicTruncatedSATModel,
-    TruncatedToLinearSATModel,
+    TruncatedToXorLinearSATModel,
     WordDeterministicTruncatedNativeXorSATModel,
     WordDeterministicTruncatedSATModel,
+    XorDifferentialToTruncatedSATModel,
     find_word_impossible_sat,
 )
 from claasp.semantics.cryptanalysis import XorDifference, XorMask
@@ -32,7 +32,7 @@ pytestmark = pytest.mark.external
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
 def test_differential_linear_boundary_connectors_preserve_legacy_relations(solver_type):
-    upper = DifferentialToTruncatedSATModel(
+    upper = XorDifferentialToTruncatedSATModel(
         1, difference=XorDifference(1, 1), truncated_pattern="1"
     )
     result = solver_type(timeout_seconds=10).solve(upper.cnf_formula())
@@ -41,7 +41,7 @@ def test_differential_linear_boundary_connectors_preserve_legacy_relations(solve
     assert difference == XorDifference(1, 1)
     assert str(middle) == "1"
 
-    rejected_upper = DifferentialToTruncatedSATModel(
+    rejected_upper = XorDifferentialToTruncatedSATModel(
         1, difference=XorDifference(1, 1), truncated_pattern="?"
     )
     assert (
@@ -49,14 +49,14 @@ def test_differential_linear_boundary_connectors_preserve_legacy_relations(solve
         is SatStatus.UNSATISFIABLE
     )
 
-    lower = TruncatedToLinearSATModel(1, truncated_pattern="?", mask=XorMask(0, 1))
+    lower = TruncatedToXorLinearSATModel(1, truncated_pattern="?", mask=XorMask(0, 1))
     result = solver_type(timeout_seconds=10).solve(lower.cnf_formula())
     assert result.status is SatStatus.SATISFIABLE
     middle, mask = lower.decode_boundary(result.assignment)
     assert str(middle) == "?"
     assert mask == XorMask(0, 1)
 
-    rejected_lower = TruncatedToLinearSATModel(1, truncated_pattern="?", mask=XorMask(1, 1))
+    rejected_lower = TruncatedToXorLinearSATModel(1, truncated_pattern="?", mask=XorMask(1, 1))
     assert (
         solver_type(timeout_seconds=10).solve(rejected_lower.cnf_formula()).status
         is SatStatus.UNSATISFIABLE

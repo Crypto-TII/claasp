@@ -74,7 +74,7 @@ class Craft(Primitive):
             self._builder.set_round_output(state)
         self._builder.set_output(state)
 
-    def circle_linear_model(self, *, bibrace=None, tweak: int = 0):
+    def circle_linear_trail_model(self, *, bibrace=None, tweak: int = 0):
         """Build a generic free-subgroup SPN model with affine master-key rows.
 
         The special last round is deliberately rejected by this optimized
@@ -83,7 +83,7 @@ class Craft(Primitive):
 
         EXAMPLES::
 
-            >>> model = Craft(number_of_rounds=14).circle_linear_model()
+            >>> model = Craft(number_of_rounds=14).circle_linear_trail_model()
             >>> t = model.trail(0x00720000)
             >>> t.cost, t.conditions.key_count == 2**108
             (22, True)
@@ -92,7 +92,7 @@ class Craft(Primitive):
 
         if self.round_offset + self.number_of_rounds == 32:
             raise ValueError("the free-subgroup backend excludes CRAFT's special final round")
-        return self.analysis.circle_linear_model(
+        return self.analysis.circle_linear_trail_model(
             bibrace=BinaryBibrace.craft() if bibrace is None else bibrace,
             fixed_inputs={"tweak": tweak},
         )

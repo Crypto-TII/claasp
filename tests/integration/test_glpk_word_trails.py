@@ -7,16 +7,16 @@ from claasp.primitives import Speck, ToyAES, ToySpeck
 from claasp.representations.constraints.milp import (
     SpeckImpossibleMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
-    WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
-    WordDifferentialMILPModel,
+    WordDeterministicXorDifferentialLinearMILPModel,
     WordImpossibleMILPModel,
-    WordLinearMILPModel,
-    WordSemiDeterministicDifferentialLinearMILPModel,
+    WordSemiDeterministicXorDifferentialLinearMILPModel,
     WordwiseBranchNumberActiveSBoxesMILPModel,
     WordwiseDeterministicTruncatedMILPModel,
     WordwiseImpossibleBoundaryMILPModel,
     WordwiseImpossibleMILPModel,
+    WordXorDifferentialMILPModel,
+    WordXorLinearMILPModel,
 )
 from claasp.semantics.cryptanalysis import (
     WordwiseDifferenceKind,
@@ -65,13 +65,13 @@ def test_glpk_solves_complete_four_state_wordwise_graph():
 @pytest.mark.parametrize(
     "model",
     (
-        WordDifferentialMILPModel(
+        WordXorDifferentialMILPModel(
             ToySpeck(2),
             fixed_weight=1,
             fixed_input_differences={"key": 0},
             nonzero_input="plaintext",
         ),
-        WordLinearMILPModel(
+        WordXorLinearMILPModel(
             ToySpeck(3),
             maximum_weight=1,
             fixed_inputs={"key": 0},
@@ -166,7 +166,7 @@ def test_glpk_solves_and_independently_checks_semi_deterministic_truncated_trail
 
 
 def test_glpk_solves_and_independently_checks_differential_linear_trail():
-    model = WordDeterministicDifferentialLinearMILPModel(
+    model = WordDeterministicXorDifferentialLinearMILPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -180,7 +180,7 @@ def test_glpk_solves_and_independently_checks_differential_linear_trail():
 
 
 def test_glpk_solves_and_independently_checks_semi_differential_linear_trail():
-    model = WordSemiDeterministicDifferentialLinearMILPModel(
+    model = WordSemiDeterministicXorDifferentialLinearMILPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,

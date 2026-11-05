@@ -1,5 +1,5 @@
-Circle-linear trail search: introduction
-========================================
+Circle-linear trails: introduction
+==================================
 
 Find a strong trail through eight rounds of CRAFT using circle-linear bit
 checks: parity-like checks defined by a compatible alternative to XOR.
@@ -13,7 +13,7 @@ The search is exact within its supported set of checks and needs no solver.
    from claasp.primitives import Craft
 
    primitive = Craft(number_of_rounds=8)
-   result = primitive.circle_linear_model().search()
+   result = primitive.circle_linear_trail_model().search()
 
 Print the round masks and relative and cumulative contribution magnitudes:
 

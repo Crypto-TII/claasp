@@ -19,34 +19,34 @@ from claasp.representations.constraints.cp import (
     ModularAddBoomerangTrailCPModel,
     ModularAddDeterministicTruncatedCPModel,
     PresentActiveSBoxesCPModel,
-    PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
     PresentHybridImpossibleCPModel,
-    PresentLinearCPModel,
     PresentProbabilisticKeyScheduleCPModel,
+    PresentXorDifferentialCPModel,
+    PresentXorLinearCPModel,
     ProbabilisticTruncatedModularAddCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
     SBoxDifferenceCPModel,
     SimonImpossibleCPModel,
-    SpeckARXWindowDifferentialCPModel,
+    SpeckARXWindowXorDifferentialCPModel,
     SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
     SpeckContinuousMaskOptimizationCPModel,
-    SpeckDifferentialCPModel,
     SpeckImpossibleCPModel,
     SpeckProbabilisticTruncatedCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
     SpeckTruncatedCPModel,
-    WordDeterministicDifferentialLinearCPModel,
+    SpeckXorDifferentialCPModel,
     WordDeterministicTruncatedCPModel,
-    WordDifferentialCPModel,
+    WordDeterministicXorDifferentialLinearCPModel,
     WordImpossibleCPModel,
-    WordLinearCPModel,
-    WordSemiDeterministicDifferentialLinearCPModel,
+    WordSemiDeterministicXorDifferentialLinearCPModel,
     WordwiseDeterministicTruncatedCPModel,
     WordwiseDifferenceCPModel,
     WordwiseImpossibleCPModel,
+    WordXorDifferentialCPModel,
+    WordXorLinearCPModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -112,8 +112,8 @@ def test_minizinc_solves_and_decodes_complete_modadd_boomerang_composition():
         "fixed_input_differences": {"right": 0},
     }
     model = ModularAddBoomerangTrailCPModel(
-        WordDifferentialCPModel(graph("upper"), **options),
-        WordDifferentialCPModel(graph("lower"), **options),
+        WordXorDifferentialCPModel(graph("upper"), **options),
+        WordXorDifferentialCPModel(graph("lower"), **options),
         ModularAddBoomerangCPModel(4),
         lower_input="left",
     )
@@ -261,7 +261,7 @@ def test_minizinc_proves_present_two_round_active_sbox_optimum():
 
 
 def test_minizinc_solves_opt_in_speck_arx_window_search():
-    model = SpeckARXWindowDifferentialCPModel(
+    model = SpeckARXWindowXorDifferentialCPModel(
         PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45),
         window_sizes=(3, 3, 3),
     )
@@ -326,13 +326,13 @@ def test_minizinc_preserves_generic_deterministic_truncated_toy_speck_trail():
 @pytest.mark.parametrize(
     "model",
     (
-        WordDifferentialCPModel(
+        WordXorDifferentialCPModel(
             ToySpeck(2),
             fixed_weight=1,
             fixed_input_differences={"key": 0},
             nonzero_input="plaintext",
         ),
-        WordLinearCPModel(
+        WordXorLinearCPModel(
             ToySpeck(3),
             maximum_weight=1,
             fixed_inputs={"key": 0},
@@ -349,7 +349,7 @@ def test_minizinc_preserves_generic_weighted_word_trails(model):
 
 
 def test_minizinc_preserves_deterministic_differential_linear_composition():
-    model = WordDeterministicDifferentialLinearCPModel(
+    model = WordDeterministicXorDifferentialLinearCPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -363,7 +363,7 @@ def test_minizinc_preserves_deterministic_differential_linear_composition():
 
 
 def test_minizinc_preserves_semi_deterministic_differential_linear_composition():
-    model = WordSemiDeterministicDifferentialLinearCPModel(
+    model = WordSemiDeterministicXorDifferentialLinearCPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -504,7 +504,7 @@ def test_minizinc_reproduces_legacy_full_speck_missing_bits_result():
 def test_minizinc_proves_present_two_round_differential_optimum():
     primitive = Present(number_of_rounds=2)
     solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
-    below = PresentDifferentialCPModel(
+    below = PresentXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,
@@ -512,7 +512,7 @@ def test_minizinc_proves_present_two_round_differential_optimum():
             provenance=("PRESENT-2 legacy lower bound",),
         )
     )
-    optimum = PresentDifferentialCPModel(
+    optimum = PresentXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,
@@ -533,7 +533,7 @@ def test_minizinc_proves_present_two_round_differential_optimum():
 def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
     primitive = Present(number_of_rounds=3)
     solver = MiniZincSolver(solver=_test_solver(), timeout_seconds=60)
-    below = PresentLinearCPModel(
+    below = PresentXorLinearCPModel(
         PropagationProblem(
             primitive,
             XOR_LINEAR,
@@ -541,7 +541,7 @@ def test_minizinc_proves_present_three_round_linear_optimum_with_signs():
             provenance=("PRESENT-3 legacy linear lower bound",),
         )
     )
-    optimum = PresentLinearCPModel(
+    optimum = PresentXorLinearCPModel(
         PropagationProblem(
             primitive,
             XOR_LINEAR,
@@ -615,10 +615,10 @@ def test_minizinc_preserves_exact_present_boomerang_connectivity_entries():
 
 
 def test_minizinc_solves_and_decodes_present_sbox_boomerang_composition():
-    upper = PresentDifferentialCPModel(
+    upper = PresentXorDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
-    lower = PresentDifferentialCPModel(
+    lower = PresentXorDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
     component = next(
@@ -636,7 +636,7 @@ def test_minizinc_solves_and_decodes_present_sbox_boomerang_composition():
 def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
     primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=30)
-    below = SpeckDifferentialCPModel(
+    below = SpeckXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,
@@ -644,7 +644,7 @@ def test_minizinc_proves_legacy_speck_five_round_differential_optimum():
             provenance=("legacy Speck32/64-5 lower bound",),
         )
     )
-    optimum = SpeckDifferentialCPModel(
+    optimum = SpeckXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,
@@ -676,7 +676,7 @@ def test_minizinc_preserves_legacy_fixed_speck_three_round_differential(
 ):
     """sat_model_test.py dictionary-based differential fixture, zero key difference."""
     primitive = Speck(number_of_rounds=3)
-    model = SpeckDifferentialCPModel(
+    model = SpeckXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,
@@ -702,12 +702,12 @@ def test_minizinc_preserves_differential_boundary_comparison_sat_unsat():
     problem = PropagationProblem(primitive, XOR_DIFFERENTIAL, maximum_weight=45)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=10)
     for relation in ("equal", "not_equal"):
-        model = SpeckDifferentialCPModel(problem, boundary_relation=relation)
+        model = SpeckXorDifferentialCPModel(problem, boundary_relation=relation)
         result = solver.solve(model.cp_model())
         assert result.status is CPStatus.SATISFIED
         trail = model.decode_trail(result.assignment)
         assert (trail.input_pattern.value == trail.output_pattern.value) == (relation == "equal")
-    contradictory = SpeckDifferentialCPModel(
+    contradictory = SpeckXorDifferentialCPModel(
         problem,
         input_difference=1,
         output_difference=1,
@@ -722,9 +722,9 @@ def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
     Typed phase composition supersedes per-component method-name strings:
     first two data rounds exact, last data round deterministic truncated.
     """
-    from claasp.analysis import SpeckHybridDifferentialProblem
+    from claasp.analysis import SpeckHybridXorDifferentialProblem
 
-    problem = SpeckHybridDifferentialProblem(
+    problem = SpeckHybridXorDifferentialProblem(
         Speck(number_of_rounds=3),
         exact_rounds=2,
         input_difference=0x00400000,
@@ -742,7 +742,7 @@ def test_minizinc_preserves_legacy_mixed_exact_truncated_speck_feasibility():
 def test_minizinc_preserves_legacy_speck_five_round_bounded_trail_count():
     primitive = Speck(number_of_rounds=5)
     solver = MiniZincSolver(solver=_test_solver(require_chuffed=True), timeout_seconds=120)
-    representation = SpeckDifferentialCPModel(
+    representation = SpeckXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,

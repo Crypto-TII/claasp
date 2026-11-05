@@ -29,7 +29,7 @@ def test_endpoint_terminal_reports_exactness_and_signed_correlation():
 
 
 def test_search_and_selected_trail_report_distinguish_scope_without_research(monkeypatch):
-    model = Craft(number_of_rounds=8).circle_linear_model()
+    model = Craft(number_of_rounds=8).circle_linear_trail_model()
     result = model.search()
     monkeypatch.setattr(type(model), "search", lambda *a, **k: pytest.fail("search repeated"))
     for value in (result, result.representative):

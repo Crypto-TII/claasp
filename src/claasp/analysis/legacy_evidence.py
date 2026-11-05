@@ -4,13 +4,13 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class LegacyBoundedDifferentialCluster:
+class LegacyBoundedXorDifferentialCluster:
     """A preserved legacy solver regression, not a newly re-proved result.
 
     EXAMPLES::
 
         >>> from dataclasses import fields
-        >>> (LegacyBoundedDifferentialCluster.__dataclass_params__.frozen, tuple(field.name for field in fields(LegacyBoundedDifferentialCluster)))
+        >>> (LegacyBoundedXorDifferentialCluster.__dataclass_params__.frozen, tuple(field.name for field in fields(LegacyBoundedXorDifferentialCluster)))
         (True, ('primitive_family', 'rounds', 'input_difference', 'output_difference', 'maximum_weight', 'trail_count', 'aggregate_weight', 'provenance', 'claim_kind'))
     """
 
@@ -33,7 +33,7 @@ class LegacyBoundedDifferentialCluster:
             raise ValueError("unreproved evidence cannot claim proof status")
 
 
-def ublock_three_round_legacy_cluster() -> LegacyBoundedDifferentialCluster:
+def ublock_three_round_legacy_cluster() -> LegacyBoundedXorDifferentialCluster:
     """Return the fixed uBlock-128 KISSAT cluster without upgrading its claim.
 
     EXAMPLES::
@@ -44,7 +44,7 @@ def ublock_three_round_legacy_cluster() -> LegacyBoundedDifferentialCluster:
         (8, 25.7146, 'legacy-solver-regression')
     """
 
-    return LegacyBoundedDifferentialCluster(
+    return LegacyBoundedXorDifferentialCluster(
         primitive_family="uBlock",
         rounds=3,
         input_difference=0x04400000000000000044400000000000,
