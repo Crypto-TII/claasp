@@ -7,9 +7,10 @@ from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
 def run_example():
     """Search every nonzero endpoint-mask pair of the four-bit S-box."""
+    operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
     primitive = BitVectorSBox(4, CRAFT_SBOX)
     return primitive.analysis.circle_linear(
-        input_name="input", bibrace=BinaryBibrace.craft()
+        input_name="input", bibrace=operation
     ).best_approximation()
 
 

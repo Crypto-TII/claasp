@@ -80,6 +80,8 @@ class Craft(Primitive):
         The special last round is deliberately rejected by this optimized
         backend; ordinary endpoint correlation measurements still support it.
         A nonzero tweak changes affine conditions without being averaged out.
+        Omitting ``bibrace`` selects the four-bit operation with form rows
+        ``(8, 0, 8, 5)`` and correction output ``5``.
 
         EXAMPLES::
 
@@ -93,7 +95,7 @@ class Craft(Primitive):
         if self.round_offset + self.number_of_rounds == 32:
             raise ValueError("the free-subgroup backend excludes CRAFT's special final round")
         return self.analysis.circle_linear_trail_model(
-            bibrace=BinaryBibrace.craft() if bibrace is None else bibrace,
+            bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)) if bibrace is None else bibrace,
             fixed_inputs={"tweak": tweak},
         )
 

@@ -39,7 +39,7 @@ def test_random_quadratic_gauss_sums_include_sign_and_linear_radical():
 
 def test_affine_grouped_layers_match_full_truth_tables_and_exact_key_classes():
     rng = Random(90)
-    brace = BinaryBibrace.craft()
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
     basis = CircleBasis((brace,))
     for _ in range(4):
         rows = tuple(rng.randrange(16) for _ in range(4))

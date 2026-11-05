@@ -44,7 +44,7 @@ def _spn(rounds=3, *, offset=0, constant=1, permutation=(1, 0), diffuse=True):
 
 def _model(primitive, tweak=0x12):
     return primitive.analysis.circle_linear_trail_model(
-        bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": tweak}
+        bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), fixed_inputs={"tweak": tweak}
     )
 
 
@@ -104,9 +104,11 @@ def test_craft_convenience_method_delegates_to_graph_extraction(monkeypatch):
 
 def test_graph_adapter_checks_fixed_inputs_and_non_affine_key_schedules():
     with pytest.raises(ValueError, match="fixed_inputs"):
-        _spn().analysis.circle_linear_trail_model(bibrace=BinaryBibrace.craft())
+        _spn().analysis.circle_linear_trail_model(bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)))
     with pytest.raises(ValueError, match="public"):
-        _spn().analysis.circle_linear_trail_model(bibrace=BinaryBibrace.craft(), input_name="key")
+        _spn().analysis.circle_linear_trail_model(
+            bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), input_name="key"
+        )
     primitive = _spn(1)
     # An S-box in the key schedule is not an affine master-key map.
     b = primitive._builder
@@ -131,7 +133,9 @@ def test_graph_adapter_accepts_parallel_bit_sboxes_and_structural_cell_conversio
     out = b.join(*outputs)
     b.set_round_output(out)
     b.set_output(out)
-    model = primitive.analysis.circle_linear_trail_model(bibrace=BinaryBibrace.craft())
+    model = primitive.analysis.circle_linear_trail_model(
+        bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    )
     whole = CircleLookupLayer(
         model.basis, model.basis, tuple(_evaluate(primitive, plaintext=x) for x in range(256))
     )

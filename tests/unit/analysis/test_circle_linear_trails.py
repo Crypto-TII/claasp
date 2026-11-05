@@ -50,7 +50,7 @@ def test_reference_18_round_masks_and_wrong_key_exclusion():
 
 
 def test_affine_column_all_type_patterns_and_key_quotient_classes():
-    brace = BinaryBibrace.craft()
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
     basis = CircleBasis((brace,) * 4)
     cell_rows = (13, 10, 4, 8)
     binary = tuple(
@@ -97,19 +97,26 @@ def test_affine_column_all_type_patterns_and_key_quotient_classes():
 
 def test_other_spn_matches_full_unsplit_enumeration_and_handles_zero_cost_kernel():
     for rounds in (1, 2, 3, 4):
-        model = CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2), (1, 0), rounds)
+        model = CircleLinearTrailModel(
+            BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), CRAFT_SBOX, (3, 2), (1, 0), rounds
+        )
         all_trails = [model.trail(code) for code in range(1, 16)]
         best = min(t.cost for t in all_trails)
         result = model.search()
         assert result.cost == best
         assert result.optimal_mask_count == sum(t.cost == best for t in all_trails)
     assert (
-        CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (1,), (0,), 1).search().cost == 0
+        CircleLinearTrailModel(BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), CRAFT_SBOX, (1,), (0,), 1)
+        .search()
+        .cost
+        == 0
     )
 
 
 def test_no_craft_assumption_about_involutory_cell_permutation():
-    model = CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2, 4), (1, 2, 0), 3)
+    model = CircleLinearTrailModel(
+        BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), CRAFT_SBOX, (3, 2, 4), (1, 2, 0), 3
+    )
     trails = [model.trail(code) for code in range(1, 64)]
     result = model.search()
     assert result.cost == min(t.cost for t in trails)
@@ -119,7 +126,9 @@ def test_no_craft_assumption_about_involutory_cell_permutation():
 def test_generic_round_products_against_independent_complete_truth_tables():
     from claasp.semantics.cryptanalysis.circle_linear import CircleLookupLayer
 
-    model = CircleLinearTrailModel(BinaryBibrace.craft(), CRAFT_SBOX, (3, 2), (1, 0), 3)
+    model = CircleLinearTrailModel(
+        BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), CRAFT_SBOX, (3, 2), (1, 0), 3
+    )
 
     def one_round(x):
         left, right = x >> 4, x & 15
@@ -214,7 +223,9 @@ def test_reference_admissible_tweak_counts_by_existential_key_elimination(
 
 def test_missing_perfect_subgroup_and_search_limits_are_explicit():
     with pytest.raises(ValueError, match="free type flip"):
-        CircleLinearTrailModel(BinaryBibrace.craft(), tuple(range(16)), (1,), (0,), 1)
+        CircleLinearTrailModel(
+            BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), tuple(range(16)), (1,), (0,), 1
+        )
     with pytest.raises(ValueError, match="maximum_factor_states"):
         Craft(number_of_rounds=8).circle_linear_trail_model().search(maximum_factor_states=100)
     with pytest.raises(ValueError, match="special final round"):
@@ -222,7 +233,7 @@ def test_missing_perfect_subgroup_and_search_limits_are_explicit():
 
 
 def test_type_flip_alone_is_not_enough_for_complete_deterministic_search():
-    brace = BinaryBibrace.craft()
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
 
     def conjugated(x):
         a, b, c, d = ((x >> i) & 1 for i in range(4))

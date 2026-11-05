@@ -252,7 +252,7 @@ class CircleAffineLayer:
     EXAMPLES::
 
         >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
-        >>> basis = CircleBasis((BinaryBibrace.craft(),))
+        >>> basis = CircleBasis((BinaryBibrace(4, ((8, 0, 8, 5),), (5,)),))
         >>> layer = CircleAffineLayer(basis, basis, (1, 2, 4, 8), key_width=4, key_rows=(1, 2, 4, 8))
         >>> t = layer.transition(1, 1)
         >>> t.conditions.key_count, t.coefficient(0), t.coefficient(1)

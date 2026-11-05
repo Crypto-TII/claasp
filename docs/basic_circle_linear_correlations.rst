@@ -3,7 +3,7 @@ Circle-linear correlation evaluation
 
 Which input/output checks have the strongest relationship across a small
 S-box? Search its complete circle-linear approximation table, using the
-CRAFT/Midori S-box and ``BinaryBibrace.craft()``. The concrete four-bit
+CRAFT/Midori S-box and an explicitly constructed operation. The four-bit
 addition is defined in :doc:`basic_circle_linear`; the advanced guide shows
 how to select and compare other operations:
 
@@ -16,9 +16,10 @@ how to select and compare other operations:
    from claasp.primitives.block_ciphers.craft import CRAFT_SBOX
    from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
+   operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
    primitive = BitVectorSBox(4, CRAFT_SBOX)
    result = primitive.analysis.circle_linear(
-       input_name="input", bibrace=BinaryBibrace.craft()
+       input_name="input", bibrace=operation
    ).best_approximation()
 
 Print the selected mask labels and exact signed correlation:

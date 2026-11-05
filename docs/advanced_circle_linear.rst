@@ -89,7 +89,7 @@ can produce outputs spanning more than one independent direction
 .. doctest::
 
    >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
-   >>> brace = BinaryBibrace.craft()
+   >>> brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
    >>> brace.annihilator_basis
    (2, 5)
    >>> brace.forms, brace.outputs
@@ -110,8 +110,8 @@ independent control.
 Select a different operation
 -----------------------------
 
-Use ``BinaryBibrace(width)`` for ordinary XOR, select the CRAFT preset, or
-supply validated bilinear forms and correction outputs. For example, the
+Use ``BinaryBibrace(width)`` for ordinary XOR, or supply validated bilinear
+forms and correction outputs, as in the introductory example. For example, the
 following custom four-bit addition is
 :math:`x\circ y=x\oplus y\oplus(x_0y_1\oplus x_1y_0)(0100)_2`:
 
@@ -231,7 +231,7 @@ Retain rejection reasons so that the accepted search space stays explicit:
    8
    >>> selected_trail_result.representative.conditions.key_count == 2**120
    True
-   >>> selected_trail_operation == BinaryBibrace.craft()
+   >>> selected_trail_operation == BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
    True
 
 Both accepted operations have weight 8 and a satisfying key class of size
@@ -465,7 +465,7 @@ its graph instead of supplying a second description of its rounds:
    >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
    >>> primitive = Craft(number_of_rounds=8)
    >>> model = primitive.analysis.circle_linear_trail_model(
-   ...     bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": 0})
+   ...     bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), fixed_inputs={"tweak": 0})
    >>> model.trail(0x01190000).cost
    8
 

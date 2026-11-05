@@ -15,8 +15,9 @@ for the trail, and needs no solver.
    from claasp.primitives import Craft
    from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
+   operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
    primitive = Craft(number_of_rounds=8)
-   result = primitive.circle_linear_trail_model(bibrace=BinaryBibrace.craft()).search()
+   result = primitive.circle_linear_trail_model(bibrace=operation).search()
 
 The explicit ``bibrace`` argument selects the displayed operation. It is also
 the default of CRAFT's convenience method. The advanced guide shows how to

@@ -38,14 +38,16 @@ def test_full_primitive_correlation_and_endpoint_optimization_match_direct_oracl
 def test_arithmetic_primitive_uses_fixed_operand_instead_of_key_average():
     primitive = ModularAdd(word_bit_size=4)
     names = tuple(primitive.graph.input_arrays)
-    analysis = primitive.analysis.circle_linear(input_name=names[0], bibrace=BinaryBibrace.craft())
+    analysis = primitive.analysis.circle_linear(
+        input_name=names[0], bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    )
     for fixed in (0, 1, 7):
         expected = Fraction(
             sum(
                 (-1)
                 ** (
-                    BinaryBibrace.craft().character(9, x)
-                    ^ BinaryBibrace.craft().character(9, (x + fixed) & 15)
+                    BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).character(9, x)
+                    ^ BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).character(9, (x + fixed) & 15)
                 )
                 for x in range(16)
             ),
@@ -61,13 +63,15 @@ def test_binary_field_power_and_fixed_variable_rotation_are_measurable():
     from claasp.unit_types import BinaryExtensionField
 
     power = Power(exponent=7, unit_type=BinaryExtensionField(4, 0x13))
-    analysis = power.analysis.circle_linear(input_name="input", bibrace=BinaryBibrace.craft())
+    analysis = power.analysis.circle_linear(
+        input_name="input", bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    )
     direct = Fraction(
         sum(
             (-1)
             ** (
-                BinaryBibrace.craft().character(9, x)
-                ^ BinaryBibrace.craft().character(7, power.evaluate(x))
+                BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).character(9, x)
+                ^ BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).character(7, power.evaluate(x))
             )
             for x in range(16)
         ),
@@ -83,7 +87,9 @@ def test_actual_circle_basis_not_ordinary_xor_masks():
     from claasp.primitives.block_ciphers.craft import CRAFT_SBOX
 
     p = BitVectorSBox(4, CRAFT_SBOX)
-    circle = p.analysis.circle_linear(input_name="input", bibrace=BinaryBibrace.craft())
+    circle = p.analysis.circle_linear(
+        input_name="input", bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    )
     ordinary = p.analysis.circle_linear(input_name="input")
     assert circle.correlation(9, 9) == 1
     assert ordinary.correlation(9, 9) != 1
@@ -107,7 +113,7 @@ def test_large_craft_domain_is_rejected_before_any_evaluation(monkeypatch):
     monkeypatch.setattr(
         p, "evaluate", lambda *a, **k: pytest.fail("budget must be checked before evaluation")
     )
-    analysis = p.analysis.circle_linear(bibrace=BinaryBibrace.craft())
+    analysis = p.analysis.circle_linear(bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)))
     for call in (
         lambda: analysis.correlation(1, 1),
         lambda: analysis.lookup_layer(),

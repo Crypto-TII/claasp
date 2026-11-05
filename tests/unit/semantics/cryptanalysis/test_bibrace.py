@@ -14,7 +14,7 @@ def _parity(x):
 
 
 def test_configured_operation_characters_and_orthogonality():
-    brace = BinaryBibrace.craft()
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
     for x, y in product(range(16), repeat=2):
         psi = (((x ^ (x >> 2)) & 1) * (y >> 3)) ^ ((x >> 3) * ((y ^ (y >> 2)) & 1))
         assert brace.circle(x, y) == x ^ y ^ (5 if psi else 0)
@@ -34,7 +34,7 @@ def test_configured_operation_characters_and_orthogonality():
 
 
 def test_configured_sbox_walsh_table_against_direct_character_sum():
-    brace = BinaryBibrace.craft()
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
     walsh = brace.walsh_table(CRAFT_SBOX)
     direct = tuple(
         tuple(
@@ -69,9 +69,11 @@ def test_higher_rank_and_heterogeneous_parallel_layout():
     for x, y in product(range(64), repeat=2):
         assert brace.theta(x ^ y) == brace.circle(brace.theta(x), brace.theta(y))
         assert brace.theta(brace.theta(x)) == x
-    basis = CircleBasis((BinaryBibrace.craft(), brace))
+    basis = CircleBasis((BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), brace))
     for x in range(1024):
-        assert basis.theta(x) == (BinaryBibrace.craft().theta(x >> 6) << 6) | brace.theta(x & 63)
+        assert basis.theta(x) == (
+            BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).theta(x >> 6) << 6
+        ) | brace.theta(x & 63)
 
 
 def test_nonpermutation_keeps_declared_output_width():
@@ -100,7 +102,7 @@ def test_invalid_structures_are_rejected(make):
 
 
 def test_bad_labels_domains_and_table_budget():
-    brace = BinaryBibrace.craft()
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
     with pytest.raises(ValueError, match="maximum_entries"):
         brace.walsh_table(CRAFT_SBOX, maximum_entries=255)
     for bad in (-1, 16, True):
@@ -126,3 +128,11 @@ def test_all_105_nontrivial_four_bit_rank_one_bibraces():
             assert sorted(brace.theta(x) for x in range(16)) == list(range(16))
             count += 1
     assert count == 105
+
+
+def test_generic_bibrace_has_no_primitive_specific_factory():
+    assert not hasattr(BinaryBibrace, "craft")
+    operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    assert operation.circle(8, 1) == 12
+    assert operation.forms == ((8, 0, 8, 5),)
+    assert operation.outputs == (5,)

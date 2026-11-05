@@ -102,7 +102,7 @@ class Analysis:
             >>> from claasp.primitives import Craft
             >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
             >>> model = Craft(number_of_rounds=8).analysis.circle_linear_trail_model(
-            ...     bibrace=BinaryBibrace.craft(), fixed_inputs={"tweak": 0})
+            ...     bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), fixed_inputs={"tweak": 0})
             >>> model.trail(0x01190000).cost
             8
         """
@@ -119,7 +119,8 @@ class Analysis:
 
             >>> from claasp.primitives import Craft
             >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
-            >>> a = Craft(number_of_rounds=8).analysis.circle_linear(bibrace=BinaryBibrace.craft())
+            >>> operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+            >>> a = Craft(number_of_rounds=8).analysis.circle_linear(bibrace=operation)
             >>> a.input_basis.width
             64
         """

@@ -31,7 +31,7 @@ class BinaryBibrace:
 
     EXAMPLES::
 
-        >>> brace = BinaryBibrace.craft()
+        >>> brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
         >>> brace.circle(1, 8)
         12
         >>> brace.theta(9), brace.theta(brace.theta(9))
@@ -87,17 +87,6 @@ class BinaryBibrace:
             refinements.append(quad ^ frozenset(1 << i for i in bits(correction)))
         object.__setattr__(self, "_refinements", tuple(refinements))
 
-    @classmethod
-    def craft(cls) -> "BinaryBibrace":
-        """Return the configured four-bit CRAFT bibrace (b=5, Ann={0,2,5,7}).
-
-        EXAMPLES::
-
-            >>> BinaryBibrace.craft().forms
-            ((8, 0, 8, 5),)
-        """
-        return cls(4, ((8, 0, 8, 5),), (5,))
-
     @property
     def annihilator_basis(self) -> tuple[int, ...]:
         """Return an LSB-indexed binary basis of the common radical.
@@ -118,7 +107,7 @@ class BinaryBibrace:
 
         EXAMPLES::
 
-            >>> BinaryBibrace.craft().circle(8, 1)
+            >>> BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).circle(8, 1)
             12
         """
         integer(x, self.width, "x")
@@ -134,7 +123,7 @@ class BinaryBibrace:
 
         EXAMPLES::
 
-            >>> [BinaryBibrace.craft().theta(x) for x in (0, 1, 8, 9)]
+            >>> [BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).theta(x) for x in (0, 1, 8, 9)]
             [0, 1, 8, 12]
         """
         integer(value, self.width)
@@ -149,7 +138,7 @@ class BinaryBibrace:
 
         EXAMPLES::
 
-            >>> BinaryBibrace.craft().character(9, 9)
+            >>> BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).character(9, 9)
             1
         """
         integer(label, self.width, "label")
@@ -160,7 +149,7 @@ class BinaryBibrace:
 
         EXAMPLES::
 
-            >>> sorted(BinaryBibrace.craft().character_polynomial(1))
+            >>> sorted(BinaryBibrace(4, ((8, 0, 8, 5),), (5,)).character_polynomial(1))
             [1, 9, 12]
         """
         integer(label, self.width, "label")
@@ -181,7 +170,7 @@ class BinaryBibrace:
 
         EXAMPLES::
 
-            >>> brace = BinaryBibrace.craft()
+            >>> brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
             >>> identity = brace.walsh_table(tuple(range(16)))
             >>> identity[9][9], identity[9][7]
             (16, 0)
@@ -208,7 +197,7 @@ class CircleBasis:
 
     EXAMPLES::
 
-        >>> basis = CircleBasis((BinaryBibrace.craft(),) * 2)
+        >>> basis = CircleBasis((BinaryBibrace(4, ((8, 0, 8, 5),), (5,)),) * 2)
         >>> basis.width, basis.character(0x77, 0x12)
         (8, 0)
         >>> basis.theta(0x99)
@@ -249,7 +238,7 @@ class CircleBasis:
 
         EXAMPLES::
 
-            >>> CircleBasis((BinaryBibrace.craft(),)).theta(9)
+            >>> CircleBasis((BinaryBibrace(4, ((8, 0, 8, 5),), (5,)),)).theta(9)
             12
         """
         integer(value, self.width)
