@@ -1006,16 +1006,18 @@ class Analysis:
         Return None only after proved UNSAT. Solver errors and interruptions
         propagate; they never mean that no characteristic exists.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> trail = ToySpeck(2).analysis.find_one_xor_differential_trail(1)  # doctest: +SKIP
-            >>> trail is not None  # doctest: +SKIP
+            >>> trail = ToySpeck(2).analysis.find_one_xor_differential_trail(1)
+            >>> trail is not None
             True
             >>> from io import StringIO
             >>> output = StringIO()
-            >>> trail.to_terminal(file=output)  # doctest: +SKIP
-            >>> "Characteristic summary" in output.getvalue()  # doctest: +SKIP
+            >>> trail.to_terminal(file=output)
+            >>> "Characteristic summary" in output.getvalue()
             True
         """
         from claasp.analysis._trail_queries import first_characteristic
@@ -1044,11 +1046,13 @@ class Analysis:
         Non-integral weights use the same exact-probability interval checks
         as enumeration. None means proved UNSAT, not a solver interruption.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> trail = ToySpeck(2).analysis.find_one_xor_differential_trail_with_fixed_weight(1)  # doctest: +SKIP
-            >>> trail.total_weight  # doctest: +SKIP
+            >>> trail = ToySpeck(2).analysis.find_one_xor_differential_trail_with_fixed_weight(1)
+            >>> trail.total_weight
             1.0
         """
         from claasp.analysis._trail_queries import first_characteristic
@@ -1080,14 +1084,16 @@ class Analysis:
         A finite limit can leave undiscovered trails. Call require_complete()
         before treating the returned trails as an exhaustive collection.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> trails = ToySpeck(2).analysis.find_all_xor_differential_trails_with_weight_at_most(1, limit=100)  # doctest: +SKIP
+            >>> trails = ToySpeck(2).analysis.find_all_xor_differential_trails_with_weight_at_most(1, limit=100)
             >>> from io import StringIO
             >>> output = StringIO()
-            >>> trails.to_terminal(file=output)  # doctest: +SKIP
-            >>> "Enumeration summary" in output.getvalue()  # doctest: +SKIP
+            >>> trails.to_terminal(file=output)
+            >>> "Enumeration summary" in output.getvalue()
             True
         """
         if maximum_weight is None:
@@ -1117,16 +1123,18 @@ class Analysis:
         Return None only after proved UNSAT. Solver errors and interruptions
         propagate; they never mean that no characteristic exists.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> trail = ToySpeck(2).analysis.find_one_xor_linear_trail(1)  # doctest: +SKIP
-            >>> trail is not None  # doctest: +SKIP
+            >>> trail = ToySpeck(2).analysis.find_one_xor_linear_trail(1)
+            >>> trail is not None
             True
             >>> from io import StringIO
             >>> output = StringIO()
-            >>> trail.to_terminal(file=output)  # doctest: +SKIP
-            >>> "Characteristic summary" in output.getvalue()  # doctest: +SKIP
+            >>> trail.to_terminal(file=output)
+            >>> "Characteristic summary" in output.getvalue()
             True
         """
         from claasp.analysis._trail_queries import first_characteristic
@@ -1155,11 +1163,13 @@ class Analysis:
         Non-integral weights use the same exact-probability interval checks
         as enumeration. None means proved UNSAT, not a solver interruption.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> trail = ToySpeck(2).analysis.find_one_xor_linear_trail_with_fixed_weight(1)  # doctest: +SKIP
-            >>> trail.total_weight  # doctest: +SKIP
+            >>> trail = ToySpeck(2).analysis.find_one_xor_linear_trail_with_fixed_weight(1)
+            >>> trail.total_weight
             1.0
         """
         from claasp.analysis._trail_queries import first_characteristic
@@ -1191,14 +1201,16 @@ class Analysis:
         A finite limit can leave undiscovered trails. Call require_complete()
         before treating the returned trails as an exhaustive collection.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> trails = ToySpeck(2).analysis.find_all_xor_linear_trails_with_weight_at_most(1, limit=100)  # doctest: +SKIP
+            >>> trails = ToySpeck(2).analysis.find_all_xor_linear_trails_with_weight_at_most(1, limit=100)
             >>> from io import StringIO
             >>> output = StringIO()
-            >>> trails.to_terminal(file=output)  # doctest: +SKIP
-            >>> "Enumeration summary" in output.getvalue()  # doctest: +SKIP
+            >>> trails.to_terminal(file=output)
+            >>> "Enumeration summary" in output.getvalue()
             True
         """
         if maximum_weight is None:
@@ -1236,15 +1248,17 @@ class Analysis:
         equality at 1.42 would exclude it; the interval below includes it.
         Requires Z3; these examples run in the Z3 integration job.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import Heys
-            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_differential_trails(  # doctest: +SKIP
+            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_differential_trails(
             ...     minimum_weight=1.41, maximum_weight=1.42,
             ...     fixed_input_differences={"plaintext": 0x2000, "key": 0},
             ...     output_difference=0x5000,
             ... )
-            >>> result.require_complete().cluster_probability()  # doctest: +SKIP
+            >>> result.require_complete().cluster_probability()
             Fraction(3, 8)
         """
         from claasp.drivers.solvers import Z3Solver
@@ -1320,15 +1334,17 @@ class Analysis:
         interval. Check complete before claiming that every trail was found.
         Requires Z3; these examples run in the Z3 integration job.
 
+        The examples require the ``z3`` executable on PATH.
+
         EXAMPLES::
 
             >>> from claasp.primitives import Heys
-            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_linear_trails(  # doctest: +SKIP
+            >>> result = Heys(number_of_rounds=1).analysis.enumerate_xor_linear_trails(
             ...     minimum_weight=0.41, maximum_weight=0.42, limit=1,
             ... )
-            >>> len(result.trails), result.complete  # doctest: +SKIP
+            >>> len(result.trails), result.complete
             (1, False)
-            >>> round(result.trails[0].total_weight, 6)  # doctest: +SKIP
+            >>> round(result.trails[0].total_weight, 6)
             0.415037
         """
         from claasp.drivers.solvers import Z3Solver

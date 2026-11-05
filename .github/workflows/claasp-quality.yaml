@@ -61,6 +61,11 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
+      - name: Install Z3 for trail-query doctests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes z3
+
       - name: Run dependency-free tests
         run: python -m pytest
 
@@ -114,6 +119,11 @@ jobs:
 
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
+
+      - name: Install Z3 for trail-query doctests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes z3
 
       - name: Run Python and guide doctests
         run: |

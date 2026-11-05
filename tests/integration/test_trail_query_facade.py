@@ -139,7 +139,5 @@ def test_new_api_doctests_are_executable_with_the_optional_solver():
                 method.__doc__, vars(module).copy(), method.__qualname__, module.__file__, 0
             )
             assert test.examples
-            for example in test.examples:
-                example.options[doctest.SKIP] = False
             runner.run(test)
     assert runner.summarize().failed == 0
