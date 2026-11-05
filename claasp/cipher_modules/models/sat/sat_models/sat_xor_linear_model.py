@@ -349,6 +349,111 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
+    def find_lowest_weight_xor_linear_trail_with_matsui_bounds(
+        self,
+        matsui_bounds,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        options=None,
+        start_weight=0,
+        log=False,
+    ):
+        r"""
+        Return the solution representing a XOR linear trail with the lowest weight, using Matsui's bounding conditions.
+
+        It is the same search as :py:meth:`~SatXorLinearModel.find_lowest_weight_xor_linear_trail` (weights are tried
+        in increasing order until a trail is found), where the weight constraints are replaced by Matsui's bounding
+        conditions [SWW2021]_: knowing the lowest weights `B_1, \ldots, B_{r-1}` of `1, \ldots, r - 1` rounds, every
+        window of consecutive rounds `p, \ldots, q` of a trail of weight at most `W` weighs at most
+        `W - B_{p-1} - B_{r-q}`. These clauses do not remove any trail of weight at most `W`, but they let the solver
+        discard partial trails much earlier (see :py:mod:`~claasp.cipher_modules.models.sat.utils.matsui_bounds` for
+        the encoding). Moreover, the search starts from ``max(start_weight, max(B_a + B_{r-a}))``, since no trail can
+        weigh less.
+
+        As in :py:meth:`~SatXorLinearModel.find_lowest_weight_xor_linear_trail`, the search removes the key schedule,
+        unless the key is fixed in ``fixed_values``, and the weight corresponds to the negative base-2 logarithm of
+        the correlation of the trail. The propagation constraints are the ones of
+        :py:meth:`~SatXorLinearModel.build_xor_linear_trail_model`, which is not modified.
+
+        .. WARNING::
+
+            The result is the lowest weight trail only if the bounds are correct, i.e. if any `\ell` consecutive
+            rounds of the cipher weigh at least `B_\ell`. This holds if the rounds are identical and if the bounds
+            are the lowest weights of `\ell` rounds in the same setting as the search (e.g. bounds computed without
+            the key schedule for a search without the key schedule). With wrong bounds, trails may be missed and a
+            heavier trail may be returned. The bounds can be computed round by round, as in the examples below.
+
+            Do not use a cipher returned by :py:meth:`~claasp.cipher.Cipher.get_partial_cipher`: it keeps the
+            components of all the rounds of the original cipher (e.g. its key schedule), so the windows would not be
+            on the rounds of the partial cipher. Build the cipher with the wanted number of rounds instead.
+
+        INPUT:
+
+        - ``matsui_bounds`` -- **list of integers**; ``matsui_bounds[l - 1]`` is the lowest weight `B_l` of `l`
+          rounds, for `l = 1, \ldots, r - 1`; further entries are ignored
+        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **integer** (default: `0`); the first weight to be searched, if larger than the lower
+          bound given by ``matsui_bounds``
+        - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_find_lowest_weight_xor_linear_trail_with_matsui_bounds__<solver_name>solver[_<options>].log``
+          the lower bound proved so far, the time spent and an estimate of the time needed by the next weights
+          (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
+
+        EXAMPLES::
+
+            # the lowest weights of 1, ..., 6 rounds of Speck32 are 0, 0, 1, 3, 5 and 7
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=7)
+            sage: sat = SatXorLinearModel(speck)
+            sage: trail = sat.find_lowest_weight_xor_linear_trail_with_matsui_bounds([0, 0, 1, 3, 5, 7])
+            sage: trail['total_weight']
+            9.0
+
+            # unknown bounds: compute them round by round, each search using the lowest weights found by the
+            # previous ones (this is the strategy of [SWW2021]_)
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: matsui_bounds = []
+            sage: for number_of_rounds in range(1, 5):
+            ....:     present = PresentBlockCipher(number_of_rounds=number_of_rounds)
+            ....:     sat = SatXorLinearModel(present)
+            ....:     trail = sat.find_lowest_weight_xor_linear_trail_with_matsui_bounds(
+            ....:         matsui_bounds, solver_name="KISSAT_EXT"
+            ....:     )
+            ....:     matsui_bounds.append(int(trail['total_weight']))
+            sage: matsui_bounds
+            [1, 2, 4, 6]
+        """
+        log_file_name = (
+            f"{self._cipher}__sat_find_lowest_weight_xor_linear_trail_with_matsui_bounds"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        solution = self._find_lowest_weight_trail_with_matsui_bounds(
+            matsui_bounds,
+            lambda: self.build_xor_linear_trail_model(fixed_variables=fixed_values),
+            XOR_LINEAR,
+            log_file_name,
+            solver_name,
+            options,
+            start_weight,
+            log,
+        )
+        solution["test_name"] = "find_lowest_weight_xor_linear_trail_with_matsui_bounds"
+
+        return solution
+
+    def _component_propagation_variables(self, component):
+        """Return the variables of the XOR linear mask propagation constraints of ``component``."""
+        variables, _ = component.sat_xor_linear_mask_propagation_constraints(self)
+
+        return variables
+
     def find_one_xor_linear_trail(
         self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT, options=None
     ):

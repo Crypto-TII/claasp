@@ -407,6 +407,8 @@ def test_compute_xor_differential_weight():
     assert round(weight,2) == 29.47 # matches the differential weight reported in Table 2 of https://eprint.iacr.org/2016/209.pdf
 
 
+# Goal: the search with Matsui bounds finds the same optimum as the plain search and only adds weight constraints
+# to the unchanged propagation model.
 @pytest.mark.parametrize(
     "cipher, matsui_bounds, lowest_weight",
     [
@@ -433,6 +435,7 @@ def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds(cipher, ma
     assert new_variables and all(variable.startswith("matsui_") for variable in new_variables)
 
 
+# Goal: the search starting from a given weight still finds the optimum and writes the solver log file.
 def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weight_and_log():
     speck = SpeckBlockCipher(number_of_rounds=5)
     sat = SatXorDifferentialModel(speck)
@@ -450,6 +453,7 @@ def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weig
             remove(log_file_name)
 
 
+# Goal: the weight variables are correctly grouped by round, and a mismatch with the model raises an error.
 def test_hw_variables_by_round():
     speck = SpeckBlockCipher(number_of_rounds=3)
     sat = SatXorDifferentialModel(speck)
@@ -464,6 +468,8 @@ def test_hw_variables_by_round():
         sat._hw_variables_by_round()
 
 
+# Goal: the documented round-by-round loop, feeding each optimum as the next Matsui bound, gives the known lowest
+# weights.
 @pytest.mark.parametrize(
     "cipher_class, lowest_weights",
     [
@@ -479,3 +485,32 @@ def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_round_by_r
         trail = sat.find_lowest_weight_xor_differential_trail_with_matsui_bounds(matsui_bounds, solver_name=KISSAT_EXT)
         matsui_bounds.append(int(trail["total_weight"]))
     assert matsui_bounds == lowest_weights
+
+
+# Goal: in the related-key setting (key difference not zero), the search with Matsui bounds, fed round by round with
+# the related-key lowest weights found by the classical search, finds the same lowest weights as the classical search.
+@pytest.mark.parametrize(
+    "cipher_class, lowest_weights",
+    [
+        (PresentBlockCipher, [0, 0, 2, 4, 7, 11]),
+        (SpeckBlockCipher, [0, 0, 0, 0, 1, 4, 8]),
+    ],
+)
+def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_related_key(cipher_class, lowest_weights):
+    classical_weights = []
+    matsui_weights = []
+    for number_of_rounds in range(1, len(lowest_weights) + 1):
+        cipher = cipher_class(number_of_rounds=number_of_rounds)
+        key_size = cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)]
+        key = set_fixed_variables(INPUT_KEY, "not_equal", range(key_size), [0] * key_size)
+        classical = SatXorDifferentialModel(cipher).find_lowest_weight_xor_differential_trail(
+            fixed_values=[key], solver_name=KISSAT_EXT
+        )
+        # the bounds are the related-key lowest weights of the previous rounds found by the classical search
+        matsui = SatXorDifferentialModel(cipher).find_lowest_weight_xor_differential_trail_with_matsui_bounds(
+            classical_weights, fixed_values=[key], solver_name=KISSAT_EXT
+        )
+        classical_weights.append(int(classical["total_weight"]))
+        matsui_weights.append(int(matsui["total_weight"]))
+    assert classical_weights == lowest_weights
+    assert matsui_weights == lowest_weights

@@ -22,7 +22,6 @@ from math import log2, pow
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
-from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_lower_bound, matsui_weight_constraints
 from claasp.cipher_modules.models.utils import (
     get_single_key_scenario_format_for_fixed_values,
     hex_to_bitlist,
@@ -678,43 +677,20 @@ class SatXorDifferentialModel(SatModel):
             sage: matsui_bounds
             [2, 4, 8, 12]
         """
-        number_of_rounds = self._cipher.number_of_rounds
         log_file_name = (
             f"{self._cipher}__sat_find_lowest_weight_xor_differential_trail_with_matsui_bounds"
             f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
         )
-        # the propagation constraints do not depend on the weight: they are built only once
-        start_building_time = time.time()
-        self.build_xor_differential_trail_model(fixed_variables=fixed_values)
-        hw_variables_by_round = self._hw_variables_by_round()
-        propagation_variables = self._variables_list
-        propagation_constraints = self._model_constraints
-        propagation_building_time = time.time() - start_building_time
-
-        searched_weights, search_times = [], []
-        current_weight = max(start_weight, matsui_lower_bound(matsui_bounds, number_of_rounds))
-        total_time = 0
-        max_memory = 0
-        while True:
-            start_building_time = time.time()
-            variables, constraints = matsui_weight_constraints(hw_variables_by_round, current_weight, matsui_bounds)
-            self._variables_list = propagation_variables + variables
-            self._model_constraints = propagation_constraints + constraints
-            end_building_time = time.time()
-            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-            end_solving_time = time.time()
-            solution["building_time_seconds"] = propagation_building_time + end_building_time - start_building_time
-            total_time += solution["solving_time_seconds"]
-            max_memory = max((max_memory, solution["memory_megabytes"]))
-            if log:
-                searched_weights.append(current_weight)
-                search_times.append(end_solving_time - end_building_time)
-                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
-            if solution["total_weight"] is not None:
-                break
-            current_weight += 1
-        solution["solving_time_seconds"] = total_time
-        solution["memory_megabytes"] = max_memory
+        solution = self._find_lowest_weight_trail_with_matsui_bounds(
+            matsui_bounds,
+            lambda: self.build_xor_differential_trail_model(fixed_variables=fixed_values),
+            XOR_DIFFERENTIAL,
+            log_file_name,
+            solver_name,
+            options,
+            start_weight,
+            log,
+        )
         solution["test_name"] = "find_lowest_weight_xor_differential_trail_with_matsui_bounds"
 
         return solution
@@ -724,29 +700,6 @@ class SatXorDifferentialModel(SatModel):
         variables, _ = component.sat_xor_differential_propagation_constraints(self)
 
         return variables
-
-    def _hw_variables_by_round(self):
-        """
-        Return the weight variables (those starting with ``hw_``) of the current model, grouped by round.
-
-        The round of a weight variable is the round of the component producing it: the propagation constraints of
-        each component are computed again to get its variables, so that the building methods are not modified.
-        """
-        hw_variables_by_round = []
-        found = set()
-        for round_number in range(self._cipher.number_of_rounds):
-            round_hw_variables = []
-            for component in self._cipher.rounds.round_at(round_number).components:
-                for variable in self._component_propagation_variables(component):
-                    if variable.startswith("hw_") and variable not in found:
-                        round_hw_variables.append(variable)
-                        found.add(variable)
-            hw_variables_by_round.append(round_hw_variables)
-        model_hw_variables = {variable for variable in self._variables_list if variable.startswith("hw_")}
-        if found != model_hw_variables:
-            raise ValueError("The weight variables of the model do not match the ones of its components.")
-
-        return hw_variables_by_round
 
     def find_one_xor_differential_trail(
         self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT, options=None
