@@ -991,6 +991,228 @@ class Analysis:
             .is_possible
         )
 
+    def find_one_xor_differential_trail(
+        self,
+        maximum_weight=None,
+        *,
+        minimum_weight=None,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        output_difference=None,
+    ):
+        """Find one checked characteristic without minimizing its weight.
+
+        Return None only after proved UNSAT. Solver errors and interruptions
+        propagate; they never mean that no characteristic exists.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> trail = ToySpeck(2).analysis.find_one_xor_differential_trail(1)  # doctest: +SKIP
+            >>> trail is not None  # doctest: +SKIP
+            True
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> trail.to_terminal(file=output)  # doctest: +SKIP
+            >>> "Characteristic summary" in output.getvalue()  # doctest: +SKIP
+            True
+        """
+        from claasp.analysis._trail_queries import first_characteristic
+
+        model = self._xor_differential_query_model(
+            maximum_weight,
+            minimum_weight=minimum_weight,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+        )
+        return first_characteristic(model, solver)
+
+    def find_one_xor_differential_trail_with_fixed_weight(
+        self,
+        fixed_weight,
+        *,
+        weight_tolerance=0,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        output_difference=None,
+    ):
+        """Find one characteristic at a physical weight, with optional tolerance.
+
+        Non-integral weights use the same exact-probability interval checks
+        as enumeration. None means proved UNSAT, not a solver interruption.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> trail = ToySpeck(2).analysis.find_one_xor_differential_trail_with_fixed_weight(1)  # doctest: +SKIP
+            >>> trail.total_weight  # doctest: +SKIP
+            1.0
+        """
+        from claasp.analysis._trail_queries import first_characteristic
+
+        if fixed_weight is None:
+            raise ValueError("fixed_weight must specify a nonnegative physical weight")
+        model = self._xor_differential_query_model(
+            fixed_weight=fixed_weight,
+            weight_tolerance=weight_tolerance,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+        )
+        return first_characteristic(model, solver)
+
+    def find_all_xor_differential_trails_with_weight_at_most(
+        self,
+        maximum_weight,
+        *,
+        minimum_weight=None,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        output_difference=None,
+        limit=1000,
+    ):
+        """Enumerate through an inclusive bound, retaining completion metadata.
+
+        A finite limit can leave undiscovered trails. Call require_complete()
+        before treating the returned trails as an exhaustive collection.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> trails = ToySpeck(2).analysis.find_all_xor_differential_trails_with_weight_at_most(1, limit=100)  # doctest: +SKIP
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> trails.to_terminal(file=output)  # doctest: +SKIP
+            >>> "Enumeration summary" in output.getvalue()  # doctest: +SKIP
+            True
+        """
+        if maximum_weight is None:
+            raise ValueError("maximum_weight must specify an inclusive upper weight")
+        return self.enumerate_xor_differential_trails(
+            maximum_weight,
+            minimum_weight=minimum_weight,
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+            limit=limit,
+        )
+
+    def find_one_xor_linear_trail(
+        self,
+        maximum_weight=None,
+        *,
+        minimum_weight=None,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ):
+        """Find one checked characteristic without minimizing its weight.
+
+        Return None only after proved UNSAT. Solver errors and interruptions
+        propagate; they never mean that no characteristic exists.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> trail = ToySpeck(2).analysis.find_one_xor_linear_trail(1)  # doctest: +SKIP
+            >>> trail is not None  # doctest: +SKIP
+            True
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> trail.to_terminal(file=output)  # doctest: +SKIP
+            >>> "Characteristic summary" in output.getvalue()  # doctest: +SKIP
+            True
+        """
+        from claasp.analysis._trail_queries import first_characteristic
+
+        model = self._xor_linear_query_model(
+            maximum_weight,
+            minimum_weight=minimum_weight,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+        return first_characteristic(model, solver)
+
+    def find_one_xor_linear_trail_with_fixed_weight(
+        self,
+        fixed_weight,
+        *,
+        weight_tolerance=0,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ):
+        """Find one characteristic at a physical weight, with optional tolerance.
+
+        Non-integral weights use the same exact-probability interval checks
+        as enumeration. None means proved UNSAT, not a solver interruption.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> trail = ToySpeck(2).analysis.find_one_xor_linear_trail_with_fixed_weight(1)  # doctest: +SKIP
+            >>> trail.total_weight  # doctest: +SKIP
+            1.0
+        """
+        from claasp.analysis._trail_queries import first_characteristic
+
+        if fixed_weight is None:
+            raise ValueError("fixed_weight must specify a nonnegative physical weight")
+        model = self._xor_linear_query_model(
+            fixed_weight=fixed_weight,
+            weight_tolerance=weight_tolerance,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+        return first_characteristic(model, solver)
+
+    def find_all_xor_linear_trails_with_weight_at_most(
+        self,
+        maximum_weight,
+        *,
+        minimum_weight=None,
+        solver=None,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+        limit=1000,
+    ):
+        """Enumerate through an inclusive bound, retaining completion metadata.
+
+        A finite limit can leave undiscovered trails. Call require_complete()
+        before treating the returned trails as an exhaustive collection.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> trails = ToySpeck(2).analysis.find_all_xor_linear_trails_with_weight_at_most(1, limit=100)  # doctest: +SKIP
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> trails.to_terminal(file=output)  # doctest: +SKIP
+            >>> "Enumeration summary" in output.getvalue()  # doctest: +SKIP
+            True
+        """
+        if maximum_weight is None:
+            raise ValueError("maximum_weight must specify an inclusive upper weight")
+        return self.enumerate_xor_linear_trails(
+            maximum_weight,
+            minimum_weight=minimum_weight,
+            solver=solver,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+            limit=limit,
+        )
+
     def enumerate_xor_differential_trails(
         self,
         maximum_weight=None,
@@ -1025,8 +1247,31 @@ class Analysis:
             >>> result.require_complete().cluster_probability()  # doctest: +SKIP
             Fraction(3, 8)
         """
-        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
+
+        model = self._xor_differential_query_model(
+            maximum_weight,
+            fixed_weight=fixed_weight,
+            minimum_weight=minimum_weight,
+            weight_tolerance=weight_tolerance,
+            nonzero_input=nonzero_input,
+            fixed_input_differences=fixed_input_differences,
+            output_difference=output_difference,
+        )
+        return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
+
+    def _xor_differential_query_model(
+        self,
+        maximum_weight=None,
+        *,
+        fixed_weight=None,
+        minimum_weight=None,
+        weight_tolerance=0,
+        nonzero_input=None,
+        fixed_input_differences=None,
+        output_difference=None,
+    ):
+        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.representations.constraints.smt import WordDifferentialSMTModel
 
         if fixed_input_differences is None:
@@ -1050,7 +1295,7 @@ class Analysis:
             fixed_input_differences=policy.fixed_patterns,
             output_difference=output_difference,
         )
-        return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
+        return model
 
     def enumerate_xor_linear_trails(
         self,
@@ -1086,8 +1331,31 @@ class Analysis:
             >>> round(result.trails[0].total_weight, 6)  # doctest: +SKIP
             0.415037
         """
-        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.drivers.solvers import Z3Solver
+
+        model = self._xor_linear_query_model(
+            maximum_weight,
+            fixed_weight=fixed_weight,
+            minimum_weight=minimum_weight,
+            weight_tolerance=weight_tolerance,
+            nonzero_input=nonzero_input,
+            fixed_input_masks=fixed_input_masks,
+            fixed_inputs=fixed_inputs,
+        )
+        return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
+
+    def _xor_linear_query_model(
+        self,
+        maximum_weight=None,
+        *,
+        fixed_weight=None,
+        minimum_weight=None,
+        weight_tolerance=0,
+        nonzero_input=None,
+        fixed_input_masks=None,
+        fixed_inputs=None,
+    ):
+        from claasp.analysis.trail_search import resolve_input_policy
         from claasp.representations.constraints.smt import WordLinearSMTModel
 
         policy = resolve_input_policy(
@@ -1112,7 +1380,7 @@ class Analysis:
             fixed_input_masks=policy.fixed_patterns,
             fixed_inputs=fixed_inputs,
         )
-        return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
+        return model
 
     def find_lowest_weight_xor_linear_trail(
         self,
