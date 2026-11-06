@@ -1,12 +1,20 @@
 import shutil
-from os import remove
+from os import path, remove
 
 import numpy as np
 import pytest
 
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
-from claasp.cipher_modules.models.sat.solvers import CADICAL_EXT, KISSAT_EXT, MALLOB_EXT, PARKISSAT_EXT
+from claasp.cipher_modules.models.sat.solvers import (
+    CADICAL_EXT,
+    CRYPTOMINISAT_EXT,
+    KISSAT_EXT,
+    MALLOB_EXT,
+    PARKISSAT_EXT,
+)
 from claasp.cipher_modules.models.utils import set_fixed_variables
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.components.modadd_component import ModAdd
@@ -112,6 +120,73 @@ def test_find_lowest_weight_xor_differential_trail():
     trail = sat.find_lowest_weight_xor_differential_trail()
 
     assert int(trail["total_weight"]) == 9
+
+
+def test_find_lowest_weight_xor_differential_trail_with_log(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck = SpeckBlockCipher(number_of_rounds=4)
+    sat = SatXorDifferentialModel(speck)
+    lowest_weight = 5
+    log_file_name = (
+        f"{speck.id}__sat_find_lowest_weight_xor_differential_trail_from_below__{CRYPTOMINISAT_EXT}solver.log"
+    )
+    try:
+        trail = sat.find_lowest_weight_xor_differential_trail(log=True)
+        with open(log_file_name) as f:
+            log_content = f.read()
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+    assert trail["status"] == SATISFIABLE
+    assert trail["total_weight"] == lowest_weight
+    log_lines = log_content.splitlines()
+
+    # every weight from 0 to lowest_weight - 1, and only those, is reported as UNSATISFIABLE, in increasing order
+    lower_bound_lines = [line for line in log_lines if " has no " in line]
+    assert len(lower_bound_lines) == lowest_weight
+    for weight, line in enumerate(lower_bound_lines):
+        assert line.endswith(f" {speck.id} has no xor_differential trail of weight <= {weight}")
+    status_lines = [line for line in log_lines if " (status: " in line]
+    assert len(status_lines) == lowest_weight + 1
+    for weight, line in enumerate(status_lines[:-1]):
+        assert f" {CRYPTOMINISAT_EXT} terminated the search for weight {weight} in " in line
+        assert line.endswith(" (status: UNSATISFIABLE)")
+    # a time estimate follows every lower bound except the first one
+    assert log_content.count("is expected to terminate in") == lowest_weight - 1
+
+    # the search for lowest_weight is reported as SATISFIABLE, with the weight of the returned trail
+    assert f" {CRYPTOMINISAT_EXT} terminated the search for weight {lowest_weight} in " in status_lines[-1]
+    assert status_lines[-1].endswith(" (status: SATISFIABLE)")
+    trail_lines = [line for line in log_lines if " has a " in line]
+    assert len(trail_lines) == 1
+    assert trail_lines[0].endswith(f" {speck.id} has a xor_differential trail of weight {trail['total_weight']}")
+
+    # the log ends with the returned trail
+    assert f"'components_values': {trail['components_values']!r}" in log_lines[-1]
+    assert f"'total_weight': {trail['total_weight']!r}" in log_lines[-1]
+
+
+def test_find_lowest_weight_xor_differential_trail_with_start_weight(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck = SpeckBlockCipher(number_of_rounds=4)
+    sat = SatXorDifferentialModel(speck)
+    log_file_name = (
+        f"{speck.id}__sat_find_lowest_weight_xor_differential_trail_from_below__{CRYPTOMINISAT_EXT}solver.log"
+    )
+    try:
+        trail = sat.find_lowest_weight_xor_differential_trail(start_weight=3, log=True)
+        with open(log_file_name) as f:
+            log_content = f.read()
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+    assert trail["total_weight"] == 5.0
+    assert "trail of weight <= 2" not in log_content
+    assert "has no xor_differential trail of weight <= 3\n" in log_content
+    assert "has no xor_differential trail of weight <= 4\n" in log_content
+    assert "has a xor_differential trail of weight 5.0\n" in log_content
 
 
 @requires_mallob
@@ -330,3 +405,77 @@ def test_compute_xor_differential_weight():
 
     assert len(trails) == 27
     assert round(weight,2) == 29.47 # matches the differential weight reported in Table 2 of https://eprint.iacr.org/2016/209.pdf
+
+
+@pytest.mark.parametrize(
+    "cipher, matsui_bounds, lowest_weight",
+    [
+        (PresentBlockCipher(number_of_rounds=4), [2, 4, 8], 12),
+        (SpeckBlockCipher(number_of_rounds=5), [0, 1, 3, 5], 9),
+        (SimonBlockCipher(number_of_rounds=5), [0, 2, 4, 6], 8),
+    ],
+)
+def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds(cipher, matsui_bounds, lowest_weight):
+    plain = SatXorDifferentialModel(cipher).find_lowest_weight_xor_differential_trail(solver_name=KISSAT_EXT)
+    sat = SatXorDifferentialModel(cipher)
+    trail = sat.find_lowest_weight_xor_differential_trail_with_matsui_bounds(matsui_bounds, solver_name=KISSAT_EXT)
+    assert plain["total_weight"] == trail["total_weight"] == lowest_weight
+    assert trail["status"] == SATISFIABLE
+    assert trail["test_name"] == "find_lowest_weight_xor_differential_trail_with_matsui_bounds"
+
+    # the model is the unchanged propagation model plus the new weight constraints only
+    reference = SatXorDifferentialModel(cipher)
+    reference.build_xor_differential_trail_model()
+    number_of_propagation_constraints = len(reference.model_constraints)
+    assert sat.model_constraints[:number_of_propagation_constraints] == reference.model_constraints
+    new_variables = sat._variables_list[len(reference._variables_list) :]
+    assert sat._variables_list[: len(reference._variables_list)] == reference._variables_list
+    assert new_variables and all(variable.startswith("matsui_") for variable in new_variables)
+
+
+def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weight_and_log():
+    speck = SpeckBlockCipher(number_of_rounds=5)
+    sat = SatXorDifferentialModel(speck)
+    log_file_name = (
+        f"{sat.cipher_id}__sat_find_lowest_weight_xor_differential_trail_with_matsui_bounds__{KISSAT_EXT}solver.log"
+    )
+    try:
+        trail = sat.find_lowest_weight_xor_differential_trail_with_matsui_bounds(
+            [0, 1, 3, 5], solver_name=KISSAT_EXT, start_weight=7, log=True
+        )
+        assert trail["total_weight"] == 9
+        assert path.exists(log_file_name)
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+
+def test_hw_variables_by_round():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatXorDifferentialModel(speck)
+    sat.build_xor_differential_trail_model()
+    hw_variables_by_round = sat._hw_variables_by_round()
+    assert [len(round_variables) for round_variables in hw_variables_by_round] == [16, 32, 32]
+    assert all(variable.startswith("hw_modadd_0_") for variable in hw_variables_by_round[0])
+    assert "hw_modadd_2_7_15" in hw_variables_by_round[2]
+    # the model must contain the weight variables of its components
+    sat._variables_list.append("hw_extra")
+    with pytest.raises(ValueError, match="do not match"):
+        sat._hw_variables_by_round()
+
+
+@pytest.mark.parametrize(
+    "cipher_class, lowest_weights",
+    [
+        (PresentBlockCipher, [2, 4, 8, 12]),
+        (SpeckBlockCipher, [0, 1, 3, 5, 9]),
+    ],
+)
+def test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_round_by_round(cipher_class, lowest_weights):
+    # the loop documented in find_lowest_weight_xor_differential_trail_with_matsui_bounds
+    matsui_bounds = []
+    for number_of_rounds in range(1, len(lowest_weights) + 1):
+        sat = SatXorDifferentialModel(cipher_class(number_of_rounds=number_of_rounds))
+        trail = sat.find_lowest_weight_xor_differential_trail_with_matsui_bounds(matsui_bounds, solver_name=KISSAT_EXT)
+        matsui_bounds.append(int(trail["total_weight"]))
+    assert matsui_bounds == lowest_weights

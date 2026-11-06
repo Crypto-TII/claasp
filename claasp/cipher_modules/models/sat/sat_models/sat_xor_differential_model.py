@@ -22,10 +22,12 @@ from math import log2, pow
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.sat.sat_models.sat_cipher_model import SatCipherModel
+from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_lower_bound, matsui_weight_constraints
 from claasp.cipher_modules.models.utils import (
     get_single_key_scenario_format_for_fixed_values,
     hex_to_bitlist,
     join_and_sanitize_strings,
+    save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
     set_fixed_variables,
 )
@@ -511,7 +513,7 @@ class SatXorDifferentialModel(SatModel):
         return weight, solutions_list
 
     def find_lowest_weight_xor_differential_trail(
-        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None
+        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False
     ):
         """
         Return the solution representing a trail with the lowest weight.
@@ -527,6 +529,14 @@ class SatXorDifferentialModel(SatModel):
 
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **integer** (default: `0`); the first weight to be searched. Use it to resume a search
+          from a known lower bound: if a trail is found at ``start_weight`` itself, it is only guaranteed to have weight
+          at most ``start_weight``
+        - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_find_lowest_weight_xor_differential_trail_from_below__<solver_name>solver[_<options>].log``
+          the lower bound proved so far, the time spent and an estimate of the time needed by the next weights
+          (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
 
         .. SEEALSO::
 
@@ -559,28 +569,184 @@ class SatXorDifferentialModel(SatModel):
             sage: trail['total_weight']
             1.0
         """
-        current_weight = 0
-        start_building_time = time.time()
-        self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
-        end_building_time = time.time()
-        solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-        solution["building_time_seconds"] = end_building_time - start_building_time
-        total_time = solution["solving_time_seconds"]
-        max_memory = solution["memory_megabytes"]
-        while solution["total_weight"] is None:
-            current_weight += 1
+        log_file_name = (
+            f"{self._cipher}__sat_find_lowest_weight_xor_differential_trail_from_below"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        searched_weights, search_times = [], []
+        current_weight = start_weight
+        total_time = 0
+        max_memory = 0
+        while True:
             start_building_time = time.time()
             self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
             end_building_time = time.time()
             solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+            end_solving_time = time.time()
             solution["building_time_seconds"] = end_building_time - start_building_time
             total_time += solution["solving_time_seconds"]
             max_memory = max((max_memory, solution["memory_megabytes"]))
+            if log:
+                searched_weights.append(current_weight)
+                search_times.append(end_solving_time - end_building_time)
+                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
+            if solution["total_weight"] is not None:
+                break
+            current_weight += 1
         solution["solving_time_seconds"] = total_time
         solution["memory_megabytes"] = max_memory
         solution["test_name"] = "find_lowest_weight_xor_differential_trail"
 
         return solution
+
+    def find_lowest_weight_xor_differential_trail_with_matsui_bounds(
+        self,
+        matsui_bounds,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        options=None,
+        start_weight=0,
+        log=False,
+    ):
+        r"""
+        Return the solution representing a trail with the lowest weight, using Matsui's bounding conditions.
+
+        It is the same search as :py:meth:`~SatXorDifferentialModel.find_lowest_weight_xor_differential_trail`
+        (weights are tried in increasing order until a trail is found), where the weight constraints are replaced by
+        Matsui's bounding conditions [SWW2021]_: knowing the lowest weights `B_1, \ldots, B_{r-1}` of
+        `1, \ldots, r - 1` rounds, every window of consecutive rounds `p, \ldots, q` of a trail of weight at most
+        `W` weighs at most `W - B_{p-1} - B_{r-q}`. These clauses do not remove any trail of weight at most `W`,
+        but they let the solver discard partial trails much earlier (see
+        :py:mod:`~claasp.cipher_modules.models.sat.utils.matsui_bounds` for the encoding). Moreover, the search
+        starts from ``max(start_weight, max(B_a + B_{r-a}))``, since no trail can weigh less.
+
+        The propagation constraints are the ones of
+        :py:meth:`~SatXorDifferentialModel.build_xor_differential_trail_model`, which is not modified.
+
+        .. WARNING::
+
+            The result is the lowest weight trail only if the bounds are correct, i.e. if any `\ell` consecutive
+            rounds of the cipher weigh at least `B_\ell`. This holds if the rounds are identical and if the bounds
+            are the lowest weights of `\ell` rounds in the same setting as the search (e.g. single-key bounds for a
+            single-key search). With wrong bounds, trails may be missed and a heavier trail may be returned.
+            The bounds can be computed round by round, as in the examples below.
+
+            Do not use a cipher returned by :py:meth:`~claasp.cipher.Cipher.get_partial_cipher`: it keeps the
+            components of all the rounds of the original cipher (e.g. its key schedule), so the windows would not be
+            on the rounds of the partial cipher. Build the cipher with the wanted number of rounds instead.
+
+        INPUT:
+
+        - ``matsui_bounds`` -- **list of integers**; ``matsui_bounds[l - 1]`` is the lowest weight `B_l` of `l`
+          rounds, for `l = 1, \ldots, r - 1`; further entries are ignored
+        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **integer** (default: `0`); the first weight to be searched, if larger than the lower
+          bound given by ``matsui_bounds``
+        - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_find_lowest_weight_xor_differential_trail_with_matsui_bounds__<solver_name>solver[_<options>].log``
+          the lower bound proved so far, the time spent and an estimate of the time needed by the next weights
+          (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
+
+        EXAMPLES::
+
+            # the lowest weights of 1, 2, 3 and 4 rounds of Speck32 are 0, 1, 3 and 5
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: trail = sat.find_lowest_weight_xor_differential_trail_with_matsui_bounds([0, 1, 3, 5])
+            sage: trail['total_weight']
+            9.0
+
+            # unknown bounds: compute them round by round, each search using the lowest weights found by the
+            # previous ones (this is the strategy of [SWW2021]_)
+            sage: from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+            sage: matsui_bounds = []
+            sage: for number_of_rounds in range(1, 5):
+            ....:     present = PresentBlockCipher(number_of_rounds=number_of_rounds)
+            ....:     sat = SatXorDifferentialModel(present)
+            ....:     trail = sat.find_lowest_weight_xor_differential_trail_with_matsui_bounds(
+            ....:         matsui_bounds, solver_name="KISSAT_EXT"
+            ....:     )
+            ....:     matsui_bounds.append(int(trail['total_weight']))
+            sage: matsui_bounds
+            [2, 4, 8, 12]
+        """
+        number_of_rounds = self._cipher.number_of_rounds
+        log_file_name = (
+            f"{self._cipher}__sat_find_lowest_weight_xor_differential_trail_with_matsui_bounds"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        # the propagation constraints do not depend on the weight: they are built only once
+        start_building_time = time.time()
+        self.build_xor_differential_trail_model(fixed_variables=fixed_values)
+        hw_variables_by_round = self._hw_variables_by_round()
+        propagation_variables = self._variables_list
+        propagation_constraints = self._model_constraints
+        propagation_building_time = time.time() - start_building_time
+
+        searched_weights, search_times = [], []
+        current_weight = max(start_weight, matsui_lower_bound(matsui_bounds, number_of_rounds))
+        total_time = 0
+        max_memory = 0
+        while True:
+            start_building_time = time.time()
+            variables, constraints = matsui_weight_constraints(hw_variables_by_round, current_weight, matsui_bounds)
+            self._variables_list = propagation_variables + variables
+            self._model_constraints = propagation_constraints + constraints
+            end_building_time = time.time()
+            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
+            end_solving_time = time.time()
+            solution["building_time_seconds"] = propagation_building_time + end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max((max_memory, solution["memory_megabytes"]))
+            if log:
+                searched_weights.append(current_weight)
+                search_times.append(end_solving_time - end_building_time)
+                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
+            if solution["total_weight"] is not None:
+                break
+            current_weight += 1
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
+        solution["test_name"] = "find_lowest_weight_xor_differential_trail_with_matsui_bounds"
+
+        return solution
+
+    def _component_propagation_variables(self, component):
+        """Return the variables of the XOR differential propagation constraints of ``component``."""
+        variables, _ = component.sat_xor_differential_propagation_constraints(self)
+
+        return variables
+
+    def _hw_variables_by_round(self):
+        """
+        Return the weight variables (those starting with ``hw_``) of the current model, grouped by round.
+
+        The round of a weight variable is the round of the component producing it: the propagation constraints of
+        each component are computed again to get its variables, so that the building methods are not modified.
+        """
+        hw_variables_by_round = []
+        found = set()
+        for round_number in range(self._cipher.number_of_rounds):
+            round_hw_variables = []
+            for component in self._cipher.rounds.round_at(round_number).components:
+                for variable in self._component_propagation_variables(component):
+                    if variable.startswith("hw_") and variable not in found:
+                        round_hw_variables.append(variable)
+                        found.add(variable)
+            hw_variables_by_round.append(round_hw_variables)
+        model_hw_variables = {variable for variable in self._variables_list if variable.startswith("hw_")}
+        if found != model_hw_variables:
+            raise ValueError("The weight variables of the model do not match the ones of its components.")
+
+        return hw_variables_by_round
 
     def find_one_xor_differential_trail(
         self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT, options=None
