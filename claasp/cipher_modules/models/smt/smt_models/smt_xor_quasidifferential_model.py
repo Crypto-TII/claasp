@@ -747,7 +747,8 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
         - ``weights`` -- **dictionary**; a weight table, as built by ``generate_weight_tables``:
           ``weights[(b, a)][weight_loss]`` is the list of the ``(v, u)`` mask pairs of the
-          differential ``a -> b`` having that weight loss
+          differential ``a -> b`` having that weight loss. A differential mapping to ``None`` has a
+          coefficient that is not a power of two and yields no transition
 
         OUTPUT:
 
@@ -757,13 +758,16 @@ class SmtXorQuasidifferentialModel(SmtModel):
         EXAMPLES::
 
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
-            sage: weights = {(0x2, 0x1): {1: [(0x3, 0x4)]}}
+            sage: weights = {(0x2, 0x1): {1: [(0x3, 0x4)]}, (0x5, 0x1): None}
             sage: SmtXorQuasidifferentialModel.get_qdt_transitions(weights)
-            [{'a': 1, 'b': 2, 'u': 4, 'v': 3, 'weight': 1}]
+            [{'a': 1, 'u': 4, 'b': 2, 'v': 3, 'weight': 1}]
         """
         transitions = []
 
         for (b, a), weight_dict in weights.items():
+            if weight_dict is None:
+                continue
+
             for weight_loss, mask_pairs in weight_dict.items():
                 for v, u in mask_pairs:
                     transitions.append({"a": a, "u": u, "b": b, "v": v, "weight": weight_loss})
