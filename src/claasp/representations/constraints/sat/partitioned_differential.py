@@ -79,7 +79,7 @@ class KeyScheduleMinimaxSATModel:
         output_difference=None,
         n_window=None,
     ):
-        from claasp.representations.constraints.sat.trails import WordDifferentialSATModel
+        from claasp.representations.constraints.sat.trails import WordXorDifferentialSATModel
 
         graph = primitive.graph
         secret = set(graph.secret_inputs)
@@ -118,7 +118,7 @@ class KeyScheduleMinimaxSATModel:
                 (self.key_components if roots <= secret else self.data_components).add(
                     component.component_id
                 )
-        self.model = WordDifferentialSATModel(
+        self.model = WordXorDifferentialSATModel(
             primitive,
             nonzero_input=nonzero_input
             or next(name for name in graph.input_arrays if name in public),

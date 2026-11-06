@@ -15,8 +15,8 @@ from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.graph import Primitive
 from claasp.representations.constraints.sat import CNFFormula
 from claasp.semantics.cryptanalysis import (
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    ModularAddXorLinearSemantics,
     Trail,
     TrailKind,
     TrailRoundTransition,
@@ -42,14 +42,14 @@ def find_speck_xor_differential(
 
     started = perf_counter()
     _validate_speck_slice(primitive)
-    from claasp.representations.constraints.smt import WordDifferentialSMTModel
+    from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
 
     selected_solver = KissatSolver() if solver is None else solver
     if not hasattr(selected_solver, "solve"):
         raise TypeError("solver must provide a solve(formula) method")
 
     fixed_inputs = {"key": 0} if "key" in primitive.graph.input_arrays else {}
-    feasible_model = WordDifferentialSMTModel(
+    feasible_model = WordXorDifferentialSMTModel(
         primitive,
         nonzero_input="plaintext",
         fixed_input_differences=fixed_inputs,
@@ -68,7 +68,7 @@ def find_speck_xor_differential(
 
     while lower_bound < upper_bound:
         candidate_bound = (lower_bound + upper_bound) // 2
-        model = WordDifferentialSMTModel(
+        model = WordXorDifferentialSMTModel(
             primitive,
             maximum_weight=candidate_bound,
             nonzero_input="plaintext",
@@ -88,7 +88,7 @@ def find_speck_xor_differential(
         upper_bound = min(candidate_bound, int(characteristic.total_weight))
 
     if best.total_weight != upper_bound:
-        final_model = WordDifferentialSMTModel(
+        final_model = WordXorDifferentialSMTModel(
             primitive,
             maximum_weight=upper_bound,
             nonzero_input="plaintext",
@@ -349,7 +349,7 @@ def find_four_round_speck_xor_linear(primitive: Primitive) -> TrailSearchResult:
 
     started = perf_counter()
     width = _validate_speck_linear_slice(primitive)
-    semantics = ModularAddLinearSemantics(width)
+    semantics = ModularAddXorLinearSemantics(width)
     boundary_masks = (
         (0x40B0, 0x10C1),
         (0x0080, 0x4001),
@@ -471,7 +471,7 @@ def check_speck_linear_trail(primitive: Primitive, trail: Trail) -> bool:
     )
     if tuple(step.component_id for step in trail.steps) != expected_ids:
         return False
-    semantics = ModularAddLinearSemantics(width)
+    semantics = ModularAddXorLinearSemantics(width)
     if any(not semantics.check(step.transition) for step in trail.steps):
         return False
     mask = (1 << width) - 1

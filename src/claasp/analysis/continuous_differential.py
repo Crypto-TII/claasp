@@ -12,7 +12,7 @@ from claasp.drivers.solvers.minizinc import CPResult, _parse_output
 from claasp.representations.constraints.cp.continuous_differential import (
     ContinuousDifferentialCPModel,
 )
-from claasp.representations.execution import ContinuousDifferentialExecutionDriver
+from claasp.representations.execution import ContinuousXorDifferentialExecutionDriver
 
 
 @dataclass(frozen=True, slots=True)
@@ -226,7 +226,7 @@ class ContinuousDifferentialAnalysis:
                 name: tuple(float(value) for value in values)
                 for name, values in model.inputs.items()
             }
-            output = ContinuousDifferentialExecutionDriver().evaluate(self.primitive, inputs).output
+            output = ContinuousXorDifferentialExecutionDriver().evaluate(self.primitive, inputs).output
             assert output is not None
             bits = [bool(value) if value is not None else False for value in model.output_mask]
             if not any(bits):
@@ -275,7 +275,7 @@ class ContinuousDifferentialAnalysis:
             ):
                 raise RuntimeError("continuous solver violated fixed input correlations")
             inputs[name] = tuple(max(-1.0, min(1.0, value)) for value in observed)
-        output = ContinuousDifferentialExecutionDriver().evaluate(self.primitive, inputs).output
+        output = ContinuousXorDifferentialExecutionDriver().evaluate(self.primitive, inputs).output
         assert output is not None
         reported = _solution_vector(values, "output_values")
         if len(output) != len(reported) or any(abs(a - b) > 1e-5 for a, b in zip(output, reported)):

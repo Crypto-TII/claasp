@@ -41,7 +41,7 @@ analysis guides for your own work.
    serialization_and_source
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 4
    :caption: Primitive Analysis
 
    primitive_analysis

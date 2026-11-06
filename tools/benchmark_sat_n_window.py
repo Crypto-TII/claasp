@@ -19,7 +19,7 @@ from claasp.drivers.solvers import (
     SatStatus,
 )
 from claasp.primitives import ToySpeck
-from claasp.representations.constraints.sat import NWindowSATStrategy, WordDifferentialSATModel
+from claasp.representations.constraints.sat import NWindowSATStrategy, WordXorDifferentialSATModel
 
 
 def _solver(name):
@@ -43,7 +43,7 @@ def _solver_version(solver):
 
 
 def _model(window_size):
-    return WordDifferentialSATModel(
+    return WordXorDifferentialSATModel(
         ToySpeck(4),
         maximum_weight=2,
         nonzero_input="plaintext",

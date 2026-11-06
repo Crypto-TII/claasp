@@ -14,7 +14,7 @@ from time import monotonic
 
 from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSolver, SatStatus
 from claasp.primitives import ToySpeck
-from claasp.representations.constraints.sat import SharedDifferencePairedWordDifferentialSATModel
+from claasp.representations.constraints.sat import SharedDifferencePairedWordXorDifferentialSATModel
 
 
 def _benchmark(strategy, solver_type, repeats):
@@ -22,7 +22,7 @@ def _benchmark(strategy, solver_type, repeats):
     model = formula = None
     for _ in range(repeats):
         started = monotonic()
-        model = SharedDifferencePairedWordDifferentialSATModel(
+        model = SharedDifferencePairedWordXorDifferentialSATModel(
             ToySpeck(2),
             fixed_total_weight=5,
             fixed_input_differences={"key": 0},

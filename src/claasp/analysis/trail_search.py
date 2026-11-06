@@ -30,8 +30,8 @@ from claasp.representations.constraints import (
     _direct_model,
 )
 from claasp.representations.constraints.sat import (
-    WordDifferentialSATModel,
-    WordLinearSATModel,
+    WordXorDifferentialSATModel,
+    WordXorLinearSATModel,
 )
 from claasp.representations.constraints.smt._probability_encoding import (
     _comparison_clauses,
@@ -267,7 +267,7 @@ def optimize_word_characteristic(
 
     def build(bound):
         if kind is TrailKind.XOR_DIFFERENTIAL:
-            return WordDifferentialSATModel(
+            return WordXorDifferentialSATModel(
                 primitive,
                 maximum_weight=bound,
                 nonzero_input=policy.nonzero_input,
@@ -280,7 +280,7 @@ def optimize_word_characteristic(
         }
         if resolved_fixed_inputs:
             options["fixed_inputs"] = resolved_fixed_inputs
-        return WordLinearSATModel(primitive, **options)
+        return WordXorLinearSATModel(primitive, **options)
 
     initial_model = build(None)
     initial_formula = initial_model.cnf_formula()

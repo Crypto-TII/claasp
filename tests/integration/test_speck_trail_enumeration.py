@@ -7,7 +7,7 @@ import pytest
 from claasp.analysis.arx import check_speck_linear_trail
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.primitives import Speck, ToySpeck
-from claasp.representations.constraints.smt import SpeckLinearSMTModel, WordLinearSMTModel
+from claasp.representations.constraints.smt import SpeckXorLinearSMTModel, WordXorLinearSMTModel
 
 pytestmark = pytest.mark.external
 
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.external
 def test_z3_preserves_cp_fixed_speck_linear_boundaries():
     """mzn_model_test.py dictionary-based linear fixture, data-path only."""
     primitive = Speck(number_of_rounds=3)
-    model = SpeckLinearSMTModel(
+    model = SpeckXorLinearSMTModel(
         primitive,
         fixed_weight=5,
         input_mask=0x03805224,
@@ -33,7 +33,7 @@ def test_z3_preserves_cp_fixed_speck_linear_boundaries():
 @pytest.mark.parametrize("weight,count", [(2, 8), (3, 73)])
 def test_toy_speck_nonzero_key_linear_enumeration_preserves_legacy_counts(weight, count):
     """SMT (bound 2) and SAT (bound 3) Speck8/16 four-round legacy fixtures."""
-    model = WordLinearSMTModel(ToySpeck(), maximum_weight=weight, nonzero_input="key")
+    model = WordXorLinearSMTModel(ToySpeck(), maximum_weight=weight, nonzero_input="key")
     if weight == 2:
         result = model.primitive.analysis.enumerate_xor_linear_trails(
             weight,
@@ -75,9 +75,9 @@ def test_z3_preserves_cms_four_round_speck_linear_optimum():
     """CMS cms_xor_linear_model_test.py fixes optimum 3, not just feasibility."""
     primitive = Speck(number_of_rounds=4)
     solver = Z3Solver(timeout_seconds=10)
-    below = SpeckLinearSMTModel(primitive, maximum_weight=2)
+    below = SpeckXorLinearSMTModel(primitive, maximum_weight=2)
     assert solver.solve(below.smt_formula()).status is SatStatus.UNSATISFIABLE
-    optimum = SpeckLinearSMTModel(primitive, maximum_weight=3)
+    optimum = SpeckXorLinearSMTModel(primitive, maximum_weight=3)
     result = solver.solve(optimum.smt_formula())
     assert result.status is SatStatus.SATISFIABLE
     trail = optimum.decode_trail(result.assignment)
@@ -94,11 +94,11 @@ def test_z3_preserves_three_round_speck_linear_optimum_and_fixed_weight():
     assert shutil.which("z3") is not None, "the external job must install Z3"
     primitive = Speck(number_of_rounds=3)
     solver = Z3Solver(timeout_seconds=10)
-    below = SpeckLinearSMTModel(primitive, maximum_weight=0)
+    below = SpeckXorLinearSMTModel(primitive, maximum_weight=0)
     assert solver.solve(below.smt_formula()).status is SatStatus.UNSATISFIABLE
     for model, weight in (
-        (SpeckLinearSMTModel(primitive, maximum_weight=1), 1),
-        (SpeckLinearSMTModel(primitive, fixed_weight=7), 7),
+        (SpeckXorLinearSMTModel(primitive, maximum_weight=1), 1),
+        (SpeckXorLinearSMTModel(primitive, fixed_weight=7), 7),
     ):
         result = solver.solve(model.smt_formula())
         assert result.status is SatStatus.SATISFIABLE
@@ -113,7 +113,7 @@ def test_z3_preserves_three_round_speck_linear_optimum_and_fixed_weight():
 
 @pytest.mark.parametrize("weight", [0, 17])
 def test_z3_exact_weight_handles_zero_and_out_of_range(weight):
-    model = SpeckLinearSMTModel(Speck(number_of_rounds=1), fixed_weight=weight)
+    model = SpeckXorLinearSMTModel(Speck(number_of_rounds=1), fixed_weight=weight)
     result = Z3Solver(timeout_seconds=10).solve(model.smt_formula())
     if weight == 0:
         assert result.status is SatStatus.SATISFIABLE

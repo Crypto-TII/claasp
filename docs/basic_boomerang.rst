@@ -1,4 +1,4 @@
-Boomerang analysis: introduction
-================================
+Boomerang analysis: basic
+=========================
 
 **TODO**

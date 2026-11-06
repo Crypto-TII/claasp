@@ -11,7 +11,7 @@ from claasp.components import (
     Rotate,
     Xor,
 )
-from claasp.graph import Primitive
+from claasp.graph import GraphPropagation, Primitive
 from claasp.unit_types import Bit, Word
 
 
@@ -84,20 +84,16 @@ class BooleanDegreeEvaluator:
             else:
                 raise NotImplementedError("Boolean degree evaluation supports Bit and Word domains")
 
-        binding_cache = {}
-        for component in primitive.graph.components:
-            operands = tuple(
-                primitive.graph.resolve_selection(selection, values, binding_cache)
-                for selection in component.inputs
-            )
+        def rule(component, operands):
+            output: tuple[DegreeUnit, ...]
             if isinstance(component, Constant):
                 unit_type = component.output_type.unit_type
                 if isinstance(unit_type, Bit):
-                    values[component.component_id] = tuple(
+                    output = tuple(
                         _Degree(0 if value else -1, frozenset()) for value in component.values
                     )
                 elif isinstance(unit_type, Word):
-                    values[component.component_id] = tuple(
+                    output = tuple(
                         tuple(
                             _Degree(
                                 0 if value & (1 << (unit_type.width - 1 - bit)) else -1, frozenset()
@@ -106,16 +102,16 @@ class BooleanDegreeEvaluator:
                         )
                         for value in component.values
                     )
-                continue
+                return output
             if isinstance(component, Rotate):
-                values[component.component_id] = tuple(
+                output = tuple(
                     self._rotate(unit, component.amount, component.direction)
                     for unit in operands[0]
                 )
-                continue
+                return output
             if isinstance(component, BitwiseNot):
-                values[component.component_id] = operands[0]
-                continue
+                output = operands[0]
+                return output
             if isinstance(component, (Xor, BitwiseAnd, BitwiseOr, ModularAdd)):
                 result = list(operands[0])
                 for operand in operands[1:]:
@@ -127,15 +123,16 @@ class BooleanDegreeEvaluator:
                     result = [
                         operation(left, right, capacity) for left, right in zip(result, operand)
                     ]
-                values[component.component_id] = tuple(result)
-                continue
+                output = tuple(result)
+                return output
             raise NotImplementedError(
                 f"Boolean degree evaluator does not support {type(component).__name__}"
             )
 
-        if primitive.graph.output is None:
+        propagated = GraphPropagation(primitive).run(values, rule)
+        if propagated.output is None:
             return BooleanDegreeResult((), variable_input)
-        selected = primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
+        selected = propagated.output
         flattened = tuple(
             degree.value
             for unit in selected

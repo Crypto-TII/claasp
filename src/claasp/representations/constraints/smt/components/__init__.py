@@ -1,8 +1,8 @@
 """Backend-specific SMT component encodings."""
 
 from claasp.representations.constraints.smt.components.modular_add import (
-    ModularAddDifferentialSMTModel,
-    ModularAddLinearSMTModel,
+    ModularAddXorDifferentialSMTModel,
+    ModularAddXorLinearSMTModel,
 )
 from claasp.representations.constraints.smt.components.sbox import (
     SBoxTransitionSMTModel,
@@ -14,9 +14,9 @@ from claasp.representations.constraints.smt.components.truncated import (
 )
 
 __all__ = [
-    "ModularAddDifferentialSMTModel",
+    "ModularAddXorDifferentialSMTModel",
     "ModularAddDeterministicTruncatedSMTModel",
-    "ModularAddLinearSMTModel",
+    "ModularAddXorLinearSMTModel",
     "SBoxTransitionSMTModel",
     "SBoxXorDifferentialSMTModel",
     "SBoxXorLinearSMTModel",

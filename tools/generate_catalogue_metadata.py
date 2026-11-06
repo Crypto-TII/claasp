@@ -17,6 +17,7 @@ REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
 SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/catalogue/data/catalogue.json"
 NATIVE_EVIDENCE = {
+    "Craft": ["tests/unit/primitives/block_ciphers/test_craft.py"],
     "SalsaBlockFunction": ["tests/unit/primitives/block_functions/test_salsa.py"],
 }
 
@@ -449,7 +450,7 @@ REPRESENTATIONS = (
     (
         "word_differential_sat",
         "constraint",
-        "claasp.representations.constraints.sat:WordDifferentialSATModel",
+        "claasp.representations.constraints.sat:WordXorDifferentialSATModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"minisat"},
@@ -458,7 +459,7 @@ REPRESENTATIONS = (
     (
         "word_linear_sat",
         "constraint",
-        "claasp.representations.constraints.sat:WordLinearSATModel",
+        "claasp.representations.constraints.sat:WordXorLinearSATModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"minisat"},
@@ -467,7 +468,7 @@ REPRESENTATIONS = (
     (
         "word_differential_smt",
         "constraint",
-        "claasp.representations.constraints.smt:WordDifferentialSMTModel",
+        "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"z3"},
@@ -476,7 +477,7 @@ REPRESENTATIONS = (
     (
         "word_linear_smt",
         "constraint",
-        "claasp.representations.constraints.smt:WordLinearSMTModel",
+        "claasp.representations.constraints.smt:WordXorLinearSMTModel",
         WORD_TRAIL_COMPONENTS,
         {"Word"},
         {"z3"},
@@ -517,6 +518,17 @@ REPRESENTATIONS = (
 )
 
 ANALYSES = (
+    (
+        "circle_linear",
+        "Primitive.analysis.circle_linear",
+        "circle_linear",
+        "qualified",
+        {"concrete_execution"},
+        {"python_scalar"},
+        set(),
+        set(),
+        "binary character bases; exact bounded endpoints or seeded estimates; subgroup search has explicit applicability",
+    ),
     (
         "component_property",
         "Primitive.analysis.component_property",

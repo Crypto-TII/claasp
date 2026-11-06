@@ -8,7 +8,7 @@ from claasp.catalogue import Catalogue, PrimitiveRecord, RepresentationRecord, c
 
 def test_catalogue_returns_sorted_immutable_records():
     records = catalogue.primitives()
-    assert len(records) == 147
+    assert len(records) == 148
     assert isinstance(records, tuple)
     assert records == tuple(sorted(records, key=lambda item: (item.category, item.name)))
     assert isinstance(records[0], PrimitiveRecord)

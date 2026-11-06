@@ -16,8 +16,8 @@ from claasp.semantics.base import (
 )
 from claasp.semantics.cryptanalysis.bitwise import BitwiseAndSemantics
 from claasp.semantics.cryptanalysis.trails import (
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    ModularAddXorLinearSemantics,
     SBoxTransitionSemantics,
     Transition,
 )
@@ -262,7 +262,7 @@ class _ModularAddProvider:
         self.transition_semantics = (
             ModularAddTransitionSemantics(width)
             if semantics == XOR_DIFFERENTIAL
-            else ModularAddLinearSemantics(width)
+            else ModularAddXorLinearSemantics(width)
         )
 
     def transition(self, input_patterns: tuple[int, ...], output_pattern: int) -> Transition:

@@ -8,7 +8,7 @@ from claasp import Primitive, UnitArrayType
 from claasp.components import Identity
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.primitives import Speck, ToySpeck
-from claasp.representations.constraints.smt.word_differential import WordDifferentialSMTModel
+from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialSMTModel
 from claasp.unit_types import Word
 
 pytestmark = pytest.mark.external
@@ -16,7 +16,7 @@ pytestmark = pytest.mark.external
 
 @pytest.mark.parametrize("weight,count", [(0, 1), (1, 6)])
 def test_cp_toy_speck_two_round_exact_differential_counts(weight, count):
-    model = WordDifferentialSMTModel(
+    model = WordXorDifferentialSMTModel(
         ToySpeck(2),
         fixed_weight=weight,
         nonzero_input="plaintext",
@@ -31,7 +31,7 @@ def test_cp_toy_speck_two_round_exact_differential_counts(weight, count):
 
 
 def test_cp_toy_speck_four_round_weight_one_is_unsat():
-    model = WordDifferentialSMTModel(
+    model = WordXorDifferentialSMTModel(
         ToySpeck(4),
         fixed_weight=1,
         nonzero_input="plaintext",
@@ -72,7 +72,9 @@ def test_cp_identity_sbox_zero_weight_and_empty_positive_weight_range():
 
 
 def test_cp_related_key_speck_four_round_zero_weight_is_feasible():
-    model = WordDifferentialSMTModel(Speck(number_of_rounds=4), fixed_weight=0, nonzero_input="key")
+    model = WordXorDifferentialSMTModel(
+        Speck(number_of_rounds=4), fixed_weight=0, nonzero_input="key"
+    )
     solved = Z3Solver(timeout_seconds=10).solve(model.smt_formula())
     assert solved.status is SatStatus.SATISFIABLE
     trail = model.decode_characteristic(solved.assignment)
@@ -84,11 +86,11 @@ def test_cp_speck_four_round_single_key_optimum_and_minmax_fixture():
     """Zero key difference makes minmax equal the data-path weight."""
     primitive = Speck(number_of_rounds=4)
     solver = Z3Solver(timeout_seconds=10)
-    below = WordDifferentialSMTModel(
+    below = WordXorDifferentialSMTModel(
         primitive, maximum_weight=4, nonzero_input="plaintext", fixed_input_differences={"key": 0}
     )
     assert solver.solve(below.smt_formula()).status is SatStatus.UNSATISFIABLE
-    optimum = WordDifferentialSMTModel(
+    optimum = WordXorDifferentialSMTModel(
         primitive, maximum_weight=5, nonzero_input="plaintext", fixed_input_differences={"key": 0}
     )
     solved = solver.solve(optimum.smt_formula())
@@ -103,7 +105,7 @@ def test_cp_speck_four_round_single_key_optimum_and_minmax_fixture():
 @pytest.mark.emulation_sensitive
 def test_sat_fixed_nine_round_speck_cluster_preserves_27_trails_and_weight():
     """Dedicated legacy cluster check; not a routine integration workload."""
-    model = WordDifferentialSMTModel(
+    model = WordXorDifferentialSMTModel(
         Speck(number_of_rounds=9),
         maximum_weight=39,
         fixed_input_differences={"plaintext": 0x8054A900, "key": 0},

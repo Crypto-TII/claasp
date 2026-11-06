@@ -13,6 +13,24 @@ claasp.analysis
 .. automodule:: claasp.analysis
    :no-index:
 
+claasp.analysis.circle_differential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.circle_differential
+   :no-index:
+
+claasp.analysis.circle_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.circle_linear
+   :no-index:
+
+claasp.analysis.circle_linear_trails
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.circle_linear_trails
+   :no-index:
+
 claasp.analysis.component_inspection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -253,6 +271,12 @@ claasp.graph.binding
 .. automodule:: claasp.graph.binding
    :no-index:
 
+claasp.graph.propagation
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.graph.propagation
+   :no-index:
+
 claasp.parameters
 ~~~~~~~~~~~~~~~~~
 
@@ -305,6 +329,12 @@ claasp.primitives.block_ciphers.aradi
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.primitives.block_ciphers.aradi
+   :no-index:
+
+claasp.primitives.block_ciphers.craft
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.block_ciphers.craft
    :no-index:
 
 claasp.primitives.block_ciphers.des
@@ -739,12 +769,6 @@ claasp.representations.constraints.sat.components.boolean
 .. automodule:: claasp.representations.constraints.sat.components.boolean
    :no-index:
 
-claasp.representations.constraints.sat.components.differential_linear
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. automodule:: claasp.representations.constraints.sat.components.differential_linear
-   :no-index:
-
 claasp.representations.constraints.sat.components.modular_add
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -779,6 +803,12 @@ claasp.representations.constraints.sat.components.wiring
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.components.wiring
+   :no-index:
+
+claasp.representations.constraints.sat.components.xor_differential_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.xor_differential_linear
    :no-index:
 
 claasp.representations.constraints.sat.exporters
@@ -881,6 +911,24 @@ claasp.semantics.cryptanalysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.semantics.cryptanalysis
+   :no-index:
+
+claasp.semantics.cryptanalysis.bibrace
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.bibrace
+   :no-index:
+
+claasp.semantics.cryptanalysis.circle_differential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.circle_differential
+   :no-index:
+
+claasp.semantics.cryptanalysis.circle_linear
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.semantics.cryptanalysis.circle_linear
    :no-index:
 
 claasp.semantics.cryptanalysis.quasidifferential

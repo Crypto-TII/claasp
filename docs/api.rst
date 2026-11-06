@@ -85,7 +85,7 @@ Analysis
 
 .. automodule:: claasp.analysis
    :members:
-   :exclude-members: BitPattern,ModularAddLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailKind,TrailRoundTransition,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
+   :exclude-members: BitPattern,ModularAddXorLinearSemantics,ModularAddTransitionSemantics,SBoxTransitionSemantics,Trail,TrailKind,TrailRoundTransition,TrailSearchResult,TrailStep,Transition,TruncatedBit,TruncatedXorDifference,XorDifference,XorMask,propagate_two_word_speck_round,truncated_modular_add
 
 .. automodule:: claasp.drivers.analysis
    :members:
@@ -161,6 +161,21 @@ Quasidifferential semantics
 ---------------------------
 
 .. automodule:: claasp.semantics.cryptanalysis.quasidifferential
+   :members:
+
+Circle-differential semantics
+------------------------------
+
+.. automodule:: claasp.semantics.cryptanalysis.circle_differential
+   :members:
+
+Circle-linear semantics
+-----------------------
+
+.. automodule:: claasp.semantics.cryptanalysis.bibrace
+   :members:
+
+.. automodule:: claasp.semantics.cryptanalysis.circle_linear
    :members:
 
 Complete public namespace index

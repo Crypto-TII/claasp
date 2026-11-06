@@ -23,8 +23,7 @@ from claasp.components import (
     VariableShift,
     Xor,
 )
-from claasp.graph import Primitive
-from claasp.graph.binding import BindingKind
+from claasp.graph import GraphPropagation, Primitive
 from claasp.provenance import DriverIdentity, DriverKind
 from claasp.representations.source.model import (
     SourceArtifact,
@@ -60,50 +59,28 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
     names.update(
         {item.component_id: f"v{index}" for index, item in enumerate(primitive.graph.components)}
     )
-    bindings = {item.binding_id: item for item in primitive.graph.bindings}
+    propagation = GraphPropagation(primitive)
+    source_variables = {
+        name: tuple(f"{names[name]}[{i}]" for i in range(vt.unit_count))
+        for name, vt in propagation.sources
+    }
 
-    def selection_expressions(selection):
-        return tuple(
-            source_expression(selection.source.source_id, position, set())
-            for position in selection.positions
-        )
-
-    def source_expression(source_id, position, stack):
-        if source_id in names:
-            return f"{names[source_id]}[{position}]"
-        if source_id in stack:
-            raise ValueError("cyclic structural binding")
-        binding = bindings[source_id]
-        selected = tuple(
-            selection_expressions_with_stack(item, stack | {source_id}) for item in binding.inputs
-        )
-        if binding.kind is BindingKind.JOIN:
-            flattened = tuple(expression for operand in selected for expression in operand)
-            return flattened[position]
-        if binding.kind is BindingKind.VIEW:
-            return selected[0][position]
-        if binding.kind is BindingKind.PACK_BITS:
-            width = binding.word_width
-            group = selected[0][position * width : (position + 1) * width]
-            return (
-                "("
-                + " | ".join(
-                    f"(({expression} & 1ULL) << {width - 1 - index})"
-                    for index, expression in enumerate(group)
-                )
-                + ")"
+    def pack(group, width):
+        return (
+            "("
+            + " | ".join(
+                f"(({expression} & 1ULL) << {width - 1 - i})" for i, expression in enumerate(group)
             )
-        width = binding.word_width
-        unit = position // width
-        bit = position % width
-        return f"(({selected[0][unit]} >> {width - 1 - bit}) & 1ULL)"
-
-    def selection_expressions_with_stack(selection, stack):
-        return tuple(
-            source_expression(selection.source.source_id, position, stack)
-            for position in selection.positions
+            + ")"
         )
 
+    def unpack(unit, width):
+        return tuple(f"(({unit} >> {width - 1 - bit}) & 1ULL)" for bit in range(width))
+
+    operand_variables, output_expressions = propagation.unit_wiring(
+        source_variables, pack=pack, unpack=unpack
+    )
+    assert output_expressions is not None
     lines = [
         "#include <inttypes.h>",
         "#include <stdint.h>",
@@ -174,11 +151,11 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
                 f'  if (!read_hex_units(argv[{index + 1}], {names[name]}, {count}, {width})) {{ fputs("invalid hex input\\n", stderr); return 2; }}',
             )
         )
-    for component in primitive.graph.components:
+
+    def rule(component, operands, output_variables):
         output = names[component.component_id]
         count = component.output_type.unit_count
         width = component.output_type.unit_type.encoded_bit_size
-        operands = tuple(selection_expressions(item) for item in component.inputs)
         lines.append(f"  uint64_t {output}[{count}];")
         if isinstance(component, Constant):
             for index, value in enumerate(component.values):
@@ -298,7 +275,8 @@ def compile_c_source(primitive: Primitive) -> SourceCompilationResult:
             _assign(lines, output, tuple(f"{table_name}[{item}]" for item in operands[0]))
         else:  # pragma: no cover - guarded by applicability
             raise AssertionError(type(component).__name__)
-    output_expressions = selection_expressions(primitive.graph.output)
+
+    propagation.relations(rule, source_variables, operand_variables)
     lines.append(f"  uint64_t result[{len(output_expressions)}];")
     _assign(lines, "result", output_expressions)
     output_width = primitive.graph.output.array_type.unit_type.encoded_bit_size

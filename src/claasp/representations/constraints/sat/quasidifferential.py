@@ -31,7 +31,7 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.graph import as_selection
+from claasp.graph import GraphPropagation, as_selection
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -327,6 +327,7 @@ class QuasidifferentialSATModel:
         ):
             raise ValueError("maximum_table_entries must be positive")
         self.primitive = primitive
+        self.propagation = GraphPropagation(primitive)
         self.interval = _weight_interval(
             maximum_weight, fixed_weight, minimum_weight, weight_tolerance
         )
@@ -349,23 +350,29 @@ class QuasidifferentialSATModel:
             if name not in primitive.graph.secret_inputs:
                 masks.setdefault(name, 0)
         self._fix(self.masks, masks)
-        self.output_differences = tuple(
-            self.differences[source][bit]
-            for source, bit in primitive.graph.selection_bit_sources(primitive.graph.output)
+        _, difference_operands, self.output_differences, _ = self.propagation.bit_wiring(
+            lambda name: name, sources=self.differences
         )
+        _, mask_operands, self.output_masks, consumers = self.propagation.bit_wiring(
+            self.context.fresh,
+            sources=self.masks,
+            edge_names=lambda c, i, selection: ("read_mask",) * _width(selection.array_type),
+            output_names=lambda vt: ("output_mask",) * _width(vt),
+        )
+        self.reads = {
+            mask: consumers[name][bit]
+            for name, row in self.masks.items()
+            for bit, mask in enumerate(row)
+        }
         if output_difference is not None:
             self._fix_bits(self.output_differences, output_difference, known=True)
-        for component in primitive.graph.components:
-            self._component(component)
-        self.output_masks = tuple(
-            self.context.fresh("output_mask") for _ in self.output_differences
+        self.propagation.relations(
+            lambda c, operands, output: self._component(c, operands, mask_operands[c.component_id]),
+            self.differences,
+            difference_operands,
         )
         if output_mask is not None:
             self._fix_bits(self.output_masks, output_mask)
-        for (source, bit), mask in zip(
-            primitive.graph.selection_bit_sources(primitive.graph.output), self.output_masks
-        ):
-            self.reads[self.masks[source][bit]].append(mask)
         for source in self.masks.values():
             for mask in source:
                 self.context.equal(mask, self.context.xor(self.reads[mask]))
@@ -391,19 +398,10 @@ class QuasidifferentialSATModel:
         self.base_formula = self.context.formula()
 
     def _make_wires(self):
-        sizes = {
-            name: _width(array.array_type)
-            for name, array in self.primitive.graph.input_arrays.items()
-        }
-        sizes.update(
-            (component.component_id, _width(component.output_type))
-            for component in self.primitive.graph.components
-        )
-        for name, width in sizes.items():
+        for name, array_type in self.propagation.sources:
+            width = _width(array_type)
             self.differences[name] = tuple(self.context.fresh("difference") for _ in range(width))
             self.masks[name] = tuple(self.context.fresh("mask") for _ in range(width))
-            for mask in self.masks[name]:
-                self.reads[mask] = []
 
     def _boundary_bits(self, value, width):
         if value is None:
@@ -453,21 +451,7 @@ class QuasidifferentialSATModel:
         self.context.equal(self.context.indices[name], literal)
         self.weights.append(name)
 
-    def _component(self, component):
-        differences = []
-        masks = []
-        for selection in component.inputs:
-            d_bits = []
-            m_bits = []
-            for source, bit in self.primitive.graph.selection_bit_sources(selection):
-                d_bits.append(self.differences[source][bit])
-                branch = self.context.fresh("read_mask")
-                self.reads[self.masks[source][bit]].append(branch)
-                m_bits.append(branch)
-            differences.append(tuple(d_bits))
-            masks.append(tuple(m_bits))
-        d = tuple(differences)
-        m = tuple(masks)
+    def _component(self, component, d, m):
         output_d = self.differences[component.component_id]
         output_m = self.masks[component.component_id]
         if isinstance(component, (ModularAdd, ModularSubtract)):

@@ -2,8 +2,8 @@
 
 from claasp.representations.constraints.smt.components import (
     ModularAddDeterministicTruncatedSMTModel,
-    ModularAddDifferentialSMTModel,
-    ModularAddLinearSMTModel,
+    ModularAddXorDifferentialSMTModel,
+    ModularAddXorLinearSMTModel,
     SBoxTransitionSMTModel,
     SBoxXorDifferentialSMTModel,
     SBoxXorLinearSMTModel,
@@ -11,27 +11,27 @@ from claasp.representations.constraints.smt.components import (
 from claasp.representations.constraints.smt.lowering import BooleanSMTModel
 from claasp.representations.constraints.smt.model import SMTFormula
 from claasp.representations.constraints.smt.trails import (
-    PresentDifferentialSMTModel,
-    PresentLinearSMTModel,
-    SpeckLinearSMTModel,
+    PresentXorDifferentialSMTModel,
+    PresentXorLinearSMTModel,
+    SpeckXorLinearSMTModel,
     WordDeterministicTruncatedSMTModel,
 )
-from claasp.representations.constraints.smt.word_differential import WordDifferentialSMTModel
-from claasp.representations.constraints.smt.word_linear import WordLinearSMTModel
+from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialSMTModel
+from claasp.representations.constraints.smt.word_xor_linear import WordXorLinearSMTModel
 
 __all__ = [
     "BooleanSMTModel",
-    "ModularAddDifferentialSMTModel",
+    "ModularAddXorDifferentialSMTModel",
     "ModularAddDeterministicTruncatedSMTModel",
-    "ModularAddLinearSMTModel",
-    "PresentDifferentialSMTModel",
-    "PresentLinearSMTModel",
+    "ModularAddXorLinearSMTModel",
+    "PresentXorDifferentialSMTModel",
+    "PresentXorLinearSMTModel",
     "SBoxTransitionSMTModel",
     "SBoxXorDifferentialSMTModel",
     "SBoxXorLinearSMTModel",
     "SMTFormula",
-    "SpeckLinearSMTModel",
-    "WordDifferentialSMTModel",
+    "SpeckXorLinearSMTModel",
+    "WordXorDifferentialSMTModel",
     "WordDeterministicTruncatedSMTModel",
-    "WordLinearSMTModel",
+    "WordXorLinearSMTModel",
 ]

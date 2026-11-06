@@ -10,7 +10,10 @@ import pytest
 from claasp.analysis import Analysis
 from claasp.drivers.solvers import Z3Solver
 from claasp.primitives import Heys, ToySpeck
-from claasp.representations.constraints.smt import WordDifferentialSMTModel, WordLinearSMTModel
+from claasp.representations.constraints.smt import (
+    WordXorDifferentialSMTModel,
+    WordXorLinearSMTModel,
+)
 
 pytestmark = pytest.mark.external
 
@@ -32,14 +35,14 @@ def test_find_one_returns_a_checked_characteristic_after_exactly_one_solver_call
     trail = getattr(primitive.analysis, f"find_one_xor_{kind}_trail")(1, solver=driver)
     assert trail is not None and trail.total_weight <= 1 and driver.calls == 1
     model = (
-        WordDifferentialSMTModel(
+        WordXorDifferentialSMTModel(
             primitive,
             maximum_weight=1,
             nonzero_input="plaintext",
             fixed_input_differences={"key": 0},
         )
         if kind == "differential"
-        else WordLinearSMTModel(
+        else WordXorLinearSMTModel(
             primitive, maximum_weight=1, nonzero_input="plaintext", fixed_inputs={"key": 0}
         )
     )

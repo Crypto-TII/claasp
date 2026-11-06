@@ -24,6 +24,7 @@ from claasp.graph.primitive import (
     PrimitiveInputDetails,
     PublishedValues,
 )
+from claasp.graph.propagation import GraphPropagation, PropagationResult
 from claasp.graph.realization import (
     AmbiguousRealizationError,
     RealizationDescriptor,
@@ -42,6 +43,8 @@ __all__ = [
     "AmbiguousRealizationError",
     "UnitArrayType",
     "BindingKind",
+    "GraphPropagation",
+    "PropagationResult",
     "BitWord",
     "Component",
     "CompositeBuilder",

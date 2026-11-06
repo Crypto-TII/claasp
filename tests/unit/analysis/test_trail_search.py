@@ -18,7 +18,10 @@ from claasp.primitives import (
     Threefish,
     VariableShift,
 )
-from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
+from claasp.representations.constraints.sat import (
+    WordXorDifferentialSATModel,
+    WordXorLinearSATModel,
+)
 from claasp.semantics.cryptanalysis import TrailKind
 
 
@@ -39,9 +42,9 @@ from claasp.semantics.cryptanalysis import TrailKind
 def test_confirmed_word_catalogue_graphs_construct_for_both_kinds(primitive, kind):
     require_word_sat_capability(primitive, kind)
     model = (
-        WordDifferentialSATModel(primitive)
+        WordXorDifferentialSATModel(primitive)
         if kind is TrailKind.XOR_DIFFERENTIAL
-        else WordLinearSATModel(primitive, maximum_weight=None)
+        else WordXorLinearSATModel(primitive, maximum_weight=None)
     )
     assert model.cnf_formula().variable_count
 
@@ -49,7 +52,7 @@ def test_confirmed_word_catalogue_graphs_construct_for_both_kinds(primitive, kin
 def test_bit_and_binary_field_graphs_construct_exact_differential_models():
     for primitive in (Ascon(number_of_rounds=1), AES(number_of_rounds=1)):
         require_word_sat_capability(primitive, TrailKind.XOR_DIFFERENTIAL)
-        assert WordDifferentialSATModel(primitive).cnf_formula().variable_count
+        assert WordXorDifferentialSATModel(primitive).cnf_formula().variable_count
 
 
 def test_unsupported_error_names_actual_primitive_kind_backend_and_component():
@@ -96,9 +99,9 @@ def test_fractional_sbox_capability_builds_both_exact_graph_relations(kind):
     primitive = Heys(number_of_rounds=1)
     require_word_sat_capability(primitive, kind)
     model = (
-        WordDifferentialSATModel(primitive)
+        WordXorDifferentialSATModel(primitive)
         if kind is TrailKind.XOR_DIFFERENTIAL
-        else WordLinearSATModel(primitive, maximum_weight=None)
+        else WordXorLinearSATModel(primitive, maximum_weight=None)
     )
     formula = model.cnf_formula()
     assert "exact_lookup_numerator" in formula.provenance
@@ -163,9 +166,9 @@ def test_round_evidence_uses_complete_published_speck_states(kind):
 
     primitive = Speck(number_of_rounds=2)
     model = (
-        WordDifferentialSATModel(primitive, fixed_input_differences={"key": 0})
+        WordXorDifferentialSATModel(primitive, fixed_input_differences={"key": 0})
         if kind is TrailKind.XOR_DIFFERENTIAL
-        else WordLinearSATModel(primitive, maximum_weight=None, fixed_inputs={"key": 0})
+        else WordXorLinearSATModel(primitive, maximum_weight=None, fixed_inputs={"key": 0})
     )
     formula = model.cnf_formula()
     shared = model._shared
@@ -185,9 +188,9 @@ def test_round_evidence_uses_complete_published_speck_states(kind):
         assign(shared._unit_arrays[second_ids[2]], 0x9ABC)
         assign(shared._unit_arrays[second_ids[4]], 0xDEF0)
     else:
-        from claasp.representations.constraints.smt.word_linear import WordLinearSMTModel
+        from claasp.representations.constraints.smt.word_xor_linear import WordXorLinearSMTModel
 
-        assert isinstance(shared, WordLinearSMTModel)
+        assert isinstance(shared, WordXorLinearSMTModel)
         # Deliberately different source masks catch accidental inclusion of
         # consumers inside the round (x also feeds the round's final XOR).
         assign(shared._unit_arrays[first_ids[2]], 0xFFFF)
@@ -225,7 +228,7 @@ def test_round_evidence_preserves_sparse_publications_and_final_output_order():
         if number == 1:
             primitive._builder.set_round_output(y, x)
     primitive._builder.set_output((y, x))
-    model = WordDifferentialSATModel(primitive)
+    model = WordXorDifferentialSATModel(primitive)
     formula = model.cnf_formula()
     assignment = dict.fromkeys(formula.variables, 0)
     for source_id, value in (

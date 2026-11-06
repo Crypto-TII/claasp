@@ -7,17 +7,13 @@ from claasp.representations.constraints.sat.components.boolean import (
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
 )
-from claasp.representations.constraints.sat.components.differential_linear import (
-    DifferentialToTruncatedSATModel,
-    TruncatedToLinearSATModel,
-)
 from claasp.representations.constraints.sat.components.modular_add import (
     ModularAddDeterministicTruncatedSATModel,
-    ModularAddDifferentialSATModel,
     ModularAddFunctionalSATModel,
-    ModularAddLinearSATModel,
     ModularAddNativeXorSATModel,
     ModularAddNWindowSATModel,
+    ModularAddXorDifferentialSATModel,
+    ModularAddXorLinearSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
     ModularSubtractFunctionalSATModel,
     ModularSubtractNativeXorSATModel,
@@ -43,17 +39,21 @@ from claasp.representations.constraints.sat.components.wiring import (
     VariableWiringFunctionalSATModel,
     WiringFunctionalSATModel,
 )
+from claasp.representations.constraints.sat.components.xor_differential_linear import (
+    TruncatedToXorLinearSATModel,
+    XorDifferentialToTruncatedSATModel,
+)
 
 __all__ = [
     "BinaryFieldFunctionalSATModel",
     "BooleanFunctionalSATModel",
     "BooleanNativeXorSATModel",
-    "DifferentialToTruncatedSATModel",
+    "XorDifferentialToTruncatedSATModel",
     "ImpossibleBoundarySATModel",
-    "ModularAddDifferentialSATModel",
+    "ModularAddXorDifferentialSATModel",
     "ModularAddDeterministicTruncatedSATModel",
     "ModularAddFunctionalSATModel",
-    "ModularAddLinearSATModel",
+    "ModularAddXorLinearSATModel",
     "ModularAddNativeXorSATModel",
     "ModularAddNWindowSATModel",
     "ModularAddSemiDeterministicTruncatedSATModel",
@@ -67,7 +67,7 @@ __all__ = [
     "SBoxTransitionSATModel",
     "SBoxXorDifferentialSATModel",
     "SBoxXorLinearSATModel",
-    "TruncatedToLinearSATModel",
+    "TruncatedToXorLinearSATModel",
     "VariableWiringFunctionalSATModel",
     "WiringFunctionalSATModel",
 ]
