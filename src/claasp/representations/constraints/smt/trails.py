@@ -1,38 +1,46 @@
 """Weighted full-trail SMT representation lowering."""
 
-from contextlib import nullcontext
-from dataclasses import dataclass
-from fractions import Fraction
-from hashlib import sha256
-
 from claasp.components import (
     BitVectorSBox,
-    BitwiseAnd,
-    Constant,
-    Identity,
     ModularAdd,
     Permutation,
     Rotate,
-    Xor,
 )
-from claasp.drivers.solvers import SatStatus
 from claasp.graph import Primitive
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
     _direct_model,
 )
+from claasp.representations.constraints._propagation import (
+    component_applications as _component_applications,
+)
+from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt.components.modular_add import (
-    ModularAddDifferentialSMTModel,
-    ModularAddLinearSMTModel,
+    ModularAddXorLinearSMTModel,
     _xor_equivalence,
 )
 from claasp.representations.constraints.smt.model import SMTFormula
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialCharacteristic as WordXorDifferentialCharacteristic,
+)
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialEnumeration as WordXorDifferentialEnumeration,
+)
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialSMTModel as WordXorDifferentialSMTModel,
+)
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearCharacteristic as WordXorLinearCharacteristic,
+)
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearEnumeration as WordXorLinearEnumeration,
+)
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearSMTModel as WordXorLinearSMTModel,
+)
 from claasp.semantics import XOR_DIFFERENTIAL, XOR_LINEAR
 from claasp.semantics.cryptanalysis import (
-    BitwiseAndSemantics,
-    ModularAddLinearSemantics,
-    ModularAddTransitionSemantics,
     PropagationProblem,
     SBoxTransitionSemantics,
     Trail,
@@ -44,35 +52,13 @@ from claasp.semantics.cryptanalysis import (
 from claasp.unit_types import Word
 
 
-def _component_applications(primitive, default, specialized=()):
-    """Group graph components by the concrete encoding that lowered them."""
-
-    grouped = {model: [] for _, model in specialized}
-    grouped[default] = []
-    for component in primitive.graph.components:
-        model = next(
-            (
-                model
-                for component_type, model in specialized
-                if isinstance(component, component_type)
-            ),
-            default,
-        )
-        grouped[model].append(component.component_id)
-    return tuple(
-        ConstraintModelApplication(model, tuple(component_ids))
-        for model, component_ids in grouped.items()
-        if component_ids
-    )
-
-
-class PresentDifferentialSMTModel:
+class PresentXorDifferentialSMTModel:
     """Exact two-round PRESENT XOR-differential model with a weight bound.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Present
-        >>> model = PresentDifferentialSMTModel(Present(number_of_rounds=2), 4)
+        >>> model = PresentXorDifferentialSMTModel(Present(number_of_rounds=2), 4)
         >>> formula = model.smt_formula()
         >>> (len(formula.variables) < 700, formula.assertion_count < 30000)
         (True, True)
@@ -80,7 +66,7 @@ class PresentDifferentialSMTModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "PresentDifferentialSMTModel",
+        "PresentXorDifferentialSMTModel",
         "xor_differential",
         "exhaustive S-box transition clauses",
         "The S-box support and weights are enumerated directly from the supplied table.",
@@ -225,13 +211,13 @@ class PresentDifferentialSMTModel:
         )
 
 
-class PresentLinearSMTModel:
+class PresentXorLinearSMTModel:
     """Exact three-round PRESENT XOR-linear model with a weight bound.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Present
-        >>> model = PresentLinearSMTModel(Present(number_of_rounds=3), 4)
+        >>> model = PresentXorLinearSMTModel(Present(number_of_rounds=3), 4)
         >>> formula = model.smt_formula()
         >>> (len(formula.variables) < 1000, formula.assertion_count < 40000)
         (True, True)
@@ -239,7 +225,7 @@ class PresentLinearSMTModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "PresentLinearSMTModel",
+        "PresentXorLinearSMTModel",
         "xor_linear",
         "exhaustive S-box transition clauses",
         "The signed S-box support and weights are enumerated directly from the supplied table.",
@@ -436,31 +422,6 @@ def check_present_linear_smt_trail(primitive: Primitive, trail: Trail) -> bool:
     return state == trail.output_pattern.value
 
 
-def _at_most(names, bound, allocate, indices, add):
-    if bound >= len(names):
-        return
-    if bound == 0:
-        for name in names:
-            add((-indices[name],), "weight_bound")
-        return
-    previous = ()
-    for position, name in enumerate(names):
-        current = tuple(
-            allocate(f"__weight_counter_{position}_{count}") for count in range(1, bound + 1)
-        )
-        add((-indices[name], indices[current[0]]), "weight_bound")
-        if previous:
-            for count in range(bound):
-                add((-indices[previous[count]], indices[current[count]]), "weight_bound")
-            for count in range(1, bound):
-                add(
-                    (-indices[name], -indices[previous[count - 1]], indices[current[count]]),
-                    "weight_bound",
-                )
-            add((-indices[name], -indices[previous[-1]]), "weight_bound")
-        previous = current
-
-
 def _round_sboxes(primitive, round_number):
     prefix = f"sbox_{round_number}_"
     result = tuple(
@@ -502,7 +463,7 @@ def _permute(value, mapping):
     return _integer(tuple(bits[position] for position in mapping))
 
 
-class SpeckLinearSMTModel:
+class SpeckXorLinearSMTModel:
     """Compose data-path masks with zero round-key masks and explicit weights.
 
     The plaintext mask is nonzero. Key-schedule masks and related-key linear
@@ -512,14 +473,14 @@ class SpeckLinearSMTModel:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = SpeckLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
+        >>> model = SpeckXorLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
         >>> "nonzero_linear_input" in model.smt_formula().provenance
         True
     """
 
     model_provenance = _direct_model(
         ConstraintBackend.SMT,
-        "SpeckLinearSMTModel",
+        "SpeckXorLinearSMTModel",
         "xor_linear",
         "direct graph-mask composition",
         "Rotation and XOR mask relations are expressed directly from graph wiring.",
@@ -585,7 +546,7 @@ class SpeckLinearSMTModel:
         )
         weights = []
         for r in range(len(self.primitive.graph.rounds)):
-            local = ModularAddLinearSMTModel(width).smt_formula()
+            local = ModularAddXorLinearSMTModel(width).smt_formula()
             mapping = {
                 i: indices[allocate(f"round_{r}_{name}")]
                 for i, name in enumerate(local.variables, 1)
@@ -646,7 +607,7 @@ class SpeckLinearSMTModel:
             _component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddLinearSMTModel.model_provenance),),
+                ((ModularAdd, ModularAddXorLinearSMTModel.model_provenance),),
             ),
         )
 
@@ -659,7 +620,7 @@ class SpeckLinearSMTModel:
             raise ValueError("build the SMT formula before decoding a trail")
         steps = []
         for r in range(len(self.primitive.graph.rounds)):
-            local = ModularAddLinearSMTModel(self.width)
+            local = ModularAddXorLinearSMTModel(self.width)
             projected = {
                 name: assignment[f"round_{r}_{name}"] for name in local.smt_formula().variables
             }
@@ -698,582 +659,6 @@ class SpeckLinearSMTModel:
         if not isinstance(component, Rotate):
             raise ValueError(f"Speck round {round_number} is missing its {direction} rotation")
         return component.amount
-
-
-@dataclass(frozen=True, slots=True)
-class WordLinearCharacteristic:
-    """Exact component characteristic, not a whole-primitive linear hull."""
-
-    input_masks: tuple[tuple[str, int], ...]
-    output_mask: int
-    steps: tuple[TrailStep, ...]
-    constant_sign: int
-    semantic_assignment: tuple[tuple[str, int], ...]
-
-    @property
-    def total_weight(self):
-        return sum(step.transition.weight for step in self.steps)
-
-    @property
-    def sign(self):
-        result = self.constant_sign
-        for step in self.steps:
-            result *= step.transition.sign
-        return result
-
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
-        """Print retained characteristic evidence without starting a solver.
-
-        EXAMPLES::
-
-            >>> callable(WordLinearCharacteristic.to_terminal)
-            True
-        """
-        from claasp.presentation._terminal import to_terminal
-        from claasp.presentation._trail_queries import characteristic_section
-
-        to_terminal(characteristic_section(self, linear=True, details=details), file=file)
-
-
-@dataclass(frozen=True, slots=True)
-class WordLinearEnumeration:
-    """Enumeration is proof-complete only after terminal solver UNSAT."""
-
-    trails: tuple[WordLinearCharacteristic, ...]
-    complete: bool
-    runtime_seconds: float
-    reproducibility: tuple[tuple[str, str], ...] = ()
-
-    def require_complete(self):
-        if not self.complete:
-            raise RuntimeError("linear characteristic enumeration is incomplete")
-        return self
-
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
-        """Print retained characteristic evidence without starting a solver.
-
-        EXAMPLES::
-
-            >>> from io import StringIO
-            >>> result = WordLinearEnumeration((), False, 0.0)
-            >>> output = StringIO()
-            >>> result.to_terminal(file=output)
-            >>> "Incomplete enumeration" in output.getvalue()
-            True
-        """
-        from claasp.presentation._terminal import to_terminal
-        from claasp.presentation._trail_queries import enumeration_section
-
-        to_terminal(enumeration_section(self, linear=True, details=details), file=file)
-
-
-class WordLinearSMTModel:
-    """Exact XOR/rotation/addition mask wiring with explicit external masks.
-
-    Constants contribute a sign and zero weight. Fanout XORs all consumer
-    masks back to the producer. Native XOR-aware execution is not required.
-
-
-    EXAMPLES::
-
-        >>> from claasp.primitives import ToySpeck
-        >>> model = WordLinearSMTModel(
-        ...     ToySpeck(), maximum_weight=2, nonzero_input="key"
-        ... )
-        >>> "nonzero_external_mask" in model.smt_formula().provenance
-        True
-    """
-
-    model_provenance = _direct_model(
-        ConstraintBackend.SMT,
-        "WordLinearSMTModel",
-        "xor_linear",
-        "direct word-graph mask composition",
-        "Non-addition component relations are derived directly from graph wiring and truth tables.",
-    )
-
-    def __init__(
-        self,
-        primitive,
-        *,
-        maximum_weight,
-        nonzero_input=None,
-        fixed_input_masks=None,
-        fixed_inputs=None,
-    ):
-        if (
-            not isinstance(maximum_weight, int)
-            or isinstance(maximum_weight, bool)
-            or maximum_weight < 0
-        ):
-            raise ValueError("maximum_weight must be a nonnegative integer")
-        self.primitive = primitive
-        self.maximum_weight = maximum_weight
-        self.nonzero_input = nonzero_input
-        self.fixed_input_masks = dict(fixed_input_masks or {})
-        self.fixed_inputs = dict(fixed_inputs or {})
-        for name, value in self.fixed_inputs.items():
-            if name not in primitive.graph.input_arrays:
-                raise ValueError("unknown fixed concrete input")
-            primitive._decode_boundary(value, primitive.graph.input_arrays[name].array_type)
-        if nonzero_input in self.fixed_inputs:
-            raise ValueError("a concrete fixed input cannot have a nonzero external mask")
-        if nonzero_input is not None and nonzero_input not in primitive.graph.input_arrays:
-            raise ValueError("unknown nonzero input")
-        for name, value in self.fixed_input_masks.items():
-            if name not in primitive.graph.input_arrays:
-                raise ValueError("unknown fixed input")
-            array_type = primitive.graph.input_arrays[name].array_type
-            if (
-                not isinstance(array_type.unit_type, Word)
-                or not isinstance(value, int)
-                or isinstance(value, bool)
-                or not 0 <= value < (1 << (array_type.unit_count * array_type.unit_type.width))
-            ):
-                raise ValueError("fixed masks must fit the input word type")
-        self._formula = None
-
-    def _constant_subgraph(self):
-        """Fold only nodes whose complete dependency set has concrete fixed inputs."""
-        if not self.fixed_inputs:
-            return {}
-        trace = self.primitive.evaluate_with_trace(
-            {name: self.fixed_inputs.get(name, 0) for name in self.primitive.graph.input_arrays}
-        ).trace
-        known = {name: tuple(trace.value_of(name)) for name in self.fixed_inputs}
-        for component in self.primitive.graph.components:
-            if all(
-                all(
-                    source_id in known
-                    for source_id, _ in self.primitive.graph.selection_bit_sources(selection)
-                )
-                for selection in component.inputs
-            ):
-                known[component.component_id] = tuple(trace.value_of(component.component_id))
-        return known
-
-    @staticmethod
-    def _names(prefix, array_type):
-        if not isinstance(array_type.unit_type, Word):
-            raise NotImplementedError("word linear lowering requires Word domains")
-        return tuple(
-            f"{prefix}_{bit}" for bit in range(array_type.unit_count * array_type.unit_type.width)
-        )
-
-    def smt_formula(self):
-        """Compute the smt formula for this public typed contract."""
-
-        variables, indices, clauses, provenance = [], {}, [], []
-
-        def allocate(name):
-            if name not in indices:
-                variables.append(name)
-                indices[name] = len(variables)
-            return name
-
-        def add(items, label):
-            clauses.append(tuple(items))
-            provenance.append(label)
-
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
-        unit_arrays = {
-            name: tuple(allocate(n) for n in self._names(f"mask_{name}", vt))
-            for name, vt in sources
-        }
-        consumers = {name: [[] for _ in names] for name, names in unit_arrays.items()}
-        edges, records, weights = {}, [], []
-        folded = self._constant_subgraph()
-        for component in self.primitive.graph.components:
-            if component.component_id in folded:
-                edges[component.component_id] = ()
-                continue
-            operands = []
-            for operand, selection in enumerate(component.inputs):
-                names = tuple(
-                    allocate(n)
-                    for n in self._names(
-                        f"edge_{component.component_id}_{operand}", selection.array_type
-                    )
-                )
-                operands.append(names)
-                for edge_name, (source_id, source_bit) in zip(
-                    names, self.primitive.graph.selection_bit_sources(selection)
-                ):
-                    consumers[source_id][source_bit].append(edge_name)
-            edges[component.component_id] = tuple(operands)
-            output = unit_arrays[component.component_id]
-            width = component.output_type.unit_type.width
-            if isinstance(component, ModularAdd):
-                if len(operands) != 2:
-                    raise NotImplementedError("linear modular addition requires two operands")
-                for unit in range(component.output_type.unit_count):
-                    local = ModularAddLinearSMTModel(width).smt_formula()
-                    prefix = f"add_{component.component_id}_{unit}"
-                    local_names = {name: allocate(f"{prefix}_{name}") for name in local.variables}
-                    mapping = {
-                        i: indices[local_names[name]] for i, name in enumerate(local.variables, 1)
-                    }
-                    for clause, label in zip(local.assertions, local.provenance):
-                        add(
-                            (
-                                mapping[abs(literal)] * (1 if literal > 0 else -1)
-                                for literal in clause
-                            ),
-                            label,
-                        )
-                    groups = [operand[unit * width : (unit + 1) * width] for operand in operands]
-                    groups.append(output[unit * width : (unit + 1) * width])
-                    for label, names in zip(("left", "right", "output"), groups):
-                        for bit, name in enumerate(names):
-                            _xor_equivalence(
-                                (name, local_names[f"{label}_{bit}"]), indices, clauses, provenance
-                            )
-                    weights.extend(local_names[f"weight_{bit}"] for bit in range(width))
-                    records.append((component.component_id, unit, width, prefix))
-            elif isinstance(component, BitwiseAnd):
-                for bit, target in enumerate(output):
-                    for operand in operands:
-                        add((indices[target], -indices[operand[bit]]), "and_linear_support")
-                weights.extend(output)
-                for unit in range(component.output_type.unit_count):
-                    records.append((component.component_id, unit, width, None))
-            elif isinstance(component, Xor):
-                for operand in operands:
-                    for source, target in zip(operand, output):
-                        _xor_equivalence((source, target), indices, clauses, provenance)
-            elif isinstance(component, Identity):
-                flattened = tuple(name for operand in operands for name in operand)
-                for source, target in zip(flattened, output):
-                    _xor_equivalence((source, target), indices, clauses, provenance)
-            elif isinstance(component, Rotate):
-                amount = component.amount if component.direction == "right" else -component.amount
-                for unit in range(component.output_type.unit_count):
-                    for bit in range(width):
-                        _xor_equivalence(
-                            (
-                                operands[0][unit * width + bit],
-                                output[unit * width + (bit + amount) % width],
-                            ),
-                            indices,
-                            clauses,
-                            provenance,
-                        )
-            elif not isinstance(component, Constant):
-                raise NotImplementedError(
-                    f"no word linear semantics for {type(component).__name__}"
-                )
-        output = tuple(
-            allocate(n)
-            for n in self._names("external_output", self.primitive.graph.output.array_type)
-        )
-        for output_name, (source_id, source_bit) in zip(
-            output, self.primitive.graph.selection_bit_sources(self.primitive.graph.output)
-        ):
-            consumers[source_id][source_bit].append(output_name)
-        for name, names in unit_arrays.items():
-            for bit, target in enumerate(names):
-                _xor_equivalence((target, *consumers[name][bit]), indices, clauses, provenance)
-        if self.nonzero_input is not None:
-            add((indices[n] for n in unit_arrays[self.nonzero_input]), "nonzero_external_mask")
-        for name, value in self.fixed_input_masks.items():
-            if name in self.fixed_inputs:
-                if value != 0:
-                    raise ValueError("fixed concrete inputs cannot have nonzero external masks")
-                continue
-            for bit, variable in enumerate(unit_arrays[name]):
-                literal = indices[variable]
-                add(
-                    (literal if value & (1 << (len(unit_arrays[name]) - 1 - bit)) else -literal,),
-                    "fixed_external_mask",
-                )
-        semantic_names = tuple(variables)
-        _at_most(weights, self.maximum_weight, allocate, indices, add)
-        self._unit_arrays, self._edges, self._records, self._output = (
-            unit_arrays,
-            edges,
-            records,
-            output,
-        )
-        self._folded_values = folded
-        self._semantic_names = semantic_names
-        self._formula = SMTFormula(
-            tuple(variables),
-            tuple(clauses),
-            tuple(provenance),
-            _component_applications(
-                self.primitive,
-                self.model_provenance,
-                ((ModularAdd, ModularAddLinearSMTModel.model_provenance),),
-            ),
-        )
-        return self._formula
-
-    def decode_characteristic(self, assignment):
-        """Validate the full Boolean witness and independently recount additions."""
-        if self._formula is None:
-            raise ValueError("build the formula before decoding")
-        from claasp.representations.constraints.sat import CNFFormula
-
-        if not CNFFormula(
-            self._formula.variables, self._formula.assertions, self._formula.provenance
-        ).is_satisfied(assignment):
-            raise ValueError("invalid word linear witness")
-        steps = []
-        for component_id, unit, width, prefix in self._records:
-            if prefix is None:
-                masks = [
-                    _packed(names[unit * width : (unit + 1) * width], assignment)
-                    for names in self._edges[component_id]
-                ]
-                output = _packed(
-                    self._unit_arrays[component_id][unit * width : (unit + 1) * width], assignment
-                )
-                transition = BitwiseAndSemantics(width).xor_linear(*masks, output)
-            else:
-                local = ModularAddLinearSMTModel(width)
-                projected = {
-                    name: assignment[f"{prefix}_{name}"] for name in local.smt_formula().variables
-                }
-                transition = local.decode_transition(projected)
-            steps.append(TrailStep(f"{component_id}[{unit}]", transition))
-        constant_sign = 1
-        for name in self.fixed_inputs:
-            for unit, value in enumerate(self._folded_values[name]):
-                width = self.primitive.graph.input_arrays[name].array_type.unit_type.width
-                mask = _packed(
-                    self._unit_arrays[name][unit * width : (unit + 1) * width], assignment
-                )
-                if (mask & value).bit_count() % 2:
-                    constant_sign *= -1
-        for component in self.primitive.graph.components:
-            if isinstance(component, Constant) or component.component_id in self._folded_values:
-                value = 0
-                for unit in self._folded_values.get(
-                    component.component_id, getattr(component, "values", ())
-                ):
-                    value = (value << component.output_type.unit_type.width) | unit
-                if (
-                    value & _packed(self._unit_arrays[component.component_id], assignment)
-                ).bit_count() % 2:
-                    constant_sign *= -1
-        result = WordLinearCharacteristic(
-            tuple(
-                (
-                    name,
-                    0
-                    if name in self.fixed_inputs
-                    else _packed(self._unit_arrays[name], assignment),
-                )
-                for name in self.primitive.graph.input_arrays
-            ),
-            _packed(self._output, assignment),
-            tuple(steps),
-            constant_sign,
-            tuple((name, assignment[name]) for name in self._semantic_names),
-        )
-        if result.total_weight > self.maximum_weight:
-            raise ValueError("word linear witness exceeds weight bound")
-        if not self.check_characteristic(result):
-            raise ValueError("word linear witness violates independent graph mask rules")
-        return result
-
-    def check_characteristic(self, trail):
-        """Check arithmetic pullbacks and fanout, without consulting SMT clauses."""
-        if self._formula is None:
-            raise ValueError("build the formula before checking")
-        values = dict(trail.semantic_assignment)
-        if (
-            len(values) != len(trail.semantic_assignment)
-            or set(values) != set(self._semantic_names)
-            or any(value not in (0, 1) for value in values.values())
-        ):
-            return False
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
-        fanout = {name: [0] * vt.unit_count for name, vt in sources}
-        steps, constant_sign = [], 1
-
-        def units(names, width):
-            return tuple(_packed(names[i : i + width], values) for i in range(0, len(names), width))
-
-        for name in self.fixed_inputs:
-            masks = units(
-                self._unit_arrays[name],
-                self.primitive.graph.input_arrays[name].array_type.unit_type.width,
-            )
-            if (
-                sum(
-                    (mask & value).bit_count()
-                    for mask, value in zip(masks, self._folded_values[name])
-                )
-                % 2
-            ):
-                constant_sign *= -1
-
-        for component in self.primitive.graph.components:
-            width = component.output_type.unit_type.width
-            output = units(self._unit_arrays[component.component_id], width)
-            operands = [
-                units(names, selection.array_type.unit_type.width)
-                for names, selection in zip(self._edges[component.component_id], component.inputs)
-            ]
-            for selection, edge_names in zip(component.inputs, self._edges[component.component_id]):
-                for edge_name, (source_id, source_bit) in zip(
-                    edge_names, self.primitive.graph.selection_bit_sources(selection)
-                ):
-                    source_type = dict(sources)[source_id]
-                    source_width = source_type.unit_type.width
-                    position, bit = divmod(source_bit, source_width)
-                    fanout[source_id][position] ^= values[edge_name] << (source_width - 1 - bit)
-            if component.component_id in self._folded_values:
-                if (
-                    sum(
-                        (mask & value).bit_count()
-                        for mask, value in zip(output, self._folded_values[component.component_id])
-                    )
-                    % 2
-                ):
-                    constant_sign *= -1
-            elif isinstance(component, ModularAdd):
-                for unit, mask in enumerate(output):
-                    transition = ModularAddLinearSemantics(width).xor_linear(
-                        operands[0][unit], operands[1][unit], mask
-                    )
-                    if not transition.is_possible:
-                        return False
-                    steps.append(TrailStep(f"{component.component_id}[{unit}]", transition))
-            elif isinstance(component, BitwiseAnd):
-                for unit, mask in enumerate(output):
-                    transition = BitwiseAndSemantics(width).xor_linear(
-                        operands[0][unit], operands[1][unit], mask
-                    )
-                    if not transition.is_possible:
-                        return False
-                    steps.append(TrailStep(f"{component.component_id}[{unit}]", transition))
-            elif isinstance(component, Xor):
-                if any(operand != output for operand in operands):
-                    return False
-            elif isinstance(component, Identity):
-                if tuple(value for operand in operands for value in operand) != output:
-                    return False
-            elif isinstance(component, Rotate):
-                amount = component.amount if component.direction == "right" else -component.amount
-                amount %= width
-                expected = tuple(
-                    ((mask << amount) | (mask >> (width - amount))) & ((1 << width) - 1)
-                    for mask in output
-                )
-                if operands[0] != expected:
-                    return False
-            elif isinstance(component, Constant):
-                if (
-                    sum((mask & value).bit_count() for mask, value in zip(output, component.values))
-                    % 2
-                ):
-                    constant_sign *= -1
-            else:
-                return False
-        for output_name, (source_id, source_bit) in zip(
-            self._output, self.primitive.graph.selection_bit_sources(self.primitive.graph.output)
-        ):
-            source_type = dict(sources)[source_id]
-            source_width = source_type.unit_type.width
-            position, bit = divmod(source_bit, source_width)
-            fanout[source_id][position] ^= values[output_name] << (source_width - 1 - bit)
-        if any(
-            tuple(fanout[name]) != units(self._unit_arrays[name], vt.unit_type.width)
-            for name, vt in sources
-        ):
-            return False
-        inputs = tuple(
-            (name, 0 if name in self.fixed_inputs else _packed(self._unit_arrays[name], values))
-            for name in self.primitive.graph.input_arrays
-        )
-        input_dict = dict(inputs)
-        return (
-            trail.input_masks == inputs
-            and trail.output_mask == _packed(self._output, values)
-            and trail.steps == tuple(steps)
-            and trail.constant_sign == constant_sign
-            and trail.total_weight <= self.maximum_weight
-            and (self.nonzero_input is None or input_dict[self.nonzero_input] != 0)
-            and all(input_dict[name] == value for name, value in self.fixed_input_masks.items())
-        )
-
-    def enumerate_trails(self, solver, *, limit=1000):
-        """Block semantic assignments, excluding auxiliary counter multiplicity."""
-        if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
-            raise ValueError("limit must be a positive integer")
-        formula = self.smt_formula()
-        metadata = (
-            ("primitive", self.primitive.family_name),
-            (
-                "realization",
-                getattr(getattr(self.primitive, "realization", None), "name", "default"),
-            ),
-            ("solver", type(solver).__name__),
-            ("executable", str(getattr(solver, "executable", "embedded"))),
-            (
-                "version",
-                solver.version() if callable(getattr(solver, "version", None)) else "unreported",
-            ),
-            (
-                "graph_sha256",
-                sha256(
-                    repr(
-                        (
-                            self.primitive.graph.input_arrays,
-                            self.primitive.graph.bindings,
-                            tuple(self.primitive.graph.components),
-                            self.primitive.graph.output,
-                        )
-                    ).encode()
-                ).hexdigest(),
-            ),
-            ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
-            ("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),
-        )
-        indices = {name: i for i, name in enumerate(formula.variables, 1)}
-        trails, blocks, runtime = [], [], 0.0
-        context = (
-            solver.incremental(formula)
-            if callable(getattr(solver, "incremental", None))
-            else nullcontext(solver)
-        )
-        with context as execution:
-            while True:
-                current = SMTFormula(
-                    formula.variables,
-                    formula.assertions + tuple(blocks),
-                    formula.provenance + ("characteristic_block",) * len(blocks),
-                )
-                result = execution.solve(current)
-                runtime += result.runtime_seconds
-                if result.status is SatStatus.UNSATISFIABLE:
-                    return WordLinearEnumeration(tuple(trails), True, runtime, metadata)
-                if result.status is not SatStatus.SATISFIABLE:
-                    return WordLinearEnumeration(tuple(trails), False, runtime, metadata)
-                if len(trails) == limit:
-                    return WordLinearEnumeration(tuple(trails), False, runtime, metadata)
-                trail = self.decode_characteristic(result.assignment)
-                trails.append(trail)
-                blocks.append(
-                    tuple(
-                        -indices[name] if value else indices[name]
-                        for name, value in trail.semantic_assignment
-                    )
-                )
 
 
 class WordDeterministicTruncatedSMTModel:
@@ -1350,499 +735,3 @@ class WordDeterministicTruncatedSMTModel:
         if self._formula is None:
             raise ValueError("build the SMT formula before checking")
         return self._sat_model.check_characteristic(trail)
-
-
-def _packed(names, assignment):
-    value = 0
-    for name in names:
-        value = (value << 1) | assignment[name]
-    return value
-
-
-@dataclass(frozen=True, slots=True)
-class WordDifferentialCharacteristic:
-    """Component-product differential evidence, not an aggregated differential."""
-
-    input_differences: tuple[tuple[str, int], ...]
-    output_difference: int
-    steps: tuple[TrailStep, ...]
-    semantic_assignment: tuple[tuple[str, int], ...]
-
-    @property
-    def total_weight(self):
-        return sum(step.transition.weight for step in self.steps)
-
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
-        """Print retained characteristic evidence without starting a solver.
-
-        EXAMPLES::
-
-            >>> callable(WordDifferentialCharacteristic.to_terminal)
-            True
-        """
-        from claasp.presentation._terminal import to_terminal
-        from claasp.presentation._trail_queries import characteristic_section
-
-        to_terminal(characteristic_section(self, linear=False, details=details), file=file)
-
-
-@dataclass(frozen=True, slots=True)
-class WordDifferentialEnumeration:
-    trails: tuple[WordDifferentialCharacteristic, ...]
-    complete: bool
-    runtime_seconds: float
-    reproducibility: tuple[tuple[str, str], ...] = ()
-
-    def require_complete(self):
-        if not self.complete:
-            raise RuntimeError("differential characteristic enumeration is incomplete")
-        return self
-
-    def cluster_probability(self):
-        """Sum exact component products for a complete fixed-boundary cluster.
-
-        This is the characteristic-model probability, not an experimentally
-        measured probability of the concrete primitive or an unrestricted
-        differential: the declared search weight range still applies.
-        """
-        self.require_complete()
-        boundaries = {(trail.input_differences, trail.output_difference) for trail in self.trails}
-        if len(boundaries) > 1:
-            raise ValueError("a differential cluster requires common fixed boundaries")
-        total = Fraction(0)
-        for trail in self.trails:
-            probability = Fraction(1)
-            for step in trail.steps:
-                probability *= Fraction(step.transition.numerator, step.transition.denominator)
-            total += probability
-        return total
-
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
-        """Print retained characteristic evidence without starting a solver.
-
-        EXAMPLES::
-
-            >>> from io import StringIO
-            >>> result = WordDifferentialEnumeration((), False, 0.0)
-            >>> output = StringIO()
-            >>> result.to_terminal(file=output)
-            >>> "Incomplete enumeration" in output.getvalue()
-            True
-        """
-        from claasp.presentation._terminal import to_terminal
-        from claasp.presentation._trail_queries import enumeration_section
-
-        to_terminal(enumeration_section(self, linear=False, details=details), file=file)
-
-
-class WordDifferentialSMTModel:
-    """Forward difference wiring with explicit input and weight restrictions.
-
-    EXAMPLES::
-
-        >>> from claasp.primitives import ToySpeck
-        >>> model = WordDifferentialSMTModel(
-        ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
-        ...     fixed_input_differences={"key": 0},
-        ... )
-        >>> "fixed_difference" in model.smt_formula().provenance
-        True
-    """
-
-    model_provenance = _direct_model(
-        ConstraintBackend.SMT,
-        "WordDifferentialSMTModel",
-        "xor_differential",
-        "direct word-graph difference composition",
-        "Non-addition component relations are derived directly from graph wiring and truth tables.",
-    )
-
-    def __init__(
-        self,
-        primitive,
-        *,
-        maximum_weight=None,
-        fixed_weight=None,
-        nonzero_input=None,
-        fixed_input_differences=None,
-        output_difference=None,
-    ):
-        if maximum_weight is not None and fixed_weight is not None:
-            raise ValueError("choose a maximum or fixed weight, not both")
-        for weight in (maximum_weight, fixed_weight):
-            if weight is not None and (
-                not isinstance(weight, int) or isinstance(weight, bool) or weight < 0
-            ):
-                raise ValueError("weights must be nonnegative integers")
-        if nonzero_input is not None and nonzero_input not in primitive.graph.input_arrays:
-            raise ValueError("unknown nonzero input")
-        self.primitive, self.maximum_weight, self.fixed_weight = (
-            primitive,
-            maximum_weight,
-            fixed_weight,
-        )
-        self.nonzero_input = nonzero_input
-        self.fixed_input_differences = dict(fixed_input_differences or {})
-        self.output_difference = output_difference
-        for name, value in self.fixed_input_differences.items():
-            if name not in primitive.graph.input_arrays:
-                raise ValueError("unknown fixed input difference")
-            self._validate(value, primitive.graph.input_arrays[name].array_type)
-        if output_difference is not None:
-            self._validate(output_difference, primitive.graph.output.array_type)
-        self._formula = None
-
-    @staticmethod
-    def _validate(value, array_type):
-        if not isinstance(array_type.unit_type, Word):
-            raise NotImplementedError("word differential lowering requires Word domains")
-        if (
-            not isinstance(value, int)
-            or isinstance(value, bool)
-            or not 0 <= value < 1 << (array_type.unit_count * array_type.unit_type.width)
-        ):
-            raise ValueError("differences must fit their word type")
-
-    def smt_formula(self):
-        """Compute the smt formula for this public typed contract."""
-
-        variables, indices, clauses, provenance = [], {}, [], []
-
-        def allocate(name):
-            if name not in indices:
-                variables.append(name)
-                indices[name] = len(variables)
-            return name
-
-        def add(literals, label):
-            clauses.append(tuple(literals))
-            provenance.append(label)
-
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
-        unit_arrays = {}
-        for name, array_type in sources:
-            self._validate(0, array_type)
-            unit_arrays[name] = tuple(
-                allocate(f"difference_{name}_{bit}")
-                for bit in range(array_type.unit_count * array_type.unit_type.width)
-            )
-
-        def selected(selection):
-            return tuple(
-                unit_arrays[source_id][bit]
-                for source_id, bit in self.primitive.graph.selection_bit_sources(selection)
-            )
-
-        weights, operands_by_id = [], {}
-        for component in self.primitive.graph.components:
-            operands = tuple(selected(selection) for selection in component.inputs)
-            operands_by_id[component.component_id] = operands
-            output = unit_arrays[component.component_id]
-            width = component.output_type.unit_type.width
-            if isinstance(component, ModularAdd):
-                if len(operands) != 2:
-                    raise NotImplementedError("differential modular addition requires two operands")
-                for unit in range(component.output_type.unit_count):
-                    local = ModularAddDifferentialSMTModel(width).smt_formula()
-                    local_names = {}
-                    for prefix, names in zip(("left", "right", "output"), (*operands, output)):
-                        for bit in range(width):
-                            local_names[f"{prefix}_{bit}"] = names[unit * width + bit]
-                    for bit in range(width - 1):
-                        local_names[f"weight_{bit}"] = allocate(
-                            f"weight_{component.component_id}_{unit}_{bit}"
-                        )
-                        weights.append(local_names[f"weight_{bit}"])
-                    mapping = {
-                        i: indices[local_names[name]] for i, name in enumerate(local.variables, 1)
-                    }
-                    for clause, label in zip(local.assertions, local.provenance):
-                        add((mapping[abs(lit)] * (1 if lit > 0 else -1) for lit in clause), label)
-            elif isinstance(component, BitwiseAnd):
-                for bit, target in enumerate(output):
-                    left, right = (indices[operand[bit]] for operand in operands)
-                    weight = indices[allocate(f"weight_{component.component_id}_{bit}")]
-                    weights.append(variables[weight - 1])
-                    add((left, right, -indices[target]), "and_differential_support")
-                    add((-left, weight), "and_differential_weight")
-                    add((-right, weight), "and_differential_weight")
-                    add((left, right, -weight), "and_differential_weight")
-            elif isinstance(component, Xor):
-                for bit, target in enumerate(output):
-                    _xor_equivalence(
-                        (target, *(operand[bit] for operand in operands)),
-                        indices,
-                        clauses,
-                        provenance,
-                    )
-            elif isinstance(component, Identity):
-                for source, target in zip(
-                    (name for operand in operands for name in operand), output
-                ):
-                    _xor_equivalence((source, target), indices, clauses, provenance)
-            elif isinstance(component, Rotate):
-                amount = component.amount if component.direction == "right" else -component.amount
-                for unit in range(component.output_type.unit_count):
-                    for bit in range(width):
-                        _xor_equivalence(
-                            (
-                                operands[0][unit * width + bit],
-                                output[unit * width + (bit + amount) % width],
-                            ),
-                            indices,
-                            clauses,
-                            provenance,
-                        )
-            elif isinstance(component, Constant):
-                for name in output:
-                    add((-indices[name],), "zero_constant_difference")
-            else:
-                raise NotImplementedError(
-                    f"no word differential semantics for {type(component).__name__}"
-                )
-        output = selected(self.primitive.graph.output)
-        if self.nonzero_input is not None:
-            add(
-                (indices[name] for name in unit_arrays[self.nonzero_input]),
-                "nonzero_external_difference",
-            )
-        for names, value in [
-            (unit_arrays[name], value) for name, value in self.fixed_input_differences.items()
-        ] + [(output, self.output_difference)]:
-            if value is not None:
-                for bit, name in enumerate(names):
-                    add(
-                        (
-                            indices[name]
-                            if value & (1 << (len(names) - 1 - bit))
-                            else -indices[name],
-                        ),
-                        "fixed_difference",
-                    )
-        self._semantic_names = tuple(variables)
-        bound = self.fixed_weight if self.fixed_weight is not None else self.maximum_weight
-        if bound is not None:
-            _at_most(weights, bound, allocate, indices, add)
-        if self.fixed_weight is not None:
-            if self.fixed_weight > len(weights):
-                impossible = indices[allocate("impossible_fixed_weight")]
-                add((impossible,), "impossible_fixed_weight")
-                add((-impossible,), "impossible_fixed_weight")
-            else:
-                complements = []
-                for bit, name in enumerate(weights):
-                    complement = allocate(f"weight_complement_{bit}")
-                    add((indices[name], indices[complement]), "weight_complement")
-                    add((-indices[name], -indices[complement]), "weight_complement")
-                    complements.append(complement)
-                _at_most(
-                    complements,
-                    len(weights) - self.fixed_weight,
-                    lambda name: allocate("lower_" + name),
-                    indices,
-                    add,
-                )
-        self._unit_arrays, self._operands, self._output = unit_arrays, operands_by_id, output
-        self._formula = SMTFormula(
-            tuple(variables),
-            tuple(clauses),
-            tuple(provenance),
-            _component_applications(
-                self.primitive,
-                self.model_provenance,
-                ((ModularAdd, ModularAddDifferentialSMTModel.model_provenance),),
-            ),
-        )
-        return self._formula
-
-    def _steps_and_wiring(self, values):
-        steps = []
-        for component in self.primitive.graph.components:
-            width = component.output_type.unit_type.width
-
-            def units(names, width=width):
-                return tuple(
-                    _packed(names[i : i + width], values) for i in range(0, len(names), width)
-                )
-
-            output = units(self._unit_arrays[component.component_id])
-            operands = tuple(units(names) for names in self._operands[component.component_id])
-            if isinstance(component, (ModularAdd, BitwiseAnd)):
-                semantics = (
-                    ModularAddTransitionSemantics(width)
-                    if isinstance(component, ModularAdd)
-                    else BitwiseAndSemantics(width)
-                )
-                for unit, target in enumerate(output):
-                    transition = semantics.xor_differential(
-                        operands[0][unit], operands[1][unit], target
-                    )
-                    if not transition.is_possible:
-                        return None
-                    if isinstance(component, ModularAdd):
-                        for bit in range(width - 1):
-                            lower = width - 2 - bit
-                            triple = tuple(
-                                (value >> lower) & 1
-                                for value in (operands[0][unit], operands[1][unit], target)
-                            )
-                            if values[f"weight_{component.component_id}_{unit}_{bit}"] != int(
-                                not (triple[0] == triple[1] == triple[2])
-                            ):
-                                return None
-                    else:
-                        for bit in range(width):
-                            if (
-                                values[f"weight_{component.component_id}_{unit * width + bit}"]
-                                != ((operands[0][unit] | operands[1][unit]) >> (width - 1 - bit))
-                                & 1
-                            ):
-                                return None
-                    steps.append(TrailStep(f"{component.component_id}[{unit}]", transition))
-            else:
-                if isinstance(component, Xor):
-                    from functools import reduce
-
-                    expected = tuple(reduce(int.__xor__, items, 0) for items in zip(*operands))
-                elif isinstance(component, Rotate):
-                    amount = (
-                        component.amount if component.direction == "right" else -component.amount
-                    ) % width
-                    expected = tuple(
-                        ((value >> amount) | (value << (width - amount))) & ((1 << width) - 1)
-                        for value in operands[0]
-                    )
-                elif isinstance(component, Constant):
-                    expected = (0,) * len(output)
-                else:
-                    expected = tuple(value for operand in operands for value in operand)
-                if output != expected:
-                    return None
-        return tuple(steps)
-
-    def decode_characteristic(self, assignment):
-        """Compute the decode characteristic for this public typed contract."""
-
-        from claasp.representations.constraints.sat import CNFFormula
-
-        if self._formula is None:
-            raise ValueError("build the formula before decoding")
-        if not CNFFormula(
-            self._formula.variables, self._formula.assertions, self._formula.provenance
-        ).is_satisfied(assignment):
-            raise ValueError("invalid word differential witness")
-        result = WordDifferentialCharacteristic(
-            tuple(
-                (name, _packed(self._unit_arrays[name], assignment))
-                for name in self.primitive.graph.input_arrays
-            ),
-            _packed(self._output, assignment),
-            self._steps_and_wiring(assignment),
-            tuple((name, assignment[name]) for name in self._semantic_names),
-        )
-        if not self.check_characteristic(result):
-            raise ValueError("word differential witness violates exact graph semantics")
-        return result
-
-    def check_characteristic(self, trail):
-        """Compute the check characteristic for this public typed contract."""
-
-        if self._formula is None:
-            raise ValueError("build the formula before checking")
-        values = dict(trail.semantic_assignment)
-        if (
-            len(values) != len(trail.semantic_assignment)
-            or set(values) != set(self._semantic_names)
-            or any(value not in (0, 1) for value in values.values())
-        ):
-            return False
-        steps = self._steps_and_wiring(values)
-        inputs = tuple(
-            (name, _packed(self._unit_arrays[name], values))
-            for name in self.primitive.graph.input_arrays
-        )
-        output = _packed(self._output, values)
-        return (
-            steps is not None
-            and trail.steps == steps
-            and trail.input_differences == inputs
-            and trail.output_difference == output
-            and (self.maximum_weight is None or trail.total_weight <= self.maximum_weight)
-            and (self.fixed_weight is None or trail.total_weight == self.fixed_weight)
-            and (self.output_difference is None or output == self.output_difference)
-            and (self.nonzero_input is None or dict(inputs)[self.nonzero_input] != 0)
-            and all(
-                dict(inputs)[name] == value for name, value in self.fixed_input_differences.items()
-            )
-        )
-
-    def enumerate_trails(self, solver, *, limit=1000):
-        """Compute the enumerate trails for this public typed contract."""
-
-        if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
-            raise ValueError("limit must be a positive integer")
-        formula = self.smt_formula()
-        metadata = (
-            ("primitive", self.primitive.family_name),
-            (
-                "realization",
-                getattr(getattr(self.primitive, "realization", None), "name", "default"),
-            ),
-            ("solver", type(solver).__name__),
-            ("executable", str(getattr(solver, "executable", "embedded"))),
-            (
-                "version",
-                solver.version() if callable(getattr(solver, "version", None)) else "unreported",
-            ),
-            ("weight_range", repr((self.fixed_weight, self.maximum_weight))),
-            ("fixed_input_differences", repr(tuple(sorted(self.fixed_input_differences.items())))),
-            ("output_difference", repr(self.output_difference)),
-            (
-                "graph_sha256",
-                sha256(
-                    repr(
-                        (
-                            self.primitive.graph.input_arrays,
-                            self.primitive.graph.bindings,
-                            tuple(self.primitive.graph.components),
-                            self.primitive.graph.output,
-                        )
-                    ).encode()
-                ).hexdigest(),
-            ),
-            ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
-        )
-        indices = {name: index for index, name in enumerate(formula.variables, 1)}
-        trails, blocks, runtime = [], [], 0.0
-        context = (
-            solver.incremental(formula)
-            if callable(getattr(solver, "incremental", None))
-            else nullcontext(solver)
-        )
-        with context as execution:
-            while True:
-                current = SMTFormula(
-                    formula.variables,
-                    formula.assertions + tuple(blocks),
-                    formula.provenance + ("characteristic_block",) * len(blocks),
-                )
-                result = execution.solve(current)
-                runtime += result.runtime_seconds
-                if result.status is SatStatus.UNSATISFIABLE:
-                    return WordDifferentialEnumeration(tuple(trails), True, runtime, metadata)
-                if result.status is not SatStatus.SATISFIABLE or len(trails) == limit:
-                    return WordDifferentialEnumeration(tuple(trails), False, runtime, metadata)
-                trail = self.decode_characteristic(result.assignment)
-                trails.append(trail)
-                blocks.append(
-                    tuple(
-                        -indices[name] if value else indices[name]
-                        for name, value in trail.semantic_assignment
-                    )
-                )

@@ -1,7 +1,7 @@
 """Cryptanalytic propagation meanings, transitions, and trails."""
 
 from claasp.semantics.cryptanalysis.activity import (
-    AESTwoRoundDifferentialEvidence,
+    AESTwoRoundXorDifferentialEvidence,
     WordwiseActiveSBoxEvidence,
     aes_two_round_differential_evidence,
     branch_number_activity_table,
@@ -13,11 +13,11 @@ from claasp.semantics.cryptanalysis.composed import (
     BoomerangConnectivity,
     BoomerangSwitchBoundary,
     BoomerangTrail,
-    DifferentialLinearTrail,
     ModularAddBoomerangAutomaton,
     ModularAddBoomerangConnectivity,
     ModularAddBoomerangSemantics,
     SBoxBoomerangSemantics,
+    XorDifferentialLinearTrail,
 )
 from claasp.semantics.cryptanalysis.continuous import (
     ContinuousHeuristicResult,
@@ -52,9 +52,9 @@ from claasp.semantics.cryptanalysis.quasidifferential import (
 )
 from claasp.semantics.cryptanalysis.trails import (
     BitPattern,
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
-    ModularSubtractLinearSemantics,
+    ModularAddXorLinearSemantics,
+    ModularSubtractXorLinearSemantics,
     SBoxTransitionSemantics,
     Trail,
     TrailComponentTransition,
@@ -91,7 +91,7 @@ from claasp.semantics.cryptanalysis.truncated import (
 __all__ = [
     "QuasidifferentialSemantics",
     "QuasidifferentialTransition",
-    "AESTwoRoundDifferentialEvidence",
+    "AESTwoRoundXorDifferentialEvidence",
     "BitPattern",
     "BitwiseAndSemantics",
     "BitwiseOrSemantics",
@@ -103,13 +103,13 @@ __all__ = [
     "ComponentSemanticsRegistry",
     "ContinuousHeuristicResult",
     "continuous_and",
-    "DifferentialLinearTrail",
+    "XorDifferentialLinearTrail",
     "ImpossiblePropagationBoundary",
     "ModularAddBoomerangAutomaton",
     "ModularAddBoomerangConnectivity",
     "ModularAddBoomerangSemantics",
-    "ModularAddLinearSemantics",
-    "ModularSubtractLinearSemantics",
+    "ModularAddXorLinearSemantics",
+    "ModularSubtractXorLinearSemantics",
     "ModularAddTransitionSemantics",
     "ProbabilisticTruncatedModularAddTransition",
     "ProbabilisticTruncatedTrail",

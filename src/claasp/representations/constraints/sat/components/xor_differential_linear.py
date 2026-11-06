@@ -51,7 +51,7 @@ def _encoded(bit):
     return (1, 0) if bit is TruncatedBit.UNKNOWN else (0, int(bit.value))
 
 
-class DifferentialToTruncatedSATModel:
+class XorDifferentialToTruncatedSATModel:
     """Connect an exact XOR difference to the truncated middle boundary.
 
     The recovered legacy clauses force every boundary bit to remain exact:
@@ -61,7 +61,7 @@ class DifferentialToTruncatedSATModel:
 
     EXAMPLES::
 
-        >>> model = DifferentialToTruncatedSATModel(
+        >>> model = XorDifferentialToTruncatedSATModel(
         ...     2, difference=XorDifference(2, 2), truncated_pattern="10"
         ... )
         >>> formula = model.cnf_formula()
@@ -79,7 +79,7 @@ class DifferentialToTruncatedSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "DifferentialToTruncatedSATModel",
+        "XorDifferentialToTruncatedSATModel",
         "differential_linear",
         "legacy exact-difference to truncated-boundary clauses",
         "Direct per-bit equality between an exact difference and a canonical non-unknown ternary value.",
@@ -169,7 +169,7 @@ class DifferentialToTruncatedSATModel:
         return difference, middle
 
 
-class TruncatedToLinearSATModel:
+class TruncatedToXorLinearSATModel:
     """Connect the truncated middle boundary to an XOR-linear mask.
 
     The recovered legacy relation uses the canonical truncated pair and
@@ -178,7 +178,7 @@ class TruncatedToLinearSATModel:
 
     EXAMPLES::
 
-        >>> model = TruncatedToLinearSATModel(
+        >>> model = TruncatedToXorLinearSATModel(
         ...     2, truncated_pattern="?0", mask=XorMask(0, 2)
         ... )
         >>> formula = model.cnf_formula()
@@ -195,7 +195,7 @@ class TruncatedToLinearSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "TruncatedToLinearSATModel",
+        "TruncatedToXorLinearSATModel",
         "differential_linear",
         "legacy truncated-boundary to XOR-linear clauses",
         "Direct per-bit compatibility relation forbidding an active mask at an unknown middle bit.",
@@ -285,4 +285,4 @@ class TruncatedToLinearSATModel:
         return middle, mask
 
 
-__all__ = ["DifferentialToTruncatedSATModel", "TruncatedToLinearSATModel"]
+__all__ = ["XorDifferentialToTruncatedSATModel", "TruncatedToXorLinearSATModel"]

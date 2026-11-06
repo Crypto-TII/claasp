@@ -330,7 +330,7 @@ class BoomerangTrail:
 
 
 @dataclass(frozen=True, slots=True)
-class DifferentialLinearTrail:
+class XorDifferentialLinearTrail:
     """Differential prefix, probabilistic connector, and linear suffix.
 
     EXAMPLES::
@@ -340,7 +340,7 @@ class DifferentialLinearTrail:
         >>> linear = Trail(TrailKind.XOR_LINEAR, XorMask(1, 2), XorMask(2, 2), ())
         >>> connector = ProbabilisticTruncatedTrail(
         ...     TruncatedXorDifference.parse("00"), TruncatedXorDifference.parse("??"), ())
-        >>> DifferentialLinearTrail(differential, connector, linear).total_weight
+        >>> XorDifferentialLinearTrail(differential, connector, linear).total_weight
         0.0
     """
 

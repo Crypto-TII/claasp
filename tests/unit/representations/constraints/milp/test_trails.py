@@ -1,22 +1,22 @@
 from claasp.primitives import Present, Speck, ToyAES, ToySpeck
 from claasp.representations.constraints.milp import (
     PresentActiveSBoxesMILPModel,
-    PresentDifferentialMILPModel,
     PresentFixedActiveSBoxesMILPModel,
+    PresentXorDifferentialMILPModel,
     SpeckImpossibleMILPModel,
     SpeckSemiDeterministicTruncatedMILPModel,
-    WordDeterministicDifferentialLinearMILPModel,
     WordDeterministicTruncatedMILPModel,
-    WordDifferentialMILPModel,
+    WordDeterministicXorDifferentialLinearMILPModel,
     WordImpossibleMILPModel,
-    WordLinearMILPModel,
-    WordSemiDeterministicDifferentialLinearMILPModel,
+    WordSemiDeterministicXorDifferentialLinearMILPModel,
     WordwiseBranchNumberActiveSBoxesMILPModel,
+    WordXorDifferentialMILPModel,
+    WordXorLinearMILPModel,
 )
 
 
 def test_present_milp_lowering_uses_complete_exact_transition_selectors():
-    lowering = PresentDifferentialMILPModel(Present(number_of_rounds=2))
+    lowering = PresentXorDifferentialMILPModel(Present(number_of_rounds=2))
     model = lowering.milp_model()
 
     selectors = [variable for variable in model.variables if "_choice_" in variable.name]
@@ -28,7 +28,7 @@ def test_present_milp_lowering_uses_complete_exact_transition_selectors():
 
 def test_present_active_sbox_model_reuses_exact_feasible_region():
     primitive = Present(number_of_rounds=2)
-    weighted = PresentDifferentialMILPModel(primitive).milp_model()
+    weighted = PresentXorDifferentialMILPModel(primitive).milp_model()
     active = PresentActiveSBoxesMILPModel(primitive).milp_model()
     assert active.variables == weighted.variables
     assert active.constraints == weighted.constraints
@@ -60,13 +60,13 @@ def test_wordwise_branch_activity_builds_typed_toyaes_relaxation():
 
 
 def test_portable_word_milp_trails_preserve_formula_sizes_and_objectives():
-    differential = WordDifferentialMILPModel(
+    differential = WordXorDifferentialMILPModel(
         ToySpeck(2),
         fixed_weight=1,
         fixed_input_differences={"key": 0},
         nonzero_input="plaintext",
     ).milp_model()
-    linear = WordLinearMILPModel(
+    linear = WordXorLinearMILPModel(
         ToySpeck(3), maximum_weight=1, fixed_inputs={"key": 0}, nonzero_input="plaintext"
     ).milp_model()
     assert (len(differential.variables), len(differential.constraints)) == (187, 501)
@@ -123,7 +123,7 @@ def test_semi_deterministic_truncated_milp_preserves_formula_size_and_objective(
 
 
 def test_differential_linear_milp_preserves_formula_size_and_objective():
-    model = WordDeterministicDifferentialLinearMILPModel(
+    model = WordDeterministicXorDifferentialLinearMILPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -138,7 +138,7 @@ def test_differential_linear_milp_preserves_formula_size_and_objective():
 
 
 def test_semi_differential_linear_milp_preserves_formula_size_and_objective():
-    model = WordSemiDeterministicDifferentialLinearMILPModel(
+    model = WordSemiDeterministicXorDifferentialLinearMILPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,

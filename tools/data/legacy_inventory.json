@@ -1254,7 +1254,7 @@
       "responsibility": "mzn xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "Generic word-graph composition, explicit bounds/enumeration and independent transition decoding retain all fixed Speck optimum/count fixtures.",
@@ -1278,7 +1278,7 @@
       "responsibility": "mzn xor differential model arx optimized",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py"
+      "v5_destination": "src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_xor_differential.py"
     },
     {
       "acceptance_criterion": "AES branch-number reasoning and exact DDT/MixColumns enumeration derive the minimum five active S-boxes and weight 30 without heuristic XOR augmentation.",
@@ -1353,7 +1353,7 @@
       "responsibility": "mzn xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "Optional MiniZinc driver accepts an explicit solver id and executable without requiring a Python MiniZinc or Sage package.",
@@ -1659,7 +1659,7 @@
       "responsibility": "milp xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "Branch-number and exact DDT reasoning derive reduced AES active-S-box minima and distinguish necessary activity bounds from concrete trails.",
@@ -1708,7 +1708,7 @@
       "responsibility": "milp xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "GLPK command driver provides a Sage-independent open MILP baseline; the portable representation and driver protocol do not depend on a proprietary optimizer.",
@@ -2479,7 +2479,7 @@
       "responsibility": "sat xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "Signed Walsh semantics and graph composition preserve complete counts, optima, feasible weights and fixed masks.",
@@ -2502,7 +2502,7 @@
       "responsibility": "sat xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "MiniSat and CLI Z3 provide optional open Boolean solving with named assignments and independently verified witnesses.",
@@ -2805,7 +2805,7 @@
       "responsibility": "smt xor differential model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
@@ -2828,7 +2828,7 @@
       "responsibility": "smt xor linear model",
       "status": "superseded-in-m10.8d",
       "tests": [],
-      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
+      "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json"
     },
     {
       "acceptance_criterion": "Backend-neutral SMT representations consume shared semantics, preserve provenance, and execute through the explicit Z3 driver.",
@@ -10509,7 +10509,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_fixed_weight_with_aes_cipher"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_differential.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_xor_differential.py"
     },
     {
       "acceptance_criterion": "Every named destination exists and the final bidirectional audit links the legacy record to shipped v5 behavior or reviewed removal.",
@@ -11935,7 +11935,7 @@
         "test_get_probability_vars_from_key_schedule",
         "test_get_probability_vars_from_permutation"
       ],
-      "v5_destination": "tests/integration/test_minizinc_integration.py; tests/integration/test_word_differential.py"
+      "v5_destination": "tests/integration/test_minizinc_integration.py; tests/integration/test_word_xor_differential.py"
     },
     {
       "acceptance_criterion": "Toy Speck-2 exact weight-one count 6 and bounded count 7; toy Speck-4 weight-one UNSAT; identity lookup zero-weight feasibility and positive-weight UNSAT; Speck-5 optimum/fixed weight 9; exact AND DDT are independently preserved.",
@@ -11982,7 +11982,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_solving_unsatisfiability"
       ],
-      "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py"
+      "v5_destination": "tests/integration/test_word_xor_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py"
     },
     {
       "acceptance_criterion": "Exact AES evidence derives the active-S-box lower bound; no mutable helper-list cardinality is exposed.",
@@ -12114,7 +12114,7 @@
         "test_fix_variables_value_xor_linear_constraints",
         "test_input_xor_linear_constraints"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py; tests/unit/representations/constraints/smt/test_word_linear.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py; tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },
     {
       "acceptance_criterion": "Typed equal/not-equal/nonzero constraints, deterministic LP export and real GLPK SAT/UNSAT/assignment decoding are covered.",
@@ -12558,7 +12558,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight",
         "test_find_one_xor_differential_trail_with_weight_at_most"
       ],
-      "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_glpk_integration.py"
+      "v5_destination": "tests/integration/test_word_xor_differential.py; tests/integration/test_glpk_integration.py"
     },
     {
       "acceptance_criterion": "Reduced AES activity minima and the trivial one-active-S-box first-round bound are derived independently.",
@@ -12650,7 +12650,7 @@
         "test_find_one_xor_linear_trail_with_weight_at_most",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },
     {
       "acceptance_criterion": "All 256 rows match the isolated dependency-free legacy generator, including its four fixed first/last row values.",
@@ -13418,7 +13418,7 @@
         "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_2_window",
         "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel"
       ],
-      "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py"
+      "v5_destination": "tests/integration/test_word_xor_differential.py; tests/integration/test_minizinc_integration.py"
     },
     {
       "acceptance_criterion": "Speck count 73, optimum 3, feasible weight 7, fixed masks and empirical-correlation bound are preserved.",
@@ -13460,7 +13460,7 @@
         "test_find_one_xor_linear_trail_with_fixed_weight",
         "test_fix_variables_value_xor_linear_constraints"
       ],
-      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear.py"
+      "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },
     {
       "acceptance_criterion": "Complete OR truth-table support and multi-operand XOR intermediate/output witnesses are independently checked.",

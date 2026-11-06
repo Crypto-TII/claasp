@@ -6,14 +6,14 @@ from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSol
 from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
-    SharedDifferencePairedWordDifferentialLinearSATModel,
-    SharedDifferencePairedWordDifferentialSATModel,
-    WordDeterministicDifferentialLinearSATModel,
-    WordDifferentialNativeXorSATModel,
-    WordDifferentialSATModel,
-    WordLinearNativeXorSATModel,
-    WordLinearSATModel,
-    WordSemiDeterministicDifferentialLinearSATModel,
+    SharedDifferencePairedWordXorDifferentialLinearSATModel,
+    SharedDifferencePairedWordXorDifferentialSATModel,
+    WordDeterministicXorDifferentialLinearSATModel,
+    WordSemiDeterministicXorDifferentialLinearSATModel,
+    WordXorDifferentialNativeXorSATModel,
+    WordXorDifferentialSATModel,
+    WordXorLinearNativeXorSATModel,
+    WordXorLinearSATModel,
 )
 
 pytestmark = pytest.mark.external
@@ -21,7 +21,7 @@ pytestmark = pytest.mark.external
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver))
 def test_semi_deterministic_differential_linear_is_solver_independent(solver_type):
-    model = WordSemiDeterministicDifferentialLinearSATModel(
+    model = WordSemiDeterministicXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -39,7 +39,7 @@ def test_semi_deterministic_differential_linear_is_solver_independent(solver_typ
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver))
 def test_shared_difference_paired_differential_linear_is_solver_independent(solver_type):
-    model = SharedDifferencePairedWordDifferentialLinearSATModel(
+    model = SharedDifferencePairedWordXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=2,
         paired_differential_maximum_weight=32,
@@ -55,7 +55,7 @@ def test_shared_difference_paired_differential_linear_is_solver_independent(solv
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
 def test_shared_difference_paired_characteristic_is_solver_independent(solver_type):
-    model = SharedDifferencePairedWordDifferentialSATModel(
+    model = SharedDifferencePairedWordXorDifferentialSATModel(
         ToySpeck(2),
         fixed_total_weight=5,
         fixed_input_differences={"key": 0},
@@ -70,7 +70,7 @@ def test_shared_difference_paired_characteristic_is_solver_independent(solver_ty
 
 @pytest.mark.parametrize("solver_type", (MinisatSolver, KissatSolver, CryptoMiniSatSolver))
 def test_deterministic_differential_linear_speck_trail_is_solver_independent(solver_type):
-    model = WordDeterministicDifferentialLinearSATModel(
+    model = WordDeterministicXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -92,7 +92,7 @@ def test_deterministic_differential_linear_speck_trail_is_solver_independent(sol
 
 @pytest.mark.parametrize("solver_type", [MinisatSolver, KissatSolver, CryptoMiniSatSolver])
 def test_toy_speck_differential_fixed_weight_count(solver_type):
-    model = WordDifferentialSATModel(
+    model = WordXorDifferentialSATModel(
         ToySpeck(2),
         fixed_weight=1,
         nonzero_input="plaintext",
@@ -107,7 +107,7 @@ def test_toy_speck_differential_fixed_weight_count(solver_type):
 
 
 def test_toy_speck_linear_single_key_count_with_cryptominisat():
-    model = WordLinearSATModel(
+    model = WordXorLinearSATModel(
         ToySpeck(3),
         maximum_weight=1,
         nonzero_input="plaintext",
@@ -145,7 +145,7 @@ def test_toy_speck_linear_single_key_count_with_cryptominisat():
     ),
 )
 def test_toy_speck_n_window_counts_are_independently_checked(strategy, expected):
-    model = WordDifferentialSATModel(
+    model = WordXorDifferentialSATModel(
         ToySpeck(2),
         fixed_weight=1,
         nonzero_input="plaintext",
@@ -163,7 +163,7 @@ def test_toy_speck_n_window_counts_are_independently_checked(strategy, expected)
     "model,expected",
     (
         (
-            WordDifferentialNativeXorSATModel(
+            WordXorDifferentialNativeXorSATModel(
                 ToySpeck(2),
                 fixed_weight=1,
                 nonzero_input="plaintext",
@@ -172,7 +172,7 @@ def test_toy_speck_n_window_counts_are_independently_checked(strategy, expected)
             6,
         ),
         (
-            WordLinearNativeXorSATModel(
+            WordXorLinearNativeXorSATModel(
                 ToySpeck(3),
                 maximum_weight=1,
                 nonzero_input="plaintext",
@@ -242,7 +242,9 @@ def test_public_differential_linear_search_optimizes_all_declared_partitions():
 
     result = (
         ToySpeck(4)
-        .analysis.find_optimal_differential_linear_trail(solver=KissatSolver(timeout_seconds=20))
+        .analysis.find_optimal_xor_differential_linear_trail(
+            solver=KissatSolver(timeout_seconds=20)
+        )
         .require_complete()
     )
     assert result.found
@@ -272,16 +274,16 @@ def test_composed_search_api_doctests():
 
     from claasp.analysis import (
         Analysis,
-        find_optimal_differential_linear_trail,
+        find_optimal_xor_differential_linear_trail,
         search_impossible_differentials,
     )
 
     runner = doctest.DocTestRunner()
     for method in (
         Analysis.search_impossible_differentials,
-        Analysis.find_optimal_differential_linear_trail,
+        Analysis.find_optimal_xor_differential_linear_trail,
         search_impossible_differentials,
-        find_optimal_differential_linear_trail,
+        find_optimal_xor_differential_linear_trail,
     ):
         module = importlib.import_module(method.__module__)
         docstring = method.__doc__

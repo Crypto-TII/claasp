@@ -1,4 +1,4 @@
-Differential trail search: advanced
-===================================
+XOR differential trails: advanced
+=================================
 
 **TODO**

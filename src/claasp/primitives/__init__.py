@@ -4,6 +4,7 @@ from claasp.primitives._catalogue_exports import ALL_EXPORTS, load_export
 from claasp.primitives.block_ciphers import (
     AES,
     AES128,
+    Craft,
     CustomAES,
     Present,
     Present80,
@@ -22,6 +23,7 @@ __all__ = [
     "AES128",
     "ChaChaPermutation",
     "CustomAES",
+    "Craft",
     "MiMC",
     "Poseidon",
     "Present",

@@ -1308,76 +1308,9 @@ class Primitive:
     ) -> tuple:
         """Resolve a selection through structural bindings for a representation."""
 
-        cache = {} if cache is None else cache
+        from claasp.graph.propagation import resolve_selection
 
-        def available(source_id: str) -> bool:
-            return source_id in values or source_id in cache
-
-        def selected(item: Selection) -> tuple:
-            source = (
-                tuple(values[item.source.source_id])
-                if item.source.source_id in values
-                else cache[item.source.source_id]
-            )
-            return tuple(source[position] for position in item.positions)
-
-        pending = [selection.source.source_id]
-        while pending:
-            source_id = pending[-1]
-            if available(source_id):
-                pending.pop()
-                continue
-            try:
-                binding = self._bindings[source_id]
-            except KeyError as error:
-                raise KeyError(f"graph source {source_id!r} has no available value") from error
-            missing = tuple(
-                item.source.source_id
-                for item in binding.inputs
-                if not available(item.source.source_id)
-            )
-            if missing:
-                pending.extend(reversed(missing))
-                continue
-            operands = tuple(selected(item) for item in binding.inputs)
-            if binding.kind is BindingKind.JOIN:
-                result = tuple(unit for operand in operands for unit in operand)
-            elif binding.kind is BindingKind.VIEW:
-                result = operands[0]
-            elif binding.kind is BindingKind.PACK_BITS:
-                bits = operands[0]
-                groups = tuple(
-                    bits[start : start + binding.word_width]
-                    for start in range(0, len(bits), binding.word_width)
-                )
-                result = tuple(
-                    sum(
-                        int(bit) << (binding.word_width - 1 - index)
-                        for index, bit in enumerate(group)
-                    )
-                    if all(isinstance(bit, int) for bit in group)
-                    else tuple(group)
-                    for group in groups
-                )
-            elif binding.kind is BindingKind.UNPACK_BITS:
-                result_units = []
-                for unit in operands[0]:
-                    if isinstance(unit, int):
-                        result_units.extend(
-                            (unit >> (binding.word_width - 1 - bit)) & 1
-                            for bit in range(binding.word_width)
-                        )
-                    else:
-                        result_units.extend(unit)
-                result = tuple(result_units)
-            else:  # pragma: no cover - closed enum
-                raise AssertionError("unknown graph binding")
-            cache[source_id] = result
-            pending.pop()
-
-        source_id = selection.source.source_id
-        source = tuple(values[source_id]) if source_id in values else cache[source_id]
-        return tuple(source[position] for position in selection.positions)
+        return resolve_selection(selection, values, self._bindings, cache)
 
     def _selection_bit_sources(self, selection: Selection) -> tuple[tuple[str, int], ...]:
         """Flatten a selection to the encoded bits of semantic graph sources."""

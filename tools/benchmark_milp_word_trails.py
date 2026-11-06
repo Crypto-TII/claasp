@@ -13,18 +13,21 @@ from time import monotonic
 
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import ToySpeck
-from claasp.representations.constraints.milp import WordDifferentialMILPModel, WordLinearMILPModel
+from claasp.representations.constraints.milp import (
+    WordXorDifferentialMILPModel,
+    WordXorLinearMILPModel,
+)
 
 
 def _models():
     return {
-        "xor_differential": lambda: WordDifferentialMILPModel(
+        "xor_differential": lambda: WordXorDifferentialMILPModel(
             ToySpeck(2),
             fixed_weight=1,
             fixed_input_differences={"key": 0},
             nonzero_input="plaintext",
         ),
-        "xor_linear": lambda: WordLinearMILPModel(
+        "xor_linear": lambda: WordXorLinearMILPModel(
             ToySpeck(3), maximum_weight=1, fixed_inputs={"key": 0}, nonzero_input="plaintext"
         ),
     }

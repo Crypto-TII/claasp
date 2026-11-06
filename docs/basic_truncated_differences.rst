@@ -1,4 +1,4 @@
-Truncated differences: introduction
-===================================
+Truncated differences: basic
+============================
 
 **TODO**

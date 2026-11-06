@@ -4,8 +4,8 @@ from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import Present
 from claasp.representations.constraints.milp import (
     PresentActiveSBoxesMILPModel,
-    PresentDifferentialMILPModel,
     PresentFixedActiveSBoxesMILPModel,
+    PresentXorDifferentialMILPModel,
     check_present_milp_trail,
 )
 
@@ -14,7 +14,7 @@ pytestmark = pytest.mark.external
 
 def test_glpk_proves_and_extracts_present_two_round_optimum():
     primitive = Present(number_of_rounds=2)
-    lowering = PresentDifferentialMILPModel(primitive)
+    lowering = PresentXorDifferentialMILPModel(primitive)
     model = lowering.milp_model()
     result = GLPKSolver(timeout_seconds=30).solve(model)
     trail = lowering.decode_trail(result.assignment)

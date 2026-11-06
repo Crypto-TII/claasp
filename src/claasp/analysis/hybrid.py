@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from claasp.drivers.solvers import CPStatus
-from claasp.representations.constraints.cp import SpeckDifferentialCPModel
+from claasp.representations.constraints.cp import SpeckXorDifferentialCPModel
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import (
     ModularAddTransitionSemantics,
@@ -16,7 +16,7 @@ from claasp.semantics.cryptanalysis import (
 
 
 @dataclass(frozen=True, slots=True)
-class HybridDifferentialResult:
+class HybridXorDifferentialResult:
     """A feasible exact prefix followed by sound, non-weighted abstractions.
 
     Unknown suffix bits are not feasible exact witnesses and suffixes carry
@@ -26,7 +26,7 @@ class HybridDifferentialResult:
     EXAMPLES::
 
         >>> from dataclasses import fields
-        >>> (HybridDifferentialResult.__dataclass_params__.frozen, tuple(field.name for field in fields(HybridDifferentialResult)))
+        >>> (HybridXorDifferentialResult.__dataclass_params__.frozen, tuple(field.name for field in fields(HybridXorDifferentialResult)))
         (True, ('exact_prefix', 'truncated_boundaries', 'runtime_seconds'))
     """
 
@@ -35,13 +35,13 @@ class HybridDifferentialResult:
     runtime_seconds: float
 
 
-class SpeckHybridDifferentialProblem:
+class SpeckHybridXorDifferentialProblem:
     """Select an exact data-path prefix followed by truncated round semantics.
 
     EXAMPLES::
 
         >>> try:
-        ...     SpeckHybridDifferentialProblem()
+        ...     SpeckHybridXorDifferentialProblem()
         ... except TypeError:
         ...     print("required configuration rejected")
         required configuration rejected
@@ -56,7 +56,7 @@ class SpeckHybridDifferentialProblem:
             raise ValueError("exact_rounds must leave a nonempty truncated suffix")
         self.primitive = primitive
         self.exact_rounds = exact_rounds
-        self.prefix_model = SpeckDifferentialCPModel(
+        self.prefix_model = SpeckXorDifferentialCPModel(
             PropagationProblem(
                 primitive,
                 XOR_DIFFERENTIAL,
@@ -80,7 +80,7 @@ class SpeckHybridDifferentialProblem:
             boundaries.append(
                 propagate_two_word_speck_round(self.primitive, boundaries[-1], round_number)
             )
-        result = HybridDifferentialResult(prefix, tuple(boundaries), solved.runtime_seconds)
+        result = HybridXorDifferentialResult(prefix, tuple(boundaries), solved.runtime_seconds)
         if not self.check(result):
             raise ValueError("invalid exact/truncated composition")
         return result

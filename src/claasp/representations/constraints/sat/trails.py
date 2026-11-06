@@ -25,37 +25,39 @@ from claasp.components import (
     Xor,
 )
 from claasp.drivers.solvers import SatStatus
-from claasp.graph.binding import BindingKind
+from claasp.graph import GraphPropagation
 from claasp.primitives import Speck
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
-    ConstraintModelProvenance,
     _direct_model,
     _unaudited_model,
     _verified_model,
 )
+from claasp.representations.constraints._propagation import (
+    component_applications as _component_applications,
+)
 from claasp.representations.constraints.sat.components import (
-    DifferentialToTruncatedSATModel,
     ImpossibleBoundarySATModel,
     ModularAddDeterministicTruncatedSATModel,
-    ModularAddDifferentialSATModel,
-    ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
     ModularAddSemiDeterministicTruncatedSATModel,
+    ModularAddXorDifferentialSATModel,
+    ModularAddXorLinearSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
     ProbabilisticTruncatedModularAddSATModel,
-    TruncatedToLinearSATModel,
+    TruncatedToXorLinearSATModel,
+    XorDifferentialToTruncatedSATModel,
 )
 from claasp.representations.constraints.sat.lowering import _native_xor_formula
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
-from claasp.representations.constraints.smt.word_differential import (
-    WordDifferentialEnumeration,
-    WordDifferentialSMTModel,
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialEnumeration,
+    WordXorDifferentialSMTModel,
 )
-from claasp.representations.constraints.smt.word_linear import (
-    WordLinearEnumeration,
-    WordLinearSMTModel,
+from claasp.representations.constraints.smt.word_xor_linear import (
+    WordXorLinearEnumeration,
+    WordXorLinearSMTModel,
 )
 from claasp.semantics.cryptanalysis import (
     ImpossiblePropagationBoundary,
@@ -70,26 +72,6 @@ from claasp.semantics.cryptanalysis import (
 )
 from claasp.transformations import invert_primitive, slice_rounds
 from claasp.unit_types import BinaryExtensionField, Bit, Word
-
-
-def _component_applications(primitive, default, specialized):
-    grouped: dict[ConstraintModelProvenance, list[str]] = {model: [] for _, model in specialized}
-    grouped[default] = []
-    for component in primitive.graph.components:
-        model = next(
-            (
-                model
-                for component_type, model in specialized
-                if isinstance(component, component_type)
-            ),
-            default,
-        )
-        grouped[model].append(component.component_id)
-    return tuple(
-        ConstraintModelApplication(model, tuple(component_ids))
-        for model, component_ids in grouped.items()
-        if component_ids
-    )
 
 
 def _cnf(formula, constraint_models) -> CNFFormula:
@@ -632,33 +614,16 @@ class WordDeterministicTruncatedSATModel:
                         label,
                     )
 
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
-        unit_arrays = {}
-        for name, array_type in sources:
-            _truncated_width(array_type)
-            unit_arrays[name] = tuple(
-                pair(f"truncated_{name}_{bit}")
-                for bit in range(array_type.unit_count * _truncated_width(array_type))
-            )
+        propagation = GraphPropagation(self.primitive)
+        unit_arrays, operands_by_id, output, _ = propagation.bit_wiring(
+            pair,
+            source_names=lambda name, vt: tuple(
+                f"truncated_{name}_{bit}" for bit in range(vt.unit_count * _truncated_width(vt))
+            ),
+        )
 
-        def selected(selection):
-            return tuple(
-                unit_arrays[source_id][bit]
-                for source_id, bit in self.primitive.graph.selection_bit_sources(selection)
-            )
-
-        operands_by_id = {}
-        for component in self.primitive.graph.components:
+        def rule(component, operands, output):
             component_id = component.component_id
-            operands = tuple(selected(selection) for selection in component.inputs)
-            operands_by_id[component_id] = operands
-            output = unit_arrays[component_id]
             width = _truncated_width(component.output_type)
             if isinstance(component, Add) and not isinstance(component.output_type.unit_type, Bit):
                 raise NotImplementedError(
@@ -795,7 +760,7 @@ class WordDeterministicTruncatedSATModel:
                     f"no deterministic-truncated SAT semantics for {type(component).__name__}"
                 )
 
-        output = selected(self.primitive.graph.output)
+        propagation.relations(rule, unit_arrays, operands_by_id)
         if self.nonzero_input is not None:
             add(
                 (
@@ -1222,35 +1187,8 @@ class WordwiseDeterministicTruncatedSATModel:
                     label,
                 )
 
-        bindings = {item.binding_id: item for item in self.primitive.graph.bindings}
-
-        def resolve(owner, position):
-            binding = bindings.get(owner)
-            if binding is None:
-                return owner, position
-            if binding.kind is BindingKind.JOIN:
-                offset = 0
-                for selection in binding.inputs:
-                    if position < offset + len(selection.positions):
-                        return resolve(
-                            selection.source.source_id,
-                            selection.positions[position - offset],
-                        )
-                    offset += len(selection.positions)
-            elif binding.kind is BindingKind.VIEW:
-                selection = binding.inputs[0]
-                return resolve(selection.source.source_id, selection.positions[position])
-            raise NotImplementedError(
-                f"wordwise propagation does not support {binding.kind.value} binding {owner!r}"
-            )
-
-        sources = [
-            (name, unit_array.array_type)
-            for name, unit_array in self.primitive.graph.input_arrays.items()
-        ]
-        sources += [
-            (item.component_id, item.output_type) for item in self.primitive.graph.components
-        ]
+        propagation = GraphPropagation(self.primitive)
+        sources = propagation.sources
         unit_arrays = {
             name: tuple(
                 word(f"wordwise_{name}_{position}", array_type.unit_type.encoded_bit_size)
@@ -1259,18 +1197,14 @@ class WordwiseDeterministicTruncatedSATModel:
             for name, array_type in sources
         }
 
-        def selected(selection):
-            return tuple(
-                unit_arrays[owner][source_position]
-                for position in selection.positions
-                for owner, source_position in (resolve(selection.source.source_id, position),)
-            )
+        def unsupported_conversion(*args):
+            raise NotImplementedError("wordwise propagation does not support pack/unpack bindings")
 
-        operands_by_id = {}
-        for component in self.primitive.graph.components:
-            operands = tuple(selected(selection) for selection in component.inputs)
-            operands_by_id[component.component_id] = operands
-            output = unit_arrays[component.component_id]
+        operands_by_id, output = propagation.unit_wiring(
+            unit_arrays, pack=unsupported_conversion, unpack=unsupported_conversion
+        )
+
+        def rule(component, operands, output):
             if isinstance(component, (Add, Xor)):
                 if isinstance(component, Add) and not isinstance(
                     component.output_type.unit_type, (Bit, BinaryExtensionField)
@@ -1340,7 +1274,7 @@ class WordwiseDeterministicTruncatedSATModel:
                     f"no wordwise deterministic semantics for {type(component).__name__}"
                 )
 
-        output = selected(self.primitive.graph.output)
+        propagation.relations(rule, unit_arrays, operands_by_id)
 
         def fix(words, differences, label):
             for encoded, difference in zip(words, differences):
@@ -2552,7 +2486,7 @@ class SpeckSemiDeterministicTruncatedSATModel(SpeckProbabilisticTruncatedSATMode
         return trail
 
 
-class WordDifferentialSATModel:
+class WordXorDifferentialSATModel:
     """Assemble exact XOR-differential component relations as ordinary CNF.
 
     The model supports the same typed Word graph as the backend-neutral Boolean
@@ -2563,7 +2497,7 @@ class WordDifferentialSATModel:
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordDifferentialSATModel(
+        >>> model = WordXorDifferentialSATModel(
         ...     ToySpeck(2), fixed_weight=1, nonzero_input="plaintext",
         ...     fixed_input_differences={"key": 0},
         ... )
@@ -2574,7 +2508,7 @@ class WordDifferentialSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "WordDifferentialSATModel",
+        "WordXorDifferentialSATModel",
         "xor_differential",
         "direct word-graph difference composition",
         "Component relations and graph wiring are composed directly as Boolean clauses.",
@@ -2593,7 +2527,7 @@ class WordDifferentialSATModel:
     ) -> None:
         if n_window is not None and not isinstance(n_window, NWindowSATStrategy):
             raise TypeError("n_window must be an NWindowSATStrategy")
-        self._shared = WordDifferentialSMTModel(
+        self._shared = WordXorDifferentialSMTModel(
             primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
@@ -2620,7 +2554,7 @@ class WordDifferentialSATModel:
             _component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddDifferentialSATModel.model_provenance),),
+                ((ModularAdd, ModularAddXorDifferentialSATModel.model_provenance),),
             ),
         )
         if self.n_window is not None:
@@ -2667,7 +2601,7 @@ class WordDifferentialSATModel:
             self,
             formula,
             solver,
-            WordDifferentialEnumeration,
+            WordXorDifferentialEnumeration,
             metadata,
             limit,
         )
@@ -2700,7 +2634,7 @@ class SharedDifferencePairedSATTrail:
         return self.left.total_weight + self.right.total_weight
 
 
-class SharedDifferencePairedWordDifferentialSATModel:
+class SharedDifferencePairedWordXorDifferentialSATModel:
     """Recover the legacy shared-difference paired characteristic search.
 
     This is deliberately not the exact four-evaluation paired graph. It
@@ -2711,7 +2645,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = SharedDifferencePairedWordDifferentialSATModel(
+        >>> model = SharedDifferencePairedWordXorDifferentialSATModel(
         ...     ToySpeck(2), maximum_total_weight=2,
         ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
         ... )
@@ -2722,7 +2656,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
 
     model_provenance = _unaudited_model(
         ConstraintBackend.SAT,
-        "SharedDifferencePairedWordDifferentialSATModel",
+        "SharedDifferencePairedWordXorDifferentialSATModel",
         "shared_difference_paired_input_differential",
         "two shared-input-difference characteristics with modular-add output exclusion",
         "Recovered from legacy CLAASP; its precise high-order interpretation remains unaudited.",
@@ -2750,10 +2684,10 @@ class SharedDifferencePairedWordDifferentialSATModel:
             "nonzero_input": nonzero_input,
             "fixed_input_differences": fixed_input_differences,
         }
-        self.left_model = WordDifferentialSATModel(
+        self.left_model = WordXorDifferentialSATModel(
             primitive, output_difference=left_output_difference, **options
         )
-        self.right_model = WordDifferentialSATModel(
+        self.right_model = WordXorDifferentialSATModel(
             primitive, output_difference=right_output_difference, **options
         )
         self.primitive = primitive
@@ -2909,7 +2843,7 @@ class SharedDifferencePairedWordDifferentialSATModel:
         return trail
 
 
-class WordLinearSATModel:
+class WordXorLinearSATModel:
     """Assemble exact XOR-linear component masks and fanout as ordinary CNF.
 
     External input masks, constants, component mask relations, fanout, and the
@@ -2919,7 +2853,7 @@ class WordLinearSATModel:
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordLinearSATModel(
+        >>> model = WordXorLinearSATModel(
         ...     ToySpeck(3), maximum_weight=1, nonzero_input="plaintext",
         ...     fixed_inputs={"key": 0},
         ... )
@@ -2930,7 +2864,7 @@ class WordLinearSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "WordLinearSATModel",
+        "WordXorLinearSATModel",
         "xor_linear",
         "direct word-graph mask composition",
         "Component mask relations and fanout are composed directly as Boolean clauses.",
@@ -2945,7 +2879,7 @@ class WordLinearSATModel:
         fixed_input_masks=None,
         fixed_inputs=None,
     ) -> None:
-        self._shared = WordLinearSMTModel(
+        self._shared = WordXorLinearSMTModel(
             primitive,
             maximum_weight=maximum_weight,
             nonzero_input=nonzero_input,
@@ -2967,7 +2901,7 @@ class WordLinearSATModel:
             _component_applications(
                 self.primitive,
                 self.model_provenance,
-                ((ModularAdd, ModularAddLinearSATModel.model_provenance),),
+                ((ModularAdd, ModularAddXorLinearSATModel.model_provenance),),
             ),
         )
 
@@ -2991,11 +2925,11 @@ class WordLinearSATModel:
             solver,
             (("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),),
         )
-        return _enumerate(self, formula, solver, WordLinearEnumeration, metadata, limit)
+        return _enumerate(self, formula, solver, WordXorLinearEnumeration, metadata, limit)
 
 
 @dataclass(frozen=True, slots=True)
-class SharedDifferencePairedDifferentialLinearSATTrail:
+class SharedDifferencePairedXorDifferentialLinearSATTrail:
     """Two shared-input differential prefixes joined to one linear suffix.
 
     The objective is both differential weights plus twice the linear weight.
@@ -3003,7 +2937,7 @@ class SharedDifferencePairedDifferentialLinearSATTrail:
     EXAMPLES::
 
         >>> from types import SimpleNamespace
-        >>> trail = SharedDifferencePairedDifferentialLinearSATTrail(
+        >>> trail = SharedDifferencePairedXorDifferentialLinearSATTrail(
         ...     SimpleNamespace(total_weight=5), SimpleNamespace(total_weight=3)
         ... )
         >>> trail.total_weight
@@ -3020,7 +2954,7 @@ class SharedDifferencePairedDifferentialLinearSATTrail:
         return self.paired_differential.total_weight + 2 * self.linear.total_weight
 
 
-class SharedDifferencePairedWordDifferentialLinearSATModel:
+class SharedDifferencePairedWordXorDifferentialLinearSATModel:
     """Recover the legacy paired-input differential-linear SAT composition.
 
     Two exact differential characteristics share an external input difference
@@ -3030,7 +2964,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = SharedDifferencePairedWordDifferentialLinearSATModel(
+        >>> model = SharedDifferencePairedWordXorDifferentialLinearSATModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=2,
         ...     paired_differential_maximum_weight=16,
         ...     linear_maximum_weight=16,
@@ -3042,7 +2976,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
 
     model_provenance = _unaudited_model(
         ConstraintBackend.SAT,
-        "SharedDifferencePairedWordDifferentialLinearSATModel",
+        "SharedDifferencePairedWordXorDifferentialLinearSATModel",
         "shared_difference_paired_input_differential_linear",
         "two shared-input differential prefixes joined to one linear suffix",
         "Recovered from legacy CLAASP; its high-order interpretation and boundary provenance remain unaudited.",
@@ -3111,14 +3045,14 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
         fixed_differences = {"key": 0} if "key" in prefix.graph.input_arrays else {}
         if self.input_difference is not None:
             fixed_differences["plaintext"] = self.input_difference
-        self._paired = SharedDifferencePairedWordDifferentialSATModel(
+        self._paired = SharedDifferencePairedWordXorDifferentialSATModel(
             prefix,
             maximum_total_weight=self.paired_differential_maximum_weight,
             nonzero_input="plaintext" if self.input_difference is None else None,
             fixed_input_differences=fixed_differences,
         )
         fixed_masks = {name: 0 for name in suffix.graph.input_arrays if name != "state"}
-        self._linear = WordLinearSATModel(
+        self._linear = WordXorLinearSATModel(
             suffix,
             maximum_weight=self.linear_maximum_weight,
             fixed_input_masks=fixed_masks,
@@ -3229,7 +3163,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
         )
         return self._formula
 
-    def decode_trail(self, assignment) -> SharedDifferencePairedDifferentialLinearSATTrail:
+    def decode_trail(self, assignment) -> SharedDifferencePairedXorDifferentialLinearSATTrail:
         """Decode and independently check the paired prefix and shared boundary."""
 
         if self._formula is None:
@@ -3251,7 +3185,7 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
             difference_bits = tuple((difference >> (width - bit - 1)) & 1 for bit in range(width))
             if any(mask and active for mask, active in zip(mask_bits, difference_bits)):
                 raise ValueError("paired differential-linear boundary is incompatible")
-        trail = SharedDifferencePairedDifferentialLinearSATTrail(paired, linear)
+        trail = SharedDifferencePairedXorDifferentialLinearSATTrail(paired, linear)
         if self.fixed_total_weight is not None and trail.total_weight != self.fixed_total_weight:
             raise ValueError("paired differential-linear trail changed its fixed weight")
         if self.maximum_total_weight is not None and trail.total_weight > self.maximum_total_weight:
@@ -3260,13 +3194,13 @@ class SharedDifferencePairedWordDifferentialLinearSATModel:
 
 
 @dataclass(frozen=True, slots=True)
-class WordSemiDeterministicDifferentialLinearSATTrail:
+class WordSemiDeterministicXorDifferentialLinearSATTrail:
     """An exact differential, semi-deterministic middle, and linear suffix.
 
     EXAMPLES::
 
         >>> from types import SimpleNamespace
-        >>> trail = WordSemiDeterministicDifferentialLinearSATTrail(
+        >>> trail = WordSemiDeterministicXorDifferentialLinearSATTrail(
         ...     SimpleNamespace(total_weight=2),
         ...     SimpleNamespace(weight=0.41),
         ...     SimpleNamespace(total_weight=3),
@@ -3292,7 +3226,7 @@ class WordSemiDeterministicDifferentialLinearSATTrail:
         return self.middle.weight
 
 
-class WordSemiDeterministicDifferentialLinearSATModel:
+class WordSemiDeterministicXorDifferentialLinearSATModel:
     """Compose exact, semi-deterministic, and linear Speck SAT searches.
 
     The middle uses the recovered look-ahead-window modular-add encoding. Its
@@ -3301,7 +3235,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
 
     EXAMPLES::
 
-        >>> model = WordSemiDeterministicDifferentialLinearSATModel(
+        >>> model = WordSemiDeterministicXorDifferentialLinearSATModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
         ...     differential_maximum_weight=16,
         ...     middle_maximum_scaled_weight=100,
@@ -3314,7 +3248,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "WordSemiDeterministicDifferentialLinearSATModel",
+        "WordSemiDeterministicXorDifferentialLinearSATModel",
         "differential_linear",
         "round-sliced differential, semi-deterministic-truncated, and linear composition",
         "Direct namespacing and wiring; the nested middle relation retains the unresolved source status.",
@@ -3384,7 +3318,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         fixed_differences = {"key": 0} if "key" in prefix.graph.input_arrays else {}
         if self.input_difference is not None:
             fixed_differences["plaintext"] = self.input_difference
-        self._prefix = WordDifferentialSATModel(
+        self._prefix = WordXorDifferentialSATModel(
             prefix,
             maximum_weight=self.differential_maximum_weight,
             nonzero_input="plaintext" if self.input_difference is None else None,
@@ -3397,7 +3331,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             maximum_scaled_weight=self.middle_maximum_scaled_weight,
         )
         fixed_masks = {name: 0 for name in suffix.graph.input_arrays if name != "state"}
-        self._linear = WordLinearSATModel(
+        self._linear = WordXorLinearSATModel(
             suffix,
             maximum_weight=self.linear_maximum_weight,
             fixed_input_masks=fixed_masks,
@@ -3442,7 +3376,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         prefix_output = self._prefix._shared._output
         if len(prefix_output) != len(middle_input):
             raise ValueError("upper semi-deterministic boundary widths disagree")
-        upper = DifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
+        upper = XorDifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
         upper_mapping = {
             **{
                 f"difference_{bit}": maps["differential"][name]
@@ -3460,7 +3394,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
         linear_input = self._linear._shared._unit_arrays["state"]
         if len(middle_output) != len(linear_input):
             raise ValueError("lower semi-deterministic boundary widths disagree")
-        lower = TruncatedToLinearSATModel(len(linear_input)).cnf_formula()
+        lower = TruncatedToXorLinearSATModel(len(linear_input)).cnf_formula()
         lower_mapping = {
             **{
                 f"truncated_{bit}_{field}": maps["middle"][pair[position]]
@@ -3504,7 +3438,7 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             )
         applications.extend(formula.constraint_models)
 
-    def decode_trail(self, assignment) -> WordSemiDeterministicDifferentialLinearSATTrail:
+    def decode_trail(self, assignment) -> WordSemiDeterministicXorDifferentialLinearSATTrail:
         """Decode all sections and independently check both connectors."""
 
         if self._formula is None:
@@ -3535,11 +3469,11 @@ class WordSemiDeterministicDifferentialLinearSATModel:
             for bit, mask in zip(middle.output_pattern.bits, mask_bits)
         ):
             raise ValueError("lower semi-deterministic boundary is incompatible")
-        return WordSemiDeterministicDifferentialLinearSATTrail(differential, middle, linear)
+        return WordSemiDeterministicXorDifferentialLinearSATTrail(differential, middle, linear)
 
 
 @dataclass(frozen=True, slots=True)
-class WordDeterministicDifferentialLinearSATTrail:
+class WordDeterministicXorDifferentialLinearSATTrail:
     """One decoded differential, deterministic-truncated, and linear witness.
 
     The objective is the characteristic convention used by the legacy SAT
@@ -3549,7 +3483,7 @@ class WordDeterministicDifferentialLinearSATTrail:
     EXAMPLES::
 
         >>> from types import SimpleNamespace
-        >>> trail = WordDeterministicDifferentialLinearSATTrail(
+        >>> trail = WordDeterministicXorDifferentialLinearSATTrail(
         ...     SimpleNamespace(total_weight=2),
         ...     SimpleNamespace(),
         ...     SimpleNamespace(total_weight=3),
@@ -3569,7 +3503,7 @@ class WordDeterministicDifferentialLinearSATTrail:
         return self.differential.total_weight + 2 * self.linear.total_weight
 
 
-class WordDeterministicDifferentialLinearSATModel:
+class WordDeterministicXorDifferentialLinearSATModel:
     """Compose exact, truncated, and linear SAT searches over round slices.
 
     This recovered strategy keeps all three submodels independently decodable.
@@ -3580,7 +3514,7 @@ class WordDeterministicDifferentialLinearSATModel:
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = WordDeterministicDifferentialLinearSATModel(
+        >>> model = WordDeterministicXorDifferentialLinearSATModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
         ...     differential_maximum_weight=16, linear_maximum_weight=16,
         ... )
@@ -3591,7 +3525,7 @@ class WordDeterministicDifferentialLinearSATModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "WordDeterministicDifferentialLinearSATModel",
+        "WordDeterministicXorDifferentialLinearSATModel",
         "differential_linear",
         "round-sliced differential, deterministic-truncated, and linear composition",
         "Direct namespacing and wiring of independently declared component and trail relations.",
@@ -3663,7 +3597,7 @@ class WordDeterministicDifferentialLinearSATModel:
         prefix_fixed = {"key": 0} if "key" in prefix_primitive.graph.input_arrays else {}
         if self.input_difference is not None:
             prefix_fixed["plaintext"] = self.input_difference
-        self._prefix = WordDifferentialSATModel(
+        self._prefix = WordXorDifferentialSATModel(
             prefix_primitive,
             maximum_weight=self.differential_maximum_weight,
             nonzero_input="plaintext" if self.input_difference is None else None,
@@ -3678,7 +3612,7 @@ class WordDeterministicDifferentialLinearSATModel:
             middle_primitive, fixed_input_patterns=middle_fixed
         )
         suffix_fixed = {name: 0 for name in suffix_primitive.graph.input_arrays if name != "state"}
-        self._linear = WordLinearSATModel(
+        self._linear = WordXorLinearSATModel(
             suffix_primitive,
             maximum_weight=self.linear_maximum_weight,
             fixed_input_masks=suffix_fixed,
@@ -3735,7 +3669,7 @@ class WordDeterministicDifferentialLinearSATModel:
         middle_input = self._middle._unit_arrays["state"]
         if len(prefix_output) != len(middle_input):
             raise ValueError("upper differential-linear boundary widths disagree")
-        upper = DifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
+        upper = XorDifferentialToTruncatedSATModel(len(prefix_output)).cnf_formula()
         append_connector(
             upper,
             {
@@ -3755,7 +3689,7 @@ class WordDeterministicDifferentialLinearSATModel:
         linear_input = self._linear._shared._unit_arrays["state"]
         if len(middle_output) != len(linear_input):
             raise ValueError("lower differential-linear boundary widths disagree")
-        lower = TruncatedToLinearSATModel(len(linear_input)).cnf_formula()
+        lower = TruncatedToXorLinearSATModel(len(linear_input)).cnf_formula()
         append_connector(
             lower,
             {
@@ -3785,7 +3719,7 @@ class WordDeterministicDifferentialLinearSATModel:
         )
         return self._formula
 
-    def decode_trail(self, assignment) -> WordDeterministicDifferentialLinearSATTrail:
+    def decode_trail(self, assignment) -> WordDeterministicXorDifferentialLinearSATTrail:
         """Decode all three sections and independently check both connectors."""
 
         if self._formula is None:
@@ -3817,10 +3751,10 @@ class WordDeterministicDifferentialLinearSATModel:
             for bit, mask in zip(middle.output_pattern.bits, mask_bits)
         ):
             raise ValueError("lower differential-linear boundary is incompatible")
-        return WordDeterministicDifferentialLinearSATTrail(differential, middle, linear)
+        return WordDeterministicXorDifferentialLinearSATTrail(differential, middle, linear)
 
 
-class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):
+class WordXorDifferentialNativeXorSATModel(WordXorDifferentialSATModel):
     """Lower complete differential trails with verified native XOR records.
 
     Only clause groups that exactly equal a canonical parity relation are
@@ -3830,7 +3764,7 @@ class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordDifferentialNativeXorSATModel(ToySpeck(2), fixed_weight=1)
+        >>> model = WordXorDifferentialNativeXorSATModel(ToySpeck(2), fixed_weight=1)
         >>> formula = model.cnf_formula()
         >>> (formula.native_xor_count > 0, formula.expanded_cnf().clause_count)
         (True, 484)
@@ -3838,7 +3772,7 @@ class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "WordDifferentialNativeXorSATModel",
+        "WordXorDifferentialNativeXorSATModel",
         "xor_differential",
         "canonical parity groups as CryptoMiniSat native XOR records",
         "Each replaced parity group is verified against its complete ordinary-CNF expansion.",
@@ -3866,13 +3800,13 @@ class WordDifferentialNativeXorSATModel(WordDifferentialSATModel):
         return result
 
 
-class WordLinearNativeXorSATModel(WordLinearSATModel):
+class WordXorLinearNativeXorSATModel(WordXorLinearSATModel):
     """Lower complete linear trails with verified native XOR records.
 
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordLinearNativeXorSATModel(ToySpeck(3), maximum_weight=1)
+        >>> model = WordXorLinearNativeXorSATModel(ToySpeck(3), maximum_weight=1)
         >>> formula = model.cnf_formula()
         >>> (formula.native_xor_count > 0, formula.clause_count < 706)
         (True, True)
@@ -3880,7 +3814,7 @@ class WordLinearNativeXorSATModel(WordLinearSATModel):
 
     model_provenance = _direct_model(
         ConstraintBackend.SAT,
-        "WordLinearNativeXorSATModel",
+        "WordXorLinearNativeXorSATModel",
         "xor_linear",
         "canonical parity groups as CryptoMiniSat native XOR records",
         "Each replaced parity group is verified against its complete ordinary-CNF expansion.",
@@ -3913,19 +3847,19 @@ __all__ = [
     "SpeckProbabilisticTruncatedSATModel",
     "SemiDeterministicModularAddTransition",
     "SharedDifferencePairedSATTrail",
-    "SharedDifferencePairedDifferentialLinearSATTrail",
-    "SharedDifferencePairedWordDifferentialLinearSATModel",
-    "SharedDifferencePairedWordDifferentialSATModel",
+    "SharedDifferencePairedXorDifferentialLinearSATTrail",
+    "SharedDifferencePairedWordXorDifferentialLinearSATModel",
+    "SharedDifferencePairedWordXorDifferentialSATModel",
     "SpeckSemiDeterministicTruncatedSATModel",
     "SpeckSemiDeterministicTruncatedTrail",
     "WordDeterministicTruncatedCharacteristic",
     "WordDeterministicTruncatedEnumeration",
     "WordDeterministicTruncatedNativeXorSATModel",
     "WordDeterministicTruncatedSATModel",
-    "WordDifferentialNativeXorSATModel",
-    "WordDifferentialSATModel",
-    "WordLinearNativeXorSATModel",
-    "WordLinearSATModel",
-    "WordSemiDeterministicDifferentialLinearSATModel",
-    "WordSemiDeterministicDifferentialLinearSATTrail",
+    "WordXorDifferentialNativeXorSATModel",
+    "WordXorDifferentialSATModel",
+    "WordXorLinearNativeXorSATModel",
+    "WordXorLinearSATModel",
+    "WordSemiDeterministicXorDifferentialLinearSATModel",
+    "WordSemiDeterministicXorDifferentialLinearSATTrail",
 ]

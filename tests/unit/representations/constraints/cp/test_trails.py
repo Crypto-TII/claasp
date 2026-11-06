@@ -10,24 +10,24 @@ from claasp.representations.constraints.cp import (
     ModularAddBoomerangTrailCPModel,
     ModularAddBoomerangTrailResult,
     PresentActiveSBoxesCPModel,
-    PresentDifferentialCPModel,
     PresentFixedActiveSBoxesCPModel,
     PresentHybridImpossibleCPModel,
     PresentProbabilisticKeyScheduleCPModel,
+    PresentXorDifferentialCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
     SBoxBoomerangTrailResult,
-    SpeckARXWindowDifferentialCPModel,
+    SpeckARXWindowXorDifferentialCPModel,
     SpeckBoomerangCPModel,
     SpeckContinuousHeuristicCPModel,
     SpeckContinuousMaskOptimizationCPModel,
     SpeckSemiDeterministicTruncatedCPModel,
-    WordDeterministicDifferentialLinearCPModel,
     WordDeterministicTruncatedCPModel,
-    WordDifferentialCPModel,
+    WordDeterministicXorDifferentialLinearCPModel,
     WordImpossibleCPModel,
-    WordLinearCPModel,
-    WordSemiDeterministicDifferentialLinearCPModel,
+    WordSemiDeterministicXorDifferentialLinearCPModel,
+    WordXorDifferentialCPModel,
+    WordXorLinearCPModel,
 )
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
@@ -58,8 +58,8 @@ def _boomerang_model():
         "fixed_input_differences": {"right": 0},
     }
     return ModularAddBoomerangTrailCPModel(
-        WordDifferentialCPModel(_single_add("upper"), **options),
-        WordDifferentialCPModel(_single_add("lower"), **options),
+        WordXorDifferentialCPModel(_single_add("upper"), **options),
+        WordXorDifferentialCPModel(_single_add("lower"), **options),
         ModularAddBoomerangCPModel(4),
         lower_input="left",
     )
@@ -87,10 +87,10 @@ def test_modadd_boomerang_cp_namespaces_and_links_complete_trails():
 
 
 def test_sbox_boomerang_cp_namespaces_and_links_complete_present_trails():
-    upper = PresentDifferentialCPModel(
+    upper = PresentXorDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
-    lower = PresentDifferentialCPModel(
+    lower = PresentXorDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
     sbox = next(
@@ -136,7 +136,7 @@ def test_generic_word_impossible_cp_preserves_complete_split_formula():
 
 
 def test_speck_arx_window_cp_adds_one_pruning_constraint_per_round():
-    model = SpeckARXWindowDifferentialCPModel(
+    model = SpeckARXWindowXorDifferentialCPModel(
         PropagationProblem(Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45),
         window_sizes=(3, 3, 3),
     )
@@ -215,7 +215,7 @@ def test_semi_deterministic_truncated_cp_assembles_complete_speck_graph():
 
 
 def test_semi_deterministic_differential_linear_cp_assembles_complete_composition():
-    model = WordSemiDeterministicDifferentialLinearCPModel(
+    model = WordSemiDeterministicXorDifferentialLinearCPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -234,7 +234,7 @@ def test_semi_deterministic_differential_linear_cp_assembles_complete_compositio
 
 
 def test_differential_linear_cp_assembles_complete_composition():
-    model = WordDeterministicDifferentialLinearCPModel(
+    model = WordDeterministicXorDifferentialLinearCPModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -259,7 +259,7 @@ def test_deterministic_truncated_cp_assembles_complete_word_graph():
 
 
 def test_differential_cp_assembles_complete_word_graph():
-    model = WordDifferentialCPModel(
+    model = WordXorDifferentialCPModel(
         ToySpeck(2),
         fixed_weight=1,
         fixed_input_differences={"key": 0},
@@ -271,7 +271,7 @@ def test_differential_cp_assembles_complete_word_graph():
 
 
 def test_linear_cp_assembles_complete_word_graph():
-    model = WordLinearCPModel(
+    model = WordXorLinearCPModel(
         ToySpeck(3), maximum_weight=1, fixed_inputs={"key": 0}, nonzero_input="plaintext"
     )
     query = model.cp_model()

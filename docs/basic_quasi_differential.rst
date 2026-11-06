@@ -1,4 +1,4 @@
-Quasi-differential analysis: introduction
-=========================================
+Quasi-differential analysis: basic
+==================================
 
 **TODO**

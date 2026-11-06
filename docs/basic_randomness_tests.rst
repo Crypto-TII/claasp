@@ -7,5 +7,5 @@ on supplied datasets independently of their source, see :doc:`statistical_tests`
 .. toctree::
    :maxdepth: 2
 
-   Introduction <basic_randomness_intro>
+   Basic <basic_randomness_intro>
    Advanced <advanced_randomness_tests>

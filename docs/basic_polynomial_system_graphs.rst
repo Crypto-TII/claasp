@@ -1,4 +1,4 @@
-Polynomial-system graphs: introduction
-======================================
+Polynomial-system graphs: basic
+===============================
 
 **TODO**
