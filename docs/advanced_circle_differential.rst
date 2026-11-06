@@ -75,6 +75,86 @@ compare probabilities instead of absolute correlations, keeping the same
 primitive and fixed inputs throughout. This is a bounded comparison of supplied
 operations, not a built-in global operation optimiser.
 
+Tested catalogue configurations
+--------------------------------
+
+The following reduced-round configurations are covered by regression tests
+using the generic scalar engine and the four-bit operation defined above.
+All keys and tweaks are fixed to zero. These checks establish that circle
+pair generation, evaluation and probability verification work on the listed
+graphs. Assessing a useful distinguisher requires a suitable operation and
+sufficient evidence for its probability at the target round count.
+
+.. list-table:: Tested circle-differential experiments
+   :header-rows: 1
+   :widths: 45 20 35
+
+   * - Configuration
+     - Domain
+     - Verification performed
+   * - ``ToySpeck(number_of_rounds=2)``
+     - 8-bit inputs
+     - Complete endpoint enumeration and concrete-trail search/checking.
+   * - ``ToyAES(number_of_rounds=2, word_size=2, state_size=2)``
+     - 8-bit inputs; two-bit field elements
+     - Complete endpoint enumeration and concrete-trail search/checking.
+   * - ``AES(number_of_rounds=2)``
+     - 128-bit inputs
+     - Seeded endpoint sampling, including binary-field diffusion.
+   * - ``Present(number_of_rounds=2)``
+     - 64-bit inputs
+     - Seeded endpoint sampling through its S-box and bit-permutation layers.
+   * - ``Craft(number_of_rounds=2)``
+     - 64-bit inputs
+     - Seeded endpoint sampling with both key and tweak fixed.
+   * - ``Speck(number_of_rounds=2)``
+     - 32-bit inputs
+     - Seeded endpoint sampling through modular addition and rotations.
+   * - ``Simon(number_of_rounds=2)``
+     - 32-bit inputs
+     - Seeded endpoint sampling through AND, XOR and rotations.
+
+The sampling tests use input difference seven, 64 pairs and seed 17. Each
+output difference is defined before sampling, using the output of the fixed
+pilot pair :math:`(0,7)`. Observed counts are checked against an independent
+packed-bit implementation of the circle operation around ordinary primitive
+evaluations. The small-domain tests enumerate all 256 initial inputs and check
+both the endpoint counts and the selected trail's probability.
+
+For example, the two-round ToySpeck experiment has endpoint probability
+:math:`1/32` for :math:`7\to\mathtt{0x13}`; its best concrete trail with
+those endpoints has probability :math:`1/128`:
+
+.. doctest::
+
+   >>> from claasp.primitives import ToySpeck
+   >>> toy = ToySpeck(number_of_rounds=2)
+   >>> endpoint = toy.analysis.circle_differential(bibrace=operation).probability(
+   ...     7, 0x13, fixed_inputs={"key": 0})
+   >>> trail = toy.analysis.find_lowest_weight_circle_differential_trail(
+   ...     bibrace=operation, input_difference=7, output_difference=0x13,
+   ...     fixed_inputs={"key": 0})
+   >>> endpoint.probability, trail.probability, trail.differences
+   (Fraction(1, 32), Fraction(1, 128), (7, 228, 19))
+
+Scope of the published reproduction
+-----------------------------------
+
+The four-bit experiment above reproduces both complete DDTs in Figures 4 and 5
+of the 2024 paper, including the XOR/circle uniformities 4 and 16 and the
+probability-one circle differential :math:`7\to6`. It constructs an ordinary
+``BitVectorSBox`` graph and uses the generic evaluator and transition semantics.
+Regression fixtures record all 512 table entries and their source, and compare
+them with the computed tables.
+
+Section 3.2 of that paper reports experiments on a different, specially
+constructed 16-bit SPN, averaging over random long keys. The catalogue coverage
+tests above do not reproduce that multiround experiment. Reproducing it would
+require constructing the paper's diffusion layer and long-key rounds, then
+running the prescribed key-averaged campaign. The fixed-input module can supply
+the per-key measurements; the averaging and search campaign must be run
+explicitly.
+
 Concrete multiround trail search
 --------------------------------
 
@@ -170,3 +250,13 @@ are not a solver-based local characteristic search. Use
 ``estimate_probability()`` or ``trail_probability(..., samples=...)`` on larger
 primitive domains. They verify a prespecified event and report sampling evidence,
 rather than certifying a global optimum. See :doc:`verification_circle_differential`.
+
+Future work
+-----------
+
+Scalable SAT, SMT, MILP and CP circle-differential characteristic search is
+left for future work. It requires circle-specific transition constraints within
+the shared propagation infrastructure, explicit operation layouts and key
+assumptions, and validation against concrete execution. The current bounded
+enumeration and verification methods provide small-domain reference results
+for checking those future models.

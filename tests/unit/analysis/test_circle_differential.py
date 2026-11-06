@@ -1,9 +1,11 @@
 """Actual circle-difference pairs, published regressions, budgets and traces."""
 
+import json
 from collections import Counter
 from dataclasses import replace
 from fractions import Fraction
 from itertools import product
+from pathlib import Path
 
 import pytest
 
@@ -62,6 +64,14 @@ def test_published_sbox_regression_and_every_ddt_entry_against_independent_formu
         .lookup_semantics()
         .difference_distribution_table()
     )
+    fixture = json.loads(
+        (
+            Path(__file__).resolve().parents[2]
+            / "fixtures/circle_differential/parallel_alternative_ddts.json"
+        ).read_text()
+    )
+    assert ddt == tuple(tuple(row) for row in fixture["circle_ddt"])
+    assert xor_ddt == tuple(tuple(row) for row in fixture["xor_ddt"])
     assert max(max(row) for row in xor_ddt[1:]) == 4
     assert max(max(row) for row in ddt[1:]) == 16
     assert ddt[7][6] == 16

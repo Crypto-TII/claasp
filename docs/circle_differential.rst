@@ -41,6 +41,11 @@ the shared evaluator.
 Use ``primitive.analysis.find_lowest_weight_circle_differential_trail(...)``
 for the standard search workflow.
 
+Solver-based circle-differential trail search using SAT, SMT, MILP or CP is
+left for future work. The :doc:`advanced guide <advanced_circle_differential>`
+lists tested primitive configurations and the published results reproduced
+with the generic engine.
+
 .. toctree::
    :maxdepth: 2
 
