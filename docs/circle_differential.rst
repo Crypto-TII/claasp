@@ -53,16 +53,29 @@ with the generic engine.
    Advanced <advanced_circle_differential>
    Verification <verification_circle_differential>
 
-References
-----------
+.. _circle-differential-origins:
 
-* Civino, Blondeau and Sala, `Differential attacks: using alternative operations
-  <https://doi.org/10.1007/s10623-018-0516-z>`_, *Designs, Codes and Cryptography*
-  87, 225–247 (2019): alternative-difference attacks on XOR-based block ciphers.
-* Calderini, Civino and Invernizzi, `Differential experiments using parallel
-  alternative operations <https://doi.org/10.1515/jmc-2023-0030>`_, *Journal of
-  Mathematical Cryptology* 18(1), article 20230030 (2024): parallel operations
-  and the four-bit example reproduced in these guides.
-* Civino and Fedele, `Binary Bibraces and Applications to Cryptography
+Origins and references
+----------------------
+
+The alternative-addition approach used here grew out of differential
+cryptanalysis. These papers develop alternative-difference attacks on XOR-based
+block ciphers, extend them to parallel operations, and provide the binary-bibrace
+framework used by CLAASP:
+
+* Roberto Civino, Céline Blondeau and Massimiliano Sala,
+  `Differential attacks: using alternative operations
+  <https://doi.org/10.1007/s10623-018-0516-z>`_, *Designs, Codes and
+  Cryptography* 87, 225–247 (2019; published online in 2018): develops
+  differential attacks using alternative additions and demonstrates a block cipher
+  that is weaker under these differences than under XOR differences.
+* Marco Calderini, Roberto Civino and Riccardo Invernizzi,
+  `Differential experiments using parallel alternative operations
+  <https://doi.org/10.1515/jmc-2023-0030>`_, *Journal of Mathematical
+  Cryptology* 18(1), article 20230030 (2024): extends the experiments to
+  alternative operations acting in parallel across the S-boxes.
+* Roberto Civino and Valerio Fedele,
+  `Binary Bibraces and Applications to Cryptography
   <https://doi.org/10.1007/s00009-024-02793-z>`_, *Mediterranean Journal of
-  Mathematics* 22, article 29 (2025): the supported algebraic framework.
+  Mathematics* 22, article 29 (2025): introduces binary bibraces for
+  understanding alternative-difference propagation through primitive layers.

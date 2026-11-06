@@ -65,32 +65,15 @@ key-class scope.
 Origins and references
 ----------------------
 
-The alternative-addition approach was developed first for differential
-cryptanalysis; see :doc:`circle_differential` for that analysis in CLAASP. The following published papers explain its development and
-the algebra used here:
+For the alternative-addition and binary-bibrace background, see the
+:ref:`differential origins and references <circle-differential-origins>`.
+The linear-analysis framework and its circle-linear application are described
+in the following works:
 
-* Roberto Civino, Céline Blondeau and Massimiliano Sala,
-  `Differential attacks: using alternative operations
-  <https://doi.org/10.1007/s10623-018-0516-z>`_, *Designs, Codes and
-  Cryptography* 87, 225–247 (2019; published online in 2018): develops
-  differential attacks using alternative additions and demonstrates a block cipher
-  that is weaker under these differences than under XOR differences.
-* Marco Calderini, Roberto Civino and Riccardo Invernizzi,
-  `Differential experiments using parallel alternative operations
-  <https://doi.org/10.1515/jmc-2023-0030>`_, *Journal of Mathematical
-  Cryptology* 18(1), article 20230030 (2024): extends the experiments to
-  alternative operations acting in parallel across the S-boxes.
-* Roberto Civino and Valerio Fedele,
-  `Binary Bibraces and Applications to Cryptography
-  <https://doi.org/10.1007/s00009-024-02793-z>`_, *Mediterranean Journal of
-  Mathematics* 22, article 29 (2025): introduces binary bibraces for
-  understanding alternative-difference propagation through primitive layers.
-
-For the linear-analysis counterpart, Tim Beyne's `A Geometric Approach to
-Linear Cryptanalysis <https://eprint.iacr.org/2021/1247>`_, ASIACRYPT 2021,
-provides the general framework over finite abelian groups, including nonlinear
-approximations. Roberto Civino's `Circle-Linear Cryptanalysis: Bibrace
-Characters and Weak-Key Linear Distinguishers for CRAFT
-<https://eprint.iacr.org/2026/1767>`_, IACR ePrint 2026/1767 (2026), instantiates
-that framework using binary bibraces. The latter is a publicly available
-preprint.
+* Tim Beyne, `A Geometric Approach to Linear Cryptanalysis
+  <https://eprint.iacr.org/2021/1247>`_, ASIACRYPT 2021: the general framework
+  over finite abelian groups, including nonlinear approximations.
+* Roberto Civino, `Circle-Linear Cryptanalysis: Bibrace Characters and Weak-Key
+  Linear Distinguishers for CRAFT <https://eprint.iacr.org/2026/1767>`_,
+  IACR ePrint 2026/1767 (2026), publicly available preprint: instantiates the
+  framework using binary bibraces and applies it to CRAFT.
