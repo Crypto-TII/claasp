@@ -28,6 +28,10 @@ on:
       - "**"
       - ".github/workflows/claasp-v5-release-image.yaml"
 
+concurrency:
+  group: claasp-release-image-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
