@@ -297,7 +297,7 @@ class WordwiseBranchNumberActiveSBoxesMILPModel:
 
     The model keeps one activity bit per scalar field unit or S-box-sized word.
     Mixed bit/word graphs use aligned encoded words and exact supplied branch
-    results; ``primitive.analysis.active_sboxes()`` resolves those properties.
+    results; ``WordwiseActivityAnalysis(primitive).model()`` resolves those properties.
     Bijective S-boxes,
     permutations, rotations, and identities propagate activity exactly. XOR
     and invertible linear maps use their reviewed branch-number relaxation.

@@ -61,10 +61,10 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
-      - name: Install Z3 for trail-query doctests
+      - name: Install Z3 and GLPK for analysis doctests
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3
+          sudo apt-get install --yes z3 glpk-utils
 
       - name: Run dependency-free tests
         run: python -m pytest
@@ -120,10 +120,10 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
-      - name: Install Z3 for trail-query doctests
+      - name: Install Z3 and GLPK for analysis doctests
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3
+          sudo apt-get install --yes z3 glpk-utils
 
       - name: Run Python and guide doctests
         run: |
@@ -288,7 +288,7 @@ jobs:
       - name: Install Z3
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3
+          sudo apt-get install --yes z3 glpk-utils
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'

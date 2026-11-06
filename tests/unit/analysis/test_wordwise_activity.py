@@ -4,6 +4,7 @@ from io import StringIO
 import pytest
 
 from claasp.analysis import ActiveSBoxResult
+from claasp.analysis.wordwise_activity import WordwiseActivityAnalysis
 from claasp.primitives import Ublock, UblockSingleLinearLayer
 from claasp.representations.constraints.milp._word_activity import _BitWordActivityCompiler
 
@@ -32,9 +33,9 @@ def test_consolidated_layers_require_exact_matching_word_branch_results():
 
 
 def test_malformed_word_sizes_fail_before_attempting_an_external_solver():
-    analysis = UblockSingleLinearLayer(
-        number_of_rounds=1, use_mix_column=False
-    ).analysis.active_sboxes()
+    analysis = WordwiseActivityAnalysis(
+        UblockSingleLinearLayer(number_of_rounds=1, use_mix_column=False)
+    )
     for size in (True, 0, 3):
         with pytest.raises(ValueError, match="word_size"):
             analysis.model(word_size=size)
@@ -42,7 +43,7 @@ def test_malformed_word_sizes_fail_before_attempting_an_external_solver():
 
 def test_decomposed_activity_relaxation_admits_concrete_seeded_differentials():
     primitive = Ublock(number_of_rounds=2)
-    owner = primitive.analysis.active_sboxes().model()
+    owner = WordwiseActivityAnalysis(primitive).model()
     compiler = _BitWordActivityCompiler(owner)
     model = compiler.build()
     for plaintext, difference, key in (

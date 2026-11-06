@@ -9,6 +9,7 @@ from claasp.analysis.component_properties import (
     PropertyDomain,
     PropertyRequest,
 )
+from claasp.analysis.wordwise_activity import WordwiseActivityAnalysis
 from claasp.components import LinearMap
 from claasp.drivers.analysis import MiniZincBranchNumberDriver
 from claasp.primitives import ToyAES, Ublock, UblockSingleLinearLayer
@@ -40,19 +41,15 @@ def test_binary_word_branch_number_restores_the_legacy_ublock_eight_fixture():
 
 @pytest.mark.parametrize("rounds,expected", [(1, 1), (2, 6)])
 def test_decomposed_ublock_preserves_legacy_relaxation_bounds(rounds, expected):
-    result = (
-        Ublock(number_of_rounds=rounds)
-        .analysis.active_sboxes()
-        .find_lowest_number_of_active_sboxes()
-    )
+    result = Ublock(number_of_rounds=rounds).analysis.find_lowest_number_of_active_sboxes()
     assert result.complete and result.lower_bound == expected
 
 
 @pytest.mark.parametrize("rounds,expected", [(1, 1), (2, 8), (3, 9)])
 def test_consolidated_ublock_preserves_legacy_relaxation_bounds_and_branch_cache(rounds, expected):
-    analysis = UblockSingleLinearLayer(
-        number_of_rounds=rounds, use_mix_column=False
-    ).analysis.active_sboxes()
+    analysis = WordwiseActivityAnalysis(
+        UblockSingleLinearLayer(number_of_rounds=rounds, use_mix_column=False)
+    )
     result = analysis.find_lowest_number_of_active_sboxes(branch_driver=_branch_driver())
     assert result.complete and result.lower_bound == expected
     assert len(analysis._branches) == 1
@@ -62,7 +59,5 @@ def test_consolidated_ublock_preserves_legacy_relaxation_bounds_and_branch_cache
 
 
 def test_existing_field_wordwise_aes_still_has_the_same_public_workflow():
-    result = (
-        ToyAES(number_of_rounds=2).analysis.active_sboxes().find_lowest_number_of_active_sboxes()
-    )
+    result = ToyAES(number_of_rounds=2).analysis.find_lowest_number_of_active_sboxes()
     assert result.complete and result.lower_bound == 5

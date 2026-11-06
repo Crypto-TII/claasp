@@ -56,7 +56,7 @@ def certified_branch(component, certificate, word_size):
         or certificate.value < 1
     ):
         raise ValueError(
-            "an exact branch result for this matrix and word size is required; use primitive.analysis.active_sboxes() to compute it"
+            "an exact branch result for this matrix and word size is required; use WordwiseActivityAnalysis(primitive).model() to compute it"
         )
     return certificate.value
 
