@@ -2,6 +2,7 @@
 
 from claasp.components import Add, BitwiseAnd, BitwiseNot, BitwiseOr, Multiply, Xor
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.unit_types import Bit
 
 
 class BooleanFunctionalSATModel:
@@ -32,6 +33,12 @@ class BooleanFunctionalSATModel:
         if not isinstance(component, (Add, BitwiseAnd, BitwiseNot, BitwiseOr, Multiply, Xor)):
             raise TypeError(
                 "component must be Add, Multiply, Xor, BitwiseAnd, BitwiseOr, or BitwiseNot"
+            )
+        if isinstance(component, (Add, Multiply)) and not isinstance(
+            component.output_type.unit_type, Bit
+        ):
+            raise NotImplementedError(
+                "Boolean algebraic Add/Multiply requires Bit; binary fields use their dedicated encoding"
             )
         self.component = component
 

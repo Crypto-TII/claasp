@@ -27,6 +27,9 @@ from claasp.representations.constraints.sat.components import (
     WiringFunctionalSATModel,
     XorDifferentialToTruncatedSATModel,
 )
+from claasp.representations.constraints.sat.components.binary_field import (
+    BinaryFieldFunctionalSATModel,
+)
 from claasp.representations.constraints.sat.exporters import CryptoMiniSatDimacsExporter
 from claasp.representations.constraints.sat.lowering import BooleanCNFModel, BooleanNativeXorModel
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
@@ -69,6 +72,7 @@ from claasp.representations.constraints.sat.trails import (
 )
 
 __all__ = [
+    "BinaryFieldFunctionalSATModel",
     "BoomerangSATModel",
     "ARXBoomerangTrail",
     "QuasidifferentialSATModel",

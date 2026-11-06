@@ -751,6 +751,12 @@ claasp.representations.constraints.sat.components
 .. automodule:: claasp.representations.constraints.sat.components
    :no-index:
 
+claasp.representations.constraints.sat.components.binary_field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.components.binary_field
+   :no-index:
+
 claasp.representations.constraints.sat.components.boolean
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

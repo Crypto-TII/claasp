@@ -6,18 +6,22 @@ from typing import cast
 
 from claasp.components import (
     Add,
+    BinaryAffineMap,
     BitVectorSBox,
     BitwiseAnd,
     BitwiseNot,
     BitwiseOr,
     Constant,
     Identity,
+    LinearMap,
     ModularAdd,
     ModularMultiply,
     ModularSubtract,
     Multiply,
     Permutation,
+    Power,
     Rotate,
+    SBox,
     Shift,
     VariableRotate,
     VariableShift,
@@ -30,6 +34,7 @@ from claasp.representations.constraints import (
     _direct_model,
 )
 from claasp.representations.constraints.sat.components import (
+    BinaryFieldFunctionalSATModel,
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
     ModularAddFunctionalSATModel,
@@ -45,7 +50,7 @@ from claasp.representations.constraints.sat.components import (
 from claasp.representations.constraints.sat.encoding import encode_unit, unit_variable_names
 from claasp.representations.constraints.sat.model import CNFFormula, NativeXorCNFFormula
 from claasp.representations.execution import EvaluationResult
-from claasp.unit_types import Bit, Word
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 class _CNFEncodingContext:
@@ -235,14 +240,16 @@ class BooleanCNFModel:
             component.output for component in self.primitive.graph.components
         ]
         for unit_array in sources:
-            if not isinstance(unit_array.array_type.unit_type, (Bit, Word)):
+            if not isinstance(unit_array.array_type.unit_type, (Bit, Word, BinaryExtensionField)):
                 raise ValueError(
-                    f"Boolean CNF requires the Bit or Word unit_type; {unit_array.source_id!r} uses "
+                    f"Boolean CNF requires the Bit, Word or BinaryExtensionField unit_type; {unit_array.source_id!r} uses "
                     f"{type(unit_array.array_type.unit_type).__name__}"
                 )
         domains = {type(unit_array.array_type.unit_type) for unit_array in sources}
         if len(domains) != 1:
-            raise ValueError("Boolean CNF requires a homogeneous Bit or Word graph")
+            raise ValueError(
+                "Boolean CNF requires a homogeneous Bit, Word or BinaryExtensionField graph"
+            )
 
         propagation = GraphPropagation(self.primitive)
         source_variables, operands, _, _ = propagation.bit_wiring(
@@ -274,14 +281,21 @@ class BooleanCNFModel:
                     [tuple(names[start : start + width]) for start in range(0, len(names), width)]
                 )
             encoding: (
-                WiringFunctionalSATModel
+                BinaryFieldFunctionalSATModel
+                | WiringFunctionalSATModel
                 | BooleanFunctionalSATModel
                 | ModularAddFunctionalSATModel
+                | ModularMultiplyFunctionalSATModel
                 | ModularSubtractFunctionalSATModel
                 | SBoxFunctionalSATModel
                 | VariableWiringFunctionalSATModel
             )
-            if isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
+            if isinstance(component, (LinearMap, BinaryAffineMap, Power, SBox)) or (
+                isinstance(component, (Add, Multiply))
+                and isinstance(component.output_type.unit_type, BinaryExtensionField)
+            ):
+                encoding = BinaryFieldFunctionalSATModel(component)
+            elif isinstance(component, (Constant, Identity, Permutation, Rotate, Shift)):
                 encoding = WiringFunctionalSATModel(component)
             elif isinstance(component, (VariableRotate, VariableShift)):
                 encoding = VariableWiringFunctionalSATModel(component)
@@ -381,6 +395,8 @@ class BooleanCNFModel:
                 assignment[target] = 0 if selector else direct
             elif operation == "zero":
                 assignment[target] = 0
+            elif operation == "one":
+                assignment[target] = 1
             elif operation.startswith("prefix_mod:"):
                 _, remainder, width = operation.split(":")
                 value = sum(

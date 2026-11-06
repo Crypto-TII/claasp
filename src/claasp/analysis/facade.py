@@ -307,6 +307,8 @@ class Analysis:
     def _result(self, problem, formula, selected_solver, solved):
         projected = {}
         if solved.is_satisfiable:
+            if solved.assignment is None or not formula.is_satisfied(solved.assignment):
+                raise ValueError("solver returned an invalid functional witness")
             for name, selection in problem.projections.items():
                 units = self._project(selection, solved.assignment)
                 projected[name] = self.primitive._encode_boundary(units, selection.array_type)
@@ -364,7 +366,16 @@ class Analysis:
             constraints,
             {input_name: self.primitive.graph.input(input_name)},
         )
-        return self.solve(problem, solver)
+        result = self.solve(problem, solver)
+        if result.is_satisfiable:
+            recovered = {**known_inputs, input_name: result.value(input_name)}
+            expected = self.primitive._encode_boundary(
+                self.primitive._decode_boundary(output, self.primitive.graph.output.array_type),
+                self.primitive.graph.output.array_type,
+            )
+            if self.primitive.evaluate(recovered) != expected:
+                raise ValueError("recovered input fails independent primitive evaluation")
+        return result
 
     def find_lowest_weight_xor_differential_trail(
         self,

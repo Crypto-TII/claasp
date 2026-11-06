@@ -3,7 +3,7 @@
 from collections.abc import Mapping
 
 from claasp.graph import Selection, UnitArrayType
-from claasp.unit_types import Bit, Word
+from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 def unit_variable_names(
@@ -14,10 +14,10 @@ def unit_variable_names(
     unit_type = array_type.unit_type
     if isinstance(unit_type, Bit):
         return (f"{source_id}_{position}",)
-    if isinstance(unit_type, Word):
-        return tuple(f"{source_id}_{position}_{bit}" for bit in range(unit_type.width))
+    if isinstance(unit_type, (Word, BinaryExtensionField)):
+        return tuple(f"{source_id}_{position}_{bit}" for bit in range(unit_type.encoded_bit_size))
     raise ValueError(
-        "Boolean encoding requires the Bit or Word unit_type; "
+        "Boolean encoding requires the Bit, Word or BinaryExtensionField unit_type; "
         f"{source_id!r} uses {type(unit_type).__name__}"
     )
 
@@ -63,8 +63,11 @@ def encode_unit(value: int, array_type: UnitArrayType) -> tuple[int, ...]:
     unit_type.validate(value)
     if isinstance(unit_type, Bit):
         return (value,)
-    if isinstance(unit_type, Word):
-        return tuple((value >> (unit_type.width - 1 - bit)) & 1 for bit in range(unit_type.width))
+    if isinstance(unit_type, (Word, BinaryExtensionField)):
+        return tuple(
+            (value >> (unit_type.encoded_bit_size - 1 - bit)) & 1
+            for bit in range(unit_type.encoded_bit_size)
+        )
     raise ValueError(f"Boolean encoding does not support {type(unit_type).__name__}")
 
 

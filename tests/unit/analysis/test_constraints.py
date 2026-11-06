@@ -121,3 +121,15 @@ def test_solution_enumeration_requires_a_positive_limit_and_projection():
         primitive.analysis.enumerate_solutions(
             AnalysisProblem(primitive), limit=1, solver=_ExhaustiveSolver()
         )
+
+
+def test_recovery_rejects_a_solver_assignment_that_violates_the_requested_output():
+    class InvalidSolver:
+        def solve(self, formula):
+            return SatResult(SatStatus.SATISFIABLE, dict.fromkeys(formula.variables, 0), 0, "", "")
+
+    primitive = _xor_primitive()
+    with pytest.raises(ValueError, match="invalid functional witness"):
+        primitive.analysis.recover_input(
+            "key", known_inputs={"left": 0}, output=1, solver=InvalidSolver()
+        )

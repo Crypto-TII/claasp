@@ -1,7 +1,7 @@
 {
   "counts_by_code": {
     "arg-type": 102,
-    "assignment": 70,
+    "assignment": 69,
     "attr-defined": 141,
     "call-arg": 7,
     "call-overload": 81,
@@ -19,11 +19,11 @@
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 622,
+    "src/claasp": 621,
     "tests": 133,
     "tools": 36
   },
-  "diagnostic_count": 791,
+  "diagnostic_count": 790,
   "diagnostics": [
     {
       "code": "operator",
@@ -3269,36 +3269,29 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 55,
+      "line": 60,
       "message": "Need type annotation for \"clauses\" (hint: \"clauses: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 56,
+      "line": 61,
       "message": "Need type annotation for \"provenance\" (hint: \"provenance: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 57,
+      "line": 62,
       "message": "Need type annotation for \"auxiliary\" (hint: \"auxiliary: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 58,
+      "line": 63,
       "message": "Need type annotation for \"constraint_models\" (hint: \"constraint_models: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 21,
-      "line": 308,
-      "message": "Incompatible types in assignment (expression has type \"ModularMultiplyFunctionalSATModel\", variable has type \"WiringFunctionalSATModel | BooleanFunctionalSATModel | ModularAddFunctionalSATModel | ModularSubtractFunctionalSATModel | SBoxFunctionalSATModel | VariableWiringFunctionalSATModel\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
