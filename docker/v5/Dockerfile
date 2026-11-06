@@ -30,7 +30,10 @@ ENV LANG=C.UTF-8 \
 # /ubuntu. It is HTTPS-only and the base image has no CA bundle yet, so TLS
 # peer verification is skipped for that host alone; package integrity still
 # rests on apt's signature check against the Ubuntu archive keyring.
-RUN printf '%s\n' \
+# Retry transient snapshot-server errors without changing the pinned archive.
+RUN printf 'Acquire::Retries "5";\nAcquire::https::Timeout "30";\n' \
+        > /etc/apt/apt.conf.d/80-network-retries \
+    && printf '%s\n' \
         'Types: deb' \
         "URIs: https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT}/" \
         'Suites: noble noble-updates noble-backports noble-security' \
