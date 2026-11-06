@@ -248,12 +248,15 @@ class Analysis:
     def find_minimax_xor_differential_trail(self, **options):
         """Minimize max(key-schedule weight, data-path weight), as in legacy ARX.
 
+        This objective differs from minimizing the sum of trail weights.
+        The default solver requires the ``z3`` executable.
+
         EXAMPLES::
 
-            >>> from claasp.analysis.minimax_differential import MinimaxDifferentialAnalysis
             >>> from claasp.primitives import ToySpeck
-            >>> MinimaxDifferentialAnalysis(ToySpeck(2)).model().data_input_width
-            8
+            >>> result = ToySpeck(2).analysis.find_minimax_xor_differential_trail()
+            >>> result.is_optimal
+            True
         """
         from claasp.analysis.minimax_differential import MinimaxDifferentialAnalysis
 
