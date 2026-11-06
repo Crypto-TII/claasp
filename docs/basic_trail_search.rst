@@ -15,4 +15,5 @@ mean, and check the evidence returned by an analysis.
    differential_linear
    boomerang
    quasi_differential
+   circle_differential
    circle_linear

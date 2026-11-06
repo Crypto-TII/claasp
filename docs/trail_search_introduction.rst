@@ -33,9 +33,15 @@ trail through the actual primitive, under the stated key assumptions?
 This is stronger than accepting each local transition independently.
 An existence proof still does not give a probability.
 
-V5 currently has no general public concrete-pair trail checker. The legacy
-SAT differential trail-and-checker construction is a distinct capability;
-it should not be confused with v5's model-witness validators. For linear
+``primitive.analysis.circle_differential().trail_probability(...)`` checks a
+prescribed sequence of boundary differences on actual binary executions.
+Omitting an alternative operation selects XOR. Exact enumeration can prove
+realizability or impossibility on bounded domains; sampled witnesses prove
+existence, but zero sampled hits do not prove impossibility. See
+:doc:`verification_circle_differential`. This interface checks the specified
+observations; it does not automatically import an entire solver characteristic.
+The legacy SAT differential trail-and-checker construction and v5's
+model-witness validators are distinct capabilities. For linear
 trails, which are expansions in mask checks rather than paths followed by
 input pairs, a realizability claim needs its own precise definition.
 Unsupported checks are stated on the topic's Verification page rather than

@@ -163,6 +163,12 @@ Quasidifferential semantics
 .. automodule:: claasp.semantics.cryptanalysis.quasidifferential
    :members:
 
+Circle-differential semantics
+------------------------------
+
+.. automodule:: claasp.semantics.cryptanalysis.circle_differential
+   :members:
+
 Circle-linear semantics
 -----------------------
 

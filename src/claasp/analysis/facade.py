@@ -128,6 +128,24 @@ class Analysis:
 
         return CircleLinearAnalysis(self.primitive, **configuration)
 
+    def circle_differential(self, **configuration):
+        """Measure circle differences and search bounded concrete trails.
+
+        Uses the same binary-circle boundary validation and concrete graph
+        evaluator as circle-linear endpoint analysis. Keys and tweaks are
+        fixed explicitly; exact searches enumerate the complete input domain.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import BitVectorSBox
+            >>> a = BitVectorSBox(2, (0, 1, 3, 2)).analysis.circle_differential(input_name='input')
+            >>> a.probability(1, 1).probability
+            Fraction(1, 1)
+        """
+        from claasp.analysis.circle_differential import CircleDifferentialAnalysis
+
+        return CircleDifferentialAnalysis(self.primitive, **configuration)
+
     def quasidifferential(self):
         """Inspect signed trails and recover exact fixed-key probabilities.
 

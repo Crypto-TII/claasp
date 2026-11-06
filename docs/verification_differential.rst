@@ -2,8 +2,8 @@ XOR differential trails: verification
 =====================================
 
 Model validation and endpoint probability evaluation answer different questions;
-see :doc:`trail_search_introduction`. V5 does not currently expose a general
-concrete-pair realizability checker for an arbitrary supplied trail.
+see :doc:`trail_search_introduction`. Concrete boundary-sequence checking is
+available through the circle-differential interface with XOR selected.
 
 Characteristic validation
 -------------------------
@@ -36,11 +36,29 @@ a SAT/SMT witness additionally checks the solver constraints. These checks do
 not claim that multiplying local probabilities gives the exact probability
 across the whole primitive.
 
+Concrete trail realizability
+-----------------------------
+
+``primitive.analysis.circle_differential().trail_probability(differences, ...)``
+uses ordinary XOR when no alternative operation is supplied. It checks actual
+input pairs at published round outputs, or at explicit ``boundaries`` selections.
+Exact bounded enumeration proves existence or impossibility for those fixed
+inputs and observations. Sampling can retain a concrete witness; zero sampled
+hits do not prove impossibility. This interface does not automatically import
+the component assignment in a solver characteristic. See
+:doc:`verification_circle_differential` for layouts and sampling evidence.
+
 Distinguisher probability/correlation evaluation
 ------------------------------------------------
 
-V5 has no standalone general empirical XOR-differential checker corresponding
-to the legacy sampling utilities. For supported binary components,
+``primitive.analysis.circle_differential().probability(a, b, ...)`` enumerates
+the actual XOR endpoint probability on a bounded binary domain.
+``estimate_probability(a, b, samples=..., seed=..., ...)`` provides uniform
+sampling with a confidence interval on larger domains. Fix all other inputs,
+including the key and tweak, explicitly. These measurements include all
+compatible internal trails, rather than one selected characteristic.
+
+For supported binary components,
 ``primitive.analysis.quasidifferential().estimate_fixed_key_probability()``
 can recover an endpoint differential probability by summing signed
 quasi-differential trails. This is a model-based exact expansion when complete,

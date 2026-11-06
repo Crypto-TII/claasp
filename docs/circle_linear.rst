@@ -44,7 +44,7 @@ The check functions are therefore not separate choices attached to every
 mask. To interpret a circle-linear trail, specify the operation and coordinate
 convention once; the masks then determine the checks. Explicit Boolean
 expressions can help explain those checks. Choosing XOR with the usual
-coordinates recovers ordinary linear cryptanalysis. The cipher itself is
+coordinates recovers ordinary linear cryptanalysis. The primitive itself is
 unchanged. The :doc:`basic guide <basic_circle_linear>` defines the concrete
 operation used in its example, and the :doc:`advanced guide
 <advanced_circle_linear>` explains the coordinate construction.
@@ -66,14 +66,14 @@ Origins and references
 ----------------------
 
 The alternative-addition approach was developed first for differential
-cryptanalysis. The following published papers explain its development and
+cryptanalysis; see :doc:`circle_differential` for that analysis in CLAASP. The following published papers explain its development and
 the algebra used here:
 
 * Roberto Civino, Céline Blondeau and Massimiliano Sala,
   `Differential attacks: using alternative operations
   <https://doi.org/10.1007/s10623-018-0516-z>`_, *Designs, Codes and
   Cryptography* 87, 225–247 (2019; published online in 2018): develops
-  differential attacks using alternative additions and demonstrates a cipher
+  differential attacks using alternative additions and demonstrates a block cipher
   that is weaker under these differences than under XOR differences.
 * Marco Calderini, Roberto Civino and Riccardo Invernizzi,
   `Differential experiments using parallel alternative operations
@@ -84,7 +84,7 @@ the algebra used here:
   `Binary Bibraces and Applications to Cryptography
   <https://doi.org/10.1007/s00009-024-02793-z>`_, *Mediterranean Journal of
   Mathematics* 22, article 29 (2025): introduces binary bibraces for
-  understanding alternative-difference propagation through cipher layers.
+  understanding alternative-difference propagation through primitive layers.
 
 For the linear-analysis counterpart, Tim Beyne's `A Geometric Approach to
 Linear Cryptanalysis <https://eprint.iacr.org/2021/1247>`_, ASIACRYPT 2021,

@@ -1,4 +1,4 @@
-"""Trail topics keep search introductions separate from verification material."""
+"""Trail topics keep basic search guides separate from verification material."""
 
 from pathlib import Path
 
@@ -22,15 +22,15 @@ def _entries(name):
     return entries
 
 
-def test_every_trail_topic_has_introduction_advanced_and_verification():
+def test_every_trail_topic_has_basic_advanced_and_verification():
     topics = _entries("basic_trail_search")
     assert topics[0] == "trail_search_introduction"
-    assert topics[-2:] == ["quasi_differential", "circle_linear"]
+    assert topics[-3:] == ["quasi_differential", "circle_differential", "circle_linear"]
     assert "Trail search and verification" in (DOCS / "basic_trail_search.rst").read_text()
     for topic in topics[1:]:
         entries = _entries(topic)
         assert [entry.split(" <")[0] for entry in entries] == [
-            "Introduction",
+            "Basic",
             "Advanced",
             "Verification",
         ]
@@ -55,4 +55,5 @@ def test_circle_endpoint_evaluation_is_below_verification():
         "Distinguisher probability/correlation evaluation",
     ):
         assert term in text
-    assert "no general public concrete-pair trail checker" in text
+    assert "circle_differential().trail_probability" in text
+    assert "does not automatically import an entire solver characteristic" in text

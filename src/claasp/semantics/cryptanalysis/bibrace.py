@@ -233,6 +233,25 @@ class CircleBasis:
         integer(label, self.width, "label")
         return parity(label & self.theta(value))
 
+    def circle(self, x: int, y: int) -> int:
+        """Add packed values cellwise using the declared alternative operations.
+
+        In this elementary abelian group every element is its own inverse,
+        so this is also the difference operation. Values and differences use
+        the original packed bits, rather than transformed coordinates.
+
+        EXAMPLES::
+
+            >>> b = CircleBasis((BinaryBibrace(4, ((8, 0, 8, 5),), (5,)),) * 2)
+            >>> hex(b.circle(0x11, 0x88))
+            '0xcc'
+            >>> b.circle(0x11, b.circle(0x11, 0x88))
+            136
+        """
+        integer(x, self.width, "x")
+        integer(y, self.width, "y")
+        return self.theta(self.theta(x) ^ self.theta(y))
+
     def theta(self, value: int) -> int:
         """Apply each cell's involution independently.
 

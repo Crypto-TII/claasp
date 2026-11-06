@@ -319,6 +319,65 @@ def _trail_weight_figure(
     return artifact
 
 
+def _plot_circle_differential_trail(result, *, show, save_to):
+    """Use the common weight renderer for concrete prefix probabilities."""
+    from math import log2
+
+    if not result.probability:
+        raise ValueError("weight profiles require a nonzero trail probability")
+    relative = (0.0, *(-log2(p) for p in result.conditional_probabilities))
+    cumulative = tuple(-log2(c / result.evidence.trials) for c in result.prefix_counts)
+    return _trail_weight_figure(
+        tuple(range(len(relative))),
+        relative,
+        cumulative,
+        xlabel="Observed boundary",
+        title="Circle-differential concrete trail weight",
+        artifact_kind="circle_differential_trail_weights",
+        show=show,
+        save_to=save_to,
+    )
+
+
+def _plot_circle_differential(result, *, show, save_to):
+    """Render a retained Bernoulli event with conservative sampling bounds."""
+    p = float(result.probability)
+    probabilities = (p, 1 - p)
+    lower = (result.lower, 1 - result.upper)
+    upper = (result.upper, 1 - result.lower)
+    errors = (
+        None
+        if result.complete
+        else (
+            tuple(max(0.0, value - lo) for value, lo in zip(probabilities, lower)),
+            tuple(max(0.0, hi - value) for value, hi in zip(probabilities, upper)),
+        )
+    )
+    pyplot = _matplotlib()
+    figure, axis = pyplot.subplots(figsize=(7, 4), layout="constrained")
+    labels = (
+        ("Difference matches", "Difference differs")
+        if result.event == "endpoint"
+        else ("Trail matches", "Trail differs")
+    )
+    axis.bar(labels, probabilities, yerr=errors, capsize=6)
+    axis.set_ylim(0, 1)
+    axis.set_ylabel("Probability")
+    axis.set_title(
+        f"Circle-differential {result.event.replace('_', ' ')} probability"
+        if result.complete
+        else f"Circle-differential estimate ({result.confidence:.0%} Hoeffding interval)"
+    )
+    artifact = FigureArtifact(
+        figure,
+        "circle_differential_probabilities",
+        (("probability", probabilities), ("lower", lower), ("upper", upper)),
+        MatplotlibPresentationDriver.identity,
+    )
+    _finish_figure(figure, show=show, save_to=save_to)
+    return artifact
+
+
 def _plot_circle_correlation(result, *, show, save_to):
     """Render the agreement/disagreement probabilities of endpoint checks."""
     from claasp.analysis.circle_linear import CircleApproximation

@@ -23,6 +23,11 @@ from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp.analysis.circle_differential import (
+    CircleDifferentialAnalysis,
+    CircleDifferentialProbability,
+    CircleDifferentialTrail,
+)
 from claasp.analysis.circle_linear import (
     CircleApproximation,
     CircleCorrelationEstimate,
@@ -209,6 +214,9 @@ def __getattr__(name):
 
 
 __all__ = [
+    "CircleDifferentialAnalysis",
+    "CircleDifferentialProbability",
+    "CircleDifferentialTrail",
     "CircleApproximation",
     "CircleCorrelationEstimate",
     "CircleLinearAnalysis",

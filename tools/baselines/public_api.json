@@ -499,6 +499,24 @@
       "qualified_name": "claasp.analysis.CircleCorrelationEstimate"
     },
     {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.CircleDifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.CircleDifferentialProbability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.CircleDifferentialTrail"
+    },
+    {
       "canonical_name": "claasp.analysis.circle_linear.CircleLinearAnalysis",
       "defined_in": "claasp.analysis.circle_linear",
       "kind": "class",
@@ -1612,6 +1630,301 @@
       "defined_in": "claasp.analysis.composed",
       "kind": "function",
       "qualified_name": "claasp.analysis.check_speck32_xor_differential_linear_fixture"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.circle_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.__init__",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.best_differential",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.best_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.best_trail",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.best_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.estimate_probability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.estimate_probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.lookup_semantics",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.lookup_semantics"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.probability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.trail_probability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialAnalysis.trail_probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.__init__",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.complete",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.confidence",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.confidence"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.event",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.event"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.fixed_inputs",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.fixed_inputs"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.hits",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.hits"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.input_basis",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.input_basis"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.input_difference",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.input_difference"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.input_name",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.input_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.lower",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.lower"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.output_basis",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.output_basis"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.output_difference",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.output_difference"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.plot",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.primitive_name",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.primitive_name"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.probability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.seed",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.seed"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.standard_error",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.standard_error"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.to_terminal",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.trials",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialProbability",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.trials"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.upper",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialProbability.upper"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.__init__",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.bases",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.bases"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.boundary_labels",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.boundary_labels"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.conditional_probabilities",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.conditional_probabilities"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.differences",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.differences"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.evidence",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.evidence"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.observations",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.observations"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.plot",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.prefix_counts",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.prefix_counts"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.probability",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.probability"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.search_output_difference",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.search_output_difference"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.searched",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.searched"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.to_terminal",
+      "defined_in": "claasp.analysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.witness",
+      "defined_in": "claasp.analysis.circle_differential",
+      "documented_by": "claasp.analysis.circle_differential.CircleDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_differential.CircleDifferentialTrail.witness"
     },
     {
       "canonical_name": "claasp.analysis.circle_linear",
@@ -3700,6 +4013,12 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.avalanche"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.circle_differential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.circle_differential"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.circle_linear",
@@ -32299,6 +32618,12 @@
       "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.character_polynomial"
     },
     {
+      "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.circle",
+      "defined_in": "claasp.semantics.cryptanalysis.bibrace",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.circle"
+    },
+    {
       "canonical_name": "claasp.semantics.cryptanalysis.bibrace.CircleBasis.theta",
       "defined_in": "claasp.semantics.cryptanalysis.bibrace",
       "kind": "method",
@@ -32368,6 +32693,65 @@
       "defined_in": "claasp.semantics.cryptanalysis.truncated",
       "kind": "function",
       "qualified_name": "claasp.semantics.cryptanalysis.check_probabilistic_truncated_modular_add"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "kind": "module",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.__init__",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics",
+      "kind": "constructor",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.__init__"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.difference_distribution_table",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.difference_distribution_table"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.input_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.input_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.maximum_inputs",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.maximum_inputs"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.output_basis",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.output_basis"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.probability",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "kind": "method",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.probability"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.table",
+      "defined_in": "claasp.semantics.cryptanalysis.circle_differential",
+      "documented_by": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.circle_differential.CircleDifferentialTransitionSemantics.table"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.circle_linear",
