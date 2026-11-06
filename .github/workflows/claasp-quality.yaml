@@ -61,6 +61,11 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
+      - name: Install Z3 for trail-query doctests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes z3
+
       - name: Run dependency-free tests
         run: python -m pytest
 
@@ -114,6 +119,11 @@ jobs:
 
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
+
+      - name: Install Z3 for trail-query doctests
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes z3
 
       - name: Run Python and guide doctests
         run: |
@@ -284,7 +294,7 @@ jobs:
         run: python -m pip install -e '.[dev]'
 
       - name: Execute Z3 integration
-        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py tests/integration/test_boomerang_search.py tests/integration/test_binary_field_recovery.py -q
+        run: python -m pytest -m external tests/integration/test_z3_integration.py tests/integration/test_speck_trail_enumeration.py tests/integration/test_word_differential.py tests/integration/test_quasidifferential_search.py tests/integration/test_boomerang_search.py tests/integration/test_binary_field_recovery.py tests/integration/test_trail_query_facade.py -q
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=z3 python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search -q
@@ -316,6 +326,9 @@ jobs:
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=glpk python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_glpk_integration.py::test_glpk_preserves_constant_linear_rows -q
+
+      - name: Check HiGHS compatibility with the public trail optimizer
+        run: python -m pytest -m external tests/integration/test_highs_trail_search.py -q
 
   latex-rendering:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/')
