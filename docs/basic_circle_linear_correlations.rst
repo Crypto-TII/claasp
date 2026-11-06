@@ -2,8 +2,10 @@ Circle-linear correlation evaluation
 ====================================
 
 Which input/output checks have the strongest relationship across a small
-S-box? Search its complete circle-linear approximation table, using the
-CRAFT/Midori S-box and an explicitly constructed operation. The four-bit
+S-box? An **S-box** is a lookup table mapping a small group of input bits to
+output bits. Search the circle-linear approximation table, which lists the
+correlations for all pairs of input and output checks, using the CRAFT/Midori
+S-box and an explicitly constructed operation. The four-bit
 addition is defined in :doc:`basic_circle_linear`; the advanced guide shows
 how to select and compare other operations:
 
@@ -22,7 +24,8 @@ how to select and compare other operations:
        input_name="input", bibrace=operation
    ).best_approximation()
 
-Print the selected mask labels and exact signed correlation:
+A **mask label** identifies which one-bit check to use for the selected
+addition. Print the selected labels and exact signed correlation:
 
 .. code-block:: python
 
@@ -54,11 +57,13 @@ Plot how often those two bit checks agree or disagree:
 
 The vertical axis is probability, from zero to one. Correlation is agreement
 probability minus disagreement probability. A value of -1 means the checks
-are always opposite; +1 means always equal. These probabilities are exact:
+are always opposite; +1 means always equal, and zero means agreement on half
+the inputs. These probabilities are exact:
 the analysis enumerates all sixteen S-box inputs. This is an endpoint
 correlation, rather than one selected trail's contribution.
 
-Plotting requires the ``presentation`` extra. ``result.plot(show=False)``
+Plotting requires the optional ``presentation`` dependencies described in
+:doc:`getting_started`. ``result.plot(show=False)``
 returns a figure, and ``result.plot(save_to="circle-correlation.png")`` saves
 it. Both reporting calls reuse the computed result.
 
