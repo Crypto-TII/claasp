@@ -5,8 +5,7 @@ Ordinary linear cryptanalysis looks for biased relationships between parities
 of input and output bits. A **mask** selects the bits to XOR together, defining
 a one-bit **parity check**. Circle-linear cryptanalysis uses the same approach
 with parity-like checks compatible with a chosen alternative addition,
-written :math:`\circ`. These checks can be nonlinear in the usual input bits,
-but they are not arbitrary Boolean functions.
+written :math:`\circ`. These checks can be nonlinear in the usual input bits.
 
 In CLAASP, the chosen operation provides a change of coordinates
 :math:`\theta` satisfying
@@ -40,12 +39,9 @@ bits of :math:`\theta(x)` rather than bits of :math:`x`. In the table below,
        on which they disagree.
      - The same definition, applied to the circle-linear checks.
 
-The check functions are therefore not separate choices attached to every
-mask. To interpret a circle-linear trail, specify the operation and coordinate
-convention once; the masks then determine the checks. Explicit Boolean
-expressions can help explain those checks. Choosing XOR with the usual
-coordinates recovers ordinary linear cryptanalysis. The primitive itself is
-unchanged. The :doc:`basic guide <basic_circle_linear>` defines the concrete
+Once the operation and coordinate convention are fixed, each mask determines
+its check function. Choosing XOR with the usual coordinates recovers ordinary
+linear cryptanalysis. The primitive itself is unchanged. The :doc:`basic guide <basic_circle_linear>` defines the concrete
 operation used in its example, and the :doc:`advanced guide
 <advanced_circle_linear>` explains the coordinate construction.
 
@@ -97,4 +93,4 @@ approximations. Roberto Civino's `Circle-Linear Cryptanalysis: Bibrace
 Characters and Weak-Key Linear Distinguishers for CRAFT
 <https://eprint.iacr.org/2026/1767>`_, IACR ePrint 2026/1767 (2026), instantiates
 that framework using binary bibraces. The latter is a publicly available
-preprint, rather than a peer-reviewed journal or conference publication.
+preprint.

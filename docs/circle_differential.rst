@@ -23,7 +23,7 @@ difference :math:`F(x)\circ F(x\circ a)` equals a chosen :math:`b`.
    * - Difference representation
      - Original packed bits of :math:`a` or :math:`b`.
      - Original packed bits of :math:`a` or :math:`b`, interpreted using the
-       declared circle operation. These are differences, rather than masks.
+       declared circle operation.
    * - Probability
      - Fraction of input pairs producing the selected output difference.
      - The same definition, with the alternative difference operation.
@@ -37,11 +37,9 @@ CLAASP provides exact circle-DDTs for bounded functions, exact endpoint and
 concrete-trail search over bounded input domains, and sampled verification
 for larger binary primitives. Concrete trail search fixes the input difference
 and all other primitive inputs, then counts actual boundary histories through
-the shared evaluator. It has no SAT, SMT, MILP or CP circle-differential search
-backend; it does not claim an efficient exhaustive search on full-size primitives.
+the shared evaluator.
 Use ``primitive.analysis.find_lowest_weight_circle_differential_trail(...)``
-for the standard search workflow. The guides distinguish this concrete search
-from a product of local DDT probabilities.
+for the standard search workflow.
 
 .. toctree::
    :maxdepth: 2

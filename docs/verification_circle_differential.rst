@@ -48,8 +48,7 @@ Distinguisher probability evaluation
 ------------------------------------
 
 ``probability(a, b)`` measures the actual endpoint differential, including all
-compatible internal trails. It does not substitute one trail's probability
-for the endpoint probability.
+compatible internal trails.
 
 .. doctest::
 
@@ -85,5 +84,4 @@ matches or none does. The reported standard error is a plug-in estimate, which
 can be zero in those cases. Small samples cannot establish tiny probabilities.
 Choosing the best-looking differential using those same samples would require
 additional selection-aware uncertainty analysis; this API does not perform
-that search. Results concern one fixed key and tweak, not an average over
-random keys or a weak-key-class size.
+that search. The estimate applies to the supplied fixed key and tweak.

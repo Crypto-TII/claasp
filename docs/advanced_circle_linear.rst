@@ -90,7 +90,7 @@ the brackets mean the parity of the bits selected by :math:`u`. A
 y)=Q(x)\oplus Q(y)\oplus\psi(x,y)`. The constructor adjusts these functions
 to return zero on all correction outputs when needed. Higher-rank products
 can produce outputs spanning more than one independent direction
-:math:`b_j`; support is not limited to the single direction used for CRAFT.
+:math:`b_j`.
 
 .. doctest::
 
@@ -320,9 +320,9 @@ the shape of the observations' distribution. Across repeated runs, such
 intervals cover the true correlation with at least the requested probability
 (default 0.95).
 
-Even unanimous samples do not produce an unjustified zero-width interval. To
-distinguish a correlation of magnitude :math:`c` from zero generally
-requires order :math:`c^{-2}` samples. In the usual terminology, **bias** is
+The interval has nonzero width even when all sampled checks agree or all
+disagree. To distinguish a correlation of magnitude :math:`c` from zero
+generally requires order :math:`c^{-2}` samples. In the usual terminology, **bias** is
 agreement probability minus one half, so it equals half the correlation.
 Very small long-round correlations are too expensive to validate by this
 sampling approach.

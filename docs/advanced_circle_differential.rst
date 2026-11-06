@@ -31,8 +31,7 @@ modular arithmetic, field multiplication/powers, variable rotations/shifts and
 unrolled feedback whenever their ordinary evaluator supports them. There is no
 SPN-only assumption in probability evaluation. This binary-bibrace module excludes
 odd-prime fields, including prime-field arithmetization-oriented primitives.
-Binary-field arithmetization is supported; whether the chosen operation gives
-useful biases is a separate cryptanalytic question.
+Binary-field arithmetization is supported.
 
 Reproduce the published four-bit differential
 ---------------------------------------------
@@ -152,10 +151,8 @@ not be substituted for a reusable local transition DDT. After an empty prefix,
 a later conditional probability is undefined and reported as such.
 
 The endpoint differential combines the disjoint concrete trails with matching
-endpoints. Their actual probabilities add, without the signed cancellation
-that occurs for linear correlations. The optimized circle-linear subgroup
-search and its weak-key results do not automatically supply circle-differential
-trail probabilities.
+endpoints. Their probabilities add to give the endpoint differential
+probability.
 
 Budgets and large primitives
 ----------------------------
