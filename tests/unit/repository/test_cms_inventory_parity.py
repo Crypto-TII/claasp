@@ -1,21 +1,21 @@
 """Translate legacy CMS dispatch/bound checks into shared-model invariants."""
 
 from claasp.primitives import Speck
-from claasp.representations.constraints.cp.trails import SpeckDifferentialCPModel
+from claasp.representations.constraints.cp.trails import SpeckXorDifferentialCPModel
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
 
 
 def test_full_speck_differential_dispatch_and_explicit_bound():
     primitive = Speck(number_of_rounds=22)
-    loose = SpeckDifferentialCPModel(
+    loose = SpeckXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,
             maximum_weight=330,
         )
     ).cp_model()
-    bounded = SpeckDifferentialCPModel(
+    bounded = SpeckXorDifferentialCPModel(
         PropagationProblem(
             primitive,
             XOR_DIFFERENTIAL,

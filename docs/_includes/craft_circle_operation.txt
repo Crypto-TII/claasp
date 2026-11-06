@@ -1,0 +1,25 @@
+The examples split the state into **cells**, each a group of four bits, and
+use the following addition within each cell. Write
+:math:`x=x_0+2x_1+4x_2+8x_3`, so bit 0 is the least significant bit, and
+use the same convention for :math:`y`:
+
+.. math::
+
+   c(x,y) &= (x_0\oplus x_2)y_3\oplus x_3(y_0\oplus y_2),\\
+   x\circ y &= x\oplus y\oplus c(x,y)\,(0101)_2.
+
+Here products of bits mean AND. When :math:`c(x,y)=1`, XOR addition is
+followed by flipping bits 0 and 2; when it is zero, the result is simply
+:math:`x\oplus y`. For example,
+:math:`(1000)_2\circ(0001)_2=(1100)_2`, whereas their XOR is
+:math:`(1001)_2`.
+
+In ``BinaryBibrace(4, ((8, 0, 8, 5),), (5,))``, ``4`` is the cell width.
+The row masks ``(8, 0, 8, 5)`` select
+:math:`y_3, 0, y_3, y_0\oplus y_2`, respectively, as the coefficients of
+:math:`x_0, x_1, x_2, x_3`, giving :math:`c(x,y)`. The final ``(5,)`` specifies
+the correction vector :math:`(0101)_2` multiplied by :math:`c(x,y)`.
+
+The CRAFT example applies this same operation independently to its sixteen
+four-bit state cells. This addition defines the analysis checks; encryption
+uses the standard CRAFT round operations.

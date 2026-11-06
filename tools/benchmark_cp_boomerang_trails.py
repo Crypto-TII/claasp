@@ -17,11 +17,11 @@ from claasp.primitives import Present, Speck
 from claasp.representations.constraints.cp import (
     ModularAddBoomerangCPModel,
     ModularAddBoomerangTrailCPModel,
-    PresentDifferentialCPModel,
+    PresentXorDifferentialCPModel,
     SBoxBoomerangCPModel,
     SBoxBoomerangTrailCPModel,
     SpeckBoomerangCPModel,
-    WordDifferentialCPModel,
+    WordXorDifferentialCPModel,
 )
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
@@ -52,18 +52,18 @@ def _model():
         "fixed_input_differences": {"right": 0},
     }
     return ModularAddBoomerangTrailCPModel(
-        WordDifferentialCPModel(_graph("upper"), **options),
-        WordDifferentialCPModel(_graph("lower"), **options),
+        WordXorDifferentialCPModel(_graph("upper"), **options),
+        WordXorDifferentialCPModel(_graph("lower"), **options),
         ModularAddBoomerangCPModel(4),
         lower_input="left",
     )
 
 
 def _sbox_model():
-    upper = PresentDifferentialCPModel(
+    upper = PresentXorDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
-    lower = PresentDifferentialCPModel(
+    lower = PresentXorDifferentialCPModel(
         PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8)
     )
     component = next(

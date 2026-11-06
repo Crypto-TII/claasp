@@ -8,7 +8,7 @@ from claasp.representations.constraints.milp.components.bitwise_and import (
     BitwiseAndXorLinearMILPModel,
 )
 from claasp.representations.constraints.milp.components.modular_add import (
-    ModularAddLinearMILPModel,
+    ModularAddXorLinearMILPModel,
 )
 from claasp.representations.constraints.milp.components.monomial import (
     MonomialTransitionMILPModel,
@@ -61,7 +61,7 @@ __all__ = [
     "BitwiseAndXorDifferentialMILPModel",
     "BitwiseAndXorLinearMILPModel",
     "FiniteBinaryRelationMILPModel",
-    "ModularAddLinearMILPModel",
+    "ModularAddXorLinearMILPModel",
     "MonomialTransitionMILPModel",
     "SBoxMILPInequalityGroup",
     "SBoxMILPInequalityStrategy",

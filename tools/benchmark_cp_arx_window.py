@@ -12,8 +12,8 @@ from time import monotonic
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import Speck
 from claasp.representations.constraints.cp import (
-    SpeckARXWindowDifferentialCPModel,
-    SpeckDifferentialCPModel,
+    SpeckARXWindowXorDifferentialCPModel,
+    SpeckXorDifferentialCPModel,
 )
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import PropagationProblem
@@ -68,10 +68,10 @@ def main():
             "timeout_seconds": 30,
         },
         "results": [
-            _benchmark("exact", lambda: SpeckDifferentialCPModel(problem()), args.repeats),
+            _benchmark("exact", lambda: SpeckXorDifferentialCPModel(problem()), args.repeats),
             _benchmark(
                 "window_3",
-                lambda: SpeckARXWindowDifferentialCPModel(problem(), window_sizes=(3, 3, 3)),
+                lambda: SpeckARXWindowXorDifferentialCPModel(problem(), window_sizes=(3, 3, 3)),
                 args.repeats,
             ),
         ],

@@ -2,6 +2,7 @@
 
 from typing import cast
 
+from claasp.graph import GraphPropagation
 from claasp.representations.constraints import (
     ConstraintBackend,
     ConstraintModelApplication,
@@ -192,36 +193,32 @@ class BooleanMonomialGraphMILPModel:
 
         variables = []
         constraints = []
-        uses = {}
+        propagation = GraphPropagation(self.primitive)
+        positions = {c.component_id: i for i, c in enumerate(propagation.components)}
 
-        def add_wire(source_id, width):
-            for bit in range(width):
-                name = self._wire(source_id, bit)
-                variables.append(LinearVariable(name, VariableKind.BINARY))
-                uses[name] = []
+        def allocate(name):
+            variables.append(LinearVariable(name, VariableKind.BINARY))
+            return name
 
-        for name, unit_array in self.primitive.graph.input_arrays.items():
-            add_wire(name, self._width(unit_array.array_type))
-        for component in self.primitive.graph.components:
-            add_wire(component.component_id, self._width(component.output_type))
+        sources, operands, output, consumers = propagation.bit_wiring(
+            allocate,
+            source_names=lambda name, vt: tuple(
+                self._wire(name, b) for b in range(self._width(vt))
+            ),
+            edge_names=lambda c, i, selection: tuple(
+                self._edge(positions[c.component_id], i, bit)
+                for bit in range(self._width(selection.array_type))
+            ),
+            output_names=lambda vt: tuple(f"primitive_output_{b}" for b in range(self._width(vt))),
+        )
+        uses = {
+            wire: consumers[name][bit]
+            for name, row in sources.items()
+            for bit, wire in enumerate(row)
+        }
 
-        for component_index, component in enumerate(self.primitive.graph.components):
-            operand_edges = []
-            for operand, selection in enumerate(component.inputs):
-                edges = []
-                for bit, (source_id, source_bit) in enumerate(
-                    self.primitive.graph.selection_bit_sources(selection)
-                ):
-                    edge = self._edge(component_index, operand, bit)
-                    variables.append(LinearVariable(edge, VariableKind.BINARY))
-                    uses[self._wire(source_id, source_bit)].append(edge)
-                    edges.append(edge)
-                operand_edges.append(tuple(edges))
-
-            output = tuple(
-                self._wire(component.component_id, bit)
-                for bit in range(self._width(component.output_type))
-            )
+        def rule(component, operand_edges, output):
+            component_index = positions[component.component_id]
             if isinstance(component, Xor):
                 for bit, target in enumerate(output):
                     terms = {target: -1, **{edges[bit]: 1 for edges in operand_edges}}
@@ -280,12 +277,8 @@ class BooleanMonomialGraphMILPModel:
                     f"Boolean monomial graph MILP does not support {type(component).__name__}"
                 )
 
-        for bit, (source_id, source_bit) in enumerate(
-            self.primitive.graph.selection_bit_sources(self.primitive.graph.output)
-        ):
-            edge = f"primitive_output_{bit}"
-            variables.append(LinearVariable(edge, VariableKind.BINARY))
-            uses[self._wire(source_id, source_bit)].append(edge)
+        propagation.relations(rule, sources, operands)
+        for bit, edge in enumerate(output):
             constraints.append(
                 LinearConstraint(
                     LinearExpression.from_terms({edge: 1}),

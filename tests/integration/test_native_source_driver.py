@@ -70,3 +70,30 @@ def test_compilation_failure_is_reported_without_an_artifact():
     assert compilation.artifact is None
     assert compilation.return_code != 0
     assert compilation.stderr
+
+
+@pytest.mark.parametrize("permutation", [(0, 1), (1, 0)])
+def test_generated_c_shares_pack_permute_unpack_and_fanout_wiring(permutation):
+    from claasp import Primitive, UnitArrayType
+    from claasp.components import Identity, Permutation, Xor
+    from claasp.unit_types import Bit
+
+    primitive = Primitive("binding_codegen", {"input": UnitArrayType(Bit(), (4,))})
+    b = primitive._builder
+    b.add_round()
+    original = primitive.graph.input("input")
+    packed = b.pack_bits(original, 2)
+    moved = b.add_component(Permutation(packed, permutation))
+    selected = b.unpack_bits(moved)
+    out = b.add_component(Xor((original, selected)))
+    b.add_component(Identity(selected))  # The declared output is not the last node.
+    b.set_output(out)
+    source = compile_source(primitive, target="c").artifact
+    compiled = compile_native(source, compiler=_compiler(), options=("-O2",))
+    assert compiled.status is NativeCompilationStatus.SUCCESS, compiled.stderr
+    assert compiled.artifact is not None
+    for x in range(16):
+        result = run_compiled(compiled.artifact, primitive, {"input": x})
+        expected = x ^ (((x & 3) << 2) | (x >> 2)) if permutation == (1, 0) else 0
+        assert result.status is NativeExecutionStatus.SUCCESS, result.stderr
+        assert result.output == tuple((expected >> bit) & 1 for bit in reversed(range(4)))

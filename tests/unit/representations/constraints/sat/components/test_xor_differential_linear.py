@@ -6,14 +6,14 @@ import pytest
 
 from claasp.representations.constraints import ConstraintReferenceStatus
 from claasp.representations.constraints.sat import (
-    DifferentialToTruncatedSATModel,
-    TruncatedToLinearSATModel,
+    TruncatedToXorLinearSATModel,
+    XorDifferentialToTruncatedSATModel,
 )
 from claasp.semantics.cryptanalysis import XorDifference, XorMask
 
 
 def test_differential_to_truncated_matches_the_legacy_truth_table():
-    formula = DifferentialToTruncatedSATModel(1).cnf_formula()
+    formula = XorDifferentialToTruncatedSATModel(1).cnf_formula()
     for difference, unknown, value in product((0, 1), repeat=3):
         assignment = {
             "difference_0": difference,
@@ -24,7 +24,7 @@ def test_differential_to_truncated_matches_the_legacy_truth_table():
 
 
 def test_truncated_to_linear_matches_the_legacy_truth_table():
-    formula = TruncatedToLinearSATModel(1).cnf_formula()
+    formula = TruncatedToXorLinearSATModel(1).cnf_formula()
     for unknown, value, mask in product((0, 1), repeat=3):
         assignment = {
             "truncated_0_unknown": unknown,
@@ -36,7 +36,7 @@ def test_truncated_to_linear_matches_the_legacy_truth_table():
 
 
 def test_boundary_models_decode_typed_values():
-    upper = DifferentialToTruncatedSATModel(2)
+    upper = XorDifferentialToTruncatedSATModel(2)
     upper.cnf_formula()
     difference, middle = upper.decode_boundary(
         {
@@ -51,7 +51,7 @@ def test_boundary_models_decode_typed_values():
     assert difference == XorDifference(2, 2)
     assert str(middle) == "10"
 
-    lower = TruncatedToLinearSATModel(2)
+    lower = TruncatedToXorLinearSATModel(2)
     lower.cnf_formula()
     middle, mask = lower.decode_boundary(
         {
@@ -68,7 +68,7 @@ def test_boundary_models_decode_typed_values():
 
 
 def test_boundary_models_record_direct_relation_provenance():
-    for model in (DifferentialToTruncatedSATModel(1), TruncatedToLinearSATModel(1)):
+    for model in (XorDifferentialToTruncatedSATModel(1), TruncatedToXorLinearSATModel(1)):
         application = model.cnf_formula().constraint_models[0]
         assert application.model.analysis_kind == "differential_linear"
         assert application.model.reference_status is ConstraintReferenceStatus.NOT_APPLICABLE
@@ -77,9 +77,9 @@ def test_boundary_models_record_direct_relation_provenance():
 @pytest.mark.parametrize(
     ("model_type", "arguments", "error", "message"),
     (
-        (DifferentialToTruncatedSATModel, (0,), ValueError, "positive"),
-        (TruncatedToLinearSATModel, (True,), ValueError, "positive"),
-        (DifferentialToTruncatedSATModel, (2,), ValueError, "contain 2 bits"),
+        (XorDifferentialToTruncatedSATModel, (0,), ValueError, "positive"),
+        (TruncatedToXorLinearSATModel, (True,), ValueError, "positive"),
+        (XorDifferentialToTruncatedSATModel, (2,), ValueError, "contain 2 bits"),
     ),
 )
 def test_boundary_models_validate_configuration(model_type, arguments, error, message):
@@ -90,6 +90,6 @@ def test_boundary_models_validate_configuration(model_type, arguments, error, me
 
 def test_boundary_models_validate_binary_pattern_types_and_widths():
     with pytest.raises(TypeError, match="XorDifference"):
-        DifferentialToTruncatedSATModel(2, difference=XorMask(0, 2))
+        XorDifferentialToTruncatedSATModel(2, difference=XorMask(0, 2))
     with pytest.raises(ValueError, match="contain 2 bits"):
-        TruncatedToLinearSATModel(2, mask=XorMask(0, 1))
+        TruncatedToXorLinearSATModel(2, mask=XorMask(0, 1))

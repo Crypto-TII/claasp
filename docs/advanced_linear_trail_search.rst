@@ -1,4 +1,4 @@
-Linear trail search: advanced
-=============================
+XOR-linear trails: advanced
+===========================
 
 **TODO**

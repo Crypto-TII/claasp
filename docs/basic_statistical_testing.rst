@@ -1,4 +1,4 @@
-Statistical tests: introduction
-===============================
+Statistical tests: basic
+========================
 
 **TODO**

@@ -9,16 +9,14 @@ import pytest
 @pytest.mark.parametrize(
     "module,kind",
     [
-        ("word_linear", "Linear"),
-        ("word_differential", "Differential"),
-        ("trails", "Linear"),
-        ("trails", "Differential"),
+        ("word_xor_linear", "Linear"),
+        ("word_xor_differential", "Differential"),
     ],
 )
 def test_reports_preserve_completion_weights_boundaries_and_linear_sign(module, kind):
     module = import_module(f"claasp.representations.constraints.smt.{module}")
-    characteristic = getattr(module, f"Word{kind}Characteristic")
-    enumeration = getattr(module, f"Word{kind}Enumeration")
+    characteristic = getattr(module, f"WordXor{kind}Characteristic")
+    enumeration = getattr(module, f"WordXor{kind}Enumeration")
     args = (("plaintext", 1),), 2, ()
     trail = characteristic(*args, -1, ()) if kind == "Linear" else characteristic(*args, ())
     result = enumeration((trail,), False, 0.25)

@@ -20,20 +20,20 @@ from claasp.drivers.solvers import (
 )
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat import (
-    WordDifferentialSATModel,
-    WordLinearSATModel,
+    WordXorDifferentialSATModel,
+    WordXorLinearSATModel,
 )
 
 
 def _model(kind):
     if kind == "xor_differential":
-        return WordDifferentialSATModel(
+        return WordXorDifferentialSATModel(
             ToySpeck(2),
             fixed_weight=1,
             nonzero_input="plaintext",
             fixed_input_differences={"key": 0},
         )
-    return WordLinearSATModel(
+    return WordXorLinearSATModel(
         ToySpeck(3),
         maximum_weight=1,
         nonzero_input="plaintext",

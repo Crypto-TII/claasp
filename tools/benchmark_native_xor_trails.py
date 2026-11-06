@@ -15,10 +15,10 @@ from claasp.drivers.solvers import CryptoMiniSatSolver, SatStatus
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat import (
     NativeXorCNFFormula,
-    WordDifferentialNativeXorSATModel,
-    WordDifferentialSATModel,
-    WordLinearNativeXorSATModel,
-    WordLinearSATModel,
+    WordXorDifferentialNativeXorSATModel,
+    WordXorDifferentialSATModel,
+    WordXorLinearNativeXorSATModel,
+    WordXorLinearSATModel,
 )
 
 
@@ -30,12 +30,12 @@ def _model(kind, native):
             "fixed_input_differences": {"key": 0},
         }
         if native:
-            return WordDifferentialNativeXorSATModel(ToySpeck(2), **options)
-        return WordDifferentialSATModel(ToySpeck(2), **options)
+            return WordXorDifferentialNativeXorSATModel(ToySpeck(2), **options)
+        return WordXorDifferentialSATModel(ToySpeck(2), **options)
     options = {"maximum_weight": 1, "nonzero_input": "plaintext", "fixed_inputs": {"key": 0}}
     if native:
-        return WordLinearNativeXorSATModel(ToySpeck(3), **options)
-    return WordLinearSATModel(ToySpeck(3), **options)
+        return WordXorLinearNativeXorSATModel(ToySpeck(3), **options)
+    return WordXorLinearSATModel(ToySpeck(3), **options)
 
 
 def _canonical(clauses):

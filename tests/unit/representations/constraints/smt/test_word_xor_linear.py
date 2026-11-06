@@ -7,7 +7,7 @@ import pytest
 from claasp import Primitive, UnitArrayType
 from claasp.components import BitwiseAnd, Xor
 from claasp.drivers.solvers import SatResult, SatStatus
-from claasp.representations.constraints.smt import WordLinearSMTModel
+from claasp.representations.constraints.smt import WordXorLinearSMTModel
 from claasp.unit_types import Word
 
 
@@ -20,7 +20,7 @@ def _xor_model():
         Xor((primitive.graph.input("left"), primitive.graph.input("key")))
     )
     primitive._builder.set_output(output)
-    return WordLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
+    return WordXorLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
 
 
 def test_word_mask_witness_and_arithmetic_checker_agree_and_reject_tampering():
@@ -59,9 +59,9 @@ def test_path_limit_cannot_be_reported_as_complete():
 def test_word_linear_input_constraints_validate_names_and_widths():
     model = _xor_model()
     with pytest.raises(ValueError):
-        WordLinearSMTModel(model.primitive, maximum_weight=0, nonzero_input="missing")
+        WordXorLinearSMTModel(model.primitive, maximum_weight=0, nonzero_input="missing")
     with pytest.raises(ValueError):
-        WordLinearSMTModel(model.primitive, maximum_weight=0, fixed_input_masks={"key": 4})
+        WordXorLinearSMTModel(model.primitive, maximum_weight=0, fixed_input_masks={"key": 4})
 
 
 def test_facade_defaults_to_single_key_masks_and_preserves_provenance():
@@ -82,7 +82,7 @@ def test_facade_defaults_to_single_key_masks_and_preserves_provenance():
 
 def test_concrete_fixed_keys_are_constants_not_zero_masks():
     primitive = _xor_model().primitive
-    model = WordLinearSMTModel(
+    model = WordXorLinearSMTModel(
         primitive, maximum_weight=0, nonzero_input="left", fixed_inputs={"key": 3}
     )
     formula = model.smt_formula()
@@ -101,7 +101,7 @@ def test_bitwise_and_word_composition_recounts_signs_and_weights():
         BitwiseAnd((primitive.graph.input("left"), primitive.graph.input("right")))
     )
     primitive._builder.set_output(output)
-    model = WordLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")
+    model = WordXorLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")
     formula = model.smt_formula()
     trail = model.decode_characteristic(dict.fromkeys(formula.variables, 1))
     assert trail.total_weight == 2 and trail.sign == 1

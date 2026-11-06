@@ -13,11 +13,11 @@ from time import monotonic
 
 from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSolver, SatStatus
 from claasp.primitives import Speck
-from claasp.representations.constraints.sat import WordDeterministicDifferentialLinearSATModel
+from claasp.representations.constraints.sat import WordDeterministicXorDifferentialLinearSATModel
 
 
 def _model():
-    return WordDeterministicDifferentialLinearSATModel(
+    return WordDeterministicXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,

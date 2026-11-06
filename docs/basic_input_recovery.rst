@@ -1,4 +1,4 @@
-Input and key recovery: introduction
-====================================
+Input and key recovery: basic
+=============================
 
 **TODO**

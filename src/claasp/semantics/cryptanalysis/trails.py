@@ -755,13 +755,13 @@ class ModularAddTransitionSemantics:
         return transition == self.xor_differential(left, right, transition.output_pattern.value)
 
 
-class ModularAddLinearSemantics:
+class ModularAddXorLinearSemantics:
     """Exact Walsh correlations for masks of two-input modular addition.
 
     EXAMPLES::
 
-        >>> from claasp.semantics.cryptanalysis import ModularAddLinearSemantics
-        >>> semantics = ModularAddLinearSemantics(2)
+        >>> from claasp.semantics.cryptanalysis import ModularAddXorLinearSemantics
+        >>> semantics = ModularAddXorLinearSemantics(2)
         >>> transition = semantics.xor_linear(0, 0, 0)
         >>> (transition.weight, semantics.check(transition))
         (-0.0, True)
@@ -811,12 +811,12 @@ class ModularAddLinearSemantics:
         return transition == self.xor_linear(left, right, transition.output_pattern.value)
 
 
-class ModularSubtractLinearSemantics(ModularAddLinearSemantics):
+class ModularSubtractXorLinearSemantics(ModularAddXorLinearSemantics):
     """Exact signed correlations for two-input subtraction modulo ``2^width``.
 
     EXAMPLES::
 
-        >>> ModularSubtractLinearSemantics(2).xor_linear(1, 1, 1).is_possible
+        >>> ModularSubtractXorLinearSemantics(2).xor_linear(1, 1, 1).is_possible
         True
     """
 
@@ -825,7 +825,7 @@ class ModularSubtractLinearSemantics(ModularAddLinearSemantics):
 
         EXAMPLES::
 
-            >>> ModularSubtractLinearSemantics(2).xor_linear(0, 0, 0).weight
+            >>> ModularSubtractXorLinearSemantics(2).xor_linear(0, 0, 0).weight
             -0.0
         """
 

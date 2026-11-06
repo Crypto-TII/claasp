@@ -197,7 +197,7 @@ def search_impossible_differentials(
 
 
 @dataclass(frozen=True, slots=True)
-class DifferentialLinearSearchResult:
+class XorDifferentialLinearSearchResult:
     """Exact optimum of a declared characteristic score, not measured correlation.
 
     score = differential component probability * linear component correlation².
@@ -206,7 +206,7 @@ class DifferentialLinearSearchResult:
 
     EXAMPLES::
 
-        >>> DifferentialLinearSearchResult(None, None, None, (), True).found
+        >>> XorDifferentialLinearSearchResult(None, None, None, (), True).found
         False
     """
 
@@ -221,7 +221,7 @@ class DifferentialLinearSearchResult:
         """Return whether a checked composed characteristic was found."""
         return self.trail is not None
 
-    def require_complete(self) -> "DifferentialLinearSearchResult":
+    def require_complete(self) -> "XorDifferentialLinearSearchResult":
         """Reject an unfinished search before claiming model optimality."""
         if not self.complete:
             raise RuntimeError("differential-linear optimization is incomplete")
@@ -284,7 +284,7 @@ def _objective_formula(model):
     )
 
 
-def find_optimal_differential_linear_trail(
+def find_optimal_xor_differential_linear_trail(
     primitive,
     *,
     prefix_rounds=None,
@@ -292,7 +292,7 @@ def find_optimal_differential_linear_trail(
     input_difference=None,
     output_mask=None,
     solver=None,
-) -> DifferentialLinearSearchResult:
+) -> XorDifferentialLinearSearchResult:
     """Optimize all valid partitions using exact integer probability products.
 
     Specify prefix_rounds/middle_rounds to restrict the declared model search.
@@ -306,11 +306,13 @@ def find_optimal_differential_linear_trail(
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+        >>> result = ToySpeck(3).analysis.find_optimal_xor_differential_linear_trail().require_complete()  # doctest: +SKIP
         >>> result.partition, result.score  # doctest: +SKIP
         ((1, 1, 1), Fraction(1, 1))
     """
-    from claasp.representations.constraints.sat import WordDeterministicDifferentialLinearSATModel
+    from claasp.representations.constraints.sat import (
+        WordDeterministicXorDifferentialLinearSATModel,
+    )
     from claasp.representations.constraints.smt._probability_encoding import (
         _comparison_clauses,
         _probability,
@@ -333,7 +335,7 @@ def find_optimal_differential_linear_trail(
     best, best_partition, best_score, attempted = None, None, None, []
     for prefix, middle, suffix in partitions:
         attempted.append((prefix, middle, suffix))
-        model = WordDeterministicDifferentialLinearSATModel(
+        model = WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=prefix,
             middle_rounds=middle,
@@ -359,7 +361,7 @@ def find_optimal_differential_linear_trail(
                 upper = threshold - 1
                 continue
             if run.status is not SatStatus.SATISFIABLE:
-                return DifferentialLinearSearchResult(
+                return XorDifferentialLinearSearchResult(
                     best, best_partition, best_score, tuple(attempted), False
                 )
             if run.assignment is None or not query.is_satisfied(run.assignment):
@@ -387,4 +389,6 @@ def find_optimal_differential_linear_trail(
             score = Fraction(lower, denominator)
             if best_score is None or score > best_score:
                 best, best_partition, best_score = witness, (prefix, middle, suffix), score
-    return DifferentialLinearSearchResult(best, best_partition, best_score, tuple(attempted), True)
+    return XorDifferentialLinearSearchResult(
+        best, best_partition, best_score, tuple(attempted), True
+    )

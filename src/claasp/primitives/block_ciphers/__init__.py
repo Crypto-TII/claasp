@@ -4,6 +4,7 @@ from claasp.primitives._catalogue_exports import CATEGORY_EXPORTS, load_export
 from claasp.primitives.block_ciphers.aes import AES, AES128, CustomAES
 from claasp.primitives.block_ciphers.aradi import Aradi
 from claasp.primitives.block_ciphers.cham import CHAM
+from claasp.primitives.block_ciphers.craft import Craft
 from claasp.primitives.block_ciphers.hight import HIGHT
 from claasp.primitives.block_ciphers.idea import IDEA
 from claasp.primitives.block_ciphers.lea import LEA
@@ -33,6 +34,7 @@ __all__ = [
     "XTEA",
     "Aradi",
     "CustomAES",
+    "Craft",
     "Present",
     "Present80",
     "Raiden",

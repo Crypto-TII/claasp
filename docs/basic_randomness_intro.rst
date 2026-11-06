@@ -1,4 +1,4 @@
-Randomness tests: introduction
-==============================
+Randomness tests: basic
+=======================
 
 **TODO**

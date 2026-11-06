@@ -18,7 +18,7 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.graph import as_selection
+from claasp.graph import GraphPropagation, as_selection
 from claasp.representations.constraints.polynomial import anf_from_truth_table
 from claasp.unit_types import Bit, Word
 
@@ -73,17 +73,13 @@ def _boolean_circuit(primitive):
             )
         return tuple(reversed(output))
 
-    for component in primitive.graph.components:
+    propagation = GraphPropagation(primitive)
+
+    def rule(component, operands):
         if isinstance(component, Add) and not isinstance(component.output_type.unit_type, Bit):
             raise NotImplementedError(
                 "Boolean circuit Add requires Bit units; use ModularAdd or Xor for Word units"
             )
-        operands = tuple(
-            tuple(
-                values[name][bit] for name, bit in primitive.graph.selection_bit_sources(selection)
-            )
-            for selection in component.inputs
-        )
         unit_type = component.output_type.unit_type
         assert isinstance(unit_type, (Bit, Word))
         width = 1 if isinstance(unit_type, Bit) else unit_type.width
@@ -186,10 +182,14 @@ def _boolean_circuit(primitive):
             raise NotImplementedError(
                 f"monomial circuit does not support {type(component).__name__}"
             )
-        values[component.component_id] = tuple(output)
-    selected = tuple(
-        values[name][bit]
-        for name, bit in primitive.graph.selection_bit_sources(primitive.graph.output)
+        return tuple(output)
+
+    propagated = propagation.run(
+        values,
+        rule,
+        select=lambda selection, current, cache: propagation.select_bits(selection, current),
     )
+    selected = propagated.output
+    assert selected is not None
     derived._builder.set_output(derived._builder.join(*selected))
     return derived
