@@ -745,6 +745,18 @@
       "qualified_name": "claasp.analysis.LegacyBoundedXorDifferentialCluster"
     },
     {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.MinimaxDifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.MinimaxDifferentialResult"
+    },
+    {
       "canonical_name": "claasp.analysis.problem.MinimizeWeight",
       "defined_in": "claasp.analysis.problem",
       "kind": "dataclass",
@@ -4405,6 +4417,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_quasidifferential_trail"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_minimax_xor_differential_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_minimax_xor_differential_trail"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.find_one_boomerang_trail",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -4902,6 +4920,84 @@
       "defined_in": "claasp.analysis.statistical_datasets",
       "kind": "function",
       "qualified_name": "claasp.analysis.low_density_dataset"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.minimax_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis.__init__",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "documented_by": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis.find_lowest_weight_trail",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis.find_lowest_weight_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis.model",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialAnalysis.model"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.__init__",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "documented_by": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.diagnostic",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "documented_by": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.is_optimal",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "documented_by": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.is_optimal"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.status",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "documented_by": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.status"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.to_terminal",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.trail",
+      "defined_in": "claasp.analysis.minimax_differential",
+      "documented_by": "claasp.analysis.minimax_differential.MinimaxDifferentialResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.minimax_differential.MinimaxDifferentialResult.trail"
     },
     {
       "canonical_name": "claasp.analysis.monomial.MonomialParityResult.__init__",
@@ -28464,6 +28560,12 @@
       "qualified_name": "claasp.representations.constraints.sat.ImpossibleBoundarySATModel"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.KeyScheduleMinimaxSATModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.components.modular_add.ModularAddDeterministicTruncatedSATModel",
       "defined_in": "claasp.representations.constraints.sat.components.modular_add",
       "kind": "class",
@@ -28546,6 +28648,12 @@
       "defined_in": "claasp.representations.constraints.sat.model",
       "kind": "dataclass",
       "qualified_name": "claasp.representations.constraints.sat.NativeXorCNFFormula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.PartitionedDifferentialTrail"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components.truncated.ProbabilisticTruncatedModularAddSATModel",
@@ -29830,6 +29938,83 @@
       "documented_by": "claasp.representations.constraints.sat.model.NativeXorCNFFormula",
       "kind": "dataclass_field",
       "qualified_name": "claasp.representations.constraints.sat.model.NativeXorCNFFormula.xor_provenance"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "documented_by": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel.decode",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.KeyScheduleMinimaxSATModel.decode"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.__init__",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "documented_by": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.characteristic",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "documented_by": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.characteristic"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.data_path_weight",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "documented_by": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.data_path_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.key_schedule_weight",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "documented_by": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.key_schedule_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.objective_weight",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.objective_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.total_weight",
+      "defined_in": "claasp.representations.constraints.sat.partitioned_differential",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.sat.partitioned_differential.PartitionedDifferentialTrail.total_weight"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.quasidifferential",

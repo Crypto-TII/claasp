@@ -61,6 +61,12 @@ claasp.analysis.linear_properties
 .. automodule:: claasp.analysis.linear_properties
    :no-index:
 
+claasp.analysis.minimax_differential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.minimax_differential
+   :no-index:
+
 claasp.analysis.neural_distinguisher
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -815,6 +821,12 @@ claasp.representations.constraints.sat.model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.sat.model
+   :no-index:
+
+claasp.representations.constraints.sat.partitioned_differential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.sat.partitioned_differential
    :no-index:
 
 claasp.representations.constraints.sat.quasidifferential

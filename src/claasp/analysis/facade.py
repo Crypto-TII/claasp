@@ -377,6 +377,23 @@ class Analysis:
                 raise ValueError("recovered input fails independent primitive evaluation")
         return result
 
+    def find_minimax_xor_differential_trail(self, **options):
+        """Minimize max(key-schedule weight, data-path weight), as in legacy ARX.
+
+        This objective differs from minimizing the sum of trail weights.
+        The default solver requires the ``z3`` executable.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(2).analysis.find_minimax_xor_differential_trail()
+            >>> result.is_optimal
+            True
+        """
+        from claasp.analysis.minimax_differential import MinimaxDifferentialAnalysis
+
+        return MinimaxDifferentialAnalysis(self.primitive).find_lowest_weight_trail(**options)
+
     def find_lowest_weight_xor_differential_trail(
         self,
         *,
