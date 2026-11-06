@@ -1,5 +1,5 @@
-XOR differential trails: introduction
-=====================================
+XOR differential trails: basic
+==============================
 
 Find and display an optimal 4-round XOR differential trail of SPECK32/64:
 

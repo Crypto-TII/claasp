@@ -7,5 +7,5 @@ primitive-generated datasets, see :doc:`basic_randomness_tests`.
 .. toctree::
    :maxdepth: 1
 
-   Introduction <basic_statistical_testing>
+   Basic <basic_statistical_testing>
    Advanced <statistical_testing>

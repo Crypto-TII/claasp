@@ -1,5 +1,5 @@
-XOR-linear trails: introduction
-===============================
+XOR-linear trails: basic
+========================
 
 Did you know that CLAASP can exploit SAT solvers to find and show an optimal 6-round XOR linear trail of SPECK32/64 in seconds?
 

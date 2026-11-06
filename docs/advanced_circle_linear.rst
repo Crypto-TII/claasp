@@ -1,7 +1,7 @@
 Circle-linear trails: advanced
 ==============================
 
-The :doc:`basic_circle_linear` introduction covers trail search.
+The :doc:`basic_circle_linear` guide covers a basic trail search.
 :doc:`verification_circle_linear` covers characteristic reconstruction and
 endpoint correlation evaluation. This advanced guide defines the terminology,
 explores parameters and checks numerical CRAFT results.

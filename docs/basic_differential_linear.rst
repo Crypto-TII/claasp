@@ -1,4 +1,4 @@
-XOR differential-linear trails: introduction
-============================================
+XOR differential-linear trails: basic
+=====================================
 
 **TODO**

@@ -12,7 +12,7 @@ These names describe the analysis, even when the primitive contains modular
 addition or another nonlinear operation. Circle-linear analysis uses checks
 compatible with a selected alternative addition.
 
-Each topic has an Introduction and an Advanced guide. Its Verification page
+Each topic has a Basic and an Advanced guide. Its Verification page
 describes the checks actually available. Verification distinguishes three
 questions:
 

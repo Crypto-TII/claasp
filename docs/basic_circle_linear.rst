@@ -1,5 +1,5 @@
-Circle-linear trails: introduction
-==================================
+Circle-linear trails: basic
+===========================
 
 Find a strong trail through eight rounds of CRAFT using circle-linear bit
 checks. This example keeps the alternative addition fixed while searching
