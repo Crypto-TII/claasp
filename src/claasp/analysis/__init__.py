@@ -23,6 +23,11 @@ from claasp.analysis.boomerang import (
     BoomerangExperimentResult,
     run_speck32_boomerang_experiment,
 )
+from claasp.analysis.boomerang_search import (
+    BoomerangAnalysis,
+    BoomerangSearchResult,
+    BoomerangSearchStatus,
+)
 from claasp.analysis.circle_differential import (
     CircleDifferentialAnalysis,
     CircleDifferentialProbability,
@@ -83,6 +88,10 @@ from claasp.analysis.constraints import (
     HammingWeight,
     Nonzero,
     NotEqual,
+)
+from claasp.analysis.continuous_differential import (
+    ContinuousCorrelationResult,
+    ContinuousDifferentialAnalysis,
 )
 from claasp.analysis.continuous_diffusion import ContinuousDiffusionResult, continuous_diffusion
 from claasp.analysis.cube import CubeSumResult, evaluate_cube_sum
@@ -214,6 +223,11 @@ def __getattr__(name):
 
 
 __all__ = [
+    "BoomerangAnalysis",
+    "BoomerangSearchResult",
+    "BoomerangSearchStatus",
+    "ContinuousDifferentialAnalysis",
+    "ContinuousCorrelationResult",
     "CircleDifferentialAnalysis",
     "CircleDifferentialProbability",
     "CircleDifferentialTrail",

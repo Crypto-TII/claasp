@@ -11,6 +11,7 @@ from claasp.representations.constraints.cp.lowering import BooleanMiniZincLowere
 from claasp.representations.constraints.cp.model import MiniZincModel
 
 __all__ = [
+    "ContinuousDifferentialCPModel",
     "BooleanMiniZincLowerer",
     "HybridImpossibleBoundaryCPModel",
     "HybridImpossibleBoundaryResult",
@@ -56,6 +57,11 @@ __all__ = [
     "WordImpossibleCPModel",
     "WordSemiDeterministicXorDifferentialLinearCPModel",
 ]
+
+
+from claasp.representations.constraints.cp.continuous_differential import (
+    ContinuousDifferentialCPModel,
+)
 
 
 def __getattr__(name: str):

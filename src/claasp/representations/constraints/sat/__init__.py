@@ -1,5 +1,6 @@
 """Dependency-free Boolean/CNF constraint representations."""
 
+from claasp.representations.constraints.sat.boomerang import ARXBoomerangTrail, BoomerangSATModel
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
     BooleanNativeXorSATModel,
@@ -68,6 +69,8 @@ from claasp.representations.constraints.sat.trails import (
 )
 
 __all__ = [
+    "BoomerangSATModel",
+    "ARXBoomerangTrail",
     "QuasidifferentialSATModel",
     "AutomaticWordImpossibleSATResult",
     "BooleanCNFModel",

@@ -317,3 +317,25 @@ def test_glpk_preserves_legacy_simon_thirteen_cube_degree():
     assert result.status is MILPStatus.OPTIMAL
     assert result.objective_value == 30
     assert model.is_feasible(result.assignment)
+
+
+@pytest.mark.parametrize("rhs,feasible", [(0, True), (1, False)])
+def test_glpk_preserves_constant_linear_rows(rhs, feasible):
+    from claasp.drivers.solvers import GLPKSolver, MILPResult
+    from claasp.representations.constraints.milp import (
+        ConstraintSense,
+        LinearConstraint,
+        LinearExpression,
+        LinearVariable,
+        MILPModel,
+    )
+
+    model = MILPModel(
+        (LinearVariable("x"),),
+        (LinearConstraint(LinearExpression(), ConstraintSense.GREATER_EQUAL, rhs),),
+    )
+    result = GLPKSolver(timeout_seconds=10).solve(model)
+    assert isinstance(result, MILPResult)
+    assert result.is_feasible == feasible
+    if feasible:
+        assert result.assignment is not None and model.is_feasible(result.assignment)

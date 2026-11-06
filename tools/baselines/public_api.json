@@ -475,10 +475,28 @@
       "qualified_name": "claasp.analysis.BooleanSystemAnalysis"
     },
     {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.BoomerangAnalysis"
+    },
+    {
       "canonical_name": "claasp.analysis.boomerang.BoomerangExperimentResult",
       "defined_in": "claasp.analysis.boomerang",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.BoomerangExperimentResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.BoomerangSearchResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "enum",
+      "qualified_name": "claasp.analysis.BoomerangSearchStatus"
     },
     {
       "canonical_name": "claasp.analysis.advanced_trails.CPCharacteristicResult",
@@ -605,6 +623,18 @@
       "defined_in": "claasp.analysis.component_inspection",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.ComponentTableResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.ContinuousCorrelationResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.ContinuousDifferentialAnalysis"
     },
     {
       "canonical_name": "claasp.analysis.continuous_diffusion.ContinuousDiffusionResult",
@@ -1618,6 +1648,100 @@
       "documented_by": "claasp.analysis.boomerang.BoomerangExperimentResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.boomerang.BoomerangExperimentResult.successes"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.__init__",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_lowest_weight_trail",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_lowest_weight_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_one_trail",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.find_one_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.model",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangAnalysis.model"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.__init__",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.diagnostic",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.diagnostic"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.is_optimal",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.is_optimal"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.status",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.status"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.trail",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchResult.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.SATISFIABLE",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.SATISFIABLE"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNKNOWN",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNKNOWN"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNSATISFIABLE",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "enum_member",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.UNSATISFIABLE"
+    },
+    {
+      "canonical_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.__init__",
+      "defined_in": "claasp.analysis.boomerang_search",
+      "documented_by": "claasp.analysis.boomerang_search.BoomerangSearchStatus",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.boomerang_search.BoomerangSearchStatus.__init__"
     },
     {
       "canonical_name": "claasp.analysis.statistical_datasets.cbc_dataset",
@@ -3572,6 +3696,116 @@
       "qualified_name": "claasp.analysis.constraints.NotEqual.right"
     },
     {
+      "canonical_name": "claasp.analysis.continuous_differential",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.continuous_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.__init__",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.claim_kind",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.claim_kind"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.correlation",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.correlation"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.inputs",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.inputs"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.model_complete",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.model_complete"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.output_mask",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.output_mask"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.output_values",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.output_values"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.solver",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.solver"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.to_terminal",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.weight",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult.weight"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.__init__",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "documented_by": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.find_best_correlation",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.find_best_correlation"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.find_one_correlation",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.find_one_correlation"
+    },
+    {
+      "canonical_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.model",
+      "defined_in": "claasp.analysis.continuous_differential",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.continuous_differential.ContinuousDifferentialAnalysis.model"
+    },
+    {
       "canonical_name": "claasp.analysis.continuous_diffusion.continuous_diffusion",
       "defined_in": "claasp.analysis.continuous_diffusion",
       "kind": "function",
@@ -4123,10 +4357,22 @@
       "qualified_name": "claasp.analysis.facade.Analysis.find_good_neural_input_difference"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_highest_correlation_continuous_differential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_highest_correlation_continuous_differential"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.find_impossible_xor_differential",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.find_impossible_xor_differential"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_lowest_weight_boomerang_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_boomerang_trail"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.find_lowest_weight_circle_differential_trail",
@@ -4157,6 +4403,18 @@
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
       "qualified_name": "claasp.analysis.facade.Analysis.find_lowest_weight_xor_quasidifferential_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_one_boomerang_trail",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_one_boomerang_trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.facade.Analysis.find_one_continuous_differential",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.find_one_continuous_differential"
     },
     {
       "canonical_name": "claasp.analysis.facade.Analysis.find_one_xor_differential_trail",
@@ -24087,6 +24345,12 @@
       "qualified_name": "claasp.representations.constraints.cp.BooleanMiniZincLowerer"
     },
     {
+      "canonical_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel",
+      "defined_in": "claasp.representations.constraints.cp.continuous_differential",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.ContinuousDifferentialCPModel"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.cp.trails.ContinuousMaskOptimizationResult",
       "defined_in": "claasp.representations.constraints.cp.trails",
       "kind": "dataclass",
@@ -24644,6 +24908,37 @@
       "defined_in": "claasp.representations.constraints.cp.components.truncated",
       "kind": "method",
       "qualified_name": "claasp.representations.constraints.cp.components.truncated.ModularAddDeterministicTruncatedCPModel.decode_transition"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.continuous_differential",
+      "defined_in": "claasp.representations.constraints.cp.continuous_differential",
+      "kind": "module",
+      "qualified_name": "claasp.representations.constraints.cp.continuous_differential"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel",
+      "defined_in": "claasp.representations.constraints.cp.continuous_differential",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel.__init__",
+      "defined_in": "claasp.representations.constraints.cp.continuous_differential",
+      "documented_by": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel.input_variables",
+      "defined_in": "claasp.representations.constraints.cp.continuous_differential",
+      "kind": "property",
+      "qualified_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel.input_variables"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel.minizinc_model",
+      "defined_in": "claasp.representations.constraints.cp.continuous_differential",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.cp.continuous_differential.ContinuousDifferentialCPModel.minizinc_model"
     },
     {
       "canonical_name": "claasp.representations.constraints.cp.lowering.BooleanMiniZincLowerer.__init__",
@@ -28103,6 +28398,12 @@
       "qualified_name": "claasp.representations.constraints.sat"
     },
     {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "dataclass",
+      "qualified_name": "claasp.representations.constraints.sat.ARXBoomerangTrail"
+    },
+    {
       "canonical_name": "claasp.representations.constraints.sat.trails.AutomaticWordImpossibleSATResult",
       "defined_in": "claasp.representations.constraints.sat.trails",
       "kind": "dataclass",
@@ -28131,6 +28432,12 @@
       "defined_in": "claasp.representations.constraints.sat.components.boolean",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.BooleanNativeXorSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "class",
+      "qualified_name": "claasp.representations.constraints.sat.BoomerangSATModel"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.model.CNFFormula",
@@ -28467,6 +28774,80 @@
       "defined_in": "claasp.representations.constraints.sat.components.xor_differential_linear",
       "kind": "class",
       "qualified_name": "claasp.representations.constraints.sat.XorDifferentialToTruncatedSATModel"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.__init__",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.lower",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.lower"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.model_complete",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.model_complete"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.outer_weight",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.outer_weight"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.scope",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.scope"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.switches",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.switches"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.to_terminal",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.upper",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.ARXBoomerangTrail.upper"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.__init__",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "documented_by": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel",
+      "kind": "constructor",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.__init__"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.cnf_formula",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.cnf_formula"
+    },
+    {
+      "canonical_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.decode",
+      "defined_in": "claasp.representations.constraints.sat.boomerang",
+      "kind": "method",
+      "qualified_name": "claasp.representations.constraints.sat.boomerang.BoomerangSATModel.decode"
     },
     {
       "canonical_name": "claasp.representations.constraints.sat.components",

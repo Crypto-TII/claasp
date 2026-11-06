@@ -1,7 +1,10 @@
 """Command-line MiniZinc driver with no Python package dependency."""
 
 import json
+import os
+import re
 import shutil
+import signal
 import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
@@ -133,12 +136,9 @@ class MiniZincSolver:
             path = Path(directory) / "problem.mzn"
             path.write_text(model.source(), encoding="utf-8")
             start = monotonic()
-            completed = subprocess.run(
+            completed = _run_process(
                 [executable, "--solver", self.solver, "--output-mode", "json", str(path)],
-                text=True,
-                capture_output=True,
                 timeout=self.timeout_seconds,
-                check=False,
             )
             elapsed = monotonic() - start
         if completed.returncode != 0:
@@ -167,7 +167,7 @@ class MiniZincSolver:
             path = Path(directory) / "problem.mzn"
             path.write_text(model.source(), encoding="utf-8")
             start = monotonic()
-            completed = subprocess.run(
+            completed = _run_process(
                 [
                     executable,
                     "--solver",
@@ -177,10 +177,7 @@ class MiniZincSolver:
                     "--all-solutions",
                     str(path),
                 ],
-                text=True,
-                capture_output=True,
                 timeout=self.timeout_seconds,
-                check=False,
             )
             elapsed = monotonic() - start
         if completed.returncode != 0:
@@ -206,21 +203,36 @@ class MiniZincSolver:
         )
 
 
-def _parse_output(output: str) -> tuple[CPStatus, Mapping[str, object] | None]:
-    if "=====UNSATISFIABLE=====" in output:
-        return CPStatus.UNSATISFIABLE, None
-    if "=====UNKNOWN=====" in output:
-        return CPStatus.UNKNOWN, None
-    payload = output.split("----------", 1)[0].strip()
-    if not payload:
-        raise RuntimeError("MiniZinc returned no status or solution")
+def _run_process(command, *, timeout):
+    """Stop the isolated solver process group and retain partial output on timeout."""
+    process = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=os.name == "posix",
+    )
     try:
-        values = json.loads(payload)
-    except json.JSONDecodeError as error:
-        raise RuntimeError("MiniZinc returned invalid JSON output") from error
-    if not isinstance(values, dict):
-        raise RuntimeError("MiniZinc JSON solution must be an object")
-    return CPStatus.SATISFIED, values
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as error:
+        if os.name == "posix":
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        else:
+            process.kill()
+        stdout, stderr = process.communicate()
+        raise subprocess.TimeoutExpired(command, timeout, output=stdout, stderr=stderr) from error
+    assert process.returncode is not None
+    return subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
+
+
+def _parse_output(output: str) -> tuple[CPStatus, Mapping[str, object] | None]:
+    status, solutions, _, _ = _parse_all_output(output)
+    # Optimization emits improving solutions. Keep the last incumbent,
+    # including a valid candidate when the terminal status is UNKNOWN.
+    return status, solutions[-1] if solutions else None
 
 
 def _parse_all_output(
@@ -228,13 +240,17 @@ def _parse_all_output(
 ) -> tuple[CPStatus, tuple[Mapping[str, object], ...], bool, str]:
     """Parse MiniZinc's JSON all-solutions stream and proof marker."""
 
-    complete = "==========" in output or "=====UNSATISFIABLE=====" in output
-    unknown = "=====UNKNOWN=====" in output
-    payload = output
-    for marker in ("==========", "=====UNSATISFIABLE=====", "=====UNKNOWN====="):
-        payload = payload.replace(marker, "")
+    # Solver diagnostics/statistics are full-line MiniZinc comments, including
+    # Gecode's "% Top level failure!" and "% [<UNKNOWN>]". They are not JSON
+    # candidates or termination statuses. Preserve percent signs inside JSON.
+    markers = {"==========", "=====UNSATISFIABLE=====", "=====UNKNOWN====="}
+    lines = [line for line in output.splitlines() if not line.lstrip().startswith("%")]
+    statuses = {line.strip() for line in lines if line.strip() in markers}
+    complete = bool(statuses & {"==========", "=====UNSATISFIABLE====="})
+    unknown = "=====UNKNOWN=====" in statuses
+    payload = "\n".join(line for line in lines if line.strip() not in markers)
     solutions = []
-    for block in payload.split("----------"):
+    for block in re.split(r"(?m)^[ \t]*----------[ \t]*$", payload):
         block = block.strip()
         if not block:
             continue
@@ -254,6 +270,6 @@ def _parse_all_output(
             complete,
             ("exhausted" if complete else "missing_terminal_marker"),
         )
-    if "=====UNSATISFIABLE=====" in output:
+    if "=====UNSATISFIABLE=====" in statuses:
         return CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"
     raise RuntimeError("MiniZinc returned no status or solution")

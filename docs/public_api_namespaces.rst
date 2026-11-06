@@ -43,6 +43,12 @@ claasp.analysis.component_properties
 .. automodule:: claasp.analysis.component_properties
    :no-index:
 
+claasp.analysis.continuous_differential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.continuous_differential
+   :no-index:
+
 claasp.analysis.division_property
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -677,6 +683,12 @@ claasp.representations.constraints.cp.components.truncated
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.representations.constraints.cp.components.truncated
+   :no-index:
+
+claasp.representations.constraints.cp.continuous_differential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.representations.constraints.cp.continuous_differential
    :no-index:
 
 claasp.representations.constraints.milp

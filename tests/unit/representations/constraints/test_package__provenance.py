@@ -148,11 +148,11 @@ def test_every_public_constraint_model_declares_an_explicit_reference_status():
 
     # General word models have one canonical implementation; legacy import
     # paths must not register duplicate model/provenance objects.
-    assert len(models) == 141
-    assert len(records) == 144
+    assert len(models) == 143
+    assert len(records) == 146
     assert Counter(record.reference_status for record in records) == {
         ConstraintReferenceStatus.VERIFIED: 32,
-        ConstraintReferenceStatus.NOT_APPLICABLE: 101,
+        ConstraintReferenceStatus.NOT_APPLICABLE: 103,
         ConstraintReferenceStatus.TO_BE_DETERMINED: 11,
     }
     assert all(isinstance(record, ConstraintModelProvenance) for record in records)

@@ -26,11 +26,16 @@ ENV LANG=C.UTF-8 \
     PYTHONPATH=/workspace/src \
     PATH=/opt/claasp-venv/bin:/usr/local/bin:/usr/bin:/bin
 
+COPY docker/v5/install-packages.sh /usr/local/lib/claasp/install-packages.sh
+
 # The snapshot service serves every architecture, ports included, under
 # /ubuntu. It is HTTPS-only and the base image has no CA bundle yet, so TLS
 # peer verification is skipped for that host alone; package integrity still
 # rests on apt's signature check against the Ubuntu archive keyring.
-RUN printf '%s\n' \
+# Retry transient snapshot-server errors without changing the pinned archive.
+RUN printf 'Acquire::Retries "5";\nAcquire::https::Timeout "30";\n' \
+        > /etc/apt/apt.conf.d/80-network-retries \
+    && printf '%s\n' \
         'Types: deb' \
         "URIs: https://snapshot.ubuntu.com/ubuntu/${UBUNTU_SNAPSHOT}/" \
         'Suites: noble noble-updates noble-backports noble-security' \
@@ -39,8 +44,7 @@ RUN printf '%s\n' \
         > /etc/apt/sources.list.d/ubuntu.sources \
     && apt-get -q -o Acquire::https::snapshot.ubuntu.com::Verify-Peer=false \
         update --error-on=any \
-    && apt-get -o Acquire::https::snapshot.ubuntu.com::Verify-Peer=false \
-        install --no-install-recommends -y \
+    && sh /usr/local/lib/claasp/install-packages.sh \
         build-essential=12.10ubuntu1 \
         autoconf=2.71-3 \
         automake=1:1.16.5-1.3ubuntu1 \
