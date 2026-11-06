@@ -332,7 +332,11 @@ def _plot_circle_differential_trail(result, *, show, save_to):
         relative,
         cumulative,
         xlabel="Observed boundary",
-        title="Circle-differential concrete trail weight",
+        title=(
+            "Circle-differential concrete trail weight"
+            if result.evidence.complete
+            else "Estimated circle-differential concrete trail weight"
+        ),
         artifact_kind="circle_differential_trail_weights",
         show=show,
         save_to=save_to,

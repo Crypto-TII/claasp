@@ -20,6 +20,7 @@ def test_reports_reuse_retained_evidence_and_distinguish_sampled_from_exact(anal
     exact = analysis.probability(7, 6)
     sampled = analysis.estimate_probability(7, 6, samples=16, seed=7)
     trail = analysis.best_trail(7)
+    sampled_trail = analysis.trail_probability((7, 6), samples=16, seed=7)
     impossible = analysis.trail_probability((7, 0))
 
     def forbidden(*args, **kwargs):
@@ -27,7 +28,7 @@ def test_reports_reuse_retained_evidence_and_distinguish_sampled_from_exact(anal
 
     monkeypatch.setattr(analysis.primitive, "evaluate", forbidden)
     monkeypatch.setattr(analysis.primitive, "evaluate_with_trace", forbidden)
-    for result in (exact, sampled, trail, impossible):
+    for result in (exact, sampled, trail, sampled_trail, impossible):
         stream = StringIO()
         result.to_terminal(file=stream)
         text = stream.getvalue()
@@ -35,6 +36,11 @@ def test_reports_reuse_retained_evidence_and_distinguish_sampled_from_exact(anal
         if result is sampled:
             assert "Confidence interval" in text and "Seed" in text
             assert "Estimated probability" in text
+        if result is sampled_trail:
+            assert "concrete trail estimate" in text
+            assert "Relative estimated conditional probability" in text
+            assert "Cumulative estimated probability" in text
+            assert "Samples: 16; Seed: 7" in text and "95% confidence interval" in text
         if result is trail:
             assert "Relative conditional probability" in text
             assert "Cumulative probability" in text and "Difference" in text

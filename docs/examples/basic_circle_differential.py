@@ -1,20 +1,22 @@
-"""Search the published four-bit circle-differential example and report it."""
+"""Verify a concrete two-round SPECK32/64 circle-differential trail."""
 
-from claasp.primitives import BitVectorSBox
+from claasp.primitives import Speck
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
 
 def run_example():
-    """Return the best concrete one-layer trail for input difference seven."""
-    table = (0, 14, 11, 1, 7, 12, 9, 6, 13, 3, 4, 15, 2, 8, 10, 5)
-    primitive = BitVectorSBox(4, table)
+    """Estimate the prescribed trail probability from 4096 seeded input pairs."""
+    primitive = Speck(number_of_rounds=2)
     operation = BinaryBibrace(4, ((0, 0, 8, 4),), (1,))
-    return primitive.analysis.find_lowest_weight_circle_differential_trail(
-        bibrace=operation, input_name="input", input_difference=7
+    return primitive.analysis.circle_differential(bibrace=operation).trail_probability(
+        (0x80000000, 0x01000100, 0x01020502),
+        fixed_inputs={"key": 0},
+        samples=4096,
+        seed=7,
     )
 
 
 if __name__ == "__main__":
-    result = run_example()
-    result.to_terminal()
-    result.plot()
+    trail = run_example()
+    trail.to_terminal()
+    trail.plot()

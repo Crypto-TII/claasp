@@ -1,8 +1,8 @@
 Circle-differential trails: advanced
 ====================================
 
-The :doc:`basic guide <basic_circle_differential>` searches a single-layer
-example. This guide separates exact local transition tables, concrete round
+The :doc:`basic guide <basic_circle_differential>` verifies a two-round
+SPECK32/64 trail by sampling. This guide separates exact local transition tables, concrete round
 trails and full endpoint probabilities. All numerical probabilities below fix
 the key and any other inputs; they are not averages over keys.
 

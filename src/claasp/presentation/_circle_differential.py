@@ -40,6 +40,7 @@ def probability_section(result):
 
 
 def trail_section(result, *, details=False):
+    sampled = not result.evidence.complete
     relative = (Fraction(1), *result.conditional_probabilities)
     rows = tuple(
         TableRow.of(
@@ -59,19 +60,29 @@ def trail_section(result, *, details=False):
         )
     else:
         notes.append("Supplied concrete trail; no optimality claim.")
+    if sampled:
+        evidence = result.evidence
+        notes.append(f"Samples: {evidence.trials}; Seed: {evidence.seed}.")
+        notes.append(
+            f"Final probability estimate: {float(evidence.probability):.6g}; "
+            f"{evidence.confidence:.0%} confidence interval: "
+            f"[{evidence.lower:.6g}, {evidence.upper:.6g}]."
+        )
     tables = [
         round_table(
             rows,
             pattern="Difference",
-            quantity="conditional probability",
-            cumulative_quantity="probability",
+            quantity="estimated conditional probability" if sampled else "conditional probability",
+            cumulative_quantity="estimated probability" if sampled else "probability",
             notes=notes,
         )
     ]
     if details:
         tables.extend(probability_section(result.evidence).tables)
     return ReportSection(
-        "Circle-differential concrete trail",
+        "Circle-differential concrete trail estimate"
+        if sampled
+        else "Circle-differential concrete trail",
         tables=tuple(tables),
         paragraphs=(
             "Probabilities count actual executions at the retained fixed inputs. These conditional factors are not standalone local DDT probabilities.",
