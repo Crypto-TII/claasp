@@ -30,3 +30,15 @@ def test_new_legacy_modules_fail_the_inventory_gate(tmp_path):
     (data / "legacy_inventory.json").write_text('{"records": []}')
     with pytest.raises(ValueError, match="missing=.*new_analysis"):
         GATE.validate(root=tmp_path)
+
+
+def test_reviewed_replacement_evidence_resolves_to_current_files():
+    spec = importlib.util.spec_from_file_location(
+        "legacy_dispositions", "tools/legacy_dispositions.py"
+    )
+    assert spec and spec.loader
+    dispositions = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(dispositions)
+    result = dispositions.validate()
+    assert result["semantic_groups"] > 0
+    assert result["assertion_bearing_test_files"] > 0
