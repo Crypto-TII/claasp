@@ -17,10 +17,8 @@ def test_real_solver_keeps_named_output_and_matches_the_independent_recurrence(d
     solver = MiniZincSolver(
         os.environ.get("CLAASP_CONTINUOUS_CP_SOLVER", "gecode"), timeout_seconds=30
     )
-    result = (
-        ModularAdd(2)
-        .analysis.continuous_differential()
-        .find_best_correlation(difference, output_mask=1, solver=solver)
+    result = ModularAdd(2).analysis.find_highest_correlation_continuous_differential(
+        difference, output_mask=1, solver=solver
     )
     assert result.claim_kind == "heuristic"
     assert result.model_complete

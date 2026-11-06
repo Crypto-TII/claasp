@@ -543,19 +543,69 @@ class Analysis:
             carry_order=carry_order,
         )
 
-    def continuous_differential(self):
-        """Search the legacy continuous ARX differential-correlation heuristic.
+    def find_highest_correlation_continuous_differential(
+        self,
+        input_difference=1,
+        *,
+        input_name=None,
+        fixed_inputs=None,
+        output_mask=None,
+        solver=None,
+    ):
+        """Maximize the continuous ARX differential-correlation heuristic.
+
+        This is a heuristic correlation, not an exact XOR-differential
+        probability. Fixed inputs need no solver; free input patterns require
+        MiniZinc with a nonlinear solver such as Gecode.
 
         EXAMPLES::
 
             >>> from claasp.primitives import Speck
-            >>> result = Speck(number_of_rounds=1).analysis.continuous_differential().find_best_correlation(1)
+            >>> result = Speck(number_of_rounds=1).analysis.find_highest_correlation_continuous_differential(1)
             >>> result.claim_kind
             'heuristic'
         """
         from claasp.analysis.continuous_differential import ContinuousDifferentialAnalysis
 
-        return ContinuousDifferentialAnalysis(self.primitive)
+        return ContinuousDifferentialAnalysis(self.primitive).find_best_correlation(
+            input_difference,
+            input_name=input_name,
+            fixed_inputs=fixed_inputs,
+            output_mask=output_mask,
+            solver=solver,
+        )
+
+    def find_one_continuous_differential(
+        self,
+        input_difference=1,
+        *,
+        input_name=None,
+        fixed_inputs=None,
+        output_mask=None,
+        solver=None,
+    ):
+        """Find one continuous ARX differential-correlation witness.
+
+        This is a heuristic correlation, not an exact XOR-differential
+        probability. Fixed inputs need no solver; free input patterns require
+        MiniZinc with a nonlinear solver such as Gecode.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Speck
+            >>> result = Speck(number_of_rounds=1).analysis.find_one_continuous_differential(1)
+            >>> result.claim_kind
+            'heuristic'
+        """
+        from claasp.analysis.continuous_differential import ContinuousDifferentialAnalysis
+
+        return ContinuousDifferentialAnalysis(self.primitive).find_one_correlation(
+            input_difference,
+            input_name=input_name,
+            fixed_inputs=fixed_inputs,
+            output_mask=output_mask,
+            solver=solver,
+        )
 
     def continuous_differential_evaluate(self, inputs, *, tolerance=1e-4):
         """Evaluate the legacy ARX differential-correlation heuristic.
@@ -703,16 +753,31 @@ class Analysis:
             solver=solver,
         )
 
-    def boomerang(
-        self, *, switch_round=None, components=None, upper_window=None, lower_window=None
+    def find_one_boomerang_trail(
+        self,
+        *,
+        switch_round=None,
+        components=None,
+        upper_window=None,
+        lower_window=None,
+        input_difference=None,
+        output_difference=None,
+        maximum_weight=None,
+        solver=None,
     ):
-        """Create a restricted ARX boomerang search with checked middle switches.
+        """Find one checked trail in the restricted ARX boomerang model.
+
+        Only the supported large-switch subset of modular-addition ARX
+        boomerangs is modeled. Weight is the sum of upper and lower trail
+        weights, excluding the middle switch; optimality is restricted to
+        this model. The default solver requires the ``z3`` executable.
 
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> ToySpeck(3).analysis.boomerang(switch_round=1).model().switches
-            ('modular_add_1_1',)
+            >>> result = ToySpeck(3).analysis.find_one_boomerang_trail(switch_round=1)
+            >>> result.trail is not None
+            True
         """
         from claasp.analysis.boomerang_search import BoomerangAnalysis
 
@@ -722,6 +787,52 @@ class Analysis:
             components=components,
             upper_window=upper_window,
             lower_window=lower_window,
+        ).find_one_trail(
+            input_difference=input_difference,
+            output_difference=output_difference,
+            maximum_weight=maximum_weight,
+            solver=solver,
+        )
+
+    def find_lowest_weight_boomerang_trail(
+        self,
+        *,
+        switch_round=None,
+        components=None,
+        upper_window=None,
+        lower_window=None,
+        input_difference=None,
+        output_difference=None,
+        maximum_weight=None,
+        solver=None,
+    ):
+        """Minimize the outer trail weight in the restricted ARX boomerang model.
+
+        Only the supported large-switch subset of modular-addition ARX
+        boomerangs is modeled. Weight is the sum of upper and lower trail
+        weights, excluding the middle switch; optimality is restricted to
+        this model. The default solver requires the ``z3`` executable.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import ToySpeck
+            >>> result = ToySpeck(3).analysis.find_lowest_weight_boomerang_trail(switch_round=1)
+            >>> result.trail is not None
+            True
+        """
+        from claasp.analysis.boomerang_search import BoomerangAnalysis
+
+        return BoomerangAnalysis(
+            self.primitive,
+            switch_round=switch_round,
+            components=components,
+            upper_window=upper_window,
+            lower_window=lower_window,
+        ).find_lowest_weight_trail(
+            input_difference=input_difference,
+            output_difference=output_difference,
+            maximum_weight=maximum_weight,
+            solver=solver,
         )
 
     def find_sbox_boomerang_transition(self, component, **options):
