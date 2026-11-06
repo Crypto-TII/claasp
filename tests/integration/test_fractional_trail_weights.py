@@ -11,7 +11,10 @@ import pytest
 from claasp.drivers.solvers import KissatSolver, SatStatus
 from claasp.primitives import Heys
 from claasp.primitives.toy_primitives.heys import HEYS_PERMUTATION, HEYS_SBOX
-from claasp.representations.constraints.sat import WordDifferentialSATModel, WordLinearSATModel
+from claasp.representations.constraints.sat import (
+    WordXorDifferentialSATModel,
+    WordXorLinearSATModel,
+)
 
 pytestmark = pytest.mark.external
 
@@ -82,7 +85,7 @@ def test_three_round_heys_public_call_matches_exhaustive_round_mask_oracle():
     "bound,expected", [(1, SatStatus.UNSATISFIABLE), (2, SatStatus.SATISFIABLE)]
 )
 def test_fractional_differential_bounds_use_actual_three_eighths_probability(bound, expected):
-    model = WordDifferentialSATModel(
+    model = WordXorDifferentialSATModel(
         Heys(number_of_rounds=1),
         maximum_weight=bound,
         fixed_input_differences={"plaintext": 0x2000, "key": 0},
@@ -100,7 +103,7 @@ def test_fractional_differential_bounds_use_actual_three_eighths_probability(bou
 
 @pytest.mark.parametrize("weight", [1, 2, 100])
 def test_exact_integer_weight_query_does_not_round_a_fractional_trail(weight):
-    model = WordDifferentialSATModel(
+    model = WordXorDifferentialSATModel(
         Heys(number_of_rounds=1),
         fixed_weight=weight,
         fixed_input_differences={"plaintext": 0x2000, "key": 0},
@@ -110,7 +113,7 @@ def test_exact_integer_weight_query_does_not_round_a_fractional_trail(weight):
 
 
 def test_linear_zero_weight_bound_rejects_fractional_transitions():
-    model = WordLinearSATModel(
+    model = WordXorLinearSATModel(
         Heys(number_of_rounds=1),
         maximum_weight=0,
         nonzero_input="plaintext",
@@ -146,7 +149,7 @@ def test_fractional_linear_transition_keeps_its_negative_correlation_sign():
         )
         == -12
     )
-    model = WordLinearSATModel(
+    model = WordXorLinearSATModel(
         BitVectorSBox(lookup_table=HEYS_SBOX),
         maximum_weight=1,
         fixed_input_masks={"input": source},
@@ -178,7 +181,7 @@ def test_fractional_capable_table_still_accepts_exact_integer_weight_transitions
         for b in range(16)
         if sum(HEYS_SBOX[x] ^ HEYS_SBOX[x ^ a] == b for x in range(16)) == 8
     )
-    model = WordDifferentialSATModel(
+    model = WordXorDifferentialSATModel(
         Heys(number_of_rounds=1),
         fixed_weight=1,
         fixed_input_differences={"plaintext": source << 12, "key": 0},

@@ -1,10 +1,10 @@
 """Compatibility imports for SMT component transition models."""
 
 from claasp.representations.constraints.smt.components import (
-    ModularAddDifferentialSMTModel as _ModularAddDifferentialSMTModel,
+    ModularAddXorDifferentialSMTModel as _ModularAddXorDifferentialSMTModel,
 )
 from claasp.representations.constraints.smt.components import (
-    ModularAddLinearSMTModel as _ModularAddLinearSMTModel,
+    ModularAddXorLinearSMTModel as _ModularAddXorLinearSMTModel,
 )
 from claasp.representations.constraints.smt.components import (
     SBoxTransitionSMTModel as _SBoxTransitionSMTModel,
@@ -16,8 +16,8 @@ from claasp.representations.constraints.smt.components import (
     SBoxXorLinearSMTModel as _SBoxXorLinearSMTModel,
 )
 
-ModularAddDifferentialSMTModel = _ModularAddDifferentialSMTModel
-ModularAddLinearSMTModel = _ModularAddLinearSMTModel
+ModularAddXorDifferentialSMTModel = _ModularAddXorDifferentialSMTModel
+ModularAddXorLinearSMTModel = _ModularAddXorLinearSMTModel
 SBoxTransitionSMTModel = _SBoxTransitionSMTModel
 SBoxXorDifferentialSMTModel = _SBoxXorDifferentialSMTModel
 SBoxXorLinearSMTModel = _SBoxXorLinearSMTModel

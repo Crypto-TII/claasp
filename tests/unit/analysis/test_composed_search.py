@@ -1,6 +1,6 @@
 import pytest
 
-from claasp.analysis import DifferentialLinearSearchResult, ImpossibleSearchResult
+from claasp.analysis import ImpossibleSearchResult, XorDifferentialLinearSearchResult
 from claasp.primitives import ToySpeck
 
 
@@ -21,7 +21,7 @@ def test_composed_status_never_conflates_unknown_with_exhaustion():
     assert not result.complete and not result.found
     with pytest.raises(RuntimeError):
         result.require_complete()
-    result = primitive.analysis.find_optimal_differential_linear_trail(solver=UnknownSolver())
+    result = primitive.analysis.find_optimal_xor_differential_linear_trail(solver=UnknownSolver())
     assert not result.complete and not result.found
     with pytest.raises(RuntimeError):
         result.require_complete()
@@ -38,6 +38,6 @@ def test_search_validation_precedes_execution():
         with pytest.raises(ValueError):
             primitive.analysis.search_impossible_differentials(**options)
     with pytest.raises(ValueError):
-        primitive.analysis.find_optimal_differential_linear_trail(prefix_rounds=3)
+        primitive.analysis.find_optimal_xor_differential_linear_trail(prefix_rounds=3)
     assert ImpossibleSearchResult((), (), True, "exhausted UNSAT").require_complete().complete
-    assert DifferentialLinearSearchResult(None, None, None, (), True).require_complete().complete
+    assert XorDifferentialLinearSearchResult(None, None, None, (), True).require_complete().complete

@@ -4,9 +4,8 @@ from dataclasses import dataclass
 from random import Random
 
 from claasp.semantics.cryptanalysis import (
-    DifferentialLinearTrail,
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    ModularAddXorLinearSemantics,
     ProbabilisticTruncatedModularAddTransition,
     ProbabilisticTruncatedTrail,
     Trail,
@@ -14,23 +13,24 @@ from claasp.semantics.cryptanalysis import (
     TrailStep,
     TruncatedXorDifference,
     XorDifference,
+    XorDifferentialLinearTrail,
     XorMask,
     check_probabilistic_truncated_modular_add,
 )
 
 
 @dataclass(frozen=True, slots=True)
-class DifferentialLinearFixture:
+class XorDifferentialLinearFixture:
     """A composed trail with its legacy search objective and provenance.
 
     EXAMPLES::
 
         >>> from dataclasses import fields
-        >>> (DifferentialLinearFixture.__dataclass_params__.frozen, tuple(field.name for field in fields(DifferentialLinearFixture)))
+        >>> (XorDifferentialLinearFixture.__dataclass_params__.frozen, tuple(field.name for field in fields(XorDifferentialLinearFixture)))
         (True, ('trail', 'legacy_search_weight', 'provenance'))
     """
 
-    trail: DifferentialLinearTrail
+    trail: XorDifferentialLinearTrail
     legacy_search_weight: float
     provenance: str
 
@@ -42,13 +42,13 @@ class DifferentialLinearFixture:
 
 
 @dataclass(frozen=True, slots=True)
-class DifferentialLinearExperimentResult:
+class XorDifferentialLinearExperimentResult:
     """Seeded empirical correlation, deliberately carrying no proof status.
 
     EXAMPLES::
 
         >>> from dataclasses import fields
-        >>> (DifferentialLinearExperimentResult.__dataclass_params__.frozen, tuple(field.name for field in fields(DifferentialLinearExperimentResult)))
+        >>> (XorDifferentialLinearExperimentResult.__dataclass_params__.frozen, tuple(field.name for field in fields(XorDifferentialLinearExperimentResult)))
         (True, ('input_difference', 'output_mask', 'rounds', 'samples', 'even_parities', 'seed', 'provenance', 'claim_kind'))
     """
 
@@ -76,14 +76,14 @@ class DifferentialLinearExperimentResult:
         return 2 * self.even_parities / self.samples - 1.0
 
 
-def run_chacha_differential_linear_experiment(
+def run_chacha_xor_differential_linear_experiment(
     input_difference: int,
     output_mask: int,
     *,
     rounds: int,
     samples: int,
     seed: int,
-) -> DifferentialLinearExperimentResult:
+) -> XorDifferentialLinearExperimentResult:
     """Evaluate a fixed ChaCha differential-linear pair reproducibly.
 
     ``rounds`` follows the official ChaCha convention used by the v5 public
@@ -96,7 +96,7 @@ def run_chacha_differential_linear_experiment(
     EXAMPLES::
 
         >>> try:
-        ...     run_chacha_differential_linear_experiment()
+        ...     run_chacha_xor_differential_linear_experiment()
         ... except TypeError:
         ...     print("required arguments rejected")
         required arguments rejected
@@ -121,7 +121,7 @@ def run_chacha_differential_linear_experiment(
             state ^ input_difference, rounds
         )
         even += ((difference & output_mask).bit_count() & 1) == 0
-    return DifferentialLinearExperimentResult(
+    return XorDifferentialLinearExperimentResult(
         input_difference,
         output_mask,
         rounds,
@@ -132,20 +132,20 @@ def run_chacha_differential_linear_experiment(
     )
 
 
-def run_speck32_differential_linear_experiment(
+def run_speck32_xor_differential_linear_experiment(
     input_difference: int,
     output_mask: int,
     *,
     rounds: int,
     samples: int,
     seed: int,
-) -> DifferentialLinearExperimentResult:
+) -> XorDifferentialLinearExperimentResult:
     """Evaluate a fixed zero-key Speck32/64 pair reproducibly.
 
     EXAMPLES::
 
         >>> try:
-        ...     run_speck32_differential_linear_experiment()
+        ...     run_speck32_xor_differential_linear_experiment()
         ... except TypeError:
         ...     print("required arguments rejected")
         required arguments rejected
@@ -173,7 +173,7 @@ def run_speck32_differential_linear_experiment(
         paired = _encrypt(divmod(value ^ input_difference, 1 << 16), round_keys)
         difference = ((first[0] ^ paired[0]) << 16) | (first[1] ^ paired[1])
         even += ((difference & output_mask).bit_count() & 1) == 0
-    return DifferentialLinearExperimentResult(
+    return XorDifferentialLinearExperimentResult(
         input_difference,
         output_mask,
         rounds,
@@ -209,18 +209,18 @@ def _chacha_permute(value: int, rounds: int) -> int:
     return sum(word << (32 * (15 - index)) for index, word in enumerate(state))
 
 
-def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
+def speck32_xor_differential_linear_legacy_fixture() -> XorDifferentialLinearFixture:
     """Restore the fixed six-round Speck32/64 CP differential-linear fixture.
 
     The legacy solver minimizes ``p + r + 2q`` and reports 14 for this
     witness. The returned trail separately retains ``p=1``, ``r=7``, and
-    ``q=3``; :attr:`DifferentialLinearFixture.exact_weight` applies the exact
+    ``q=3``; :attr:`XorDifferentialLinearFixture.exact_weight` applies the exact
     connector expression instead of relabelling the search approximation.
 
     EXAMPLES::
 
-        >>> from claasp.analysis import speck32_differential_linear_legacy_fixture
-        >>> fixture = speck32_differential_linear_legacy_fixture()
+        >>> from claasp.analysis import speck32_xor_differential_linear_legacy_fixture
+        >>> fixture = speck32_xor_differential_linear_legacy_fixture()
         >>> (fixture.legacy_search_weight, round(fixture.exact_weight, 6))
         (14.0, 14.994353)
     """
@@ -255,7 +255,7 @@ def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
         (connector_transition,),
     )
 
-    linear_semantics = ModularAddLinearSemantics(16)
+    linear_semantics = ModularAddXorLinearSemantics(16)
     linear_inputs = (
         ("key_3_modular_add", 0x0080, 0x00C0, 0x0080),
         ("round_3_modular_add", 0x4081, 0x60C1, 0x4081),
@@ -273,30 +273,30 @@ def speck32_differential_linear_legacy_fixture() -> DifferentialLinearFixture:
             for name, left, right, output in linear_inputs
         ),
     )
-    return DifferentialLinearFixture(
-        DifferentialLinearTrail(differential, connector, linear),
+    return XorDifferentialLinearFixture(
+        XorDifferentialLinearTrail(differential, connector, linear),
         14.0,
         "legacy CLAASP MznDifferentialLinearModel Speck32/64-6 fixed fixture",
     )
 
 
-def check_speck32_differential_linear_fixture(fixture: DifferentialLinearFixture) -> bool:
+def check_speck32_xor_differential_linear_fixture(fixture: XorDifferentialLinearFixture) -> bool:
     """Recompute all probability-bearing transitions without solver output.
 
     EXAMPLES::
 
         >>> try:
-        ...     check_speck32_differential_linear_fixture()
+        ...     check_speck32_xor_differential_linear_fixture()
         ... except TypeError:
         ...     print("required arguments rejected")
         required arguments rejected
     """
 
-    if not isinstance(fixture, DifferentialLinearFixture):
+    if not isinstance(fixture, XorDifferentialLinearFixture):
         return False
     trail = fixture.trail
     differential = ModularAddTransitionSemantics(16)
-    linear = ModularAddLinearSemantics(16)
+    linear = ModularAddXorLinearSemantics(16)
     return (
         all(differential.check(step.transition) for step in trail.differential.steps)
         and all(linear.check(step.transition) for step in trail.linear.steps)

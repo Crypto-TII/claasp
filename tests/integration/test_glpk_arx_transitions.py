@@ -1,13 +1,13 @@
 import pytest
 
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
-from claasp.representations.constraints.milp import ModularAddLinearMILPModel
+from claasp.representations.constraints.milp import ModularAddXorLinearMILPModel
 
 pytestmark = pytest.mark.external
 
 
 def test_glpk_restores_speck_linear_modular_add_reference_transitions():
-    lowering = ModularAddLinearMILPModel(16)
+    lowering = ModularAddXorLinearMILPModel(16)
     reference = (
         (0x6081, 0x40C1, 0x4081),
         (0x0001, 0x0001, 0x0001),

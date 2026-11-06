@@ -1,4 +1,4 @@
-Monomial prediction and division property: introduction
-=======================================================
+Monomial prediction and division property: basic
+================================================
 
 **TODO**

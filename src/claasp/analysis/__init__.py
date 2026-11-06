@@ -28,6 +28,22 @@ from claasp.analysis.boomerang_search import (
     BoomerangSearchResult,
     BoomerangSearchStatus,
 )
+from claasp.analysis.circle_differential import (
+    CircleDifferentialAnalysis,
+    CircleDifferentialProbability,
+    CircleDifferentialTrail,
+)
+from claasp.analysis.circle_linear import (
+    CircleApproximation,
+    CircleCorrelationEstimate,
+    CircleLinearAnalysis,
+)
+from claasp.analysis.circle_linear_trails import (
+    CircleLinearRoundTransition,
+    CircleLinearTrail,
+    CircleLinearTrailModel,
+    CircleLinearTrailSearchResult,
+)
 from claasp.analysis.component_inspection import (
     ComponentAnalysis,
     ComponentPropertiesResult,
@@ -52,18 +68,18 @@ from claasp.analysis.component_properties import (
     semantic_component_key,
 )
 from claasp.analysis.composed import (
-    DifferentialLinearExperimentResult,
-    DifferentialLinearFixture,
-    check_speck32_differential_linear_fixture,
-    run_chacha_differential_linear_experiment,
-    run_speck32_differential_linear_experiment,
-    speck32_differential_linear_legacy_fixture,
+    XorDifferentialLinearExperimentResult,
+    XorDifferentialLinearFixture,
+    check_speck32_xor_differential_linear_fixture,
+    run_chacha_xor_differential_linear_experiment,
+    run_speck32_xor_differential_linear_experiment,
+    speck32_xor_differential_linear_legacy_fixture,
 )
 from claasp.analysis.composed_search import (
-    DifferentialLinearSearchResult,
     ImpossibleCandidate,
     ImpossibleSearchResult,
-    find_optimal_differential_linear_trail,
+    XorDifferentialLinearSearchResult,
+    find_optimal_xor_differential_linear_trail,
     search_impossible_differentials,
 )
 from claasp.analysis.constraints import (
@@ -90,7 +106,7 @@ from claasp.analysis.datasets import (
 from claasp.analysis.division_property import DivisionPropertyPathSearch
 from claasp.analysis.facade import Analysis, AnalysisResult, TrailSearchBackend
 from claasp.analysis.legacy_evidence import (
-    LegacyBoundedDifferentialCluster,
+    LegacyBoundedXorDifferentialCluster,
     ublock_three_round_legacy_cluster,
 )
 from claasp.analysis.monomial import (
@@ -184,8 +200,8 @@ from claasp.analysis.truncated import (
 from claasp.analysis.two_subset import TwoSubsetDivisionProperty, two_subset_transition_table
 from claasp.semantics.cryptanalysis import (
     BitPattern,
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    ModularAddXorLinearSemantics,
     SBoxTransitionSemantics,
     Trail,
     TrailKind,
@@ -199,7 +215,7 @@ from claasp.semantics.cryptanalysis import (
 
 
 def __getattr__(name):
-    if name in {"SpeckHybridDifferentialProblem", "HybridDifferentialResult"}:
+    if name in {"SpeckHybridXorDifferentialProblem", "HybridXorDifferentialResult"}:
         from claasp.analysis import hybrid
 
         return getattr(hybrid, name)
@@ -212,6 +228,16 @@ __all__ = [
     "BoomerangSearchStatus",
     "ContinuousDifferentialAnalysis",
     "ContinuousCorrelationResult",
+    "CircleDifferentialAnalysis",
+    "CircleDifferentialProbability",
+    "CircleDifferentialTrail",
+    "CircleApproximation",
+    "CircleCorrelationEstimate",
+    "CircleLinearAnalysis",
+    "CircleLinearTrailModel",
+    "CircleLinearRoundTransition",
+    "CircleLinearTrailSearchResult",
+    "CircleLinearTrail",
     "QuasidifferentialAnalysis",
     "QuasidifferentialTrail",
     "QuasidifferentialEnumeration",
@@ -230,9 +256,9 @@ __all__ = [
     "recover_superpoly",
     "ImpossibleCandidate",
     "ImpossibleSearchResult",
-    "DifferentialLinearSearchResult",
+    "XorDifferentialLinearSearchResult",
     "search_impossible_differentials",
-    "find_optimal_differential_linear_trail",
+    "find_optimal_xor_differential_linear_trail",
     "AnalysisProblem",
     "AnalysisResult",
     "TrailSearchBackend",
@@ -264,17 +290,17 @@ __all__ = [
     "DiagnosticCode",
     "DieharderObservation",
     "DieharderReport",
-    "DifferentialLinearExperimentResult",
-    "DifferentialLinearFixture",
+    "XorDifferentialLinearExperimentResult",
+    "XorDifferentialLinearFixture",
     "Equal",
     "EvaluationDataset",
     "EvaluationSample",
     "FixedValue",
     "HammingWeight",
-    "HybridDifferentialResult",
-    "LegacyBoundedDifferentialCluster",
+    "HybridXorDifferentialResult",
+    "LegacyBoundedXorDifferentialCluster",
     "MinimizeWeight",
-    "ModularAddLinearSemantics",
+    "ModularAddXorLinearSemantics",
     "ModularAddTransitionSemantics",
     "MonomialParityResult",
     "MonomialTrail",
@@ -304,7 +330,7 @@ __all__ = [
     "PropertyDomain",
     "PropertyRequest",
     "SBoxTransitionSemantics",
-    "SpeckHybridDifferentialProblem",
+    "SpeckHybridXorDifferentialProblem",
     "StatisticalAssessment",
     "StatisticalCampaignResult",
     "StatisticalDataset",
@@ -332,7 +358,7 @@ __all__ = [
     "avalanche_statistical_dataset",
     "black_box_dataset",
     "cbc_dataset",
-    "check_speck32_differential_linear_fixture",
+    "check_speck32_xor_differential_linear_fixture",
     "component_output_dataset",
     "correlation_dataset",
     "dataset_digest",
@@ -353,13 +379,13 @@ __all__ = [
     "propagate_two_word_speck_round",
     "propagate_truncated_xor_difference",
     "round_component_ids",
-    "run_chacha_differential_linear_experiment",
+    "run_chacha_xor_differential_linear_experiment",
     "run_autond",
     "run_speck32_boomerang_experiment",
-    "run_speck32_differential_linear_experiment",
+    "run_speck32_xor_differential_linear_experiment",
     "semantic_component_groups",
     "semantic_component_key",
-    "speck32_differential_linear_legacy_fixture",
+    "speck32_xor_differential_linear_legacy_fixture",
     "train_staged_neural_distinguisher",
     "truncated_modular_add",
     "ublock_three_round_legacy_cluster",

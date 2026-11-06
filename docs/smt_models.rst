@@ -47,8 +47,8 @@ weight-five witness:
 
 .. doctest::
 
-   >>> from claasp.representations.constraints.smt import SpeckLinearSMTModel
-   >>> fixed = SpeckLinearSMTModel(Speck(number_of_rounds=3), fixed_weight=5,
+   >>> from claasp.representations.constraints.smt import SpeckXorLinearSMTModel
+   >>> fixed = SpeckXorLinearSMTModel(Speck(number_of_rounds=3), fixed_weight=5,
    ...     input_mask=0x03805224, output_mask=0x40A000C1)
    >>> fixed.input_mask == 0x03805224 and fixed.output_mask == 0x40A000C1
    True
@@ -58,7 +58,7 @@ The decoder independently checks both masks and the exact weight.
 Whole-word differential composition
 -----------------------------------
 
-``WordDifferentialSMTModel`` connects forward differences through XOR,
+``WordXorDifferentialSMTModel`` connects forward differences through XOR,
 rotation, identity, concatenation, constants, AND, and modular addition.
 Fanout shares the producer difference; unlike linear masks, consumer
 differences are not XORed back into a producer mask. The complete key
@@ -67,8 +67,8 @@ schedule is included, enabling explicit related-key searches.
 .. doctest::
 
    >>> from claasp.primitives import ToySpeck
-   >>> from claasp.representations.constraints.smt import WordDifferentialSMTModel
-   >>> differential = WordDifferentialSMTModel(ToySpeck(2), fixed_weight=1,
+   >>> from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
+   >>> differential = WordXorDifferentialSMTModel(ToySpeck(2), fixed_weight=1,
    ...     nonzero_input="plaintext", fixed_input_differences={"key": 0})
    >>> "fixed_difference" in differential.smt_formula().provenance
    True
@@ -129,8 +129,8 @@ the sum of unary transition weights with a sequential counter:
 .. doctest::
 
    >>> from claasp.primitives import Present
-   >>> from claasp.representations.constraints.smt import PresentDifferentialSMTModel
-   >>> model = PresentDifferentialSMTModel(Present(number_of_rounds=2), 4)
+   >>> from claasp.representations.constraints.smt import PresentXorDifferentialSMTModel
+   >>> model = PresentXorDifferentialSMTModel(Present(number_of_rounds=2), 4)
    >>> formula = model.smt_formula()
    >>> (len(formula.variables) < 700, formula.assertion_count < 30000)
    (True, True)
@@ -145,8 +145,8 @@ trail retains the independently recomputed correlation sign of every S-box:
 
 .. doctest::
 
-   >>> from claasp.representations.constraints.smt import PresentLinearSMTModel
-   >>> linear = PresentLinearSMTModel(Present(number_of_rounds=3), 4)
+   >>> from claasp.representations.constraints.smt import PresentXorLinearSMTModel
+   >>> linear = PresentXorLinearSMTModel(Present(number_of_rounds=3), 4)
    >>> linear_formula = linear.smt_formula()
    >>> (len(linear_formula.variables) < 1000, linear_formula.assertion_count < 40000)
    (True, True)
@@ -163,7 +163,7 @@ code may supply a shared propagation problem instead:
    >>> from claasp.semantics import XOR_DIFFERENTIAL
    >>> from claasp.semantics.cryptanalysis import PropagationProblem
    >>> problem = PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=4)
-   >>> PresentDifferentialSMTModel(problem).problem is problem
+   >>> PresentXorDifferentialSMTModel(problem).problem is problem
    True
 
 Component semantics, including per-component researcher overrides, are read
@@ -178,8 +178,8 @@ the shared Walsh semantics remains the independent oracle:
 
 .. doctest::
 
-   >>> from claasp.representations.constraints.smt import ModularAddLinearSMTModel
-   >>> addition = ModularAddLinearSMTModel(16)
+   >>> from claasp.representations.constraints.smt import ModularAddXorLinearSMTModel
+   >>> addition = ModularAddXorLinearSMTModel(16)
    >>> formula = addition.smt_formula(
    ...     left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081
    ... )
@@ -196,7 +196,7 @@ output without semantic validation.
 Speck data-path composition
 ---------------------------
 
-``SpeckLinearSMTModel`` wires each round's exact addition relation through
+``SpeckXorLinearSMTModel`` wires each round's exact addition relation through
 the graph's rotations and XOR mask rules. It assumes zero round-key masks,
 requires a nonzero plaintext mask, and accepts either an upper weight bound
 or an exact weight (not both). Execution remains a separate ``Z3Solver``
@@ -205,12 +205,12 @@ operation; decoding independently recounts all correlations and wiring.
 .. doctest::
 
    >>> from claasp.primitives import Speck
-   >>> from claasp.representations.constraints.smt import SpeckLinearSMTModel
-   >>> model = SpeckLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
+   >>> from claasp.representations.constraints.smt import SpeckXorLinearSMTModel
+   >>> model = SpeckXorLinearSMTModel(Speck(number_of_rounds=3), maximum_weight=1)
    >>> formula = model.smt_formula()
    >>> "nonzero_linear_input" in formula.provenance
    True
-   >>> exact = SpeckLinearSMTModel(Speck(number_of_rounds=3), fixed_weight=7)
+   >>> exact = SpeckXorLinearSMTModel(Speck(number_of_rounds=3), fixed_weight=7)
    >>> "weight_complement" in exact.smt_formula().provenance
    True
 
@@ -218,7 +218,7 @@ The bounded Z3 regression preserves the legacy three-round Speck32/64
 optimum: weight zero is UNSAT and weight one is SAT. It also preserves the
 legacy feasible weight seven without calling it an optimum. The nonstandard
 Speck8/16 fixture is handled separately by ``ToySpeck`` and whole-graph
-``WordLinearSMTModel``, including nonzero key masks.
+``WordXorLinearSMTModel``, including nonzero key masks.
 
 The same graph-wired model preserves the CMS suite's four-round Speck32/64
 optimum of three: Z3 proves bound two UNSAT and bound three SAT. This is a
@@ -229,7 +229,7 @@ are an optional encoding optimization; they do not define separate semantics.
 Whole-word linear composition and enumeration
 ---------------------------------------------
 
-``WordLinearSMTModel`` composes two-input modular addition, bitwise AND, XOR, rotation,
+``WordXorLinearSMTModel`` composes two-input modular addition, bitwise AND, XOR, rotation,
 identity, concatenation, and constants over arbitrary typed Word graphs.
 Input selections retain logical-unit order; fanout XORs consumer masks back
 to each producer, including the key schedule. Constants contribute a sign,
@@ -238,11 +238,11 @@ not weight. Unsupported operations fail explicitly.
 .. doctest::
 
    >>> from claasp.primitives import ToySpeck
-   >>> from claasp.representations.constraints.smt import WordLinearSMTModel
+   >>> from claasp.representations.constraints.smt import WordXorLinearSMTModel
    >>> toy = ToySpeck()
    >>> toy.family_name
    'toy_speck'
-   >>> model = WordLinearSMTModel(toy, maximum_weight=2, nonzero_input="key")
+   >>> model = WordXorLinearSMTModel(toy, maximum_weight=2, nonzero_input="key")
    >>> "nonzero_external_mask" in model.smt_formula().provenance
    True
 

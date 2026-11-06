@@ -70,7 +70,7 @@ SBoxDifferenceCPModel = _SBoxDifferenceCPModel
 SBoxXorDifferentialCPModel = _SBoxXorDifferentialCPModel
 
 
-class PresentDifferentialCPModel:
+class PresentXorDifferentialCPModel:
     """Native table-constraint model for two-round PRESENT differences.
 
     EXAMPLES::
@@ -79,14 +79,14 @@ class PresentDifferentialCPModel:
         >>> problem = PropagationProblem(
         ...     Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=4
         ... )
-        >>> query = PresentDifferentialCPModel(problem).cp_model()
+        >>> query = PresentXorDifferentialCPModel(problem).cp_model()
         >>> (query.includes, query.constraints[-1].endswith("<= 4;"))
         (('include "table.mzn";',), True)
     """
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "PresentDifferentialCPModel",
+        "PresentXorDifferentialCPModel",
         "xor_differential",
         "exact DDT-row tables with direct PRESENT permutation wiring",
         "The S-box relation is enumerated from the supplied table and the P-layer is direct wiring.",
@@ -191,7 +191,7 @@ class PresentDifferentialCPModel:
         return trail
 
 
-class PresentActiveSBoxesCPModel(PresentDifferentialCPModel):
+class PresentActiveSBoxesCPModel(PresentXorDifferentialCPModel):
     """Minimize active S-boxes over the exact two-round PRESENT relation.
 
     EXAMPLES::
@@ -320,12 +320,12 @@ class PresentFixedActiveSBoxesCPModel(PresentActiveSBoxesCPModel):
 
 
 @dataclass(frozen=True, slots=True)
-class PresentKeyScheduleDifferentialTrail:
+class PresentKeyScheduleXorDifferentialTrail:
     """Exact XOR-differential trail through a PRESENT-80 key schedule.
 
     EXAMPLES::
 
-        >>> trail = PresentKeyScheduleDifferentialTrail(1, (1, 2), (2,), 2)
+        >>> trail = PresentKeyScheduleXorDifferentialTrail(1, (1, 2), (2,), 2)
         >>> trail.total_weight
         2
     """
@@ -444,7 +444,7 @@ class PresentProbabilisticKeyScheduleCPModel:
         )
         return self._query
 
-    def decode_trail(self, assignment) -> PresentKeyScheduleDifferentialTrail:
+    def decode_trail(self, assignment) -> PresentKeyScheduleXorDifferentialTrail:
         """Decode and independently verify every key-schedule transition."""
 
         if self._query is None:
@@ -473,12 +473,12 @@ class PresentProbabilisticKeyScheduleCPModel:
         if self.input_difference is not None and input_difference != self.input_difference:
             raise ValueError("PRESENT key-schedule input difference changed")
         round_keys = tuple(_integer(state[:64]) for state in states)
-        return PresentKeyScheduleDifferentialTrail(
+        return PresentKeyScheduleXorDifferentialTrail(
             input_difference, round_keys, tuple(weights), sum(weights)
         )
 
 
-class PresentLinearCPModel:
+class PresentXorLinearCPModel:
     """Native table-constraint model for three-round PRESENT masks.
 
     EXAMPLES::
@@ -487,14 +487,14 @@ class PresentLinearCPModel:
         >>> problem = PropagationProblem(
         ...     Present(number_of_rounds=3), XOR_LINEAR, maximum_weight=4
         ... )
-        >>> query = PresentLinearCPModel(problem).cp_model()
+        >>> query = PresentXorLinearCPModel(problem).cp_model()
         >>> (query.includes, query.constraints[-1].endswith("<= 4;"))
         (('include "table.mzn";',), True)
     """
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "PresentLinearCPModel",
+        "PresentXorLinearCPModel",
         "xor_linear",
         "exact signed-LAT-row tables with direct PRESENT permutation wiring",
         "The S-box relation is enumerated from the supplied table and the P-layer is direct wiring.",
@@ -601,7 +601,7 @@ class PresentLinearCPModel:
         return trail
 
 
-class SpeckDifferentialCPModel:
+class SpeckXorDifferentialCPModel:
     """Exact native CP model for Speck XOR-differential trails.
 
     The reviewed slice is Speck32/64 with zero key difference. Decoded
@@ -614,7 +614,7 @@ class SpeckDifferentialCPModel:
         >>> problem = PropagationProblem(
         ...     Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=6
         ... )
-        >>> model = SpeckDifferentialCPModel(
+        >>> model = SpeckXorDifferentialCPModel(
         ...     problem, input_difference=0x02110A04, output_difference=0x80008000
         ... )
         >>> model.cp_model().constraints[-1].endswith("<= 6;")
@@ -623,7 +623,7 @@ class SpeckDifferentialCPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "SpeckDifferentialCPModel",
+        "SpeckXorDifferentialCPModel",
         "xor_differential",
         "exact finite modular-add relation with direct Speck round wiring",
         "The model composes the exhaustively checked carry-difference relation without a new construction.",
@@ -780,7 +780,7 @@ class SpeckDifferentialCPModel:
         return trail
 
 
-class SpeckARXWindowDifferentialCPModel(SpeckDifferentialCPModel):
+class SpeckARXWindowXorDifferentialCPModel(SpeckXorDifferentialCPModel):
     """Apply the legacy per-round n-window pruning to exact Speck trails.
 
     The window constraint is a search heuristic over the exact modular-add
@@ -792,7 +792,7 @@ class SpeckARXWindowDifferentialCPModel(SpeckDifferentialCPModel):
         >>> problem = PropagationProblem(
         ...     Speck(number_of_rounds=3), XOR_DIFFERENTIAL, maximum_weight=45
         ... )
-        >>> query = SpeckARXWindowDifferentialCPModel(
+        >>> query = SpeckARXWindowXorDifferentialCPModel(
         ...     problem, window_sizes=(3, 3, 3)
         ... ).cp_model()
         >>> "arx_window_left_0" in query.constraints[-3]
@@ -801,7 +801,7 @@ class SpeckARXWindowDifferentialCPModel(SpeckDifferentialCPModel):
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "SpeckARXWindowDifferentialCPModel",
+        "SpeckARXWindowXorDifferentialCPModel",
         "xor_differential_window_heuristic",
         "legacy per-round n-window pruning over exact modular-add constraints",
         "The heuristic is explicit and does not change the underlying transition semantics.",
@@ -2192,7 +2192,7 @@ class WordwiseDeterministicTruncatedCPModel:
         return self._sat_model.check_characteristic(trail)
 
 
-class WordDifferentialCPModel:
+class WordXorDifferentialCPModel:
     """Assemble exact XOR-differential Word graphs as portable MiniZinc.
 
     The complete reviewed Boolean relation is translated exactly to MiniZinc;
@@ -2201,7 +2201,7 @@ class WordDifferentialCPModel:
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordDifferentialCPModel(
+        >>> model = WordXorDifferentialCPModel(
         ...     ToySpeck(2), fixed_weight=1,
         ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
         ... )
@@ -2212,7 +2212,7 @@ class WordDifferentialCPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "WordDifferentialCPModel",
+        "WordXorDifferentialCPModel",
         "xor_differential",
         "exact MiniZinc translation of the reviewed Boolean Word-graph relation",
         "The portable CP formulation preserves the complete Boolean relation without a literature claim.",
@@ -2228,9 +2228,9 @@ class WordDifferentialCPModel:
         fixed_input_differences=None,
         output_difference=None,
     ) -> None:
-        from claasp.representations.constraints.sat.trails import WordDifferentialSATModel
+        from claasp.representations.constraints.sat.trails import WordXorDifferentialSATModel
 
-        self._sat_model = WordDifferentialSATModel(
+        self._sat_model = WordXorDifferentialSATModel(
             primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
@@ -2328,8 +2328,8 @@ class ModularAddBoomerangTrailCPModel:
         >>> options = dict(maximum_weight=3, nonzero_input="left",
         ...     fixed_input_differences={"right": 0})
         >>> model = ModularAddBoomerangTrailCPModel(
-        ...     WordDifferentialCPModel(add_graph("top"), **options),
-        ...     WordDifferentialCPModel(add_graph("bottom"), **options),
+        ...     WordXorDifferentialCPModel(add_graph("top"), **options),
+        ...     WordXorDifferentialCPModel(add_graph("bottom"), **options),
         ...     ModularAddBoomerangCPModel(4), lower_input="left")
         >>> "switch_delta_left" in model.cp_model().source()
         True
@@ -2355,10 +2355,10 @@ class ModularAddBoomerangTrailCPModel:
         lower_output_input=None,
         lower_right_input=None,
     ) -> None:
-        if not isinstance(upper, WordDifferentialCPModel) or not isinstance(
-            lower, WordDifferentialCPModel
+        if not isinstance(upper, WordXorDifferentialCPModel) or not isinstance(
+            lower, WordXorDifferentialCPModel
         ):
-            raise TypeError("upper and lower must be WordDifferentialCPModel instances")
+            raise TypeError("upper and lower must be WordXorDifferentialCPModel instances")
         if not isinstance(switch, ModularAddBoomerangCPModel):
             raise TypeError("switch must be a ModularAddBoomerangCPModel")
         full_switch = lower_output_input is not None or lower_right_input is not None
@@ -2607,13 +2607,13 @@ class SpeckBoomerangCPModel:
         ).primitive
         upper_fixed = {"key": 0} if "key" in upper_graph.graph.input_arrays else {}
         lower_fixed = {"key": 0} if "key" in lower_graph.graph.input_arrays else {}
-        upper = WordDifferentialCPModel(
+        upper = WordXorDifferentialCPModel(
             upper_graph,
             maximum_weight=upper_maximum_weight,
             nonzero_input="plaintext",
             fixed_input_differences=upper_fixed,
         )
-        lower = WordDifferentialCPModel(
+        lower = WordXorDifferentialCPModel(
             lower_graph,
             maximum_weight=lower_maximum_weight,
             fixed_input_differences=lower_fixed,
@@ -2695,9 +2695,9 @@ class SBoxBoomerangTrailCPModel:
     EXAMPLES::
 
         >>> from claasp.primitives import Present
-        >>> upper = PresentDifferentialCPModel(PropagationProblem(
+        >>> upper = PresentXorDifferentialCPModel(PropagationProblem(
         ...     Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8))
-        >>> lower = PresentDifferentialCPModel(PropagationProblem(
+        >>> lower = PresentXorDifferentialCPModel(PropagationProblem(
         ...     Present(number_of_rounds=2), XOR_DIFFERENTIAL, maximum_weight=8))
         >>> sbox = _round_sboxes(upper.primitive, 1)[0]
         >>> model = SBoxBoomerangTrailCPModel(
@@ -2715,10 +2715,10 @@ class SBoxBoomerangTrailCPModel:
     )
 
     def __init__(self, upper, lower, switch, *, nibble) -> None:
-        if not isinstance(upper, PresentDifferentialCPModel) or not isinstance(
-            lower, PresentDifferentialCPModel
+        if not isinstance(upper, PresentXorDifferentialCPModel) or not isinstance(
+            lower, PresentXorDifferentialCPModel
         ):
-            raise TypeError("upper and lower must be PresentDifferentialCPModel instances")
+            raise TypeError("upper and lower must be PresentXorDifferentialCPModel instances")
         if not isinstance(switch, SBoxBoomerangCPModel):
             raise TypeError("switch must be an SBoxBoomerangCPModel")
         if not isinstance(nibble, int) or isinstance(nibble, bool) or not 0 <= nibble < 16:
@@ -2857,13 +2857,13 @@ class SBoxBoomerangTrailCPModel:
         return SBoxBoomerangTrailResult(upper, switch, lower, self.nibble)
 
 
-class WordLinearCPModel:
+class WordXorLinearCPModel:
     """Assemble exact XOR-linear Word graphs as portable MiniZinc.
 
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
-        >>> model = WordLinearCPModel(
+        >>> model = WordXorLinearCPModel(
         ...     ToySpeck(3), maximum_weight=1,
         ...     fixed_inputs={"key": 0}, nonzero_input="plaintext",
         ... )
@@ -2874,7 +2874,7 @@ class WordLinearCPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "WordLinearCPModel",
+        "WordXorLinearCPModel",
         "xor_linear",
         "exact MiniZinc translation of the reviewed Boolean Word-graph relation",
         "The portable CP formulation preserves the complete Boolean relation without a literature claim.",
@@ -2889,9 +2889,9 @@ class WordLinearCPModel:
         fixed_input_masks=None,
         fixed_inputs=None,
     ) -> None:
-        from claasp.representations.constraints.sat.trails import WordLinearSATModel
+        from claasp.representations.constraints.sat.trails import WordXorLinearSATModel
 
-        self._sat_model = WordLinearSATModel(
+        self._sat_model = WordXorLinearSATModel(
             primitive,
             maximum_weight=maximum_weight,
             nonzero_input=nonzero_input,
@@ -2932,13 +2932,13 @@ class WordLinearCPModel:
         return self._sat_model.check_characteristic(trail)
 
 
-class WordDeterministicDifferentialLinearCPModel:
+class WordDeterministicXorDifferentialLinearCPModel:
     """Assemble deterministic-middle differential-linear trails as MiniZinc.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = WordDeterministicDifferentialLinearCPModel(
+        >>> model = WordDeterministicXorDifferentialLinearCPModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
         ...     differential_maximum_weight=16, linear_maximum_weight=16,
         ... )
@@ -2949,7 +2949,7 @@ class WordDeterministicDifferentialLinearCPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "WordDeterministicDifferentialLinearCPModel",
+        "WordDeterministicXorDifferentialLinearCPModel",
         "differential_linear",
         "exact MiniZinc translation of the reviewed deterministic-middle composition",
         "The portable CP formulation preserves the reviewed Boolean composition exactly.",
@@ -2967,10 +2967,10 @@ class WordDeterministicDifferentialLinearCPModel:
         output_mask=None,
     ) -> None:
         from claasp.representations.constraints.sat.trails import (
-            WordDeterministicDifferentialLinearSATModel,
+            WordDeterministicXorDifferentialLinearSATModel,
         )
 
-        self._sat_model = WordDeterministicDifferentialLinearSATModel(
+        self._sat_model = WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,
@@ -3212,13 +3212,13 @@ class SpeckSemiDeterministicTruncatedCPModel:
         return self._sat_model.decode_trail(assignment)
 
 
-class WordSemiDeterministicDifferentialLinearCPModel:
+class WordSemiDeterministicXorDifferentialLinearCPModel:
     """Assemble semi-deterministic differential-linear trails as MiniZinc.
 
     EXAMPLES::
 
         >>> from claasp.primitives import Speck
-        >>> model = WordSemiDeterministicDifferentialLinearCPModel(
+        >>> model = WordSemiDeterministicXorDifferentialLinearCPModel(
         ...     Speck(number_of_rounds=3), prefix_rounds=1, middle_rounds=1,
         ...     differential_maximum_weight=16,
         ...     middle_maximum_scaled_weight=None,
@@ -3231,7 +3231,7 @@ class WordSemiDeterministicDifferentialLinearCPModel:
 
     model_provenance = _direct_model(
         ConstraintBackend.CP,
-        "WordSemiDeterministicDifferentialLinearCPModel",
+        "WordSemiDeterministicXorDifferentialLinearCPModel",
         "differential_linear",
         "exact MiniZinc translation of the recovered semi-deterministic composition",
         "Mechanical MiniZinc lowering; the nested middle relation retains the unresolved source status.",
@@ -3250,10 +3250,10 @@ class WordSemiDeterministicDifferentialLinearCPModel:
         output_mask=None,
     ) -> None:
         from claasp.representations.constraints.sat.trails import (
-            WordSemiDeterministicDifferentialLinearSATModel,
+            WordSemiDeterministicXorDifferentialLinearSATModel,
         )
 
-        self._sat_model = WordSemiDeterministicDifferentialLinearSATModel(
+        self._sat_model = WordSemiDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,

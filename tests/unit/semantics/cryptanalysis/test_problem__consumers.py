@@ -1,8 +1,8 @@
 from claasp.components import BitVectorSBox
 from claasp.primitives import Present
-from claasp.representations.constraints.cp import PresentDifferentialCPModel
-from claasp.representations.constraints.milp import PresentDifferentialMILPModel
-from claasp.representations.constraints.smt import PresentDifferentialSMTModel
+from claasp.representations.constraints.cp import PresentXorDifferentialCPModel
+from claasp.representations.constraints.milp import PresentXorDifferentialMILPModel
+from claasp.representations.constraints.smt import PresentXorDifferentialSMTModel
 from claasp.semantics import XOR_DIFFERENTIAL
 from claasp.semantics.cryptanalysis import (
     ComponentSemanticsBinding,
@@ -43,8 +43,8 @@ def test_smt_milp_and_cp_composition_consume_the_same_component_override():
             maximum_weight=maximum_weight,
         )
 
-    PresentDifferentialSMTModel(problem_for("smt", 4)).smt_formula()
-    PresentDifferentialMILPModel(problem_for("milp")).milp_model()
-    PresentDifferentialCPModel(problem_for("cp", 4)).cp_model()
+    PresentXorDifferentialSMTModel(problem_for("smt", 4)).smt_formula()
+    PresentXorDifferentialMILPModel(problem_for("milp")).milp_model()
+    PresentXorDifferentialCPModel(problem_for("cp", 4)).cp_model()
 
     assert calls == {"smt": 256, "milp": 256, "cp": 256}

@@ -1,4 +1,4 @@
-Boolean polynomial systems and algebraic tests: introduction
-============================================================
+Boolean polynomial systems and algebraic tests: basic
+=====================================================
 
 **TODO**

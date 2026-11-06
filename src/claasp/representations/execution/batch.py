@@ -3,25 +3,7 @@
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
-from claasp.components.algebraic import Add, BinaryAffineMap, LinearMap, Multiply, Power
-from claasp.components.feedback import FeedbackRegister
-from claasp.components.structural import Constant, Identity, Permutation
-from claasp.components.substitution import BitVectorSBox, SBox
-from claasp.components.word import (
-    BitwiseAnd,
-    BitwiseNot,
-    BitwiseOr,
-    IDEAMultiply,
-    ModularAdd,
-    ModularMultiply,
-    ModularSubtract,
-    Rotate,
-    Shift,
-    VariableRotate,
-    VariableShift,
-    Xor,
-)
-from claasp.graph import Primitive
+from claasp.graph import GraphPropagation, Primitive
 from claasp.provenance import DriverIdentity, DriverKind, ResultProvenance
 from claasp.representations.execution.scalar import (
     EvaluationResult,
@@ -172,36 +154,35 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
         batch_size = batch_sizes.pop() if batch_sizes else 0
 
         values: dict[str, tuple[RuntimeValue, ...]] = {}
-        for name, unit_array in primitive.graph.input_arrays.items():
+        for name in primitive.graph.input_arrays:
             batch = tuple(tuple(item) for item in inputs[name])
-            for item in batch:
-                self._scalar_evaluator._validate_value(
-                    name, item, unit_array.array_type.unit_count, unit_array.array_type.unit_type
-                )
             values[name] = batch
 
         binding_caches = [{} for _ in range(batch_size)]
-        for component in primitive.graph.components:
-            selected = tuple(
-                tuple(
-                    primitive.graph.resolve_selection(
-                        item,
-                        {source_id: batch[lane] for source_id, batch in values.items()},
-                        binding_caches[lane],
-                    )
-                    for lane in range(batch_size)
+
+        def select(selection, current, cache):
+            return tuple(
+                primitive.graph.resolve_selection(
+                    selection,
+                    {source_id: batch[lane] for source_id, batch in current.items()},
+                    binding_caches[lane],
                 )
-                for item in component.inputs
+                for lane in range(batch_size)
             )
-            output = self._evaluate_component(component, selected, batch_size)
-            for item in output:
+
+        def validate(name, batch, array_type):
+            for item in batch:
                 self._scalar_evaluator._validate_value(
-                    component.component_id,
-                    item,
-                    component.output_type.unit_count,
-                    component.output_type.unit_type,
+                    name, item, array_type.unit_count, array_type.unit_type
                 )
-            values[component.component_id] = output
+
+        propagated = GraphPropagation(primitive).run(
+            values,
+            lambda component, operands: self._evaluate_component(component, operands, batch_size),
+            select=select,
+            validate=validate,
+        )
+        values = propagated.values
 
         results = []
         for lane in range(batch_size):
@@ -236,34 +217,8 @@ class TransposedBatchExecutionDriver(BatchExecutionDriver):
 
     def _evaluate_component(self, component, inputs, batch_size):
         scalar = self._scalar_evaluator
-        if isinstance(component, Constant):
-            return (component.values,) * batch_size
-        handlers = {
-            Identity: scalar._evaluate_identity,
-            Permutation: scalar._evaluate_permutation,
-            Add: scalar._evaluate_add,
-            Multiply: scalar._evaluate_multiply,
-            Power: scalar._evaluate_power,
-            LinearMap: scalar._evaluate_linear_map,
-            BinaryAffineMap: scalar._evaluate_binary_affine_map,
-            BitwiseAnd: scalar._evaluate_bitwise_and,
-            BitwiseNot: scalar._evaluate_bitwise_not,
-            BitwiseOr: scalar._evaluate_bitwise_or,
-            IDEAMultiply: scalar._evaluate_idea_multiply,
-            ModularAdd: scalar._evaluate_modular_add,
-            ModularMultiply: scalar._evaluate_modular_multiply,
-            ModularSubtract: scalar._evaluate_modular_subtract,
-            Rotate: scalar._evaluate_rotate,
-            Shift: scalar._evaluate_shift,
-            VariableRotate: scalar._evaluate_variable_rotate,
-            VariableShift: scalar._evaluate_variable_shift,
-            Xor: scalar._evaluate_xor,
-            SBox: scalar._evaluate_sbox,
-            BitVectorSBox: scalar._evaluate_bit_vector_sbox,
-            FeedbackRegister: scalar._evaluate_feedback_register,
-        }
         try:
-            handler = handlers[type(component)]
+            handler = scalar._handlers[type(component)]
         except KeyError as error:
             raise NotImplementedError(
                 f"TransposedBatchEvaluator does not support {type(component).__name__}"

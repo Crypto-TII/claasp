@@ -14,7 +14,7 @@ from time import monotonic
 from claasp.drivers.solvers import KissatSolver, MinisatSolver, SatStatus
 from claasp.primitives import Speck
 from claasp.representations.constraints.sat import (
-    SharedDifferencePairedWordDifferentialLinearSATModel,
+    SharedDifferencePairedWordXorDifferentialLinearSATModel,
 )
 
 
@@ -23,7 +23,7 @@ def _benchmark(solver_type, repeats):
     model = formula = None
     for _ in range(repeats):
         started = monotonic()
-        model = SharedDifferencePairedWordDifferentialLinearSATModel(
+        model = SharedDifferencePairedWordXorDifferentialLinearSATModel(
             Speck(number_of_rounds=3),
             prefix_rounds=2,
             paired_differential_maximum_weight=32,

@@ -8,13 +8,13 @@ from .trails import SBoxTransitionSemantics
 
 
 @dataclass(frozen=True, slots=True)
-class AESTwoRoundDifferentialEvidence:
+class AESTwoRoundXorDifferentialEvidence:
     """Exact evidence behind the legacy two-step active-S-box search.
 
     EXAMPLES::
 
-        >>> from claasp.semantics.cryptanalysis import AESTwoRoundDifferentialEvidence
-        >>> evidence = AESTwoRoundDifferentialEvidence(30, 5, (255,) * 4, 224, 1, 1)
+        >>> from claasp.semantics.cryptanalysis import AESTwoRoundXorDifferentialEvidence
+        >>> evidence = AESTwoRoundXorDifferentialEvidence(30, 5, (255,) * 4, 224, 1, 1)
         >>> (evidence.minimum_weight, evidence.minimum_active_sboxes)
         (30, 5)
     """
@@ -66,7 +66,7 @@ def legacy_wordwise_active_sbox_evidence() -> WordwiseActiveSBoxEvidence:
     return WordwiseActiveSBoxEvidence()
 
 
-def aes_two_round_differential_evidence(table) -> AESTwoRoundDifferentialEvidence:
+def aes_two_round_differential_evidence(table) -> AESTwoRoundXorDifferentialEvidence:
     """Derive the reduced two-round AES fixtures without a two-step heuristic.
 
     The first AES round includes MixColumns and the second is final-round style.
@@ -121,7 +121,7 @@ def aes_two_round_differential_evidence(table) -> AESTwoRoundDifferentialEvidenc
     if ddt[0xFF][0xFF] != 2:
         raise ValueError("the fixed full-activity AES transition is absent")
     full_weight = int(32 * -log2(ddt[0xFF][0xFF] / 256))
-    return AESTwoRoundDifferentialEvidence(
+    return AESTwoRoundXorDifferentialEvidence(
         minimum_weight=int(5 * -log2(maximum / 256)),
         minimum_active_sboxes=5,
         trails_per_minimum_activity_pattern=tuple(pattern_counts),

@@ -90,6 +90,138 @@ class Analysis:
     def __init__(self, primitive: Primitive) -> None:
         self.primitive = primitive
 
+    def circle_linear_trail_model(self, *, bibrace, input_name="plaintext", fixed_inputs=None):
+        """Derive a compatible circle subgroup search model from this graph.
+
+        The shared graph propagation runner derives affine state/key maps and
+        substitution boundaries. Unsupported structures raise explicitly; no
+        primitive-name dispatch or parallel primitive specification is used.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Craft
+            >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
+            >>> model = Craft(number_of_rounds=8).analysis.circle_linear_trail_model(
+            ...     bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)), fixed_inputs={"tweak": 0})
+            >>> model.trail(0x01190000).cost
+            8
+        """
+        from claasp.analysis._circle_graph import circle_linear_trail_model_from_graph
+
+        return circle_linear_trail_model_from_graph(
+            self.primitive, bibrace, input_name=input_name, fixed_inputs=fixed_inputs
+        )
+
+    def find_lowest_weight_circle_linear_trail(
+        self,
+        *,
+        bibrace,
+        input_name="plaintext",
+        fixed_inputs=None,
+        maximum_factor_states=1 << 16,
+    ):
+        """Find the lowest-weight circle-linear trail in the supported subgroup.
+
+        The operation is fixed for the search. The returned result retains
+        the representative trail, key class, search scope and optimum count.
+        Unsupported graphs or operations are rejected by the model; this
+        query does not claim unrestricted circle-linear optimality.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Craft
+            >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
+            >>> result = Craft(number_of_rounds=8).analysis.find_lowest_weight_circle_linear_trail(
+            ...     bibrace=BinaryBibrace(4, ((8, 0, 8, 5),), (5,)),
+            ...     fixed_inputs={"tweak": 0})
+            >>> result.cost, result.complete
+            (8, True)
+        """
+        return self.circle_linear_trail_model(
+            bibrace=bibrace,
+            input_name=input_name,
+            fixed_inputs=fixed_inputs,
+        ).search(maximum_factor_states=maximum_factor_states)
+
+    def find_lowest_weight_circle_differential_trail(
+        self,
+        *,
+        input_difference,
+        output_difference=None,
+        bibrace=None,
+        input_basis=None,
+        output_basis=None,
+        input_name="plaintext",
+        fixed_inputs=None,
+        boundaries=None,
+        boundary_bases=None,
+        maximum_inputs=1 << 16,
+    ):
+        """Find the lowest-weight concrete circle-differential trail by enumeration.
+
+        For a fixed nonzero input difference and fixed other inputs, maximising
+        actual trail probability minimises minus log2(probability). Published
+        round outputs or supplied boundaries define the observations. Returns
+        None for an impossible constrained endpoint. The exact input-domain
+        budget is enforced before execution; this is not a solver query or a
+        search over all input differences. Omitting operations selects XOR.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import BitVectorSBox
+            >>> result = BitVectorSBox(2, (0, 1, 3, 2)).analysis.find_lowest_weight_circle_differential_trail(
+            ...     input_name="input", input_difference=1)
+            >>> result.differences, result.probability
+            ((1, 1), Fraction(1, 1))
+        """
+        return self.circle_differential(
+            bibrace=bibrace,
+            input_basis=input_basis,
+            output_basis=output_basis,
+            input_name=input_name,
+        ).best_trail(
+            input_difference,
+            output_difference,
+            fixed_inputs=fixed_inputs,
+            boundaries=boundaries,
+            boundary_bases=boundary_bases,
+            maximum_inputs=maximum_inputs,
+        )
+
+    def circle_linear(self, **configuration):
+        """Measure binary circle-linear endpoint correlations with explicit bases.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Craft
+            >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
+            >>> operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+            >>> a = Craft(number_of_rounds=8).analysis.circle_linear(bibrace=operation)
+            >>> a.input_basis.width
+            64
+        """
+        from claasp.analysis.circle_linear import CircleLinearAnalysis
+
+        return CircleLinearAnalysis(self.primitive, **configuration)
+
+    def circle_differential(self, **configuration):
+        """Measure circle differences and search bounded concrete trails.
+
+        Uses the same binary-circle boundary validation and concrete graph
+        evaluator as circle-linear endpoint analysis. Keys and tweaks are
+        fixed explicitly; exact searches enumerate the complete input domain.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import BitVectorSBox
+            >>> a = BitVectorSBox(2, (0, 1, 3, 2)).analysis.circle_differential(input_name='input')
+            >>> a.probability(1, 1).probability
+            Fraction(1, 1)
+        """
+        from claasp.analysis.circle_differential import CircleDifferentialAnalysis
+
+        return CircleDifferentialAnalysis(self.primitive, **configuration)
+
     def quasidifferential(self):
         """Inspect signed trails and recover exact fixed-key probabilities.
 
@@ -622,10 +754,10 @@ class Analysis:
             'heuristic'
         """
         from claasp.representations.execution.continuous import (
-            ContinuousDifferentialExecutionDriver,
+            ContinuousXorDifferentialExecutionDriver,
         )
 
-        return ContinuousDifferentialExecutionDriver().evaluate(
+        return ContinuousXorDifferentialExecutionDriver().evaluate(
             self.primitive, inputs, tolerance=tolerance
         )
 
@@ -700,7 +832,7 @@ class Analysis:
             limit=limit,
         )
 
-    def find_optimal_differential_linear_trail(
+    def find_optimal_xor_differential_linear_trail(
         self,
         *,
         prefix_rounds=None,
@@ -718,13 +850,13 @@ class Analysis:
         EXAMPLES::
 
             >>> from claasp.primitives import ToySpeck
-            >>> result = ToySpeck(3).analysis.find_optimal_differential_linear_trail().require_complete()  # doctest: +SKIP
+            >>> result = ToySpeck(3).analysis.find_optimal_xor_differential_linear_trail().require_complete()  # doctest: +SKIP
             >>> result.partition, result.score  # doctest: +SKIP
             ((1, 1, 1), Fraction(1, 1))
         """
-        from claasp.analysis.composed_search import find_optimal_differential_linear_trail
+        from claasp.analysis.composed_search import find_optimal_xor_differential_linear_trail
 
-        return find_optimal_differential_linear_trail(
+        return find_optimal_xor_differential_linear_trail(
             self.primitive,
             prefix_rounds=prefix_rounds,
             middle_rounds=middle_rounds,
@@ -1432,7 +1564,7 @@ class Analysis:
         output_difference=None,
     ):
         from claasp.analysis.trail_search import resolve_input_policy
-        from claasp.representations.constraints.smt import WordDifferentialSMTModel
+        from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
 
         if fixed_input_differences is None:
             fixed_input_differences = (
@@ -1445,7 +1577,7 @@ class Analysis:
             nonzero_input,
             fixed_input_differences,
         )
-        model = WordDifferentialSMTModel(
+        model = WordXorDifferentialSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
@@ -1518,7 +1650,7 @@ class Analysis:
         fixed_inputs=None,
     ):
         from claasp.analysis.trail_search import resolve_input_policy
-        from claasp.representations.constraints.smt import WordLinearSMTModel
+        from claasp.representations.constraints.smt import WordXorLinearSMTModel
 
         policy = resolve_input_policy(
             self.primitive,
@@ -1532,7 +1664,7 @@ class Analysis:
                 if "key" in self.primitive.graph.input_arrays and nonzero_input != "key"
                 else {}
             )
-        model = WordLinearSMTModel(
+        model = WordXorLinearSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
             minimum_weight=minimum_weight,

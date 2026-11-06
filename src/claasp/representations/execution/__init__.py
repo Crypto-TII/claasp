@@ -12,9 +12,9 @@ from claasp.representations.execution.boolean_degree import (
     BooleanDegreeResult,
 )
 from claasp.representations.execution.continuous import (
-    ContinuousDifferentialExecutionDriver,
     ContinuousEvaluationResult,
     ContinuousExecutionDriver,
+    ContinuousXorDifferentialExecutionDriver,
 )
 from claasp.representations.execution.scalar import (
     EvaluationResult,
@@ -36,7 +36,7 @@ __all__ = [
     "BooleanSymbolicResult",
     "ContinuousEvaluationResult",
     "ContinuousExecutionDriver",
-    "ContinuousDifferentialExecutionDriver",
+    "ContinuousXorDifferentialExecutionDriver",
     "EvaluationResult",
     "ScalarEvaluator",
     "ScalarExecutionDriver",

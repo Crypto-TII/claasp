@@ -227,12 +227,12 @@ class ModularSubtractNativeXorSATModel(ModularSubtractFunctionalSATModel):
     )
 
 
-class ModularAddDifferentialSATModel:
+class ModularAddXorDifferentialSATModel:
     """Exact paired-carry CNF support and unary XOR-differential weights.
 
     EXAMPLES::
 
-        >>> model = ModularAddDifferentialSATModel(4)
+        >>> model = ModularAddXorDifferentialSATModel(4)
         >>> formula = model.cnf_formula()
         >>> formula.variables[-3:]
         ('weight_0', 'weight_1', 'weight_2')
@@ -242,7 +242,7 @@ class ModularAddDifferentialSATModel:
 
     model_provenance = _verified_model(
         ConstraintBackend.SAT,
-        "ModularAddDifferentialSATModel",
+        "ModularAddXorDifferentialSATModel",
         "xor_differential",
         "paired-carry Boolean support with unary weight",
         "https://eprint.iacr.org/2001/001",
@@ -252,10 +252,10 @@ class ModularAddDifferentialSATModel:
 
     def __init__(self, width: int) -> None:
         from claasp.representations.constraints.smt.components.modular_add import (
-            ModularAddDifferentialSMTModel,
+            ModularAddXorDifferentialSMTModel,
         )
 
-        self._shared = ModularAddDifferentialSMTModel(width)
+        self._shared = ModularAddXorDifferentialSMTModel(width)
         self.semantics = self._shared.semantics
         self.width = self._shared.width
 
@@ -627,12 +627,12 @@ class ModularSubtractDeterministicTruncatedSATModel(ModularAddDeterministicTrunc
         return left, right, output
 
 
-class ModularAddLinearSATModel:
+class ModularAddXorLinearSATModel:
     """Exact modular-add XOR-linear mask recurrence in CNF.
 
     EXAMPLES::
 
-        >>> model = ModularAddLinearSATModel(4)
+        >>> model = ModularAddXorLinearSATModel(4)
         >>> formula = model.cnf_formula(left_mask=1, right_mask=0, output_mask=1)
         >>> (formula.variables[-1], formula.provenance[-1])
         ('weight_3', 'fixed_output')
@@ -640,7 +640,7 @@ class ModularAddLinearSATModel:
 
     model_provenance = _verified_model(
         ConstraintBackend.SAT,
-        "ModularAddLinearSATModel",
+        "ModularAddXorLinearSATModel",
         "xor_linear",
         "Boolean mask recurrence with unary weight",
         "10.1007/978-3-319-39555-5_26",
@@ -650,10 +650,10 @@ class ModularAddLinearSATModel:
 
     def __init__(self, width: int) -> None:
         from claasp.representations.constraints.smt.components.modular_add import (
-            ModularAddLinearSMTModel,
+            ModularAddXorLinearSMTModel,
         )
 
-        self._shared = ModularAddLinearSMTModel(width)
+        self._shared = ModularAddXorLinearSMTModel(width)
         self.semantics = self._shared.semantics
         self.width = self._shared.width
 
@@ -705,10 +705,10 @@ def _integer(assignment, prefix: str, width: int) -> int:
 
 
 __all__ = [
-    "ModularAddDifferentialSATModel",
+    "ModularAddXorDifferentialSATModel",
     "ModularAddDeterministicTruncatedSATModel",
     "ModularAddFunctionalSATModel",
-    "ModularAddLinearSATModel",
+    "ModularAddXorLinearSATModel",
     "ModularAddNativeXorSATModel",
     "ModularAddNWindowSATModel",
     "ModularSubtractDeterministicTruncatedSATModel",

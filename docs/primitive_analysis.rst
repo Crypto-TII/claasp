@@ -43,7 +43,7 @@ parameter comparisons belong in the matching advanced page. Runnable scripts
 are exercised in CI; outputs and figures appear next to their generating calls.
 
 Explore :doc:`component_analysis`, :doc:`diffusion_and_randomness`, or
-:doc:`neural_distinguishers`. Each topic groups its introductory and advanced
+:doc:`neural_distinguishers`. Each topic groups its basic and advanced
 walkthroughs together. :doc:`basic_algebraic_analysis` and
 :doc:`basic_trail_search` group their respective topics. **TODO** marks a missing guide or a specific
 missing example, rather than existing content awaiting editorial changes.
@@ -51,7 +51,7 @@ missing example, rather than existing content awaiting editorial changes.
 Exploring an analysis in depth
 ------------------------------
 
-The introduction answers one question with a short script using defaults.
+The basic guide answers one question with a short script using defaults.
 The matching advanced walkthrough explores parameters, measured quantities,
 criteria and alternative reports. Keep the analysis result and reuse it for
 reports, derived quantities, plots and exports wherever the analysis permits.

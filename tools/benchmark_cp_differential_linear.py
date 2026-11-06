@@ -11,7 +11,7 @@ from time import monotonic
 
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.primitives import Speck
-from claasp.representations.constraints.cp import WordDeterministicDifferentialLinearCPModel
+from claasp.representations.constraints.cp import WordDeterministicXorDifferentialLinearCPModel
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     model = query = None
     for _ in range(args.repeats):
         started = monotonic()
-        model = WordDeterministicDifferentialLinearCPModel(
+        model = WordDeterministicXorDifferentialLinearCPModel(
             Speck(number_of_rounds=3),
             prefix_rounds=1,
             middle_rounds=1,

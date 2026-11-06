@@ -10,22 +10,22 @@ from claasp.primitives import Speck, ToySpeck
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     NWindowSATStrategy,
-    SharedDifferencePairedWordDifferentialLinearSATModel,
-    SharedDifferencePairedWordDifferentialSATModel,
+    SharedDifferencePairedWordXorDifferentialLinearSATModel,
+    SharedDifferencePairedWordXorDifferentialSATModel,
     SpeckImpossibleSATModel,
     SpeckProbabilisticTruncatedSATModel,
     SpeckSemiDeterministicTruncatedSATModel,
-    WordDeterministicDifferentialLinearSATModel,
     WordDeterministicTruncatedSATModel,
-    WordDifferentialSATModel,
+    WordDeterministicXorDifferentialLinearSATModel,
     WordImpossibleSATModel,
-    WordLinearSATModel,
-    WordSemiDeterministicDifferentialLinearSATModel,
+    WordSemiDeterministicXorDifferentialLinearSATModel,
+    WordXorDifferentialSATModel,
+    WordXorLinearSATModel,
     find_word_impossible_sat,
 )
 from claasp.representations.constraints.smt import (
-    WordDifferentialSMTModel,
-    WordLinearSMTModel,
+    WordXorDifferentialSMTModel,
+    WordXorLinearSMTModel,
 )
 from claasp.semantics.cryptanalysis import TruncatedXorDifference
 from claasp.unit_types import Word
@@ -45,8 +45,8 @@ def _primitive(component):
 
 def test_differential_sat_assembly_matches_shared_boolean_formula():
     primitive = _primitive(BitwiseAnd)
-    sat = WordDifferentialSATModel(primitive, fixed_weight=2)
-    smt = WordDifferentialSMTModel(primitive, fixed_weight=2)
+    sat = WordXorDifferentialSATModel(primitive, fixed_weight=2)
+    smt = WordXorDifferentialSMTModel(primitive, fixed_weight=2)
     formula, shared = sat.cnf_formula(), smt.smt_formula()
     assert (formula.variables, formula.clauses, formula.provenance) == (
         shared.variables,
@@ -64,7 +64,7 @@ def test_differential_sat_assembly_matches_shared_boolean_formula():
 
 
 def test_shared_difference_paired_sat_recovers_modadd_exclusion_and_weight_bound():
-    model = SharedDifferencePairedWordDifferentialSATModel(
+    model = SharedDifferencePairedWordXorDifferentialSATModel(
         ToySpeck(2),
         maximum_total_weight=2,
         fixed_input_differences={"key": 0},
@@ -82,15 +82,15 @@ def test_shared_difference_paired_sat_recovers_modadd_exclusion_and_weight_bound
 
 def test_shared_difference_paired_sat_validates_total_weight_configuration():
     with pytest.raises(ValueError, match="choose"):
-        SharedDifferencePairedWordDifferentialSATModel(
+        SharedDifferencePairedWordXorDifferentialSATModel(
             ToySpeck(2), maximum_total_weight=1, fixed_total_weight=1
         )
     with pytest.raises(ValueError, match="nonnegative"):
-        SharedDifferencePairedWordDifferentialSATModel(ToySpeck(2), maximum_total_weight=True)
+        SharedDifferencePairedWordXorDifferentialSATModel(ToySpeck(2), maximum_total_weight=True)
 
 
 def test_shared_difference_paired_differential_linear_sat_assembles_both_boundaries():
-    model = SharedDifferencePairedWordDifferentialLinearSATModel(
+    model = SharedDifferencePairedWordXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=2,
         paired_differential_maximum_weight=32,
@@ -108,14 +108,14 @@ def test_shared_difference_paired_differential_linear_sat_assembles_both_boundar
 
 def test_shared_difference_paired_differential_linear_sat_validates_configuration():
     with pytest.raises(ValueError, match="both be nonempty"):
-        SharedDifferencePairedWordDifferentialLinearSATModel(
+        SharedDifferencePairedWordXorDifferentialLinearSATModel(
             Speck(number_of_rounds=3),
             prefix_rounds=3,
             paired_differential_maximum_weight=1,
             linear_maximum_weight=1,
         )
     with pytest.raises(ValueError, match="choose"):
-        SharedDifferencePairedWordDifferentialLinearSATModel(
+        SharedDifferencePairedWordXorDifferentialLinearSATModel(
             Speck(number_of_rounds=3),
             prefix_rounds=2,
             paired_differential_maximum_weight=1,
@@ -127,8 +127,8 @@ def test_shared_difference_paired_differential_linear_sat_validates_configuratio
 
 def test_linear_sat_assembly_matches_shared_boolean_formula():
     primitive = _primitive(Xor)
-    sat = WordLinearSATModel(primitive, maximum_weight=0, nonzero_input="key")
-    smt = WordLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
+    sat = WordXorLinearSATModel(primitive, maximum_weight=0, nonzero_input="key")
+    smt = WordXorLinearSMTModel(primitive, maximum_weight=0, nonzero_input="key")
     formula, shared = sat.cnf_formula(), smt.smt_formula()
     assert (formula.variables, formula.clauses, formula.provenance) == (
         shared.variables,
@@ -141,11 +141,13 @@ def test_linear_sat_assembly_matches_shared_boolean_formula():
     assert trail.output_mask == 3 and sat.check_characteristic(trail)
 
 
-@pytest.mark.parametrize("model_type", [WordDifferentialSATModel, WordLinearSATModel])
+@pytest.mark.parametrize("model_type", [WordXorDifferentialSATModel, WordXorLinearSATModel])
 def test_sat_enumeration_rejects_nonpositive_or_boolean_limits(model_type):
     primitive = _primitive(Xor)
     options = (
-        {"maximum_weight": 0} if model_type is WordDifferentialSATModel else {"maximum_weight": 0}
+        {"maximum_weight": 0}
+        if model_type is WordXorDifferentialSATModel
+        else {"maximum_weight": 0}
     )
     model = model_type(primitive, **options)
     with pytest.raises(ValueError, match="positive integer"):
@@ -154,11 +156,11 @@ def test_sat_enumeration_rejects_nonpositive_or_boolean_limits(model_type):
 
 def test_n_window_strategy_is_opt_in_and_supports_legacy_selectors():
     primitive = ToySpeck(2)
-    exact = WordDifferentialSATModel(primitive, fixed_weight=1).cnf_formula()
-    uniform = WordDifferentialSATModel(
+    exact = WordXorDifferentialSATModel(primitive, fixed_weight=1).cnf_formula()
+    uniform = WordXorDifferentialSATModel(
         primitive, fixed_weight=1, n_window=NWindowSATStrategy(2)
     ).cnf_formula()
-    by_round = WordDifferentialSATModel(
+    by_round = WordXorDifferentialSATModel(
         primitive,
         fixed_weight=1,
         n_window=NWindowSATStrategy(by_round=(2, 2)),
@@ -168,7 +170,7 @@ def test_n_window_strategy_is_opt_in_and_supports_legacy_selectors():
         for component in primitive.graph.components
         if isinstance(component, ModularAdd)
     }
-    by_component = WordDifferentialSATModel(
+    by_component = WordXorDifferentialSATModel(
         primitive,
         fixed_weight=1,
         n_window=NWindowSATStrategy(by_component=component_windows),
@@ -182,7 +184,7 @@ def test_n_window_strategy_is_opt_in_and_supports_legacy_selectors():
 
 
 def test_n_window_strategy_rejects_incomplete_component_configuration():
-    model = WordDifferentialSATModel(
+    model = WordXorDifferentialSATModel(
         ToySpeck(2),
         fixed_weight=1,
         n_window=NWindowSATStrategy(by_component={"unknown": 2}),
@@ -318,7 +320,7 @@ def test_speck_semi_deterministic_sat_reuses_graph_assembly_compactly():
 
 
 def test_deterministic_differential_linear_sat_assembles_three_round_slices():
-    model = WordDeterministicDifferentialLinearSATModel(
+    model = WordDeterministicXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -339,7 +341,7 @@ def test_deterministic_differential_linear_sat_assembles_three_round_slices():
 def test_deterministic_differential_linear_sat_validates_partition_and_bounds():
     primitive = Speck(number_of_rounds=3)
     with pytest.raises(ValueError, match="positive"):
-        WordDeterministicDifferentialLinearSATModel(
+        WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=0,
             middle_rounds=1,
@@ -347,7 +349,7 @@ def test_deterministic_differential_linear_sat_validates_partition_and_bounds():
             linear_maximum_weight=1,
         )
     with pytest.raises(ValueError, match="all be nonempty"):
-        WordDeterministicDifferentialLinearSATModel(
+        WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=1,
             middle_rounds=2,
@@ -355,7 +357,7 @@ def test_deterministic_differential_linear_sat_validates_partition_and_bounds():
             linear_maximum_weight=1,
         )
     with pytest.raises(ValueError, match="nonnegative"):
-        WordDeterministicDifferentialLinearSATModel(
+        WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=1,
             middle_rounds=1,
@@ -365,7 +367,7 @@ def test_deterministic_differential_linear_sat_validates_partition_and_bounds():
 
 
 def test_semi_deterministic_differential_linear_sat_assembles_recovered_middle():
-    model = WordSemiDeterministicDifferentialLinearSATModel(
+    model = WordSemiDeterministicXorDifferentialLinearSATModel(
         Speck(number_of_rounds=3),
         prefix_rounds=1,
         middle_rounds=1,
@@ -391,7 +393,7 @@ def test_semi_deterministic_differential_linear_sat_assembles_recovered_middle()
 
 def test_semi_deterministic_differential_linear_sat_validates_configuration():
     with pytest.raises(NotImplementedError, match="supports Speck"):
-        WordSemiDeterministicDifferentialLinearSATModel(
+        WordSemiDeterministicXorDifferentialLinearSATModel(
             ToySpeck(3),
             prefix_rounds=1,
             middle_rounds=1,

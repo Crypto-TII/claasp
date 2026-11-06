@@ -1,29 +1,29 @@
 {
   "counts_by_code": {
-    "arg-type": 109,
-    "assignment": 75,
+    "arg-type": 102,
+    "assignment": 70,
     "attr-defined": 141,
     "call-arg": 7,
-    "call-overload": 82,
+    "call-overload": 81,
     "dict-item": 28,
     "has-type": 22,
-    "index": 62,
+    "index": 53,
     "list-item": 4,
-    "misc": 26,
+    "misc": 24,
     "no-redef": 1,
-    "operator": 79,
-    "return-value": 3,
+    "operator": 69,
+    "return-value": 1,
     "type-var": 2,
     "union-attr": 68,
-    "var-annotated": 134
+    "var-annotated": 118
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
-    "src/claasp": 674,
+    "src/claasp": 622,
     "tests": 133,
     "tools": 36
   },
-  "diagnostic_count": 843,
+  "diagnostic_count": 791,
   "diagnostics": [
     {
       "code": "operator",
@@ -105,7 +105,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 150,
+      "line": 282,
       "message": "Need type annotation for \"results\" (hint: \"results: list[<type>] = ...\")",
       "path": "src/claasp/analysis/facade.py"
     },
@@ -530,58 +530,9 @@
       "path": "src/claasp/graph/primitive.py"
     },
     {
-      "code": "operator",
-      "column": 34,
-      "line": 1350,
-      "message": "Unsupported operand types for + (\"int\" and \"None\")",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 54,
-      "line": 1351,
-      "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
-      "code": "misc",
-      "column": 25,
-      "line": 1355,
-      "message": "Generator has incompatible item type \"int\"; expected \"bool\"",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
-      "code": "operator",
-      "column": 38,
-      "line": 1355,
-      "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 1363,
-      "message": "Need type annotation for \"result_units\" (hint: \"result_units: list[<type>] = ...\")",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
-      "code": "operator",
-      "column": 39,
-      "line": 1367,
-      "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 46,
-      "line": 1368,
-      "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
-      "path": "src/claasp/graph/primitive.py"
-    },
-    {
       "code": "index",
       "column": 26,
-      "line": 1501,
+      "line": 1434,
       "message": "Invalid index type \"str | None\" for \"dict[str, Selection]\"; expected type \"str\"",
       "path": "src/claasp/graph/primitive.py"
     },
@@ -609,56 +560,56 @@
     {
       "code": "assignment",
       "column": 17,
-      "line": 785,
+      "line": 777,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, str, str, str]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "assignment",
       "column": 17,
-      "line": 851,
+      "line": 843,
       "message": "Incompatible types in assignment (expression has type \"tuple[str, str, str, str]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 1071,
+      "line": 1063,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"AvalancheResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 1071,
+      "line": 1063,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"ContinuousHeuristicResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 1071,
+      "line": 1063,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"DieharderReport | StatisticalTestRun[DieharderReport]\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 1071,
+      "line": 1063,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"ExecutionTrace\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 1071,
+      "line": 1063,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"NISTFinalReport | StatisticalTestRun[NISTFinalReport]\"",
       "path": "src/claasp/presentation/adapters.py"
     },
     {
       "code": "arg-type",
       "column": 53,
-      "line": 1071,
+      "line": 1063,
       "message": "Argument 1 has incompatible type \"Trail | TrailSearchResult | ExecutionTrace | AvalancheResult | DieharderReport | NISTFinalReport | ContinuousHeuristicResult\"; expected \"Trail | TrailSearchResult\"",
       "path": "src/claasp/presentation/adapters.py"
     },
@@ -3136,77 +3087,63 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 45,
+      "line": 46,
       "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/lowering.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 195,
-      "message": "Need type annotation for \"uses\" (hint: \"uses: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/constraints/milp/lowering.py"
-    },
-    {
-      "code": "assignment",
-      "column": 21,
-      "line": 238,
-      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"list[Any]\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 44,
-      "line": 267,
+      "line": 264,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 31,
-      "line": 268,
+      "line": 265,
       "message": "Unsupported operand types for * (\"int\" and \"None\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 47,
-      "line": 269,
+      "line": 266,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 145,
+      "line": 144,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 26,
-      "line": 156,
+      "line": 155,
       "message": "Need type annotation for \"component_id\"",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 21,
-      "line": 442,
+      "line": 418,
       "message": "Need type annotation for \"coefficients\" (hint: \"coefficients: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 1380,
+      "line": 1358,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 1456,
+      "line": 1434,
       "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/trails.py"
     },
@@ -3218,80 +3155,31 @@
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 89,
-      "message": "Need type annotation for \"variables\" (hint: \"variables: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 36,
-      "line": 97,
-      "message": "Argument 1 to \"variable_name\" of \"PrimeFieldPolynomialModel\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 104,
-      "message": "Need type annotation for \"equations\" (hint: \"equations: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 105,
-      "message": "Need type annotation for \"provenance\" (hint: \"provenance: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
       "code": "arg-type",
       "column": 33,
-      "line": 111,
+      "line": 113,
       "message": "Argument 1 to \"PolynomialSystem\" has incompatible type \"UnitType\"; expected \"PrimeField\"",
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
       "code": "attr-defined",
       "column": 69,
-      "line": 125,
+      "line": 127,
       "message": "\"UnitType\" has no attribute \"modulus\"",
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
       "code": "attr-defined",
       "column": 28,
-      "line": 130,
+      "line": 132,
       "message": "\"object\" has no attribute \"component_id\"",
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
       "code": "attr-defined",
       "column": 35,
-      "line": 131,
+      "line": 133,
       "message": "\"object\" has no attribute \"output_type\"",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
-      "code": "return-value",
-      "column": 20,
-      "line": 143,
-      "message": "Incompatible return value type (got \"tuple[tuple[Polynomial, ...], tuple[str | None, ...]]\", expected \"tuple[tuple[Polynomial, ...], tuple[str, ...]]\")",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
-      "code": "misc",
-      "column": 17,
-      "line": 160,
-      "message": "Generator has incompatible item type \"Polynomial | Literal[0]\"; expected \"Polynomial\"",
-      "path": "src/claasp/representations/constraints/polynomial/lowering.py"
-    },
-    {
-      "code": "return-value",
-      "column": 16,
-      "line": 166,
-      "message": "Incompatible return value type (got \"tuple[tuple[Polynomial, ...], tuple[str | None, ...]]\", expected \"tuple[tuple[Polynomial, ...], tuple[str, ...]]\")",
       "path": "src/claasp/representations/constraints/polynomial/lowering.py"
     },
     {
@@ -3407,23 +3295,9 @@
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
     {
-      "code": "operator",
-      "column": 42,
-      "line": 273,
-      "message": "Unsupported operand types for + (\"int\" and \"None\")",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 92,
-      "line": 273,
-      "message": "Argument 3 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
-      "path": "src/claasp/representations/constraints/sat/lowering.py"
-    },
-    {
       "code": "assignment",
       "column": 21,
-      "line": 307,
+      "line": 308,
       "message": "Incompatible types in assignment (expression has type \"ModularMultiplyFunctionalSATModel\", variable has type \"WiringFunctionalSATModel | BooleanFunctionalSATModel | ModularAddFunctionalSATModel | ModularSubtractFunctionalSATModel | SBoxFunctionalSATModel | VariableWiringFunctionalSATModel\")",
       "path": "src/claasp/representations/constraints/sat/lowering.py"
     },
@@ -3436,163 +3310,58 @@
     },
     {
       "code": "var-annotated",
-      "column": 15,
-      "line": 50,
-      "message": "Need type annotation for \"grouped\"",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
       "column": 9,
-      "line": 142,
+      "line": 128,
       "message": "Need type annotation for \"weight_names\" (hint: \"weight_names: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 187,
+      "line": 173,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 26,
-      "line": 197,
+      "line": 183,
       "message": "Need type annotation for \"component_id\"",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 297,
+      "line": 283,
       "message": "Need type annotation for \"weight_names\" (hint: \"weight_names: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 36,
-      "line": 336,
+      "line": 322,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, tuple[Any, ...], tuple[Any, ...]], ...]\", variable has type \"tuple[()]\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "var-annotated",
       "column": 26,
-      "line": 346,
+      "line": 332,
       "message": "Need type annotation for \"component_id\"",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 469,
+      "line": 430,
       "message": "Item \"None\" of \"str | None\" has no attribute \"startswith\"",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
       "code": "assignment",
       "column": 24,
-      "line": 641,
+      "line": 602,
       "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", variable has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 21,
-      "line": 889,
-      "message": "Need type annotation for \"consumers\"",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 25,
-      "line": 890,
-      "message": "Need type annotation for \"weights\" (hint: \"weights: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "assignment",
-      "column": 45,
-      "line": 909,
-      "message": "Incompatible types in assignment (expression has type \"tuple[tuple[Any, ...], ...]\", target has type \"tuple[()]\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "assignment",
-      "column": 21,
-      "line": 941,
-      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "index",
-      "column": 56,
-      "line": 942,
-      "message": "Value of type \"int\" is not indexable",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 36,
-      "line": 945,
-      "message": "Argument 1 to \"append\" of \"list\" has incompatible type \"tuple[str | None, int, Any, None]\"; expected \"tuple[str | None, int, Any, str]\"",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "assignment",
-      "column": 17,
-      "line": 947,
-      "message": "Incompatible types in assignment (expression has type \"tuple[Any, ...]\", variable has type \"int\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 43,
-      "line": 948,
-      "message": "No overload variant of \"zip\" matches argument types \"int\", \"tuple[Any, ...]\"",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 24,
-      "line": 1127,
-      "message": "Need type annotation for \"names\"",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 1131,
-      "message": "Need type annotation for \"edge_names\"",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 1248,
-      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 1248,
-      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 1822,
-      "message": "Need type annotation for \"trails\" (hint: \"trails: list[<type>] = ...\")",
-      "path": "src/claasp/representations/constraints/smt/trails.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 17,
-      "line": 1822,
-      "message": "Need type annotation for \"blocks\" (hint: \"blocks: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/smt/trails.py"
     },
     {
@@ -3640,356 +3409,279 @@
     {
       "code": "var-annotated",
       "column": 26,
-      "line": 183,
+      "line": 161,
       "message": "Need type annotation for \"binding_caches\"",
       "path": "src/claasp/representations/execution/batch.py"
     },
     {
-      "code": "arg-type",
-      "column": 21,
-      "line": 199,
-      "message": "Argument 1 to \"_validate_value\" of \"ScalarExecutionDriver\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/execution/batch.py"
-    },
-    {
-      "code": "index",
-      "column": 20,
-      "line": 204,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[tuple[int, ...], ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/batch.py"
-    },
-    {
-      "code": "operator",
-      "column": 19,
-      "line": 272,
-      "message": "Cannot call function of unknown type",
-      "path": "src/claasp/representations/execution/batch.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 87,
-      "message": "Need type annotation for \"binding_cache\" (hint: \"binding_cache: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/execution/boolean_degree.py"
-    },
-    {
-      "code": "index",
-      "column": 28,
-      "line": 96,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[_Degree | tuple[_Degree, ...], ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/boolean_degree.py"
-    },
-    {
-      "code": "index",
-      "column": 28,
-      "line": 100,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[_Degree | tuple[_Degree, ...], ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/boolean_degree.py"
-    },
-    {
-      "code": "index",
-      "column": 24,
-      "line": 111,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[_Degree | tuple[_Degree, ...], ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/boolean_degree.py"
-    },
-    {
-      "code": "index",
-      "column": 24,
-      "line": 117,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[_Degree | tuple[_Degree, ...], ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/boolean_degree.py"
-    },
-    {
-      "code": "index",
-      "column": 24,
-      "line": 130,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[_Degree | tuple[_Degree, ...], ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/boolean_degree.py"
-    },
-    {
       "code": "union-attr",
       "column": 44,
-      "line": 162,
+      "line": 159,
       "message": "Item \"tuple[_Degree, ...]\" of \"_Degree | tuple[_Degree, ...]\" has no attribute \"value\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "union-attr",
       "column": 73,
-      "line": 162,
+      "line": 159,
       "message": "Item \"tuple[_Degree, ...]\" of \"_Degree | tuple[_Degree, ...]\" has no attribute \"support\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "misc",
       "column": 22,
-      "line": 163,
+      "line": 160,
       "message": "Generator has incompatible item type \"_Degree | tuple[_Degree, ...]\"; expected \"_Degree\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "arg-type",
       "column": 69,
-      "line": 163,
+      "line": 160,
       "message": "Argument 2 to \"zip\" has incompatible type \"_Degree | tuple[_Degree, ...]\"; expected \"Iterable[_Degree]\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "union-attr",
       "column": 38,
-      "line": 168,
+      "line": 165,
       "message": "Item \"tuple[_Degree, ...]\" of \"_Degree | tuple[_Degree, ...]\" has no attribute \"support\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "union-attr",
       "column": 40,
-      "line": 171,
+      "line": 168,
       "message": "Item \"tuple[_Degree, ...]\" of \"_Degree | tuple[_Degree, ...]\" has no attribute \"value\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "union-attr",
       "column": 53,
-      "line": 172,
+      "line": 169,
       "message": "Item \"tuple[_Degree, ...]\" of \"_Degree | tuple[_Degree, ...]\" has no attribute \"value\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "misc",
       "column": 22,
-      "line": 175,
+      "line": 172,
       "message": "Generator has incompatible item type \"_Degree | tuple[_Degree, ...]\"; expected \"_Degree\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "arg-type",
       "column": 69,
-      "line": 175,
+      "line": 172,
       "message": "Argument 2 to \"zip\" has incompatible type \"_Degree | tuple[_Degree, ...]\"; expected \"Iterable[_Degree]\"",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "index",
       "column": 33,
-      "line": 188,
+      "line": 185,
       "message": "Value of type \"_Degree | tuple[_Degree, ...]\" is not indexable",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 189,
+      "line": 186,
       "message": "Incompatible types in assignment (expression has type \"_Degree | tuple[_Degree, ...]\", target has type \"_Degree\")",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "assignment",
       "column": 21,
-      "line": 190,
+      "line": 187,
       "message": "Incompatible types in assignment (expression has type \"_Degree | tuple[_Degree, ...]\", variable has type \"_Degree\")",
       "path": "src/claasp/representations/execution/boolean_degree.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 94,
+      "line": 95,
       "message": "Dict entry 0 has incompatible type \"type[Constant]\": \"Callable[[Constant, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 95,
+      "line": 96,
       "message": "Dict entry 1 has incompatible type \"type[Identity]\": \"Callable[[Identity, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 96,
+      "line": 97,
       "message": "Dict entry 2 has incompatible type \"type[Permutation]\": \"Callable[[Permutation, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 97,
+      "line": 98,
       "message": "Dict entry 3 has incompatible type \"type[Add]\": \"Callable[[Add, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 98,
+      "line": 99,
       "message": "Dict entry 4 has incompatible type \"type[Multiply]\": \"Callable[[Multiply, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 99,
+      "line": 100,
       "message": "Dict entry 5 has incompatible type \"type[Power]\": \"Callable[[Power, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 100,
+      "line": 101,
       "message": "Dict entry 6 has incompatible type \"type[LinearMap]\": \"Callable[[LinearMap, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 101,
+      "line": 102,
       "message": "Dict entry 7 has incompatible type \"type[BinaryAffineMap]\": \"Callable[[BinaryAffineMap, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 102,
+      "line": 103,
       "message": "Dict entry 8 has incompatible type \"type[BitwiseAnd]\": \"Callable[[BitwiseAnd, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 103,
+      "line": 104,
       "message": "Dict entry 9 has incompatible type \"type[BitwiseNot]\": \"Callable[[BitwiseNot, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 104,
+      "line": 105,
       "message": "Dict entry 10 has incompatible type \"type[BitwiseOr]\": \"Callable[[BitwiseOr, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 105,
+      "line": 106,
       "message": "Dict entry 11 has incompatible type \"type[IDEAMultiply]\": \"Callable[[IDEAMultiply, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 106,
+      "line": 107,
       "message": "Dict entry 12 has incompatible type \"type[ModularAdd]\": \"Callable[[ModularAdd, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 107,
+      "line": 108,
       "message": "Dict entry 13 has incompatible type \"type[ModularMultiply]\": \"Callable[[ModularMultiply, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 108,
+      "line": 109,
       "message": "Dict entry 14 has incompatible type \"type[ModularSubtract]\": \"Callable[[ModularSubtract, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 109,
+      "line": 110,
       "message": "Dict entry 15 has incompatible type \"type[Rotate]\": \"Callable[[Rotate, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 110,
+      "line": 111,
       "message": "Dict entry 16 has incompatible type \"type[Shift]\": \"Callable[[Shift, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 111,
+      "line": 112,
       "message": "Dict entry 17 has incompatible type \"type[VariableRotate]\": \"Callable[[VariableRotate, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 112,
+      "line": 113,
       "message": "Dict entry 18 has incompatible type \"type[VariableShift]\": \"Callable[[VariableShift, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 113,
+      "line": 114,
       "message": "Dict entry 19 has incompatible type \"type[Xor]\": \"Callable[[Xor, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 114,
+      "line": 115,
       "message": "Dict entry 20 has incompatible type \"type[SBox]\": \"Callable[[SBox, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 115,
+      "line": 116,
       "message": "Dict entry 21 has incompatible type \"type[BitVectorSBox]\": \"Callable[[BitVectorSBox, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "dict-item",
       "column": 13,
-      "line": 116,
+      "line": 117,
       "message": "Dict entry 22 has incompatible type \"type[FeedbackRegister]\": \"Callable[[FeedbackRegister, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"; expected \"type[Component]\": \"Callable[[Component, tuple[tuple[int, ...], ...]], tuple[int, ...]]\"",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 152,
-      "message": "Need type annotation for \"binding_cache\" (hint: \"binding_cache: dict[<type>, <type>] = ...\")",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 17,
-      "line": 166,
-      "message": "Argument 1 to \"_validate_value\" of \"ScalarExecutionDriver\" has incompatible type \"str | None\"; expected \"str\"",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "index",
-      "column": 20,
-      "line": 171,
-      "message": "Invalid index type \"str | None\" for \"dict[str, tuple[int, ...]]\"; expected type \"str\"",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "assignment",
-      "column": 18,
-      "line": 173,
-      "message": "Incompatible types in assignment (expression has type \"None\", variable has type \"tuple[int, ...]\")",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 13,
-      "line": 193,
+      "line": 166,
       "message": "\"object\" has no attribute \"validate\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 26,
+      "line": 278,
+      "message": "\"UnitType\" has no attribute \"width\"",
+      "path": "src/claasp/representations/execution/scalar.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 22,
+      "line": 286,
+      "message": "\"UnitType\" has no attribute \"width\"",
+      "path": "src/claasp/representations/execution/scalar.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 29,
       "line": 305,
       "message": "\"UnitType\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
@@ -3997,119 +3689,63 @@
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 313,
-      "message": "\"UnitType\" has no attribute \"width\"",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 29,
-      "line": 332,
-      "message": "\"UnitType\" has no attribute \"width\"",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 22,
-      "line": 373,
+      "line": 346,
       "message": "\"UnitType\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
+      "line": 351,
+      "message": "\"UnitType\" has no attribute \"width\"",
+      "path": "src/claasp/representations/execution/scalar.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 24,
       "line": 378,
       "message": "\"UnitType\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
-      "column": 24,
-      "line": 405,
+      "column": 17,
+      "line": 385,
       "message": "\"UnitType\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 412,
+      "line": 392,
       "message": "\"UnitType\" has no attribute \"width\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 419,
-      "message": "\"UnitType\" has no attribute \"width\"",
-      "path": "src/claasp/representations/execution/scalar.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 17,
-      "line": 540,
+      "line": 513,
       "message": "\"UnitType\" has no attribute \"degree\"",
       "path": "src/claasp/representations/execution/scalar.py"
     },
     {
       "code": "misc",
       "column": 10,
-      "line": 61,
+      "line": 60,
       "message": "Key expression in dictionary comprehension has incompatible type \"str | None\"; expected type \"str\"",
-      "path": "src/claasp/representations/source/c.py"
-    },
-    {
-      "code": "operator",
-      "column": 50,
-      "line": 91,
-      "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/representations/source/c.py"
-    },
-    {
-      "code": "operator",
-      "column": 44,
-      "line": 99,
-      "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/representations/source/c.py"
-    },
-    {
-      "code": "index",
-      "column": 24,
-      "line": 178,
-      "message": "Invalid index type \"str | None\" for \"dict[str, str]\"; expected type \"str\"",
-      "path": "src/claasp/representations/source/c.py"
-    },
-    {
-      "code": "operator",
-      "column": 29,
-      "line": 245,
-      "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/representations/source/c.py"
-    },
-    {
-      "code": "operator",
-      "column": 34,
-      "line": 247,
-      "message": "Unsupported operand types for - (\"None\" and \"int\")",
-      "path": "src/claasp/representations/source/c.py"
-    },
-    {
-      "code": "operator",
-      "column": 22,
-      "line": 250,
-      "message": "Unsupported operand types for >= (\"int\" and \"None\")",
       "path": "src/claasp/representations/source/c.py"
     },
     {
       "code": "assignment",
       "column": 22,
-      "line": 258,
+      "line": 235,
       "message": "Incompatible types in assignment (expression has type \"str\", variable has type \"int\")",
       "path": "src/claasp/representations/source/c.py"
     },
     {
       "code": "union-attr",
       "column": 20,
-      "line": 304,
+      "line": 282,
       "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "src/claasp/representations/source/c.py"
     },
@@ -4138,21 +3774,21 @@
       "code": "union-attr",
       "column": 13,
       "line": 272,
-      "message": "Item \"ModularAddLinearSemantics\" of \"ModularAddTransitionSemantics | ModularAddLinearSemantics\" has no attribute \"xor_differential\"",
+      "message": "Item \"ModularAddXorLinearSemantics\" of \"ModularAddTransitionSemantics | ModularAddXorLinearSemantics\" has no attribute \"xor_differential\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "union-attr",
       "column": 18,
       "line": 274,
-      "message": "Item \"ModularAddTransitionSemantics\" of \"ModularAddTransitionSemantics | ModularAddLinearSemantics\" has no attribute \"xor_linear\"",
+      "message": "Item \"ModularAddTransitionSemantics\" of \"ModularAddTransitionSemantics | ModularAddXorLinearSemantics\" has no attribute \"xor_linear\"",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
       "code": "assignment",
       "column": 37,
       "line": 282,
-      "message": "Incompatible types in assignment (expression has type \"BitwiseAndSemantics\", variable has type \"ModularAddTransitionSemantics | ModularAddLinearSemantics\")",
+      "message": "Incompatible types in assignment (expression has type \"BitwiseAndSemantics\", variable has type \"ModularAddTransitionSemantics | ModularAddXorLinearSemantics\")",
       "path": "src/claasp/semantics/cryptanalysis/problem.py"
     },
     {
@@ -5378,7 +5014,7 @@
       "column": 20,
       "line": 101,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
-      "path": "tests/unit/representations/constraints/smt/test_word_linear.py"
+      "path": "tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },
     {
       "code": "arg-type",
@@ -5831,28 +5467,28 @@
     {
       "code": "var-annotated",
       "column": 19,
-      "line": 313,
+      "line": 314,
       "message": "Need type annotation for \"REPRESENTATIONS\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 12,
-      "line": 519,
+      "line": 520,
       "message": "Need type annotation for \"ANALYSES\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "var-annotated",
       "column": 5,
-      "line": 716,
+      "line": 728,
       "message": "Need type annotation for \"test_evidence\" (hint: \"test_evidence: dict[<type>, <type>] = ...\")",
       "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "arg-type",
       "column": 41,
-      "line": 783,
+      "line": 795,
       "message": "Argument 1 to \"list\" has incompatible type \"Any | object\"; expected \"Iterable[Any]\"",
       "path": "tools/generate_catalogue_metadata.py"
     },
