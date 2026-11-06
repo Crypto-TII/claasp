@@ -61,10 +61,10 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
-      - name: Install Z3 for trail-query doctests
+      - name: Install Z3 and GLPK for analysis doctests
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3
+          sudo apt-get install --yes z3 glpk-utils
 
       - name: Run dependency-free tests
         run: python -m pytest
@@ -120,10 +120,10 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
-      - name: Install Z3 for trail-query doctests
+      - name: Install Z3 and GLPK for analysis doctests
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3
+          sudo apt-get install --yes z3 glpk-utils
 
       - name: Run Python and guide doctests
         run: |
@@ -288,7 +288,7 @@ jobs:
       - name: Install Z3
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3
+          sudo apt-get install --yes z3 glpk-utils
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'
@@ -316,13 +316,13 @@ jobs:
       - name: Install GLPK
         run: |
           sudo apt-get update
-          sudo apt-get install --yes glpk-utils
+          sudo apt-get install --yes glpk-utils minizinc
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev,analysis]'
 
       - name: Execute GLPK integration
-        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py -q
+        run: python -m pytest -m external tests/integration/test_glpk_integration.py tests/integration/test_glpk_trails.py tests/integration/test_glpk_arx_transitions.py tests/integration/test_glpk_monomial_prediction.py tests/integration/test_two_subset_division_property.py tests/integration/test_glpk_progress.py tests/integration/test_glpk_word_trails.py tests/integration/test_wordwise_activity.py -q
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=glpk python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_glpk_integration.py::test_glpk_preserves_constant_linear_rows tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q

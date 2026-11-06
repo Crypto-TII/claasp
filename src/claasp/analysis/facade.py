@@ -650,6 +650,38 @@ class Analysis:
 
         return run_autond(self.primitive, driver, experiment, **options)
 
+    def find_lowest_number_of_active_sboxes(
+        self,
+        *,
+        solver=None,
+        active_input=None,
+        zero_difference_inputs=None,
+        word_size=None,
+        branch_driver=None,
+    ):
+        """Minimize the wordwise active-S-box relaxation, yielding a lower bound.
+
+        The bound is proved only when ``result.complete`` is true. This is
+        not an exact differential trail count. The default solver requires
+        the ``glpsol`` executable (GLPK); a different MILP driver may be supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Ublock
+            >>> result = Ublock(number_of_rounds=1).analysis.find_lowest_number_of_active_sboxes()
+            >>> result.complete, result.lower_bound
+            (True, 1)
+        """
+        from claasp.analysis.wordwise_activity import WordwiseActivityAnalysis
+
+        return WordwiseActivityAnalysis(self.primitive).find_lowest_number_of_active_sboxes(
+            solver=solver,
+            active_input=active_input,
+            zero_difference_inputs=zero_difference_inputs,
+            word_size=word_size,
+            branch_driver=branch_driver,
+        )
+
     def division_property(self, *, structure=None, bijective_function=False):
         """Inspect an SPN or Feistel structure and search Todo division-property paths.
 

@@ -141,6 +141,7 @@ class MiniZincBranchNumberDriver:
         from claasp.drivers.solvers import MiniZincSolver
 
         self.solver = MiniZincSolver(solver, executable, timeout_seconds)
+        self._cache: dict[tuple, ComponentPropertyResult] = {}
         self.identity = DriverIdentity(
             "minizinc_component_branch", DriverKind.EXTERNAL_TOOL, solver
         )
@@ -149,6 +150,9 @@ class MiniZincBranchNumberDriver:
         """Compute the analyze for this public typed contract."""
 
         provenance = _identity(component, request, self.identity, "minizinc_exact_optimization")
+        cache_key = (semantic_component_key(component, request.domain), request)
+        if cache_key in self._cache:
+            return self._cache[cache_key]
         if request.property not in {
             ComponentProperty.DIFFERENTIAL_BRANCH_NUMBER,
             ComponentProperty.LINEAR_BRANCH_NUMBER,
@@ -159,46 +163,174 @@ class MiniZincBranchNumberDriver:
                 DiagnosticCode.UNSUPPORTED_PROPERTY,
                 "MiniZinc branch optimization supports only differential/linear branch numbers",
             )
+        word_size = request.option_map.get("word_size", 1)
         try:
-            matrix, unit_type = _matrix_domain(component, request)
+            if not isinstance(word_size, int) or isinstance(word_size, bool) or word_size < 1:
+                raise ValueError("word_size must be a positive integer")
+            if (
+                isinstance(component, LinearMap)
+                and isinstance(component.inputs[0].array_type.unit_type, Bit)
+                and request.domain is PropertyDomain.WORD_LINEAR
+            ):
+                matrix, unit_type = component.matrix, Bit()
+            else:
+                matrix, unit_type = _matrix_domain(component, request)
+                if isinstance(unit_type, BinaryExtensionField):
+                    if "word_size" in request.option_map and word_size != unit_type.degree:
+                        raise ValueError("word_size must match the field encoding width")
+                    word_size = unit_type.degree
+                    matrix = expand_binary_field_matrix(matrix, unit_type)
+                    unit_type = Bit()
+                elif request.domain is PropertyDomain.BIT_LINEAR and word_size != 1:
+                    raise ValueError("grouped words require the word_linear domain")
+            if not isinstance(unit_type, Bit):
+                raise ValueError("MiniZinc branch optimization requires a binary encoding")
+            if len(matrix) % word_size or len(matrix[0]) % word_size:
+                raise ValueError("matrix dimensions must be multiples of word_size")
         except (TypeError, ValueError) as error:
             return unavailable_result(
                 request, provenance, DiagnosticCode.INAPPLICABLE_DOMAIN, str(error)
             )
-        if not isinstance(unit_type, Bit):
-            return unavailable_result(
-                request,
-                provenance,
-                DiagnosticCode.INAPPLICABLE_DOMAIN,
-                "the MiniZinc baseline consumes binary matrices; request bit-linear expansion",
-            )
         if request.property is ComponentProperty.LINEAR_BRANCH_NUMBER:
             matrix = transpose_matrix(matrix)
-        model = _minizinc_model(matrix)
-        try:
-            solved = self.solver.solve(model)
-        except (FileNotFoundError, RuntimeError, TimeoutExpired) as error:
-            return unavailable_result(
-                request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
-            )
-        if not solved.is_satisfied or solved.values is None or "==========" not in solved.stdout:
-            return unavailable_result(
-                request,
-                provenance,
-                DiagnosticCode.DRIVER_UNAVAILABLE,
-                "MiniZinc did not return an optimal branch number",
-            )
-        branch_number = sum(solved.values["input_bits"]) + sum(solved.values["output_bits"])
-        return ComponentPropertyResult(
-            request,
-            PropertyClaim.EXACT,
-            branch_number,
-            True,
-            provenance,
+        # Identical independent bit strands have the same minimum word support
+        # as one strand: a union cannot have less support than any member,
+        # and a single nonzero strand attains that member's weight.
+        compressed = _identical_word_strands(matrix, word_size)
+        if compressed is not None:
+            matrix, word_size = compressed, 1
+        # A direct sum's minimum support is the minimum of its independent
+        # blocks. Proving each small block avoids an exponential search over
+        # their Cartesian product (uBlock has two 16-bit blocks after strand
+        # compression). This reduction is applied only to one-bit weights.
+        blocks = (
+            _independent_binary_blocks(matrix)
+            if word_size == 1
+            else ((matrix, tuple(range(len(matrix[0]))), tuple(range(len(matrix)))),)
         )
+        branch_number = None
+        full_input, full_output = [0] * len(matrix[0]), [0] * len(matrix)
+        for block, columns, rows in blocks:
+            model = _minizinc_model(block, word_size)
+            try:
+                solved = self.solver.solve(model)
+            except (FileNotFoundError, RuntimeError, TimeoutExpired) as error:
+                return unavailable_result(
+                    request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
+                )
+            if (
+                not solved.is_satisfied
+                or solved.values is None
+                or "==========" not in solved.stdout
+            ):
+                return unavailable_result(
+                    request,
+                    provenance,
+                    DiagnosticCode.DRIVER_UNAVAILABLE,
+                    "MiniZinc did not return an optimal branch number",
+                )
+            try:
+                value = _checked_branch_number(block, word_size, solved.values)
+            except ValueError as error:
+                return unavailable_result(
+                    request, provenance, DiagnosticCode.DRIVER_UNAVAILABLE, str(error)
+                )
+            if branch_number is None or value < branch_number:
+                branch_number = value
+                inputs, outputs = solved.values["input_bits"], solved.values["output_bits"]
+                assert isinstance(inputs, (list, tuple)) and isinstance(outputs, (list, tuple))
+                full_input, full_output = [0] * len(matrix[0]), [0] * len(matrix)
+                for column, bit in zip(columns, inputs):
+                    full_input[column] = bit
+                for row, bit in zip(rows, outputs):
+                    full_output[row] = bit
+        if (
+            branch_number is None
+            or _checked_branch_number(
+                matrix, word_size, {"input_bits": full_input, "output_bits": full_output}
+            )
+            != branch_number
+        ):
+            raise RuntimeError("independent branch blocks failed full-matrix witness validation")
+
+        result = ComponentPropertyResult(
+            request, PropertyClaim.EXACT, branch_number, True, provenance
+        )
+        self._cache[cache_key] = result
+        return result
 
 
-def _minizinc_model(matrix):
+def _identical_word_strands(matrix, word_size):
+    if word_size == 1:
+        return None
+    rows, columns = len(matrix), len(matrix[0])
+    reduced = []
+    for row in range(0, rows, word_size):
+        coefficients = []
+        for column in range(0, columns, word_size):
+            coefficient = matrix[row][column]
+            if any(
+                matrix[row + i][column + j] != (coefficient if i == j else 0)
+                for i in range(word_size)
+                for j in range(word_size)
+            ):
+                return None
+            coefficients.append(coefficient)
+        reduced.append(tuple(coefficients))
+    return tuple(reduced)
+
+
+def _independent_binary_blocks(matrix):
+    """Find exact disjoint input/output blocks, retaining original indices.
+
+    For nonzero x the weight of (x, Mx) adds across these blocks. Every
+    nonzero block costs at least its minimum; activating just a minimizing
+    block attains that bound. Zero columns fall back to the original model.
+    """
+    columns = len(matrix[0])
+    column_rows = [tuple(r for r, row in enumerate(matrix) if row[c]) for c in range(columns)]
+    if any(not rows for rows in column_rows):
+        return ((matrix, tuple(range(columns)), tuple(range(len(matrix)))),)
+    row_columns = [tuple(c for c, value in enumerate(row) if value) for row in matrix]
+    remaining, blocks = set(range(columns)), []
+    while remaining:
+        first = min(remaining)
+        inputs, outputs, pending = {first}, set(), [first]
+        while pending:
+            for row in column_rows[pending.pop()]:
+                if row in outputs:
+                    continue
+                outputs.add(row)
+                for column in row_columns[row]:
+                    if column not in inputs:
+                        inputs.add(column)
+                        pending.append(column)
+        remaining.difference_update(inputs)
+        ordered_inputs, ordered_outputs = tuple(sorted(inputs)), tuple(sorted(outputs))
+        block = tuple(tuple(matrix[r][c] for c in ordered_inputs) for r in ordered_outputs)
+        blocks.append((block, ordered_inputs, ordered_outputs))
+    return tuple(blocks)
+
+
+def _checked_branch_number(matrix, word_size, values):
+    inputs, outputs = values.get("input_bits"), values.get("output_bits")
+    if not isinstance(inputs, (list, tuple)) or not isinstance(outputs, (list, tuple)):
+        raise ValueError("branch solver omitted its input/output witness")
+    if len(inputs) != len(matrix[0]) or len(outputs) != len(matrix) or not any(inputs):
+        raise ValueError("branch solver returned invalid witness dimensions or zero input")
+    if any(bit not in (0, 1) for bit in (*inputs, *outputs)):
+        raise ValueError("branch solver returned non-binary witness values")
+    expected = tuple(sum(a * b for a, b in zip(row, inputs)) % 2 for row in matrix)
+    if tuple(outputs) != expected:
+        raise ValueError("branch witness fails independent matrix evaluation")
+    return sum(
+        any(bits[start : start + word_size])
+        for bits in (inputs, outputs)
+        for start in range(0, len(bits), word_size)
+    )
+
+
+def _minizinc_model(matrix, word_size=1):
     from claasp.representations.constraints.cp import MiniZincModel
 
     rows, columns = len(matrix), len(matrix[0])
@@ -210,7 +342,13 @@ def _minizinc_model(matrix):
             f"array[1..output_size, 1..input_size] of 0..1: matrix = {literal};",
             "array[1..input_size] of var 0..1: input_bits;",
             "array[1..output_size] of var 0..1: output_bits;",
-            "var int: branch_number = sum(input_bits) + sum(output_bits);",
+            "var int: branch_number = "
+            + (
+                "sum(input_bits) + sum(output_bits);"
+                if word_size == 1
+                else f"sum(word in 0..{columns // word_size - 1})(bool2int(sum(bit in 1..{word_size})(input_bits[word*{word_size}+bit]) > 0)) + "
+                f"sum(word in 0..{rows // word_size - 1})(bool2int(sum(bit in 1..{word_size})(output_bits[word*{word_size}+bit]) > 0));"
+            ),
         ),
         constraints=(
             "constraint sum(input_bits) >= 1;",
