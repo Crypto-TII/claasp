@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -17,6 +18,13 @@ else:
 ROOT = next(
     parent for parent in Path(__file__).resolve().parents if (parent / "pyproject.toml").is_file()
 )
+
+
+def test_quality_workflow_references_existing_test_files():
+    workflow = (ROOT / ".github/workflows/claasp-quality.yaml").read_text()
+    paths = set(re.findall(r"\btests/[\w/.-]+\.py\b", workflow))
+    assert paths
+    assert sorted(path for path in paths if not (ROOT / path).is_file()) == []
 
 
 def _load_tool(name: str):
