@@ -61,3 +61,36 @@ ordinary parity checks miss, sometimes only for a particular class of keys.
    Basic <basic_circle_linear>
    Advanced <advanced_circle_linear>
    Verification <verification_circle_linear>
+
+Origins and references
+----------------------
+
+The alternative-addition approach was developed first for differential
+cryptanalysis. The following published papers explain its development and
+the algebra used here:
+
+* Roberto Civino, Céline Blondeau and Massimiliano Sala,
+  `Differential attacks: using alternative operations
+  <https://doi.org/10.1007/s10623-018-0516-z>`_, *Designs, Codes and
+  Cryptography* 87, 225–247 (2019; published online in 2018): develops
+  differential attacks using alternative additions and demonstrates a cipher
+  that is weaker under these differences than under XOR differences.
+* Marco Calderini, Roberto Civino and Riccardo Invernizzi,
+  `Differential experiments using parallel alternative operations
+  <https://doi.org/10.1515/jmc-2023-0030>`_, *Journal of Mathematical
+  Cryptology* 18(1), article 20230030 (2024): extends the experiments to
+  alternative operations acting in parallel across the S-boxes.
+* Roberto Civino and Valerio Fedele,
+  `Binary Bibraces and Applications to Cryptography
+  <https://doi.org/10.1007/s00009-024-02793-z>`_, *Mediterranean Journal of
+  Mathematics* 22, article 29 (2025): introduces binary bibraces for
+  understanding alternative-difference propagation through cipher layers.
+
+For the linear-analysis counterpart, Tim Beyne's `A Geometric Approach to
+Linear Cryptanalysis <https://eprint.iacr.org/2021/1247>`_, ASIACRYPT 2021,
+provides the general framework over finite abelian groups, including nonlinear
+approximations. Roberto Civino's `Circle-Linear Cryptanalysis: Bibrace
+Characters and Weak-Key Linear Distinguishers for CRAFT
+<https://eprint.iacr.org/2026/1767>`_, IACR ePrint 2026/1767 (2026), instantiates
+that framework using binary bibraces. The latter is a publicly available
+preprint, rather than a peer-reviewed journal or conference publication.

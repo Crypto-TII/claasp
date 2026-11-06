@@ -559,15 +559,21 @@ do not pass these coordinate codes to endpoint measurement methods.
 Public background and interpretation
 ------------------------------------
 
-The following public works explain the general frameworks; they are not
-citations for the numerical CRAFT regression cases above.
+See :doc:`circle_linear` for the published origins of alternative-operation
+cryptanalysis. The following references explain the linear framework, the
+bibrace structures and the concrete primitive.
 
 * Tim Beyne, `A Geometric Approach to Linear Cryptanalysis
   <https://eprint.iacr.org/2021/1247>`_, ASIACRYPT 2021: the general framework
   for linear analysis, correlation matrices and nonlinear approximations.
-* Civino and Fedele, `Binary bi-braces and applications to cryptography
-  <https://arxiv.org/abs/2404.09315>`_: the algebra of binary bibraces and
+* Civino and Fedele, `Binary Bibraces and Applications to Cryptography
+  <https://doi.org/10.1007/s00009-024-02793-z>`_, Mediterranean Journal of
+  Mathematics 22, article 29 (2025): the algebra of binary bibraces and
   alternative difference operations. This work concerns differential analysis.
+* Roberto Civino, `Circle-Linear Cryptanalysis: Bibrace Characters and Weak-Key
+  Linear Distinguishers for CRAFT <https://eprint.iacr.org/2026/1767>`_,
+  IACR ePrint 2026/1767 (2026): the circle-linear construction and its
+  application to CRAFT; publicly available preprint.
 * Civino and Fedele, `Classification of small binary bibraces via bilinear maps
   <https://doi.org/10.1007/s00025-026-02612-9>`_: classification of the structures.
 * Beierle et al., `CRAFT specification and reference vectors
