@@ -7,9 +7,9 @@ import pytest
 from claasp import Primitive, UnitArrayType
 from claasp.components import BitwiseAnd, Xor
 from claasp.drivers.solvers import SatResult, SatStatus
-from claasp.representations.constraints.smt import WordDifferentialSMTModel
-from claasp.representations.constraints.smt.word_differential import (
-    WordDifferentialEnumeration,
+from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
+from claasp.representations.constraints.smt.word_xor_differential import (
+    WordXorDifferentialEnumeration,
 )
 from claasp.unit_types import Word
 
@@ -27,7 +27,7 @@ def _primitive(component):
 
 
 def test_xor_difference_propagation_is_forward_not_mask_fanout():
-    model = WordDifferentialSMTModel(_primitive(Xor), maximum_weight=0)
+    model = WordXorDifferentialSMTModel(_primitive(Xor), maximum_weight=0)
     formula = model.smt_formula()
     assignment = dict.fromkeys(formula.variables, 0)
     for name in model._unit_arrays["left"]:
@@ -37,9 +37,9 @@ def test_xor_difference_propagation_is_forward_not_mask_fanout():
     trail = model.decode_characteristic(assignment)
     assert dict(trail.input_differences) == {"left": 3, "key": 0}
     assert trail.output_difference == 3 and model.check_characteristic(trail)
-    cluster = WordDifferentialEnumeration((trail,), True, 0)
+    cluster = WordXorDifferentialEnumeration((trail,), True, 0)
     assert cluster.cluster_probability() == 1
-    assert WordDifferentialEnumeration((), True, 0).cluster_probability() == 0
+    assert WordXorDifferentialEnumeration((), True, 0).cluster_probability() == 0
     with pytest.raises(ValueError, match="common"):
         replace(cluster, trails=(trail, replace(trail, output_difference=0))).cluster_probability()
     assert not model.check_characteristic(replace(trail, output_difference=0))
@@ -49,7 +49,7 @@ def test_xor_difference_propagation_is_forward_not_mask_fanout():
 
 
 def test_and_declared_weights_are_independently_recounted():
-    model = WordDifferentialSMTModel(_primitive(BitwiseAnd), fixed_weight=2)
+    model = WordXorDifferentialSMTModel(_primitive(BitwiseAnd), fixed_weight=2)
     formula = model.smt_formula()
     assignment = dict.fromkeys(formula.variables, 1)
     for name in formula.variables:
@@ -63,7 +63,7 @@ def test_and_declared_weights_are_independently_recounted():
 
 
 def test_incomplete_differential_enumeration_is_not_a_count_proof():
-    model = WordDifferentialSMTModel(_primitive(Xor), maximum_weight=0)
+    model = WordXorDifferentialSMTModel(_primitive(Xor), maximum_weight=0)
 
     class Solver:
         def solve(self, formula):
@@ -90,4 +90,4 @@ def test_incomplete_differential_enumeration_is_not_a_count_proof():
 )
 def test_invalid_differential_model_requests(options):
     with pytest.raises(ValueError):
-        WordDifferentialSMTModel(_primitive(Xor), **options)
+        WordXorDifferentialSMTModel(_primitive(Xor), **options)

@@ -13,16 +13,19 @@ from time import monotonic
 
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.primitives import ToySpeck
-from claasp.representations.constraints.smt import WordDifferentialSMTModel, WordLinearSMTModel
+from claasp.representations.constraints.smt import (
+    WordXorDifferentialSMTModel,
+    WordXorLinearSMTModel,
+)
 
 
 def _models():
     primitive = ToySpeck(2)
     return {
-        "xor_differential": lambda: WordDifferentialSMTModel(
+        "xor_differential": lambda: WordXorDifferentialSMTModel(
             primitive, fixed_weight=1, fixed_input_differences={"key": 0}
         ),
-        "xor_linear": lambda: WordLinearSMTModel(
+        "xor_linear": lambda: WordXorLinearSMTModel(
             primitive, maximum_weight=2, nonzero_input="plaintext", fixed_inputs={"key": 0}
         ),
     }

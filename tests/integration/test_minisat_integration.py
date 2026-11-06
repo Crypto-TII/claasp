@@ -9,8 +9,8 @@ from claasp.primitives import Present80, Simon, Speck, ToyAES
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.sat import (
     BooleanCNFModel,
-    ModularAddDifferentialSATModel,
-    ModularAddLinearSATModel,
+    ModularAddXorDifferentialSATModel,
+    ModularAddXorLinearSATModel,
     SBoxXorDifferentialSATModel,
     WordwiseDeterministicTruncatedSATModel,
     WordwiseImpossibleSATModel,
@@ -154,14 +154,14 @@ def test_minisat_solves_and_refutes_sbox_differential_transitions():
 @pytest.mark.parametrize(
     "relation,masks,weight,sign",
     (
-        (ModularAddDifferentialSATModel(4), (1, 1, 2), 2, 1),
-        (ModularAddLinearSATModel(4), (2, 2, 2), 1, 1),
+        (ModularAddXorDifferentialSATModel(4), (1, 1, 2), 2, 1),
+        (ModularAddXorLinearSATModel(4), (2, 2, 2), 1, 1),
     ),
 )
 def test_minisat_solves_modular_add_transition_models(relation, masks, weight, sign):
     names = (
         ("left_mask", "right_mask", "output_mask")
-        if isinstance(relation, ModularAddLinearSATModel)
+        if isinstance(relation, ModularAddXorLinearSATModel)
         else ()
     )
     formula = relation.cnf_formula(**dict(zip(names, masks))) if names else relation.cnf_formula()

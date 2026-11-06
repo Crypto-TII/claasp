@@ -264,22 +264,156 @@ def _plot_trail(
     cumulative = [0.0]
     for weight in relative[1:]:
         cumulative.append(cumulative[-1] + weight)
+    kind = "differential" if result.trail.kind is TrailKind.XOR_DIFFERENTIAL else "linear"
+    return _trail_weight_figure(
+        rounds,
+        relative,
+        tuple(cumulative),
+        xlabel="Round",
+        title=f"XOR {kind} trail weight",
+        artifact_kind="trail_weights",
+        show=show,
+        save_to=save_to,
+    )
+
+
+def _plot_circle_trail(result, *, show, save_to):
+    """Render retained circle-linear trail weights without running a search."""
+    from claasp.presentation._circle_linear import trail_profile
+
+    unit, relative, cumulative = trail_profile(result)
+    return _trail_weight_figure(
+        tuple(range(len(relative))),
+        relative,
+        cumulative,
+        xlabel=unit + " (relative to the selected segment)",
+        title="Circle-linear trail contribution (not endpoint correlation)",
+        artifact_kind="circle_trail_weights",
+        show=show,
+        save_to=save_to,
+    )
+
+
+def _trail_weight_figure(
+    rounds, relative, cumulative, *, xlabel, title, artifact_kind, show, save_to
+):
+    """Share plotting logic across trail semantics; render only retained data."""
     pyplot = _matplotlib()
     figure, axis = pyplot.subplots(figsize=(9, 4), layout="constrained")
     axis.plot(rounds, relative, marker="o", label="Relative weight")
     axis.plot(rounds, cumulative, marker="s", label="Cumulative weight")
     axis.set_xticks(rounds)
-    axis.set_xlabel("Round")
+    axis.set_xlabel(xlabel)
     axis.set_ylabel("Weight (bits)")
-    kind = "differential" if result.trail.kind is TrailKind.XOR_DIFFERENTIAL else "linear"
-    axis.set_title(f"XOR {kind} trail weight")
+    axis.set_title(title)
     axis.set_ylim(bottom=0)
     axis.grid(alpha=0.25)
     axis.legend()
     artifact = FigureArtifact(
         figure,
-        "trail_weights",
-        (("relative_weight", relative), ("cumulative_weight", tuple(cumulative))),
+        artifact_kind,
+        (("relative_weight", relative), ("cumulative_weight", cumulative)),
+        MatplotlibPresentationDriver.identity,
+    )
+    _finish_figure(figure, show=show, save_to=save_to)
+    return artifact
+
+
+def _plot_circle_differential_trail(result, *, show, save_to):
+    """Use the common weight renderer for concrete prefix probabilities."""
+    from math import log2
+
+    if not result.probability:
+        raise ValueError("weight profiles require a nonzero trail probability")
+    relative = (0.0, *(-log2(p) for p in result.conditional_probabilities))
+    cumulative = tuple(-log2(c / result.evidence.trials) for c in result.prefix_counts)
+    return _trail_weight_figure(
+        tuple(range(len(relative))),
+        relative,
+        cumulative,
+        xlabel="Observed boundary",
+        title=(
+            "Circle-differential concrete trail weight"
+            if result.evidence.complete
+            else "Estimated circle-differential concrete trail weight"
+        ),
+        artifact_kind="circle_differential_trail_weights",
+        show=show,
+        save_to=save_to,
+    )
+
+
+def _plot_circle_differential(result, *, show, save_to):
+    """Render a retained Bernoulli event with conservative sampling bounds."""
+    p = float(result.probability)
+    probabilities = (p, 1 - p)
+    lower = (result.lower, 1 - result.upper)
+    upper = (result.upper, 1 - result.lower)
+    errors = (
+        None
+        if result.complete
+        else (
+            tuple(max(0.0, value - lo) for value, lo in zip(probabilities, lower)),
+            tuple(max(0.0, hi - value) for value, hi in zip(probabilities, upper)),
+        )
+    )
+    pyplot = _matplotlib()
+    figure, axis = pyplot.subplots(figsize=(7, 4), layout="constrained")
+    labels = (
+        ("Difference matches", "Difference differs")
+        if result.event == "endpoint"
+        else ("Trail matches", "Trail differs")
+    )
+    axis.bar(labels, probabilities, yerr=errors, capsize=6)
+    axis.set_ylim(0, 1)
+    axis.set_ylabel("Probability")
+    axis.set_title(
+        f"Circle-differential {result.event.replace('_', ' ')} probability"
+        if result.complete
+        else f"Circle-differential estimate ({result.confidence:.0%} Hoeffding interval)"
+    )
+    artifact = FigureArtifact(
+        figure,
+        "circle_differential_probabilities",
+        (("probability", probabilities), ("lower", lower), ("upper", upper)),
+        MatplotlibPresentationDriver.identity,
+    )
+    _finish_figure(figure, show=show, save_to=save_to)
+    return artifact
+
+
+def _plot_circle_correlation(result, *, show, save_to):
+    """Render the agreement/disagreement probabilities of endpoint checks."""
+    from claasp.analysis.circle_linear import CircleApproximation
+
+    exact = isinstance(result, CircleApproximation)
+    if exact and not result.complete:
+        raise ValueError("complete endpoint correlation required for a probability plot")
+    correlation = float(result.coefficient) if exact else result.value
+    agreement = (1 + correlation) / 2
+    probabilities = (agreement, 1 - agreement)
+    if exact:
+        lower = upper = probabilities
+        errors = None
+        title = "Exact circle-linear endpoint correlation"
+    else:
+        lo, hi = (1 + result.lower) / 2, (1 + result.upper) / 2
+        lower, upper = (lo, 1 - hi), (hi, 1 - lo)
+        errors = (
+            tuple(max(0.0, p - lo) for p, lo in zip(probabilities, lower)),
+            tuple(max(0.0, hi - p) for p, hi in zip(probabilities, upper)),
+        )
+        title = f"Estimated endpoint correlation ({result.confidence:.0%} Hoeffding intervals)"
+    pyplot = _matplotlib()
+    figure, axis = pyplot.subplots(figsize=(7, 4), layout="constrained")
+    axis.bar(("Checks agree", "Checks disagree"), probabilities, yerr=errors, capsize=6)
+    axis.set_ylim(0, 1)
+    axis.set_ylabel("Probability")
+    axis.set_title(title + f"\nSigned correlation: {correlation:g}")
+    artifact = FigureArtifact(
+        figure,
+        "circle_endpoint_probabilities",
+        (("probability", probabilities), ("lower", lower), ("upper", upper)),
         MatplotlibPresentationDriver.identity,
     )
     _finish_figure(figure, show=show, save_to=save_to)

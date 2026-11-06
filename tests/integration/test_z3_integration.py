@@ -8,13 +8,13 @@ from claasp.primitives import BitVectorSBox, Present, Speck, ToySpeck
 from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints.smt import (
     ModularAddDeterministicTruncatedSMTModel,
-    ModularAddLinearSMTModel,
-    PresentDifferentialSMTModel,
-    PresentLinearSMTModel,
+    ModularAddXorLinearSMTModel,
+    PresentXorDifferentialSMTModel,
+    PresentXorLinearSMTModel,
     SBoxTransitionSMTModel,
     WordDeterministicTruncatedSMTModel,
-    WordDifferentialSMTModel,
-    WordLinearSMTModel,
+    WordXorDifferentialSMTModel,
+    WordXorLinearSMTModel,
 )
 from claasp.representations.constraints.smt.trails import (
     check_present_linear_smt_trail,
@@ -68,7 +68,7 @@ def test_z3_preserves_deterministic_truncated_toy_speck_trail():
 
 def test_z3_solves_and_independently_checks_word_differential_and_linear_trails():
     solver = Z3Solver(timeout_seconds=10)
-    differential = WordDifferentialSMTModel(
+    differential = WordXorDifferentialSMTModel(
         ToySpeck(2), fixed_weight=1, fixed_input_differences={"key": 0}
     )
     differential_result = solver.solve(differential.smt_formula())
@@ -77,7 +77,7 @@ def test_z3_solves_and_independently_checks_word_differential_and_linear_trails(
     assert differential_trail.total_weight == 1
     assert differential.check_characteristic(differential_trail)
 
-    linear = WordLinearSMTModel(
+    linear = WordXorLinearSMTModel(
         ToySpeck(2), maximum_weight=2, nonzero_input="plaintext", fixed_inputs={"key": 0}
     )
     linear_result = solver.solve(linear.smt_formula())
@@ -150,8 +150,8 @@ def test_z3_proves_present_sbox_transition_feasibility_and_impossibility():
 def test_z3_proves_and_extracts_present_two_round_optimum():
     primitive = Present(number_of_rounds=2)
     solver = Z3Solver(timeout_seconds=30)
-    below_optimum = PresentDifferentialSMTModel(primitive, maximum_weight=3)
-    optimum = PresentDifferentialSMTModel(primitive, maximum_weight=4)
+    below_optimum = PresentXorDifferentialSMTModel(primitive, maximum_weight=3)
+    optimum = PresentXorDifferentialSMTModel(primitive, maximum_weight=4)
 
     assert solver.solve(below_optimum.smt_formula()).status is SatStatus.UNSATISFIABLE
     solved = solver.solve(optimum.smt_formula())
@@ -165,8 +165,8 @@ def test_z3_proves_and_extracts_present_two_round_optimum():
 def test_z3_proves_and_extracts_present_three_round_linear_optimum():
     primitive = Present(number_of_rounds=3)
     solver = Z3Solver(timeout_seconds=30)
-    below_optimum = PresentLinearSMTModel(primitive, maximum_weight=3)
-    optimum = PresentLinearSMTModel(primitive, maximum_weight=4)
+    below_optimum = PresentXorLinearSMTModel(primitive, maximum_weight=3)
+    optimum = PresentXorLinearSMTModel(primitive, maximum_weight=4)
 
     assert solver.solve(below_optimum.smt_formula()).status is SatStatus.UNSATISFIABLE
     solved = solver.solve(optimum.smt_formula())
@@ -179,7 +179,7 @@ def test_z3_proves_and_extracts_present_three_round_linear_optimum():
 
 def test_z3_restores_speck_linear_modular_add_reference_transitions():
     solver = Z3Solver(timeout_seconds=10)
-    model = ModularAddLinearSMTModel(16)
+    model = ModularAddXorLinearSMTModel(16)
     reference = (
         (0x6081, 0x40C1, 0x4081),
         (0x0001, 0x0001, 0x0001),
@@ -228,7 +228,7 @@ def test_z3_optimizes_nonintegral_heys_correlations_exactly():
 def test_fractional_weight_intervals_and_explicit_fixed_weight_tolerance():
     from claasp.primitives import BitVectorSBox, Heys
     from claasp.primitives.toy_primitives.heys import HEYS_SBOX
-    from claasp.representations.constraints.smt import WordDifferentialSMTModel
+    from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
 
     cipher = Heys(number_of_rounds=1)
     for options, count in [
@@ -245,7 +245,7 @@ def test_fractional_weight_intervals_and_explicit_fixed_weight_tolerance():
         ).require_complete()
         assert len(result.trails) == count
         for trail in result.trails:
-            checker = WordDifferentialSMTModel(cipher, **options)
+            checker = WordXorDifferentialSMTModel(cipher, **options)
             checker.smt_formula()
             assert checker.check_characteristic(trail)
 

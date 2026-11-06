@@ -31,6 +31,43 @@ In particular, ``semantics`` defines concrete values, differences, masks,
 truncated states, symbolic values, and leakage observations. It does not
 contain SAT-, SMT-, MILP-, or CP-specific encodings.
 
+Shared propagation
+------------------
+
+``claasp.graph.GraphPropagation`` owns the graph schedule and wiring for
+propagation-based execution and analysis. Concrete values, continuous bit
+vectors, symbolic polynomials and degree bounds use its ``run()`` method.
+The same runner also derives affine state and master-key expressions for
+circle-linear analysis. Scalar and sample-parallel avalanche measurements
+use these execution paths; probability estimates are computed from the
+resulting samples rather than assuming independent bit probabilities.
+
+The runner resolves component operands, structural joins and views, bit/word
+conversions and the declared primitive output. A component rule receives
+only the operation and its selected operands. Representations with different
+logical-unit encodings can override packing and unpacking while keeping
+the same binding traversal. Validation and trace construction remain
+explicit at the representation boundary.
+
+Constraint construction uses the same plan's ``bit_wiring()`` or
+``unit_wiring()`` and ``relations()`` methods. These allocate source objects,
+resolve every operand and enumerate consumer edges before applying local
+relations. Differential, linear, truncated, quasi-differential and
+monomial/division-property constructions therefore use the same structural
+connections. Each semantic rule still defines its own transition relation,
+weights, signs and fanout equations. For example, a concrete value is copied
+at fanout, XOR-linear masks combine by XOR, and division-property copies
+obey their own constraints. Sharing traversal does not make those laws
+interchangeable or turn heuristic continuous values into exact probabilities.
+
+New graph-wide propagation implementations must use this infrastructure
+instead of adding another component traversal or structural-binding resolver.
+A specialized search may optimize a validated structure derived from the
+plan; it must not maintain a parallel specification of a primitive's rounds,
+constants or key schedule. Independently checked transition mathematics
+remains separate from search encodings. New analyses build a fresh plan so
+that changes to a primitive are observed by every execution and analysis path.
+
 Processing vocabulary
 ---------------------
 

@@ -1,11 +1,11 @@
 from itertools import product
 
-from claasp.representations.constraints.milp import ModularAddLinearMILPModel, VariableKind
-from claasp.semantics.cryptanalysis import ModularAddLinearSemantics
+from claasp.representations.constraints.milp import ModularAddXorLinearMILPModel, VariableKind
+from claasp.semantics.cryptanalysis import ModularAddXorLinearSemantics
 
 
 def test_modular_add_linear_milp_has_explicit_domains_and_fixed_masks():
-    lowering = ModularAddLinearMILPModel(4)
+    lowering = ModularAddXorLinearMILPModel(4)
     model = lowering.milp_model(left_mask=3, right_mask=5, output_mask=6)
 
     assert len(model.variables) == 4 * 4 + 3
@@ -14,10 +14,10 @@ def test_modular_add_linear_milp_has_explicit_domains_and_fixed_masks():
 
 
 def test_modular_add_linear_milp_matches_every_two_bit_mask_transition():
-    semantics = ModularAddLinearSemantics(2)
+    semantics = ModularAddXorLinearSemantics(2)
 
     for left, right, output in product(range(4), repeat=3):
-        lowering = ModularAddLinearMILPModel(2)
+        lowering = ModularAddXorLinearMILPModel(2)
         model = lowering.milp_model(
             left_mask=left,
             right_mask=right,

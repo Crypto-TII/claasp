@@ -23,11 +23,11 @@ __all__ = [
     "ModularAddBoomerangTrailCPModel",
     "ModularAddBoomerangTrailResult",
     "ModularAddDeterministicTruncatedCPModel",
-    "PresentDifferentialCPModel",
+    "PresentXorDifferentialCPModel",
     "PresentFixedActiveSBoxesCPModel",
     "PresentActiveSBoxesCPModel",
-    "PresentLinearCPModel",
-    "PresentKeyScheduleDifferentialTrail",
+    "PresentXorLinearCPModel",
+    "PresentKeyScheduleXorDifferentialTrail",
     "PresentProbabilisticKeyScheduleCPModel",
     "PresentHybridImpossibleCPModel",
     "ProbabilisticTruncatedModularAddCPModel",
@@ -38,8 +38,8 @@ __all__ = [
     "SBoxXorDifferentialCPModel",
     "SimonImpossibleCPModel",
     "SpeckBoomerangCPModel",
-    "SpeckDifferentialCPModel",
-    "SpeckARXWindowDifferentialCPModel",
+    "SpeckXorDifferentialCPModel",
+    "SpeckARXWindowXorDifferentialCPModel",
     "SpeckContinuousHeuristicCPModel",
     "SpeckContinuousMaskOptimizationCPModel",
     "ContinuousMaskOptimizationResult",
@@ -51,11 +51,11 @@ __all__ = [
     "WordwiseDeterministicTruncatedCPModel",
     "WordwiseImpossibleCPModel",
     "WordDeterministicTruncatedCPModel",
-    "WordDeterministicDifferentialLinearCPModel",
-    "WordDifferentialCPModel",
-    "WordLinearCPModel",
+    "WordDeterministicXorDifferentialLinearCPModel",
+    "WordXorDifferentialCPModel",
+    "WordXorLinearCPModel",
     "WordImpossibleCPModel",
-    "WordSemiDeterministicDifferentialLinearCPModel",
+    "WordSemiDeterministicXorDifferentialLinearCPModel",
 ]
 
 
@@ -67,10 +67,10 @@ from claasp.representations.constraints.cp.continuous_differential import (
 def __getattr__(name: str):
     """Load trail models lazily to avoid representation import cycles."""
 
-    if name == "PresentDifferentialCPModel":
-        from claasp.representations.constraints.cp.trails import PresentDifferentialCPModel
+    if name == "PresentXorDifferentialCPModel":
+        from claasp.representations.constraints.cp.trails import PresentXorDifferentialCPModel
 
-        return PresentDifferentialCPModel
+        return PresentXorDifferentialCPModel
     if name == "PresentActiveSBoxesCPModel":
         from claasp.representations.constraints.cp.trails import PresentActiveSBoxesCPModel
 
@@ -79,18 +79,20 @@ def __getattr__(name: str):
         from claasp.representations.constraints.cp.trails import PresentFixedActiveSBoxesCPModel
 
         return PresentFixedActiveSBoxesCPModel
-    if name == "PresentLinearCPModel":
-        from claasp.representations.constraints.cp.trails import PresentLinearCPModel
+    if name == "PresentXorLinearCPModel":
+        from claasp.representations.constraints.cp.trails import PresentXorLinearCPModel
 
-        return PresentLinearCPModel
-    if name == "SpeckDifferentialCPModel":
-        from claasp.representations.constraints.cp.trails import SpeckDifferentialCPModel
+        return PresentXorLinearCPModel
+    if name == "SpeckXorDifferentialCPModel":
+        from claasp.representations.constraints.cp.trails import SpeckXorDifferentialCPModel
 
-        return SpeckDifferentialCPModel
-    if name == "SpeckARXWindowDifferentialCPModel":
-        from claasp.representations.constraints.cp.trails import SpeckARXWindowDifferentialCPModel
+        return SpeckXorDifferentialCPModel
+    if name == "SpeckARXWindowXorDifferentialCPModel":
+        from claasp.representations.constraints.cp.trails import (
+            SpeckARXWindowXorDifferentialCPModel,
+        )
 
-        return SpeckARXWindowDifferentialCPModel
+        return SpeckARXWindowXorDifferentialCPModel
     if name in {
         "ImpossibleBoundaryCPModel",
         "ModularAddDeterministicTruncatedCPModel",
@@ -102,7 +104,7 @@ def __getattr__(name: str):
         "SBoxBoomerangTrailResult",
         "ProbabilisticTruncatedModularAddCPModel",
         "PresentHybridImpossibleCPModel",
-        "PresentKeyScheduleDifferentialTrail",
+        "PresentKeyScheduleXorDifferentialTrail",
         "PresentProbabilisticKeyScheduleCPModel",
         "SimonImpossibleCPModel",
         "SpeckBoomerangCPModel",
@@ -117,11 +119,11 @@ def __getattr__(name: str):
         "WordwiseDeterministicTruncatedCPModel",
         "WordwiseImpossibleCPModel",
         "WordDeterministicTruncatedCPModel",
-        "WordDeterministicDifferentialLinearCPModel",
-        "WordDifferentialCPModel",
-        "WordLinearCPModel",
+        "WordDeterministicXorDifferentialLinearCPModel",
+        "WordXorDifferentialCPModel",
+        "WordXorLinearCPModel",
         "WordImpossibleCPModel",
-        "WordSemiDeterministicDifferentialLinearCPModel",
+        "WordSemiDeterministicXorDifferentialLinearCPModel",
     }:
         from claasp.representations.constraints.cp import trails
 

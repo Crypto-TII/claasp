@@ -15,8 +15,8 @@ from time import monotonic
 from claasp.drivers.solvers import CryptoMiniSatSolver, KissatSolver, MinisatSolver, SatStatus
 from claasp.representations.constraints.sat import (
     CNFFormula,
-    DifferentialToTruncatedSATModel,
-    TruncatedToLinearSATModel,
+    TruncatedToXorLinearSATModel,
+    XorDifferentialToTruncatedSATModel,
 )
 
 
@@ -58,8 +58,8 @@ def _formula(strategy: str, kind: str, width: int):
     if strategy == "portable_forbidden_assignment":
         return _forbidden_assignment_formula(kind, width)
     if kind == "upper":
-        return DifferentialToTruncatedSATModel(width).cnf_formula()
-    return TruncatedToLinearSATModel(width).cnf_formula()
+        return XorDifferentialToTruncatedSATModel(width).cnf_formula()
+    return TruncatedToXorLinearSATModel(width).cnf_formula()
 
 
 def _fixed(kind: str, width: int):

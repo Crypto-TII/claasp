@@ -12,7 +12,7 @@ from time import monotonic
 from claasp.drivers.solvers import GLPKSolver, MILPStatus
 from claasp.primitives import Speck
 from claasp.representations.constraints.milp import (
-    WordSemiDeterministicDifferentialLinearMILPModel,
+    WordSemiDeterministicXorDifferentialLinearMILPModel,
 )
 
 
@@ -27,7 +27,7 @@ def main():
     model = formulation = None
     for _ in range(args.repeats):
         started = monotonic()
-        model = WordSemiDeterministicDifferentialLinearMILPModel(
+        model = WordSemiDeterministicXorDifferentialLinearMILPModel(
             Speck(number_of_rounds=3),
             prefix_rounds=1,
             middle_rounds=1,

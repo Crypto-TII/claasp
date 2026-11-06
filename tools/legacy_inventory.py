@@ -488,7 +488,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The test's 19,768 constraints, first/last Sage expressions and arbitrary feasible/minimum-count statuses are not fixed cryptanalytic results.",
     },
     "claasp/cipher_modules/models/milp/milp_models/milp_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -496,7 +496,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Sage probability variables and solver modes are replaced by a capability-checked exact graph optimizer and exact Boolean-to-MILP translation. Non-integral legacy rounded S-box objectives remain explicitly outside the exact contract.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_differential_model_test.py": {
-        "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_glpk_integration.py",
+        "v5_destination": "tests/integration/test_word_xor_differential.py; tests/integration/test_glpk_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -520,7 +520,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Building time, Sage solver name and model tag are not scientific results. uBlock's one-round value follows directly from a required nonzero input and one bijective S-box layer; broader uBlock evidence is audited separately.",
     },
     "claasp/cipher_modules/models/milp/milp_models/milp_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/milp/trails.py; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -528,7 +528,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Sage variables and solver/license branches are replaced by portable representation/driver boundaries and exact Walsh decoders. Decimal-rounded legacy MILP weights are not relabelled exact.",
     },
     "tests/unit/cipher_modules/models/milp/milp_models/milp_xor_linear_model_test.py": {
-        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear.py",
+        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_xor_linear.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -712,7 +712,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy base mixes encodings and result parsing through inheritance. v5 makes the claim kind explicit and shares no mutable SAT model state between them.",
     },
     "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -720,7 +720,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "CNF counter layouts, window-search clauses and solver parsing are not semantic APIs. Shared transition semantics and complete graph enumeration preserve the exact results across open backends.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_differential_model_test.py": {
-        "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py",
+        "v5_destination": "tests/integration/test_word_xor_differential.py; tests/integration/test_minizinc_integration.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -728,7 +728,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Window constraints are optional search heuristics over otherwise exact trails; requested-weight existence does not make literal counter placement a contract. File-output formatting and arbitrary witnesses are removed. The separate uBlock aggregate remains owned by the typed-primitive prerequisite audit.",
     },
     "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/sat; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -736,7 +736,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Branch literal naming, CNF ordering, sequential counters and solver dictionaries are replaced by typed masks, exact correlations and independent decoding.",
     },
     "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_linear_model_test.py": {
-        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_linear.py",
+        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_xor_linear.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -904,7 +904,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Ballet/SipHash and golden-search cases assert only existence of an unfixed solver witness. Generated component names and arbitrary intermediate formatting are not contracts; all fixed boundaries, objective terms and empirical threshold fixtures are preserved.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized.py": {
-        "v5_destination": "src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py",
+        "v5_destination": "src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_xor_differential.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -912,7 +912,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Search annotations, mutable probability arrays and permutation/key-schedule variable-name partitions are optimizer details. Exact semantics are shared across CP and SMT rather than exposed as a separate graph realization.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_arx_optimized_test.py": {
-        "v5_destination": "tests/integration/test_minizinc_integration.py; tests/integration/test_word_differential.py",
+        "v5_destination": "tests/integration/test_minizinc_integration.py; tests/integration/test_word_xor_differential.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -920,7 +920,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Assertions on nSolutions>1, arbitrary weights>1 and internal probability-variable names are not scientific fixtures. Every exact numeric result is retained by generic graph models.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_xor_differential.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -928,7 +928,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "The legacy model duplicates search modes, parsing and component dispatch. v5 separates one semantic problem from CP/SMT representations and explicit solver drivers.",
     },
     "claasp/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model.py": {
-        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
+        "v5_destination": "src/claasp/analysis/trail_search.py; src/claasp/representations/constraints/cp/trails.py; src/claasp/representations/constraints/smt/word_xor_linear.py; tests/fixtures/analysis/trail_search_capability_matrix.json",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1192,7 +1192,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "Specific literal-string ordering and intermediate names are replaced by deterministic numeric clauses, typed graph provenance and complete Boolean truth-table tests.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_differential_model_test.py": {
-        "v5_destination": "tests/integration/test_word_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py",
+        "v5_destination": "tests/integration/test_word_xor_differential.py; tests/integration/test_minizinc_integration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1200,7 +1200,7 @@ MIGRATION_OVERRIDES = {
         "rationale": "CLI solver drivers and typed independently checked characteristics replace Python MiniZinc API versus external-command duplicates, dictionary model/status tags and arbitrary intermediate component-value formatting. Identity lookup behavior is represented directly by typed Identity; fixed round-key differences are explicit.",
     },
     "tests/unit/cipher_modules/models/cp/mzn_models/mzn_xor_linear_model_test.py": {
-        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py; tests/unit/representations/constraints/smt/test_word_linear.py",
+        "v5_destination": "tests/integration/test_speck_trail_enumeration.py; tests/unit/semantics/cryptanalysis/test_bitwise.py; tests/unit/representations/constraints/smt/test_word_xor_linear.py",
         "prerequisites": [],
         "disposition": "supersede",
         "status": "superseded-in-m10.8d",
@@ -1295,12 +1295,12 @@ _SMT_SOURCE_DESTINATIONS = {
     ),
     "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py": (
         "src/claasp/analysis/trail_search.py; "
-        "src/claasp/representations/constraints/smt/word_differential.py; "
+        "src/claasp/representations/constraints/smt/word_xor_differential.py; "
         "tests/fixtures/analysis/trail_search_capability_matrix.json"
     ),
     "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py": (
         "src/claasp/analysis/trail_search.py; "
-        "src/claasp/representations/constraints/smt/word_linear.py; "
+        "src/claasp/representations/constraints/smt/word_xor_linear.py; "
         "tests/fixtures/analysis/trail_search_capability_matrix.json"
     ),
     "claasp/cipher_modules/models/smt/solvers.py": ("src/claasp/drivers/solvers/z3.py"),
@@ -2108,7 +2108,7 @@ _M11A_FINAL_OVERRIDES = {
         "Focused scalar, batch, avalanche, and bounded native tests replace timing-sensitive mixed benchmarks.",
     ),
     "tests/benchmark/sat_xor_differential_model_test.py": (
-        "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_differential.py",
+        "tests/integration/test_speck_trail_enumeration.py; tests/unit/representations/constraints/smt/test_word_xor_differential.py",
         "supersede",
         "Typed fixed/maximum-weight formula and enumeration evidence replaces mutable SAT helper benchmarks.",
     ),

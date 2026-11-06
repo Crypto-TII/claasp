@@ -1,4 +1,4 @@
-Differential-linear distinguishers: advanced
-============================================
+XOR differential-linear trails: advanced
+========================================
 
 **TODO**

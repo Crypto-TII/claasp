@@ -26,3 +26,43 @@ making the main Python interface easier to discover and use.
 The following pages introduce these ideas gradually. See :doc:`concepts` for
 the common vocabulary and :doc:`parameters` for arithmetization-oriented
 primitives and verified parameter sets.
+
+Explicit propagation names
+--------------------------
+
+Propagation model names identify the difference or mask semantics explicitly.
+For example, use ``WordXorDifferentialSATModel`` and
+``WordXorLinearSATModel``; SMT, MILP and CP use the same convention.
+Composed models use ``XorDifferentialLinear``, as in
+``WordDeterministicXorDifferentialLinearSATModel``. XOR refers to the
+difference definition or parity checks, even when the primitive contains
+modular addition. It does not assert that the primitive itself is linear.
+
+Circle-linear trail search uses
+``primitive.analysis.find_lowest_weight_circle_linear_trail(...)``. Advanced
+callers can inspect ``CircleLinearTrailModel`` through
+``primitive.analysis.circle_linear_trail_model(...)``. The current backend
+is reported as ``perfect_subgroup_spn`` and its result states the restricted
+search scope. Endpoint correlations remain available through
+``primitive.analysis.circle_linear(...)``. These are direct API renames;
+the earlier v5 spellings are not retained as aliases. Update imports and
+call sites when moving from an earlier v5 checkout.
+
+The user guide's **Trail search and verification** group now separates search guides from
+characteristic validation, concrete realizability and actual endpoint
+probability/correlation evaluation. Each Verification page states the
+capabilities currently available for its analysis.
+
+Circle differentials
+--------------------
+
+``primitive.analysis.find_lowest_weight_circle_differential_trail(...)`` searches
+bounded concrete trails. ``primitive.analysis.circle_differential(...)`` measures alternative-difference
+probabilities through the standard evaluator. It supplies exact circle-DDTs
+using the shared XOR-DDT semantics, bounded concrete-trail search, and exact or
+sampled endpoint and trail verification at explicitly fixed keys and tweaks.
+Reported trail factors are conditioned on actual preceding events. The module
+does not add a solver-based circle-differential characteristic backend or
+assume that independent local DDT probabilities give a fixed-key trail's
+probability. Basic, Advanced and Verification guides are available in the
+**Trail search and verification** group.

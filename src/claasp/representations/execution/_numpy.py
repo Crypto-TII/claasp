@@ -3,6 +3,8 @@
 from functools import reduce
 from typing import Any
 
+from claasp.graph import GraphPropagation
+from claasp.graph.propagation import resolve_selection
 from claasp.representations.execution.scalar import ScalarExecutionDriver
 
 
@@ -37,43 +39,24 @@ def _evaluate_samples(primitive, inputs, outputs):
             for position in reversed(range(array.array_type.unit_count))
         )
     bindings = {binding.output.source_id: binding for binding in primitive.graph.bindings}
-    cache = {}
 
-    def select(selection):
-        source_id = selection.source.source_id
-        if source_id not in values and source_id not in cache:
-            binding = bindings[source_id]
-            operands = tuple(select(item) for item in binding.inputs)
-            kind = binding.kind.value
-            if kind == "join":
-                value = tuple(unit for operand in operands for unit in operand)
-            elif kind == "view":
-                value = operands[0]
-            elif kind == "unpack_bits":
-                value = tuple(
-                    (unit >> bit) & 1
-                    for unit in operands[0]
-                    for bit in reversed(range(binding.word_width))
-                )
-            elif kind == "pack_bits":
-                width = binding.word_width
-                value = tuple(
-                    sum(
-                        bit << (width - index - 1)
-                        for index, bit in enumerate(operands[0][start : start + width])
-                    )
-                    for start in range(0, len(operands[0]), width)
-                )
-            else:
-                raise NotImplementedError(f"unknown binding {kind}")
-            cache[source_id] = value
-        source = values[source_id] if source_id in values else cache[source_id]
-        return tuple(source[position] for position in selection.positions)
+    def select(selection, values, cache):
+        return resolve_selection(
+            selection,
+            values,
+            bindings,
+            cache,
+            pack=lambda group, width: sum(
+                bit << (width - index - 1) for index, bit in enumerate(group)
+            ),
+            unpack=lambda unit, width: tuple((unit >> bit) & 1 for bit in reversed(range(width))),
+        )
 
     scalar = ScalarExecutionDriver()
     hybrid = False
-    for component in primitive.graph.components:
-        operands = tuple(select(item) for item in component.inputs)
+
+    def rule(component, operands):
+        nonlocal hybrid
         kind = type(component)
         width = component.output_type.unit_type.encoded_bit_size
         mask = (1 << width) - 1 if width is not None else None
@@ -138,7 +121,10 @@ def _evaluate_samples(primitive, inputs, outputs):
                 for lane in range(size)
             ]
             output = tuple(np.array(column, dtype=dtype) for column in zip(*lanes))
-        values[component.component_id] = output
+        return output
+
+    propagated = GraphPropagation(primitive).run(values, rule, select=select)
+    values, cache = propagated.values, propagated.bindings
 
     result = []
     for selections in outputs:
@@ -146,7 +132,9 @@ def _evaluate_samples(primitive, inputs, outputs):
         for selection in selections:
             width = selection.array_type.unit_type.encoded_bit_size
             bits.extend(
-                (unit >> bit) & 1 for unit in select(selection) for bit in reversed(range(width))
+                (unit >> bit) & 1
+                for unit in select(selection, values, cache)
+                for bit in reversed(range(width))
             )
         result.append(np.asarray(bits, dtype=np.uint8))
     return result, hybrid

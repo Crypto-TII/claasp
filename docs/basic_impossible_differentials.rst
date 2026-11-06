@@ -1,4 +1,4 @@
-Impossible differentials: introduction
-======================================
+Impossible differentials: basic
+===============================
 
 **TODO**

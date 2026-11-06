@@ -8,15 +8,15 @@ are explicit immutable values.
 Generic weighted Word trails
 ----------------------------
 
-``WordDifferentialMILPModel`` and ``WordLinearMILPModel`` translate the exact
+``WordXorDifferentialMILPModel`` and ``WordXorLinearMILPModel`` translate the exact
 reviewed Boolean Word-graph relations to portable binary inequalities and add
 the corresponding trail-weight objective.
 
 .. doctest::
 
    >>> from claasp.primitives import ToySpeck
-   >>> from claasp.representations.constraints.milp import WordDifferentialMILPModel
-   >>> model = WordDifferentialMILPModel(
+   >>> from claasp.representations.constraints.milp import WordXorDifferentialMILPModel
+   >>> model = WordXorDifferentialMILPModel(
    ...     ToySpeck(2), fixed_weight=1,
    ...     fixed_input_differences={"key": 0}, nonzero_input="plaintext",
    ... )
@@ -78,8 +78,8 @@ sum of exact transition weights:
 .. doctest::
 
    >>> from claasp.primitives import Present
-   >>> from claasp.representations.constraints.milp import PresentDifferentialMILPModel
-   >>> lowering = PresentDifferentialMILPModel(Present(number_of_rounds=2))
+   >>> from claasp.representations.constraints.milp import PresentXorDifferentialMILPModel
+   >>> lowering = PresentXorDifferentialMILPModel(Present(number_of_rounds=2))
    >>> trail_model = lowering.milp_model()
    >>> len(trail_model.constraints)
    289
@@ -95,7 +95,7 @@ The compiler also accepts the same shared ``PropagationProblem`` used by SMT:
    >>> from claasp.semantics import XOR_DIFFERENTIAL
    >>> from claasp.semantics.cryptanalysis import PropagationProblem
    >>> shared = PropagationProblem(Present(number_of_rounds=2), XOR_DIFFERENTIAL)
-   >>> PresentDifferentialMILPModel(shared).problem is shared
+   >>> PresentXorDifferentialMILPModel(shared).problem is shared
    True
 
 Consequently a global or per-component semantic override is selected before
@@ -455,8 +455,8 @@ masks and unary correlation weight:
 
 .. doctest::
 
-   >>> from claasp.representations.constraints.milp import ModularAddLinearMILPModel
-   >>> addition = ModularAddLinearMILPModel(16)
+   >>> from claasp.representations.constraints.milp import ModularAddXorLinearMILPModel
+   >>> addition = ModularAddXorLinearMILPModel(16)
    >>> arx_model = addition.milp_model(left_mask=0x6081, right_mask=0x40c1, output_mask=0x4081)
    >>> (len(arx_model.variables), len(arx_model.constraints))
    (79, 128)

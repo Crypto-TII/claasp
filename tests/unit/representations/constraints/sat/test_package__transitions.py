@@ -8,9 +8,9 @@ from claasp.primitives.block_ciphers.present import PRESENT_SBOX
 from claasp.representations.constraints import ConstraintBackend
 from claasp.representations.constraints.sat import (
     ModularAddDeterministicTruncatedSATModel,
-    ModularAddDifferentialSATModel,
-    ModularAddLinearSATModel,
     ModularAddNWindowSATModel,
+    ModularAddXorDifferentialSATModel,
+    ModularAddXorLinearSATModel,
     ModularSubtractDeterministicTruncatedSATModel,
     SBoxXorDifferentialSATModel,
     SBoxXorLinearSATModel,
@@ -58,7 +58,7 @@ def test_sat_sbox_support_matches_every_present_pair(model_type, transition_meth
 
 @pytest.mark.parametrize("width", (1, 2, 3))
 def test_sat_modadd_differential_matches_every_small_transition(width):
-    model = ModularAddDifferentialSATModel(width)
+    model = ModularAddXorDifferentialSATModel(width)
     formula = model.cnf_formula()
     mask = (1 << width) - 1
     for left, right, output in product(range(1 << width), repeat=3):
@@ -84,7 +84,7 @@ def test_sat_modadd_differential_matches_every_small_transition(width):
 
 
 def test_sat_modadd_linear_matches_every_three_bit_mask_triple():
-    model = ModularAddLinearSATModel(3)
+    model = ModularAddXorLinearSATModel(3)
     decoded = {
         (
             transition.input_pattern.value,

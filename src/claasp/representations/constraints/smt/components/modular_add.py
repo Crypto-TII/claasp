@@ -7,17 +7,17 @@ from claasp.representations.constraints import (
 )
 from claasp.representations.constraints.smt.model import SMTFormula
 from claasp.semantics.cryptanalysis import (
-    ModularAddLinearSemantics,
     ModularAddTransitionSemantics,
+    ModularAddXorLinearSemantics,
 )
 
 
-class ModularAddDifferentialSMTModel:
+class ModularAddXorDifferentialSMTModel:
     """Exact paired-carry support and unary XOR-differential weights.
 
     EXAMPLES::
 
-        >>> formula = ModularAddDifferentialSMTModel(4).smt_formula()
+        >>> formula = ModularAddXorDifferentialSMTModel(4).smt_formula()
         >>> formula.variables[:4]
         ('left_0', 'left_1', 'left_2', 'left_3')
         >>> formula.variables[-3:]
@@ -26,7 +26,7 @@ class ModularAddDifferentialSMTModel:
 
     model_provenance = _verified_model(
         ConstraintBackend.SMT,
-        "ModularAddDifferentialSMTModel",
+        "ModularAddXorDifferentialSMTModel",
         "xor_differential",
         "paired-carry Boolean support with unary weight",
         "https://eprint.iacr.org/2001/001",
@@ -99,12 +99,12 @@ class ModularAddDifferentialSMTModel:
         return transition
 
 
-class ModularAddLinearSMTModel:
+class ModularAddXorLinearSMTModel:
     """Boolean SMT relation for exact modular-add XOR-linear correlations.
 
     EXAMPLES::
 
-        >>> formula = ModularAddLinearSMTModel(4).smt_formula(
+        >>> formula = ModularAddXorLinearSMTModel(4).smt_formula(
         ...     left_mask=1, right_mask=0, output_mask=1
         ... )
         >>> formula.variables[-4:]
@@ -115,7 +115,7 @@ class ModularAddLinearSMTModel:
 
     model_provenance = _verified_model(
         ConstraintBackend.SMT,
-        "ModularAddLinearSMTModel",
+        "ModularAddXorLinearSMTModel",
         "xor_linear",
         "Boolean mask recurrence with unary weight",
         "10.1007/978-3-319-39555-5_26",
@@ -124,7 +124,7 @@ class ModularAddLinearSMTModel:
     )
 
     def __init__(self, width: int) -> None:
-        self.semantics = ModularAddLinearSemantics(width)
+        self.semantics = ModularAddXorLinearSemantics(width)
         self.width = width
 
     def smt_formula(

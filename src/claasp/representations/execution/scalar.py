@@ -25,6 +25,7 @@ from claasp.components.word import (
 )
 from claasp.graph.component import Component
 from claasp.graph.primitive import Primitive
+from claasp.graph.propagation import GraphPropagation
 from claasp.provenance import DriverIdentity, DriverKind, ResultProvenance
 from claasp.semantics import CONCRETE
 
@@ -132,51 +133,23 @@ class ScalarExecutionDriver:
 
         if not isinstance(primitive, Primitive):
             raise TypeError("primitive must be a Primitive")
-        expected_names = set(primitive.graph.input_arrays)
-        actual_names = set(inputs)
-        if actual_names != expected_names:
-            missing = sorted(expected_names - actual_names)
-            unexpected = sorted(actual_names - expected_names)
-            raise ValueError(
-                f"primitive inputs do not match: missing={missing}, unexpected={unexpected}"
-            )
 
-        values: dict[str, RuntimeValue] = {}
-        for name, unit_array in primitive.graph.input_arrays.items():
-            value = tuple(inputs[name])
-            self._validate_value(
-                name, value, unit_array.array_type.unit_count, unit_array.array_type.unit_type
-            )
-            values[name] = value
+        def validate(name, value, array_type):
+            self._validate_value(name, value, array_type.unit_count, array_type.unit_type)
 
-        binding_cache = {}
-        for component in primitive.graph.components:
-            selected_inputs = tuple(
-                primitive.graph.resolve_selection(item, values, binding_cache)
-                for item in component.inputs
-            )
+        def rule(component, operands):
             try:
                 handler = self._handlers[type(component)]
             except KeyError as error:
                 raise NotImplementedError(
                     f"ScalarEvaluator does not support {type(component).__name__}"
                 ) from error
-            output = tuple(handler(component, selected_inputs))
-            self._validate_value(
-                component.component_id,
-                output,
-                component.output_type.unit_count,
-                component.output_type.unit_type,
-            )
-            values[component.component_id] = output
+            return handler(component, operands)
 
-        output = None
-        if primitive.graph.output is not None:
-            output = primitive.graph.resolve_selection(
-                primitive.graph.output, values, binding_cache
-            )
-        for binding in primitive.graph.bindings:
-            primitive.graph.resolve_selection(binding.output.select_all(), values, binding_cache)
+        propagated = GraphPropagation(primitive).run(
+            inputs, rule, validate=validate, materialize_bindings=True
+        )
+        values, binding_cache, output = propagated.values, propagated.bindings, propagated.output
         annotation = GraphAnnotation.from_values(primitive, CONCRETE, values, output=output)
         return EvaluationResult(
             dict(values) | dict(binding_cache),

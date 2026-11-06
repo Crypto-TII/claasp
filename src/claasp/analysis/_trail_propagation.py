@@ -15,7 +15,7 @@ from claasp.components import (
     Rotate,
     Xor,
 )
-from claasp.graph import as_selection
+from claasp.graph import GraphPropagation, as_selection
 from claasp.semantics.cryptanalysis import (
     SBoxTransitionSemantics,
     Trail,
@@ -121,19 +121,12 @@ def xor_differential_propagation(
     }
     dependencies = {name: frozenset((name,)) for name in primitive.graph.input_arrays}
     weighted = {step.component_id: step.transition for step in trail.steps}
-    round_numbers = {
-        component.component_id: primitive_round.number
-        for primitive_round in primitive.graph.rounds
-        for component in primitive_round.components
-    }
+    propagation = GraphPropagation(primitive)
+    round_numbers = propagation.round_numbers
     include_key_schedule = input_differences.get("key", 0) != 0
     result = []
 
-    for component in primitive.graph.components:
-        operands = tuple(
-            tuple(primitive.graph.resolve_selection(selection, values))
-            for selection in component.inputs
-        )
+    def rule(component, operands):
         source_ids = {
             source_id
             for selection in component.inputs
@@ -193,11 +186,10 @@ def xor_differential_propagation(
                 f"full differential trail display does not support {type(component).__name__}"
             )
 
-        values[component.component_id] = output
         dependencies[component.component_id] = component_dependencies
         is_key_schedule_only = not component_dependencies or component_dependencies <= {"key"}
         if is_key_schedule_only and not include_key_schedule:
-            continue
+            return output
 
         output_width = component.output_type.unit_type.encoded_bit_size
         if output_width is None:
@@ -212,7 +204,10 @@ def xor_differential_propagation(
                 local_transition,
             )
         )
+        return output
 
+    propagated = propagation.run(values, rule)
+    values = propagated.values
     if primitive.graph.output is None:
         raise ValueError("trail primitive must declare an output")
     output = tuple(primitive.graph.resolve_selection(primitive.graph.output, values))

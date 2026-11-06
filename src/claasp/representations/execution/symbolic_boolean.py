@@ -19,7 +19,7 @@ from claasp.components import (
     Shift,
     Xor,
 )
-from claasp.graph import Primitive
+from claasp.graph import GraphPropagation, Primitive
 from claasp.representations.constraints.polynomial import BooleanPolynomial, anf_from_truth_table
 from claasp.unit_types import Bit, Word
 
@@ -127,17 +127,11 @@ class BooleanSymbolicEvaluator:
                     "Boolean symbolic evaluation supports Bit and Word domains"
                 )
 
-        binding_cache: dict = {}
-        for component in primitive.graph.components:
-            inputs = tuple(
-                primitive.graph.resolve_selection(selection, values, binding_cache)
-                for selection in component.inputs
-            )
-            assert component.component_id is not None
-            values[component.component_id] = self._component(component, inputs)
-        if primitive.graph.output is None:
+        propagated = GraphPropagation(primitive).run(values, self._component)
+        values = propagated.values
+        if propagated.output is None:
             return BooleanSymbolicResult((), values)
-        selected = primitive.graph.resolve_selection(primitive.graph.output, values, binding_cache)
+        selected = propagated.output
         flattened = tuple(
             polynomial
             for unit in selected

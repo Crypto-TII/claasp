@@ -5,12 +5,12 @@ from itertools import product
 import pytest
 
 from claasp.representations.constraints.sat import CNFFormula
-from claasp.representations.constraints.smt.transitions import ModularAddDifferentialSMTModel
+from claasp.representations.constraints.smt.transitions import ModularAddXorDifferentialSMTModel
 
 
 @pytest.mark.parametrize("width", [1, 2, 3])
 def test_all_small_modadd_ddt_entries_and_weights(width):
-    model = ModularAddDifferentialSMTModel(width)
+    model = ModularAddXorDifferentialSMTModel(width)
     formula = model.smt_formula()
     cnf = CNFFormula(formula.variables, formula.assertions, formula.provenance)
     mask = (1 << width) - 1
