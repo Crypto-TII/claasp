@@ -23,15 +23,12 @@ in Python.
        bibrace=operation, fixed_inputs={"tweak": 0}
    )
 
-The ``bibrace`` argument selects the displayed operation. CRAFT also takes a
-**tweak**, an additional nonsecret input that selects an encryption variant
-without changing the secret key. Here ``fixed_inputs={"tweak": 0}`` sets it to
-zero. The secret key is left unspecified; the search derives conditions on
-the keys for which the trail contributes. The advanced guide shows how to
-select other operations and inspect the underlying model.
+The ``bibrace`` argument selects the displayed operation. CRAFT is a
+**tweakable block cipher**, with an additional nonsecret input called a
+**tweak**. Here we fix the tweak to zero; the search derives conditions on the
+secret key. The advanced guide covers other operations and model inspection.
 
-Print the round masks, absolute correlations and cumulative absolute trail
-contributions:
+Print the round masks and relative and cumulative absolute correlations:
 
 .. code-block:: python
 
@@ -57,14 +54,13 @@ The **correlation** between two checks is the fraction of inputs on which
 they agree minus the fraction on which they disagree.
 
 ``Relative |correlation|`` is :math:`|c_i|`, the absolute correlation of
-round transition :math:`i`. ``Cumulative |trail contribution|`` is
-:math:`|\prod_{j=1}^{i} c_j|`, the absolute product along the selected trail.
-These absolute values apply on the reported **key class**: the set of keys
+round transition :math:`i`. ``Cumulative |correlation|`` is
+:math:`|\prod_{j=1}^{i} c_j|`, the absolute trail correlation through round
+:math:`i`. These absolute values apply on the reported **key class**: the set of keys
 satisfying the conditions found by the search. Signs can depend on the key.
-The cumulative column gives the selected trail's contribution; the full
-input/output correlation sums contributions from all trails with the same
-input and output checks. Use ``result.to_terminal(details=True)`` to also
-inspect the search settings, conditions on the key and weight of each round.
+The full input/output correlation sums the signed trail correlations over
+all trails with the same input and output checks. Use
+``result.to_terminal(details=True)`` to also inspect the search settings, conditions on the key and weight of each round.
 
 Plot the weight contributed by each round and its running total:
 
@@ -76,15 +72,14 @@ Plot the weight contributed by each round and its running total:
 
 The horizontal axis numbers rounds within this segment, starting with input
 at zero. Each additional bit of weight halves the absolute trail
-contribution. The relative line shows each round's weight; the cumulative
+correlation. The relative line shows each round's weight; the cumulative
 line adds them.
 
 The model searches a restricted set of checks called a **subgroup**: XORing
 any two checks in the set gives another check in the set. These checks have
 **perfect** relations through the S-box (the substitution lookup table): the
 checks before and after it always agree or always disagree. Optimality applies
-to this restricted set. Other trails may reinforce or cancel the selected
-trail's contribution to the full input/output correlation.
+to this restricted set.
 
 Plotting requires the optional ``presentation`` dependencies described in
 :doc:`getting_started`. Use ``result.plot(show=False)``

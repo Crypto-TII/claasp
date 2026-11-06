@@ -162,7 +162,6 @@ def trail_section(result, *, details=False):
             round_rows,
             pattern="Mask",
             quantity="|correlation|",
-            cumulative_quantity="|trail contribution|",
             notes=notes,
         )
     ]
