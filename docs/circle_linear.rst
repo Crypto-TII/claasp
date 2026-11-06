@@ -55,6 +55,10 @@ the signed sum over all trails with the same input and output checks gives
 the full endpoint correlation. Circle-linear analysis can expose biases that
 ordinary parity checks miss, sometimes only for a particular class of keys.
 
+Use ``primitive.analysis.find_lowest_weight_circle_linear_trail(...)`` for
+the standard search workflow; the result retains its supported subgroup and
+key-class scope.
+
 .. toctree::
    :maxdepth: 2
 

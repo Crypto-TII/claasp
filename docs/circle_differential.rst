@@ -39,8 +39,9 @@ for larger binary primitives. Concrete trail search fixes the input difference
 and all other primitive inputs, then counts actual boundary histories through
 the shared evaluator. It has no SAT, SMT, MILP or CP circle-differential search
 backend; it does not claim an efficient exhaustive search on full-size primitives.
-The guides distinguish this concrete search from a product of local DDT
-probabilities.
+Use ``primitive.analysis.find_lowest_weight_circle_differential_trail(...)``
+for the standard search workflow. The guides distinguish this concrete search
+from a product of local DDT probabilities.
 
 .. toctree::
    :maxdepth: 2

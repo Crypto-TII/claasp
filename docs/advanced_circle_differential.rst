@@ -98,7 +98,8 @@ including every S-box and XOR key addition.
    ...     _ = builder.set_round_output(state)
    >>> spn = builder.build(state)
    >>> analysis = spn.analysis.circle_differential(bibrace=operation)
-   >>> trail = analysis.best_trail(7, fixed_inputs={"key": 0})
+   >>> trail = spn.analysis.find_lowest_weight_circle_differential_trail(
+   ...     bibrace=operation, input_difference=7, fixed_inputs={"key": 0})
    >>> trail.boundary_labels
    ('input', 'round 1', 'round 2', 'output')
    >>> len(trail.differences), trail.searched, trail.evidence.complete
@@ -111,12 +112,16 @@ including every S-box and XOR key addition.
    >>> trail.plot(show=False)
    ... # doctest: +SKIP
 
-``best_trail(a, b, ...)`` can also constrain the final output difference. With
+``find_lowest_weight_circle_differential_trail(input_difference=a,
+output_difference=b, ...)`` can also constrain the final output difference. With
 ``b`` omitted it searches all observed endpoint differences for that input.
 It returns ``None`` if a constrained endpoint has no actual pair. Optimality
 covers the declared observations, fixed inputs and supplied input difference;
 it does not optimise over input differences or operations. Ties use the
 lexicographically smallest difference sequence.
+
+For repeated experiments, ``analysis.best_trail(a, b, ...)`` exposes the same
+search on the configured circle-differential analysis object.
 
 The input and final output are always retained. Published intermediate round
 outputs are used automatically, with their genuine round numbers; a final

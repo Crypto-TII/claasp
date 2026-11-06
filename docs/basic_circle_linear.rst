@@ -17,11 +17,14 @@ for the trail, and needs no solver.
 
    operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
    primitive = Craft(number_of_rounds=8)
-   result = primitive.circle_linear_trail_model(bibrace=operation).search()
+   result = primitive.analysis.find_lowest_weight_circle_linear_trail(
+       bibrace=operation, fixed_inputs={"tweak": 0}
+   )
 
-The explicit ``bibrace`` argument selects the displayed operation. It is also
-the default of CRAFT's convenience method. The advanced guide shows how to
-select and compare other operations.
+The explicit ``bibrace`` argument selects the displayed operation. The public
+tweak is fixed to zero; the search derives the conditions on the secret key.
+The advanced guide shows how to select and compare other operations and how
+to inspect the underlying model.
 
 Print the round masks, absolute correlations and cumulative absolute trail
 contributions:

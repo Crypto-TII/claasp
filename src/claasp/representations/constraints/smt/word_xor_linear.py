@@ -74,6 +74,19 @@ class WordXorLinearCharacteristic:
             result *= step.transition.sign
         return result
 
+    def to_terminal(self, *, details: bool = False, file=None) -> None:
+        """Print retained characteristic evidence without starting a solver.
+
+        EXAMPLES::
+
+            >>> callable(WordXorLinearCharacteristic.to_terminal)
+            True
+        """
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation._trail_queries import characteristic_section
+
+        to_terminal(characteristic_section(self, linear=True, details=details), file=file)
+
 
 @dataclass(frozen=True, slots=True)
 class WordXorLinearEnumeration:
@@ -88,6 +101,23 @@ class WordXorLinearEnumeration:
         if not self.complete:
             raise RuntimeError("linear characteristic enumeration is incomplete")
         return self
+
+    def to_terminal(self, *, details: bool = False, file=None) -> None:
+        """Print retained characteristic evidence without starting a solver.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> result = WordXorLinearEnumeration((), False, 0.0)
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "Incomplete enumeration" in output.getvalue()
+            True
+        """
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation._trail_queries import enumeration_section
+
+        to_terminal(enumeration_section(self, linear=True, details=details), file=file)
 
 
 class WordXorLinearSMTModel:

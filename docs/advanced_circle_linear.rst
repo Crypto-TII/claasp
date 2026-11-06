@@ -6,6 +6,12 @@ The :doc:`basic_circle_linear` guide covers a basic trail search.
 endpoint correlation evaluation. This advanced guide defines the terminology,
 explores parameters and checks numerical CRAFT results.
 
+Use ``primitive.analysis.find_lowest_weight_circle_linear_trail(...)`` for
+the standard search-and-report workflow, following the XOR trail-query naming.
+For model inspection and supplied-mask trails, construct
+``primitive.analysis.circle_linear_trail_model(...)`` explicitly. Both paths
+use the same graph-derived model and restricted search backend.
+
 The operation used in the introductory example
 ----------------------------------------------
 

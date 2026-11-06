@@ -9,8 +9,8 @@ def run_example():
     table = (0, 14, 11, 1, 7, 12, 9, 6, 13, 3, 4, 15, 2, 8, 10, 5)
     primitive = BitVectorSBox(4, table)
     operation = BinaryBibrace(4, ((0, 0, 8, 4),), (1,))
-    return primitive.analysis.circle_differential(bibrace=operation, input_name="input").best_trail(
-        7
+    return primitive.analysis.find_lowest_weight_circle_differential_trail(
+        bibrace=operation, input_name="input", input_difference=7
     )
 
 

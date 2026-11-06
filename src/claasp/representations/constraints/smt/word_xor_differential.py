@@ -67,6 +67,19 @@ class WordXorDifferentialCharacteristic:
     def total_weight(self):
         return sum(step.transition.weight for step in self.steps)
 
+    def to_terminal(self, *, details: bool = False, file=None) -> None:
+        """Print retained characteristic evidence without starting a solver.
+
+        EXAMPLES::
+
+            >>> callable(WordXorDifferentialCharacteristic.to_terminal)
+            True
+        """
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation._trail_queries import characteristic_section
+
+        to_terminal(characteristic_section(self, linear=False, details=details), file=file)
+
 
 @dataclass(frozen=True, slots=True)
 class WordXorDifferentialEnumeration:
@@ -98,6 +111,23 @@ class WordXorDifferentialEnumeration:
                 probability *= Fraction(step.transition.numerator, step.transition.denominator)
             total += probability
         return total
+
+    def to_terminal(self, *, details: bool = False, file=None) -> None:
+        """Print retained characteristic evidence without starting a solver.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> result = WordXorDifferentialEnumeration((), False, 0.0)
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> "Incomplete enumeration" in output.getvalue()
+            True
+        """
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation._trail_queries import enumeration_section
+
+        to_terminal(enumeration_section(self, linear=False, details=details), file=file)
 
 
 class WordXorDifferentialSMTModel:

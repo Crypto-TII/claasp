@@ -38,7 +38,9 @@ Composed models use ``XorDifferentialLinear``, as in
 difference definition or parity checks, even when the primitive contains
 modular addition. It does not assert that the primitive itself is linear.
 
-Circle-linear trail search uses ``CircleLinearTrailModel`` and
+Circle-linear trail search uses
+``primitive.analysis.find_lowest_weight_circle_linear_trail(...)``. Advanced
+callers can inspect ``CircleLinearTrailModel`` through
 ``primitive.analysis.circle_linear_trail_model(...)``. The current backend
 is reported as ``perfect_subgroup_spn`` and its result states the restricted
 search scope. Endpoint correlations remain available through
@@ -54,7 +56,8 @@ capabilities currently available for its analysis.
 Circle differentials
 --------------------
 
-``primitive.analysis.circle_differential(...)`` measures alternative-difference
+``primitive.analysis.find_lowest_weight_circle_differential_trail(...)`` searches
+bounded concrete trails. ``primitive.analysis.circle_differential(...)`` measures alternative-difference
 probabilities through the standard evaluator. It supplies exact circle-DDTs
 using the shared XOR-DDT semantics, bounded concrete-trail search, and exact or
 sampled endpoint and trail verification at explicitly fixed keys and tweaks.

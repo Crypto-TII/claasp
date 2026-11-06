@@ -23,9 +23,9 @@ bit, starting at zero; multiplication of bits means AND. For example,
    table = (0, 14, 11, 1, 7, 12, 9, 6, 13, 3, 4, 15, 2, 8, 10, 5)
    primitive = BitVectorSBox(4, table)
    operation = BinaryBibrace(4, ((0, 0, 8, 4),), (1,))
-   result = primitive.analysis.circle_differential(
-       bibrace=operation, input_name="input"
-   ).best_trail(7)
+   result = primitive.analysis.find_lowest_weight_circle_differential_trail(
+       bibrace=operation, input_name="input", input_difference=7
+   )
 
 Print the boundary differences and their probabilities:
 
@@ -50,7 +50,8 @@ Print the boundary differences and their probabilities:
    :language: text
 
 All sixteen inputs give output difference six: the probability is one.
-``best_trail(7)`` exhaustively searches for the most probable concrete trail
+``find_lowest_weight_circle_differential_trail(input_difference=7, ...)``
+exhaustively searches for the most probable concrete trail
 with that input difference. Here there are only input and output boundaries.
 The advanced guide shows round boundaries in a multiround graph.
 
