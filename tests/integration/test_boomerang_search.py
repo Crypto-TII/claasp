@@ -3,7 +3,7 @@ from itertools import product
 
 import pytest
 
-from claasp.analysis.boomerang_search import BoomerangSearchStatus
+from claasp.analysis.boomerang_search import BoomerangAnalysis, BoomerangSearchStatus
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.primitives import ToySpeck
 from claasp.representations.constraints.sat._boomerang_switch import add_large_switch
@@ -14,10 +14,8 @@ pytestmark = pytest.mark.external
 
 
 def test_search_checks_trails_switches_and_proves_only_the_restricted_outer_objective():
-    result = (
-        ToySpeck(4)
-        .analysis.boomerang(switch_round=2)
-        .find_lowest_weight_trail(solver=Z3Solver(timeout_seconds=30))
+    result = ToySpeck(4).analysis.find_lowest_weight_boomerang_trail(
+        switch_round=2, solver=Z3Solver(timeout_seconds=30)
     )
     assert result.status is BoomerangSearchStatus.SATISFIABLE
     assert result.is_optimal
@@ -34,7 +32,7 @@ def test_search_checks_trails_switches_and_proves_only_the_restricted_outer_obje
 
 
 def test_zero_outer_differences_are_unsatisfiable_not_a_distinguisher():
-    analysis = ToySpeck(3).analysis.boomerang(switch_round=1)
+    analysis = BoomerangAnalysis(ToySpeck(3), switch_round=1)
     for options in ({"input_difference": 0}, {"output_difference": 0}):
         result = analysis.find_lowest_weight_trail(**options)
         assert result.status is BoomerangSearchStatus.UNSATISFIABLE
@@ -43,7 +41,7 @@ def test_zero_outer_differences_are_unsatisfiable_not_a_distinguisher():
 
 
 def test_tampered_complete_assignment_is_rejected():
-    model = ToySpeck(3).analysis.boomerang(switch_round=1).model()
+    model = BoomerangAnalysis(ToySpeck(3), switch_round=1).model()
     formula = model.cnf_formula(maximum_weight=2)
     solved = Z3Solver(timeout_seconds=30).solve(formula)
     assert solved.assignment is not None
@@ -85,7 +83,7 @@ def test_portable_backend_preserves_restricted_boomerang_search():
             os.environ.get("CLAASP_PARITY_CP_SOLVER", "gecode"), timeout_seconds=30
         ),
     }[backend]()
-    analysis = ToySpeck(3).analysis.boomerang(switch_round=1)
+    analysis = BoomerangAnalysis(ToySpeck(3), switch_round=1)
     candidate = analysis.find_one_trail(solver=driver)
     assert candidate.status is BoomerangSearchStatus.SATISFIABLE
     assert candidate.trail is not None and candidate.trail.model_complete

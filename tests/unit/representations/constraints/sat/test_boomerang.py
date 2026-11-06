@@ -94,16 +94,14 @@ def test_legacy_halving_flag_is_not_an_exact_probability_threshold():
 
 
 def test_outer_search_windows_are_explicit_and_serialized():
+    from claasp.analysis.boomerang_search import BoomerangAnalysis
     from claasp.representations.constraints.sat import NWindowSATStrategy
 
-    model = (
-        ToySpeck(3)
-        .analysis.boomerang(
-            switch_round=1,
-            upper_window=NWindowSATStrategy(window_size=1),
-            lower_window=NWindowSATStrategy(window_size=2),
-        )
-        .model()
-    )
+    model = BoomerangAnalysis(
+        ToySpeck(3),
+        switch_round=1,
+        upper_window=NWindowSATStrategy(window_size=1),
+        lower_window=NWindowSATStrategy(window_size=2),
+    ).model()
     formula = model.cnf_formula()
     assert any("n_window" in label for label in formula.provenance)
