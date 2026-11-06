@@ -226,7 +226,9 @@ class ContinuousDifferentialAnalysis:
                 name: tuple(float(value) for value in values)
                 for name, values in model.inputs.items()
             }
-            output = ContinuousXorDifferentialExecutionDriver().evaluate(self.primitive, inputs).output
+            output = (
+                ContinuousXorDifferentialExecutionDriver().evaluate(self.primitive, inputs).output
+            )
             assert output is not None
             bits = [bool(value) if value is not None else False for value in model.output_mask]
             if not any(bits):
