@@ -1,12 +1,4 @@
-"""Published vectors and independent-circuit checks for the research catalogue.
-
-NOEKEON: designers' Noekeon_ref.zip/NoekeonTestVectors.txt.
-PRIDE: Appendix J vectors, also reproduced in obfusk/pypride's examples.
-uLBC: https://doi.org/10.62056/a63zzoja5, Appendix A (all six vectors).
-"""
-
-import json
-from pathlib import Path
+"""PRIDE Appendix J vectors and independent full/reduced-round checks."""
 
 import pytest
 
@@ -27,13 +19,46 @@ def test_pride_published_vectors(p, k, c):
     assert Pride().evaluate(plaintext=p, key=k) == c
 
 
+# Independent implementation: https://github.com/obfusk/pypride/blob/master/pypride.py
+# SHA-256: 70ea05212e55e5fef5d7ae520cf68c7bb18ece5da7b908b873f55ac518f1775c; deterministic input seed: 20261107.
 @pytest.mark.parametrize(
-    "vector",
-    json.loads(
-        (Path(__file__).parents[3] / "fixtures/primitives/pride_crosscheck.json").read_text()
-    )["vectors"],
+    "rounds,plaintext,key,ciphertext",
+    [
+        (1, 0xA92EB7469089D4FA, 0x8C3BAB2CEC7921371073031615B7D58, 0x2698356CA94BA967),
+        (1, 0xBB516E65265EDE5B, 0xFCA34FC83E6CAABC4FF51C699BA759FC, 0xFE0FD561BE462298),
+        (1, 0xB022777F37B1584A, 0x4FB9581E8EA1269FFCA07F5D1244E52A, 0x308A4EFB5DE5BFA3),
+        (1, 0x2682F634108B9A50, 0x4867D999133483CC668F3EAF369511C4, 0x59533C2F3BA56F97),
+        (2, 0xC98C76C2FC4CD776, 0x8CEF47D92AD9EA8954CBB7F32FDA7EF4, 0x9D04582A9E4B4F3C),
+        (2, 0xEDFDA8083C62AF76, 0x2CA7B9A8C8434B15AF89DD3049D21E30, 0x553AF2FEEE5F3E8C),
+        (2, 0xD36A63496D17171D, 0xCBFE4097F317B970A7B9478EA11A2166, 0x686710E701C81E3B),
+        (2, 0x9A00C50ECFC2B411, 0xD44100251355B4DB06C9D368C493EE64, 0x6F4A0A69B6698ADA),
+        (5, 0x839FC9CFA72BFD4A, 0x3CBD2B043B6C295984AC9CF1A05E3F8B, 0xA715DB8F47DF25C5),
+        (5, 0xF6E37419D681DBFD, 0xF9E818CC6D2906F09FC9EC070FEB3CB2, 0x4C05A6FFDF1EC4F6),
+        (5, 0xC4C49FB84E0DEB6, 0x9D98A65A271D137E843F2C9D726E380B, 0xD4EF439DAE8C4EDE),
+        (5, 0xBE44C49DFFD3FEDC, 0x129D6A6D84273D4C216EF28822C29DF8, 0x4E193B8E649A3969),
+        (19, 0x759AFDD8F93196FC, 0xECF3434DBA785586695060FFA7022AD4, 0xEFEE23757268C948),
+        (19, 0x9DA33AFDF4DE883E, 0xEFA73720FE9160A319F05ECD873BD569, 0x6286E1D66EC0F831),
+        (19, 0x761D2A26D15FEE3E, 0x22493BD334BCB3CD6E56B69E9CD85BEF, 0x31D9BB1B7DFF3B53),
+        (19, 0x9D74D73010C9B34C, 0x2F72B641B3CC056389AF35B7BE52DE5, 0x9FAC46AE11B16193),
+        (20, 0x5979F67842CABECA, 0xB4344EA85C06BA76B741D3BF512DB88E, 0x8F5D444BDF455BAF),
+        (20, 0x774CA0D7927541FD, 0x4ADD99D105C7F092B44423EEEFC91C61, 0xDD962206D7196534),
+        (20, 0x48E6AF2A5F95D024, 0x3FB5B6CC01022DB3FC3466AA021231AB, 0xD80DAD2B72949D15),
+        (20, 0xB2A092763103C7D6, 0xFF2EE9C1A6AF7E473B17430ACF397DDE, 0xC6956C9AAD6DABB6),
+    ],
 )
-def test_pride_full_and_reduced_rounds_against_independent_implementation(vector):
-    assert Pride(number_of_rounds=vector["rounds"]).evaluate(
-        plaintext=int(vector["plaintext"], 16), key=int(vector["key"], 16)
-    ) == int(vector["ciphertext"], 16)
+def test_pride_full_and_reduced_rounds_against_independent_implementation(
+    rounds, plaintext, key, ciphertext
+):
+    assert Pride(number_of_rounds=rounds).evaluate(plaintext=plaintext, key=key) == ciphertext
+
+
+@pytest.mark.parametrize("kwargs", [{"number_of_rounds": 21}, {"number_of_rounds": False}])
+def test_invalid_parameters(kwargs):
+    with pytest.raises(ValueError):
+        Pride(**kwargs)
+
+
+def test_specification_instances_are_separate_from_round_reductions():
+    primitive = Pride(number_of_rounds=2)
+    assert len(primitive.graph.rounds) == 2
+    assert {r.values["number_of_rounds"] for r in primitive.instances} == {20}

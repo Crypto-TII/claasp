@@ -1,9 +1,4 @@
-"""Published vectors and independent-circuit checks for the research catalogue.
-
-NOEKEON: designers' Noekeon_ref.zip/NoekeonTestVectors.txt.
-PRIDE: Appendix J vectors, also reproduced in obfusk/pypride's examples.
-uLBC: https://doi.org/10.62056/a63zzoja5, Appendix A (all six vectors).
-"""
+"""NOEKEON designers' vectors and independent Boolean-circuit checks."""
 
 from random import Random
 
@@ -89,3 +84,18 @@ def test_noekeon_reduced_and_full_rounds_against_independent_boolean_circuit(rou
         working = _noekeon_circuit(k, 0, 16) if mode == "indirect" else k
         assert primitive.evaluate(plaintext=p, key=k) == _noekeon_circuit(p, working, rounds)
     assert len(primitive.graph.rounds) == rounds
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"number_of_rounds": True}, {"number_of_rounds": 17}, {"key_mode": "other"}]
+)
+def test_invalid_parameters(kwargs):
+    with pytest.raises(ValueError):
+        Noekeon(**kwargs)
+
+
+def test_specification_instances_are_separate_from_round_reductions():
+    assert {r.values["key_mode"] for r in Noekeon(number_of_rounds=2).instances} == {
+        "direct",
+        "indirect",
+    }

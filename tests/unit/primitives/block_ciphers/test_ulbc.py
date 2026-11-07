@@ -1,9 +1,4 @@
-"""Published vectors and independent-circuit checks for the research catalogue.
-
-NOEKEON: designers' Noekeon_ref.zip/NoekeonTestVectors.txt.
-PRIDE: Appendix J vectors, also reproduced in obfusk/pypride's examples.
-uLBC: https://doi.org/10.62056/a63zzoja5, Appendix A (all six vectors).
-"""
+"""uLBC block-cipher vectors from the design paper, Appendix A."""
 
 import pytest
 
@@ -31,3 +26,17 @@ from claasp.primitives import ULBC
 )
 def test_ulbc_published_vectors(bits, p, k, c):
     assert ULBC(key_bit_size=bits).evaluate(plaintext=p, key=k) == c
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"key_bit_size": 192}, {"number_of_rounds": 0}, {"number_of_rounds": 19}]
+)
+def test_invalid_parameters(kwargs):
+    with pytest.raises(ValueError):
+        ULBC(**kwargs)
+
+
+def test_specification_instances_are_separate_from_round_reductions():
+    primitive = ULBC(number_of_rounds=2)
+    assert len(primitive.graph.rounds) == 2
+    assert {r.values["key_bit_size"] for r in primitive.instances} == {128, 256}

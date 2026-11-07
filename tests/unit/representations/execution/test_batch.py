@@ -1,3 +1,5 @@
+from random import Random
+
 import pytest
 
 from claasp import (
@@ -7,7 +9,7 @@ from claasp import (
     TransposedBatchEvaluator,
     UnitArrayType,
 )
-from claasp.primitives import MiMC, Poseidon
+from claasp.primitives import ULBC, MiMC, Noekeon, Poseidon, Pride, ULBCTweakable
 from claasp.unit_types import Bit
 
 
@@ -94,3 +96,25 @@ def test_batch_backends_have_identical_poseidon_values(evaluator):
 def test_transposed_backend_supports_empty_batches():
     primitive = MiMC(17, 3, (1,))
     assert TransposedBatchEvaluator().evaluate(primitive, {"state": ()}).items == ()
+
+
+@pytest.mark.parametrize("factory", [Noekeon, Pride, ULBC, ULBCTweakable])
+def test_transposed_backend_matches_scalar_for_binary_word_graphs(factory):
+    primitive = factory(number_of_rounds=2)
+    rng = Random(2411)
+    samples = {
+        name: tuple(
+            tuple(
+                rng.randrange(1 << value.array_type.unit_type.encoded_bit_size)
+                for _ in range(value.array_type.unit_count)
+            )
+            for _ in range(3)
+        )
+        for name, value in primitive.graph.input_arrays.items()
+    }
+    batch = TransposedBatchEvaluator().evaluate(primitive, samples)
+    scalar = ScalarEvaluator()
+    assert batch.outputs == tuple(
+        scalar.evaluate(primitive, {name: values[i] for name, values in samples.items()}).output
+        for i in range(3)
+    )
