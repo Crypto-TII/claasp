@@ -760,7 +760,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             sage: from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import SmtXorQuasidifferentialModel
             sage: weights = {(0x2, 0x1): {1: [(0x3, 0x4)]}, (0x5, 0x1): None}
             sage: SmtXorQuasidifferentialModel.get_qdt_transitions(weights)
-            [{'a': 1, 'u': 4, 'b': 2, 'v': 3, 'weight': 1}]
+            [{'a': 1, 'b': 2, 'u': 4, 'v': 3, 'weight': 1}]
         """
         transitions = []
 
