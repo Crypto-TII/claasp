@@ -1,0 +1,2186 @@
+{
+  "records": [
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AESBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=128, number_of_rounds=None",
+      "path": "claasp/ciphers/block_ciphers/aes_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "AES",
+      "v5_signature": "(key_bit_size: int = 128, number_of_rounds: int | None = None, realization: str = 'lookup') -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AradiBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=16",
+      "path": "claasp/ciphers/block_ciphers/aradi_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Aradi",
+      "v5_signature": "(number_of_rounds=16)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AradiBlockCipherSBox.__init__",
+      "legacy_signature": "self, number_of_rounds=16",
+      "path": "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "AradiSBox",
+      "v5_signature": "(number_of_rounds=16)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AradiBlockCipherSBoxAndCompactLinearMap.__init__",
+      "legacy_signature": "self, number_of_rounds=16",
+      "path": "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "AradiSBoxCompactLinearMap",
+      "v5_signature": "(number_of_rounds=16)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BaksheeshBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=128, number_of_rounds=35",
+      "path": "claasp/ciphers/block_ciphers/baksheesh_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Baksheesh",
+      "v5_signature": "(block_bit_size=128, key_bit_size=128, number_of_rounds=35)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BalletBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=128, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/ballet_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Ballet",
+      "v5_signature": "(block_bit_size=128, key_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BEA1BlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=11",
+      "path": "claasp/ciphers/block_ciphers/bea1_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BEA1",
+      "v5_signature": "(number_of_rounds=11)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BipBipBlockCipher.__init__",
+      "legacy_signature": "self, number_of_shell_rounds_1: int=3, number_of_core_rounds: int=5, number_of_shell_rounds_2: int=3",
+      "path": "claasp/ciphers/block_ciphers/bipbip_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_core_rounds",
+        "number_of_shell_rounds_1",
+        "number_of_shell_rounds_2"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BipBip",
+      "v5_signature": "(number_of_shell_rounds_1: int = 3, number_of_core_rounds: int = 5, number_of_shell_rounds_2: int = 3)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BlinkBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, tweak_bit_size=128, key_bit_size=1024, a=3, b=3",
+      "path": "claasp/ciphers/block_ciphers/blink_block_cipher.py",
+      "same_named_parameters": [
+        "a",
+        "b",
+        "block_bit_size",
+        "key_bit_size",
+        "tweak_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Blink",
+      "v5_signature": "(block_bit_size=128, tweak_bit_size=128, key_bit_size=1024, a=3, b=3)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "CastBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=128, number_of_rounds: int=None",
+      "path": "claasp/ciphers/block_ciphers/cast_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Cast",
+      "v5_signature": "(key_bit_size=128, number_of_rounds: int | None = None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ChamBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/cham_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "CHAM",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ChilowBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=1, tau: int | None=None",
+      "path": "claasp/ciphers/block_ciphers/chilow_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "tau"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Chilow",
+      "v5_signature": "(number_of_rounds=1, tau: int | None = None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "DESBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=16, number_of_sboxes=8",
+      "path": "claasp/ciphers/block_ciphers/des_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "number_of_sboxes"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "DES",
+      "v5_signature": "(number_of_rounds=16, number_of_sboxes=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "DESExactKeyLengthBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=16, number_of_sboxes=8",
+      "path": "claasp/ciphers/block_ciphers/des_exact_key_length_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "number_of_sboxes"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "DESExactKeyLength",
+      "v5_signature": "(number_of_rounds=16, number_of_sboxes=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GiftBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=None, block_bit_size=128",
+      "path": "claasp/ciphers/block_ciphers/gift_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Gift",
+      "v5_signature": "(number_of_rounds=None, block_bit_size=128)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GiftSboxBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=None, block_bit_size=128",
+      "path": "claasp/ciphers/block_ciphers/gift_sbox_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "GiftSbox",
+      "v5_signature": "(number_of_rounds=None, block_bit_size=128)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GostBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size: int=64, key_bit_size: int=256, number_of_rounds: int=32",
+      "path": "claasp/ciphers/block_ciphers/gost_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Gost",
+      "v5_signature": "(block_bit_size: int = 64, key_bit_size: int = 256, number_of_rounds: int = 32) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "HightBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, sub_keys_zero=False, transformations_flag=True",
+      "path": "claasp/ciphers/block_ciphers/hight_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "sub_keys_zero",
+        "transformations_flag"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "HIGHT",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None, sub_keys_zero=False, transformations_flag=True)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "IdeaBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=NUMBER_OF_ROUNDS",
+      "path": "claasp/ciphers/block_ciphers/idea_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "IDEA",
+      "v5_signature": "(number_of_rounds=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KalynaBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=10",
+      "path": "claasp/ciphers/block_ciphers/kalyna_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Kalyna",
+      "v5_signature": "(number_of_rounds=10)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KasumiBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=8",
+      "path": "claasp/ciphers/block_ciphers/kasumi_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Kasumi",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KatanBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict'",
+      "path": "claasp/ciphers/block_ciphers/katan_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "ir_mode",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Katan",
+      "v5_signature": "(block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict')"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KatanFSRBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict'",
+      "path": "claasp/ciphers/block_ciphers/katan_fsr_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "ir_mode",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "KatanFSR",
+      "v5_signature": "(block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict')"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KtantanBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict'",
+      "path": "claasp/ciphers/block_ciphers/ktantan_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "ir_mode",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Ktantan",
+      "v5_signature": "(block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict')"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KtantanFSRBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict'",
+      "path": "claasp/ciphers/block_ciphers/ktantan_fsr_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "ir_mode",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "KtantanFSR",
+      "v5_signature": "(block_bit_size=32, key_bit_size=80, number_of_rounds=None, ir_mode='strict')"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "LBlockBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=32",
+      "path": "claasp/ciphers/block_ciphers/lblock_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LBlock",
+      "v5_signature": "(number_of_rounds=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "LeaBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=192, number_of_rounds=0, reorder_input_and_output=True",
+      "path": "claasp/ciphers/block_ciphers/lea_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "reorder_input_and_output"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LEA",
+      "v5_signature": "(block_bit_size=128, key_bit_size=192, number_of_rounds=None, reorder_input_and_output=True)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "LedBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=64, number_of_rounds=32",
+      "path": "claasp/ciphers/block_ciphers/led_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Led",
+      "v5_signature": "(key_bit_size=64, number_of_rounds=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "LowMCBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=128, number_of_rounds=0, number_of_sboxes=0",
+      "path": "claasp/ciphers/block_ciphers/lowmc_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "number_of_sboxes"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LowMC",
+      "v5_signature": "(block_bit_size=128, key_bit_size=128, number_of_rounds=None, number_of_sboxes=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "MantisBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=6",
+      "path": "claasp/ciphers/block_ciphers/mantis_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Mantis",
+      "v5_signature": "(number_of_rounds=6)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "MidoriBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/midori_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Midori",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "MSXBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/msx_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "MSX",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "PiccoloBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=80, number_of_rounds=None",
+      "path": "claasp/ciphers/block_ciphers/piccolo_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Piccolo",
+      "v5_signature": "(key_bit_size=80, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "PresentBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=80, number_of_rounds=None",
+      "path": "claasp/ciphers/block_ciphers/present_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Present",
+      "v5_signature": "(key_bit_size: int = 80, number_of_rounds: int = 31) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "PrinceBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/block_ciphers/prince_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Prince",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "PrinceV2BlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/block_ciphers/prince_v2_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "PrinceV2",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "QARMAv2BlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128",
+      "path": "claasp/ciphers/block_ciphers/qarmav2_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_layers",
+        "number_of_rounds",
+        "tweak_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "QARMAv2",
+      "v5_signature": "(number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "QARMAv2MixColumnBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128",
+      "path": "claasp/ciphers/block_ciphers/qarmav2_with_mixcolumn_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_layers",
+        "number_of_rounds",
+        "tweak_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "QARMAv2MixColumn",
+      "v5_signature": "(number_of_rounds=10, number_of_layers=1, key_bit_size=128, tweak_bit_size=128)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "RaidenBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=14, left_shift_amount=9",
+      "path": "claasp/ciphers/block_ciphers/raiden_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "left_shift_amount",
+        "number_of_rounds",
+        "right_shift_amount"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Raiden",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None, right_shift_amount=14, left_shift_amount=9)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "RC5BlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=16, word_size=16, key_size=64",
+      "path": "claasp/ciphers/block_ciphers/rc5_block_cipher.py",
+      "same_named_parameters": [
+        "key_size",
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "RC5",
+      "v5_signature": "(number_of_rounds=16, word_size=16, key_size=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "RectangleBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=80, number_of_rounds=25",
+      "path": "claasp/ciphers/block_ciphers/rectangle_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Rectangle",
+      "v5_signature": "(key_bit_size=80, number_of_rounds=25)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "RijndaelBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=128, number_of_rounds=None",
+      "path": "claasp/ciphers/block_ciphers/rijndael_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Rijndael",
+      "v5_signature": "(block_bit_size=128, key_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SaechamBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=_DEFAULT_ROUNDS",
+      "path": "claasp/ciphers/block_ciphers/saecham_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Saecham",
+      "v5_signature": "(number_of_rounds=88)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SCARFBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=8",
+      "path": "claasp/ciphers/block_ciphers/scarf_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SCARF",
+      "v5_signature": "(number_of_rounds=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SerpentBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=DEFAULT_KEY_BIT_SIZE, number_of_rounds=DEFAULT_NUMBER_OF_ROUNDS",
+      "path": "claasp/ciphers/block_ciphers/serpent_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Serpent",
+      "v5_signature": "(key_bit_size=256, number_of_rounds=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SimeckBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1)",
+      "path": "claasp/ciphers/block_ciphers/simeck_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_amounts"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Simeck",
+      "v5_signature": "(block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1))"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SimeckSboxBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1)",
+      "path": "claasp/ciphers/block_ciphers/simeck_sbox_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_amounts"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SimeckSbox",
+      "v5_signature": "(block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-5, -1))"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SimonBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=[-1, -8, -2]",
+      "path": "claasp/ciphers/block_ciphers/simon_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_amounts"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Simon",
+      "v5_signature": "(block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-1, -8, -2))"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SimonSboxBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-1, -8, -2)",
+      "path": "claasp/ciphers/block_ciphers/simon_sbox_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_amounts"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SimonSbox",
+      "v5_signature": "(block_bit_size=32, key_bit_size=64, number_of_rounds=None, rotation_amounts=(-1, -8, -2))"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SkinnyBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=64, number_of_rounds=32",
+      "path": "claasp/ciphers/block_ciphers/skinny_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Skinny",
+      "v5_signature": "(block_bit_size=64, key_bit_size=64, number_of_rounds=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SkipjackBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=32",
+      "path": "claasp/ciphers/block_ciphers/skipjack_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Skipjack",
+      "v5_signature": "(number_of_rounds=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SM4.__init__",
+      "legacy_signature": "self, number_of_rounds=32, word_size=8, state_size=8",
+      "path": "claasp/ciphers/block_ciphers/sm4_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "state_size",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SM4",
+      "v5_signature": "(number_of_rounds=32, word_size=8, state_size=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SparxBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, steps=0",
+      "path": "claasp/ciphers/block_ciphers/sparx_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "steps"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SPARX",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None, steps=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SpeckBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32, key_bit_size=64, rotation_alpha=None, rotation_beta=None, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/speck_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_alpha",
+        "rotation_beta"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Speck",
+      "v5_signature": "(block_bit_size: int = 32, key_bit_size: int = 64, number_of_rounds: int | None = None, rotation_alpha: int | None = None, rotation_beta: int | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SpeedyBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=192, key_bit_size=192, number_of_rounds=1, alpha=(0, 1, 5, 9, 15, 21, 26), beta=7, gamma=1",
+      "path": "claasp/ciphers/block_ciphers/speedy_block_cipher.py",
+      "same_named_parameters": [
+        "alpha",
+        "beta",
+        "block_bit_size",
+        "gamma",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Speedy",
+      "v5_signature": "(block_bit_size=192, key_bit_size=192, number_of_rounds=1, alpha=(0, 1, 5, 9, 15, 21, 26), beta=7, gamma=1)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SplightBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=32",
+      "path": "claasp/ciphers/block_ciphers/splight_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Splight",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TeaBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=5, left_shift_amount=4",
+      "path": "claasp/ciphers/block_ciphers/tea_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "left_shift_amount",
+        "number_of_rounds",
+        "right_shift_amount"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "TEA",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None, right_shift_amount=5, left_shift_amount=4)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ThreefishBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=256, key_bit_size=256, tweak_bit_size=128, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/threefish_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "tweak_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Threefish",
+      "v5_signature": "(block_bit_size=256, key_bit_size=None, tweak_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TraxBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=17",
+      "path": "claasp/ciphers/block_ciphers/trax_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Trax",
+      "v5_signature": "(number_of_rounds=17)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TwineBlockCipher.__init__",
+      "legacy_signature": "self, key_bit_size=80, number_of_rounds=36",
+      "path": "claasp/ciphers/block_ciphers/twine_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Twine",
+      "v5_signature": "(key_bit_size=80, number_of_rounds=36)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TwofishBlockCipher.__init__",
+      "legacy_signature": "self, key_length=128, number_of_rounds=16",
+      "path": "claasp/ciphers/block_ciphers/twofish_block_cipher.py",
+      "same_named_parameters": [
+        "key_length",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Twofish",
+      "v5_signature": "(key_length=128, number_of_rounds=16)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "UblockBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=128, number_of_rounds=0",
+      "path": "claasp/ciphers/block_ciphers/ublock_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Ublock",
+      "v5_signature": "(block_bit_size=128, key_bit_size=128, number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "UblockSingleLinearLayerBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=128, key_bit_size=128, number_of_rounds=16, use_mix_column=False",
+      "path": "claasp/ciphers/block_ciphers/ublock_single_linear_layer_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "use_mix_column"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "UblockSingleLinearLayer",
+      "v5_signature": "(block_bit_size=128, key_bit_size=128, number_of_rounds=16, use_mix_column=False)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "UKNITBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/block_ciphers/uknit_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "UKNIT",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "WarpBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=41",
+      "path": "claasp/ciphers/block_ciphers/warp_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Warp",
+      "v5_signature": "(number_of_rounds=41)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "XTeaBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=64, key_bit_size=128, number_of_rounds=0, right_shift_amount=5, left_shift_amount=4",
+      "path": "claasp/ciphers/block_ciphers/xtea_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "left_shift_amount",
+        "number_of_rounds",
+        "right_shift_amount"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "XTEA",
+      "v5_signature": "(block_bit_size=64, key_bit_size=128, number_of_rounds=None, right_shift_amount=5, left_shift_amount=4)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "Blake2HashFunction.__init__",
+      "legacy_signature": "self, block_bit_size=1024, state_bit_size=1024, number_of_rounds=0, word_size=64, permutations=None, rot_amounts=None",
+      "path": "claasp/ciphers/hash_functions/blake2_hash_function.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "number_of_rounds",
+        "permutations",
+        "rot_amounts",
+        "state_bit_size",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Blake2CompressionFunction",
+      "v5_signature": "(block_bit_size=1024, state_bit_size=1024, number_of_rounds=None, word_size=64, permutations=None, rot_amounts=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BlakeHashFunction.__init__",
+      "legacy_signature": "self, block_bit_size=512, state_bit_size=512, number_of_rounds=0, word_size=32, permutations=None, rot_amounts=None, constants=None",
+      "path": "claasp/ciphers/hash_functions/blake_hash_function.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "constants",
+        "number_of_rounds",
+        "permutations",
+        "rot_amounts",
+        "state_bit_size",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BlakeCompressionFunction",
+      "v5_signature": "(block_bit_size=512, state_bit_size=512, number_of_rounds=None, word_size=32, permutations=None, rot_amounts=None, constants=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "MD5HashFunction.__init__",
+      "legacy_signature": "self, word_size=32, number_of_rounds=64",
+      "path": "claasp/ciphers/hash_functions/md5_hash_function.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "MD5SingleBlockFunction",
+      "v5_signature": "(word_size=32, number_of_rounds=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SHA1HashFunction.__init__",
+      "legacy_signature": "self, word_size=32, number_of_rounds=80",
+      "path": "claasp/ciphers/hash_functions/sha1_hash_function.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SHA1SingleBlockFunction",
+      "v5_signature": "(word_size=32, number_of_rounds=80)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SHA2HashFunction.__init__",
+      "legacy_signature": "self, output_bit_size=256, number_of_rounds=64",
+      "path": "claasp/ciphers/hash_functions/sha2_hash_function.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "output_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SHA2SingleBlockFunction",
+      "v5_signature": "(output_bit_size=256, number_of_rounds=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "WhirlpoolHashFunction.__init__",
+      "legacy_signature": "self, number_of_rounds=10, word_size=8, state_size=8",
+      "path": "claasp/ciphers/hash_functions/whirlpool_hash_function.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "state_size",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "WhirlpoolSingleBlockFunction",
+      "v5_signature": "(number_of_rounds=10, word_size=8, state_size=8)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SiphashMAC.__init__",
+      "legacy_signature": "self, message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=64",
+      "path": "claasp/ciphers/mac/siphash_mac.py",
+      "same_named_parameters": [
+        "compression_rounds",
+        "finalization_rounds",
+        "message_byte_size",
+        "output_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SiphashMAC",
+      "v5_signature": "(message_byte_size=15, compression_rounds=2, finalization_rounds=4, output_bit_size=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AsconPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/ascon_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Ascon",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AsconSboxSigmaNoMatrixPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/ascon_sbox_sigma_no_matrix_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "AsconSboxSigmaNoMatrix",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AsconSboxSigmaPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/ascon_sbox_sigma_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "AsconSboxSigma",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "state_of_components",
+          "replacement_contract": "CompositeBuilder and graph bindings compose existing state; constructors no longer accept mutable legacy ComponentState objects."
+        },
+        {
+          "legacy_parameter": "cipher_family",
+          "replacement_contract": "Primitive(family_name=...) and immutable graph metadata replace constructor string labels."
+        },
+        {
+          "legacy_parameter": "cipher_type",
+          "replacement_contract": "Primitive(kind=...) replaces the legacy type label."
+        },
+        {
+          "legacy_parameter": "inputs",
+          "replacement_contract": "Explicit PrimitiveInput descriptors and CompositeBuilder ports replace implicit input-name lists."
+        },
+        {
+          "legacy_parameter": "cipher_inputs_bit_size",
+          "replacement_contract": "Explicit UnitArrayType input descriptors replace parallel bit-size lists; Forro calls this primitive_inputs_bit_size."
+        }
+      ],
+      "legacy_constructor": "ChachaPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=0, state_of_components=None, cipher_family='chacha_permutation', cipher_type=PERMUTATION, inputs=None, cipher_inputs_bit_size=None, rotations=[8, 7, 16, 12], word_size=32, start_round=('odd', 'top'), round_mode=ROUND_MODE_SINGLE",
+      "path": "claasp/ciphers/permutations/chacha_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "rotations",
+        "round_mode",
+        "start_round",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ChaChaPermutation",
+      "v5_signature": "(number_of_rounds: int = 20, *, word_size: int = 32, rotations: tuple[int, int, int, int] = (16, 12, 8, 7), start_round: tuple[str, str] = ('odd', 'top'), round_mode: str = 'single') -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ChaskeyPiPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12, word_size=32, rotations=_DEFAULT_ROTATIONS, start_round=('top',)",
+      "path": "claasp/ciphers/permutations/chaskeypi_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "rotations",
+        "start_round",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ChaskeyPi",
+      "v5_signature": "(number_of_rounds=12, word_size=32, rotations=(-5, -8, -13, -7, -16), start_round=('top',))"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "cipher_inputs_bit_size",
+          "replacement_contract": "Explicit UnitArrayType input descriptors replace parallel bit-size lists; Forro calls this primitive_inputs_bit_size."
+        }
+      ],
+      "legacy_constructor": "ForroPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=14, state_of_components=None, inputs=None, cipher_inputs_bit_size=None, rotations=[10, 27, 8], word_size=32",
+      "path": "claasp/ciphers/permutations/forro_permutation.py",
+      "same_named_parameters": [
+        "inputs",
+        "number_of_rounds",
+        "rotations",
+        "state_of_components",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Forro",
+      "v5_signature": "(number_of_rounds=14, state_of_components=None, inputs=None, primitive_inputs_bit_size=None, rotations=(10, 27, 8), word_size=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GastonPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/gaston_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Gaston",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GastonSboxPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/gaston_sbox_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "GastonSbox",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GastonSboxThetaPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/gaston_sbox_theta_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "GastonSboxTheta",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GimliPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=24, word_size=32",
+      "path": "claasp/ciphers/permutations/gimli_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Gimli",
+      "v5_signature": "(number_of_rounds=24, word_size=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GimliSboxPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=24, word_size=32",
+      "path": "claasp/ciphers/permutations/gimli_sbox_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "GimliSbox",
+      "v5_signature": "(number_of_rounds=24, word_size=32)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "GrainCorePermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=None",
+      "path": "claasp/ciphers/permutations/grain_core_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "GrainCore",
+      "v5_signature": "(number_of_rounds=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KeccakInvertiblePermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=24, word_size=64",
+      "path": "claasp/ciphers/permutations/keccak_invertible_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "KeccakInvertible",
+      "v5_signature": "(number_of_rounds=24, word_size=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KeccakPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=24, word_size=64",
+      "path": "claasp/ciphers/permutations/keccak_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Keccak",
+      "v5_signature": "(number_of_rounds=24, word_size=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KeccakSboxPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=24, word_size=64",
+      "path": "claasp/ciphers/permutations/keccak_sbox_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "KeccakSbox",
+      "v5_signature": "(number_of_rounds=24, word_size=64)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "KnotPermutation.__init__",
+      "legacy_signature": "self, state_bit_size=256, number_of_rounds=None, lfsr_degree=None, bit_slice=False",
+      "path": "claasp/ciphers/permutations/knot_permutation.py",
+      "same_named_parameters": [
+        "bit_slice",
+        "lfsr_degree",
+        "number_of_rounds",
+        "state_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Knot",
+      "v5_signature": "(state_bit_size=256, number_of_rounds=None, lfsr_degree=None, bit_slice=False)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "NorxPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=4, word_size=32, rotations=None",
+      "path": "claasp/ciphers/permutations/norx_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "rotations",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Norx",
+      "v5_signature": "(number_of_rounds=4, word_size=32, rotations=None)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "PhotonPermutation.__init__",
+      "legacy_signature": "self, t=256, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/photon_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "t"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Photon",
+      "v5_signature": "(t=256, number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "state_of_components",
+          "replacement_contract": "CompositeBuilder and graph bindings compose existing state; constructors no longer accept mutable legacy ComponentState objects."
+        },
+        {
+          "legacy_parameter": "cipher_family",
+          "replacement_contract": "Primitive(family_name=...) and immutable graph metadata replace constructor string labels."
+        },
+        {
+          "legacy_parameter": "cipher_type",
+          "replacement_contract": "Primitive(kind=...) replaces the legacy type label."
+        },
+        {
+          "legacy_parameter": "inputs",
+          "replacement_contract": "Explicit PrimitiveInput descriptors and CompositeBuilder ports replace implicit input-name lists."
+        },
+        {
+          "legacy_parameter": "cipher_inputs_bit_size",
+          "replacement_contract": "Explicit UnitArrayType input descriptors replace parallel bit-size lists; Forro calls this primitive_inputs_bit_size."
+        }
+      ],
+      "legacy_constructor": "SalsaPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=0, state_of_components=None, cipher_family='salsa_permutation', cipher_type=PERMUTATION, inputs=None, cipher_inputs_bit_size=None, rotations=[13, 18, 7, 9], word_size=32, start_round=('odd', 'top')",
+      "path": "claasp/ciphers/permutations/salsa_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "rotations",
+        "start_round",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SalsaPermutation",
+      "v5_signature": "(number_of_rounds: int = 20, *, word_size: int = 32, rotations: tuple[int, int, int, int] = (7, 9, 13, 18), start_round: tuple[str, str] = ('odd', 'top'), round_mode: str = 'single') -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SparklePermutation.__init__",
+      "legacy_signature": "self, number_of_blocks=4, number_of_steps=7",
+      "path": "claasp/ciphers/permutations/sparkle_permutation.py",
+      "same_named_parameters": [
+        "number_of_blocks",
+        "number_of_steps"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Sparkle",
+      "v5_signature": "(number_of_blocks=4, number_of_steps=7)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SpeckeyPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=1",
+      "path": "claasp/ciphers/permutations/speckey_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Speckey",
+      "v5_signature": "(number_of_rounds=1)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SpongentPiFSRPermutation.__init__",
+      "legacy_signature": "self, state_bit_size=160, number_of_rounds=80",
+      "path": "claasp/ciphers/permutations/spongent_pi_fsr_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "state_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SpongentPiFSR",
+      "v5_signature": "(state_bit_size=160, number_of_rounds=80)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SpongentPiPermutation.__init__",
+      "legacy_signature": "self, state_bit_size=160, number_of_rounds=80",
+      "path": "claasp/ciphers/permutations/spongent_pi_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "state_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SpongentPi",
+      "v5_signature": "(state_bit_size=160, number_of_rounds=80)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SpongentPiPrecomputationPermutation.__init__",
+      "legacy_signature": "self, state_bit_size=160, number_of_rounds=80",
+      "path": "claasp/ciphers/permutations/spongent_pi_precomputation_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "state_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "SpongentPiPrecomputation",
+      "v5_signature": "(state_bit_size=160, number_of_rounds=80)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "SubterraneanPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=1, version=Version.V1",
+      "path": "claasp/ciphers/permutations/subterranean_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "version"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Subterranean",
+      "v5_signature": "(number_of_rounds=1, version=<Version.V1: 1>)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TinyJambuWordBasedPermutation.__init__",
+      "legacy_signature": "self, key_bit_size=128, number_of_rounds=640",
+      "path": "claasp/ciphers/permutations/tinyjambu_32bits_word_permutation.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "TinyJambuWordBased",
+      "v5_signature": "(key_bit_size=128, number_of_rounds=640)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TinyJambuFSRWordBasedPermutation.__init__",
+      "legacy_signature": "self, key_bit_size=128, number_of_rounds=640",
+      "path": "claasp/ciphers/permutations/tinyjambu_fsr_32bits_word_permutation.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "TinyJambuFSRWordBased",
+      "v5_signature": "(key_bit_size=128, number_of_rounds=640)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "TinyJambuPermutation.__init__",
+      "legacy_signature": "self, key_bit_size=128, number_of_rounds=640",
+      "path": "claasp/ciphers/permutations/tinyjambu_permutation.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "TinyJambu",
+      "v5_signature": "(key_bit_size=128, number_of_rounds=640)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "XoodooInvertiblePermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/xoodoo_invertible_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "XoodooInvertible",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "XoodooPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=3",
+      "path": "claasp/ciphers/permutations/xoodoo_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Xoodoo",
+      "v5_signature": "(number_of_rounds=3)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "XoodooSboxPermutation.__init__",
+      "legacy_signature": "self, number_of_rounds=12",
+      "path": "claasp/ciphers/permutations/xoodoo_sbox_permutation.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "XoodooSbox",
+      "v5_signature": "(number_of_rounds=12)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AndCipher.__init__",
+      "legacy_signature": "self, word_bit_size=4, number_of_inputs=2",
+      "path": "claasp/ciphers/single_component_ciphers/and_cipher.py",
+      "same_named_parameters": [
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BitwiseAnd",
+      "v5_signature": "(word_bit_size: int = 4, number_of_inputs: int = 2) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ConstantCipher.__init__",
+      "legacy_signature": "self, output_bit_size=3, value=2",
+      "path": "claasp/ciphers/single_component_ciphers/constant_cipher.py",
+      "same_named_parameters": [
+        "output_bit_size",
+        "value"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Constant",
+      "v5_signature": "(output_bit_size: int = 3, value: int = 2) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "register_size",
+          "replacement_contract": "FeedbackRegisterParameters carries typed register specifications and output taps."
+        },
+        {
+          "legacy_parameter": "description",
+          "replacement_contract": "FeedbackRegisterParameters or LinearMap(matrix, unit_type) expresses the operation in typed form."
+        }
+      ],
+      "legacy_constructor": "FsrCipher.__init__",
+      "legacy_signature": "self, register_size=4, description=None",
+      "path": "claasp/ciphers/single_component_ciphers/fsr_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "FeedbackRegister",
+      "v5_signature": "(parameters: claasp.components.feedback.feedback_register.FeedbackRegisterParameters | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "IdeaModmulCipher.__init__",
+      "legacy_signature": "self, word_bit_size=16, number_of_inputs=2, modulus=None",
+      "path": "claasp/ciphers/single_component_ciphers/idea_modmul_cipher.py",
+      "same_named_parameters": [
+        "modulus",
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "IDEAMultiply",
+      "v5_signature": "(word_bit_size: int = 16, number_of_inputs: int = 2, *, modulus: int | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "block_bit_size",
+          "replacement_contract": "Identity(bit_size=...) is the corresponding renamed constructor parameter."
+        }
+      ],
+      "legacy_constructor": "IdentityCipher.__init__",
+      "legacy_signature": "self, block_bit_size=32",
+      "path": "claasp/ciphers/single_component_ciphers/identity_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Identity",
+      "v5_signature": "(bit_size: int = 32) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        },
+        {
+          "legacy_parameter": "description",
+          "replacement_contract": "FeedbackRegisterParameters or LinearMap(matrix, unit_type) expresses the operation in typed form."
+        }
+      ],
+      "legacy_constructor": "LinearLayerCipher.__init__",
+      "legacy_signature": "self, bit_size=4, description=None",
+      "path": "claasp/ciphers/single_component_ciphers/linear_layer_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LinearMap",
+      "v5_signature": "(matrix=None, unit_type=None) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "word_size",
+          "replacement_contract": "LinearMap unit_type specifies the binary field and degree; Permutation(word_size=...) specifies packed word width."
+        },
+        {
+          "legacy_parameter": "irreducible_polynomial",
+          "replacement_contract": "LinearMap(matrix=..., unit_type=BinaryExtensionField(degree, modulus)) specifies the field explicitly."
+        }
+      ],
+      "legacy_constructor": "MixColumnCipher.__init__",
+      "legacy_signature": "self, word_size=4, matrix=None, irreducible_polynomial=0",
+      "path": "claasp/ciphers/single_component_ciphers/mix_column_cipher.py",
+      "same_named_parameters": [
+        "matrix"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LinearMap",
+      "v5_signature": "(matrix=None, unit_type=None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ModaddCipher.__init__",
+      "legacy_signature": "self, word_bit_size=4, number_of_inputs=2, modulus=None",
+      "path": "claasp/ciphers/single_component_ciphers/modadd_cipher.py",
+      "same_named_parameters": [
+        "modulus",
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ModularAdd",
+      "v5_signature": "(word_bit_size: int = 4, number_of_inputs: int = 2, *, modulus: int | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ModmulCipher.__init__",
+      "legacy_signature": "self, word_bit_size=4, number_of_inputs=2, modulus=None",
+      "path": "claasp/ciphers/single_component_ciphers/modmul_cipher.py",
+      "same_named_parameters": [
+        "modulus",
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ModularMultiply",
+      "v5_signature": "(word_bit_size: int = 4, number_of_inputs: int = 2, *, modulus: int | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ModsubCipher.__init__",
+      "legacy_signature": "self, word_bit_size=4, number_of_inputs=2, modulus=None",
+      "path": "claasp/ciphers/single_component_ciphers/modsub_cipher.py",
+      "same_named_parameters": [
+        "modulus",
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ModularSubtract",
+      "v5_signature": "(word_bit_size: int = 4, number_of_inputs: int = 2, *, modulus: int | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "NotCipher.__init__",
+      "legacy_signature": "self, bit_size=4",
+      "path": "claasp/ciphers/single_component_ciphers/not_cipher.py",
+      "same_named_parameters": [
+        "bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BitwiseNot",
+      "v5_signature": "(bit_size: int = 4) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "OrCipher.__init__",
+      "legacy_signature": "self, word_bit_size=4, number_of_inputs=2",
+      "path": "claasp/ciphers/single_component_ciphers/or_cipher.py",
+      "same_named_parameters": [
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BitwiseOr",
+      "v5_signature": "(word_bit_size: int = 4, number_of_inputs: int = 2) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        },
+        {
+          "legacy_parameter": "permutation_description",
+          "replacement_contract": "Permutation(mapping=...) uses an explicit mapping."
+        }
+      ],
+      "legacy_constructor": "PermutationCipher.__init__",
+      "legacy_signature": "self, bit_size=8, permutation_description=None, word_size=1",
+      "path": "claasp/ciphers/single_component_ciphers/permutation_cipher.py",
+      "same_named_parameters": [
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Permutation",
+      "v5_signature": "(mapping=None, word_size: int = 1) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        }
+      ],
+      "legacy_constructor": "ReverseCipher.__init__",
+      "legacy_signature": "self, bit_size=8",
+      "path": "claasp/ciphers/single_component_ciphers/reverse_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Permutation",
+      "v5_signature": "(mapping=None, word_size: int = 1) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "rotation_amount",
+          "replacement_contract": "Rotate(amount=abs(value), direction=left if value<0 else right) makes the signed convention explicit."
+        }
+      ],
+      "legacy_constructor": "RotateCipher.__init__",
+      "legacy_signature": "self, bit_size=8, rotation_amount=1",
+      "path": "claasp/ciphers/single_component_ciphers/rotate_cipher.py",
+      "same_named_parameters": [
+        "bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Rotate",
+      "v5_signature": "(bit_size: int = 8, amount: int = 1, direction: str = 'right') -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        }
+      ],
+      "legacy_constructor": "SboxCipher.__init__",
+      "legacy_signature": "self, bit_size=4, lookup_table=None",
+      "path": "claasp/ciphers/single_component_ciphers/sbox_cipher.py",
+      "same_named_parameters": [
+        "lookup_table"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BitVectorSBox",
+      "v5_signature": "(input_bit_size: int = 4, lookup_table: collections.abc.Sequence[int] | None = None, output_bit_size: int | None = None) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "shift_amount",
+          "replacement_contract": "Shift(amount=abs(value), direction=left if value<0 else right) makes the signed convention explicit."
+        }
+      ],
+      "legacy_constructor": "ShiftCipher.__init__",
+      "legacy_signature": "self, bit_size=8, shift_amount=1",
+      "path": "claasp/ciphers/single_component_ciphers/shift_cipher.py",
+      "same_named_parameters": [
+        "bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Shift",
+      "v5_signature": "(bit_size: int = 8, amount: int = 1, direction: str = 'right') -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "rotation_amount",
+          "replacement_contract": "Rotate(amount=abs(value), direction=left if value<0 else right) makes the signed convention explicit."
+        },
+        {
+          "legacy_parameter": "word_bit_size",
+          "replacement_contract": "shift_rows and an explicit typed Permutation mapping determine each word width."
+        },
+        {
+          "legacy_parameter": "number_of_words",
+          "replacement_contract": "Permutation mapping length and word_size determine the word boundary; shift_rows provides the typed row transform."
+        }
+      ],
+      "legacy_constructor": "ShiftRowsCipher.__init__",
+      "legacy_signature": "self, rotation_amount=1, word_bit_size=8, number_of_words=4",
+      "path": "claasp/ciphers/single_component_ciphers/shift_rows_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Permutation",
+      "v5_signature": "(mapping=None, word_size: int = 1) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        },
+        {
+          "legacy_parameter": "rotation_amounts_parameter",
+          "replacement_contract": "claasp.components.sigma or gaston_theta builds a typed LinearMap from the rotation list."
+        }
+      ],
+      "legacy_constructor": "SigmaCipher.__init__",
+      "legacy_signature": "self, bit_size=8, rotation_amounts_parameter=None",
+      "path": "claasp/ciphers/single_component_ciphers/sigma_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LinearMap",
+      "v5_signature": "(matrix=None, unit_type=None) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        },
+        {
+          "legacy_parameter": "rotation_amounts_parameter",
+          "replacement_contract": "claasp.components.sigma or gaston_theta builds a typed LinearMap from the rotation list."
+        }
+      ],
+      "legacy_constructor": "ThetaGastonCipher.__init__",
+      "legacy_signature": "self, bit_size=320, rotation_amounts_parameter=None",
+      "path": "claasp/ciphers/single_component_ciphers/theta_gaston_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LinearMap",
+      "v5_signature": "(matrix=None, unit_type=None) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        }
+      ],
+      "legacy_constructor": "ThetaKeccakCipher.__init__",
+      "legacy_signature": "self, bit_size=25",
+      "path": "claasp/ciphers/single_component_ciphers/theta_keccak_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LinearMap",
+      "v5_signature": "(matrix=None, unit_type=None) -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "bit_size",
+          "replacement_contract": "BitVectorSBox(input_bit_size=...), or matrix/mapping dimensions for LinearMap and Permutation, express the same boundary width."
+        }
+      ],
+      "legacy_constructor": "ThetaXoodooCipher.__init__",
+      "legacy_signature": "self, bit_size=384",
+      "path": "claasp/ciphers/single_component_ciphers/theta_xoodoo_cipher.py",
+      "same_named_parameters": [],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "LinearMap",
+      "v5_signature": "(matrix=None, unit_type=None) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "VariableRotateCipher.__init__",
+      "legacy_signature": "self, bit_size=8, amount_bit_size=3, direction=1",
+      "path": "claasp/ciphers/single_component_ciphers/variable_rotate_cipher.py",
+      "same_named_parameters": [
+        "amount_bit_size",
+        "bit_size",
+        "direction"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "VariableRotate",
+      "v5_signature": "(bit_size: int = 8, amount_bit_size: int = 3, direction: str = 'right') -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "VariableShiftCipher.__init__",
+      "legacy_signature": "self, bit_size=8, amount_bit_size=3, direction=1",
+      "path": "claasp/ciphers/single_component_ciphers/variable_shift_cipher.py",
+      "same_named_parameters": [
+        "amount_bit_size",
+        "bit_size",
+        "direction"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "VariableShift",
+      "v5_signature": "(bit_size: int = 8, amount_bit_size: int = 3, direction: str = 'right') -> None"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "number_of_words",
+          "replacement_contract": "Permutation mapping length and word_size determine the word boundary; shift_rows provides the typed row transform."
+        },
+        {
+          "legacy_parameter": "permutation_description",
+          "replacement_contract": "Permutation(mapping=...) uses an explicit mapping."
+        }
+      ],
+      "legacy_constructor": "WordPermutationCipher.__init__",
+      "legacy_signature": "self, word_size=4, number_of_words=4, permutation_description=None",
+      "path": "claasp/ciphers/single_component_ciphers/word_permutation_cipher.py",
+      "same_named_parameters": [
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Permutation",
+      "v5_signature": "(mapping=None, word_size: int = 1) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "XorCipher.__init__",
+      "legacy_signature": "self, word_bit_size=4, number_of_inputs=2",
+      "path": "claasp/ciphers/single_component_ciphers/xor_cipher.py",
+      "same_named_parameters": [
+        "number_of_inputs",
+        "word_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Xor",
+      "v5_signature": "(word_bit_size: int = 4, number_of_inputs: int = 2) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "A51StreamCipher.__init__",
+      "legacy_signature": "self, key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100, number_of_rounds=228",
+      "path": "claasp/ciphers/stream_ciphers/a5_1_stream_cipher.py",
+      "same_named_parameters": [
+        "frame_bit_size",
+        "key_bit_size",
+        "number_of_normal_clocks_at_initialization",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "A51KeystreamFunction",
+      "v5_signature": "(key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100, number_of_rounds=228)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "A52StreamCipher.__init__",
+      "legacy_signature": "self, key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100, number_of_rounds=228",
+      "path": "claasp/ciphers/stream_ciphers/a5_2_stream_cipher.py",
+      "same_named_parameters": [
+        "frame_bit_size",
+        "key_bit_size",
+        "number_of_normal_clocks_at_initialization",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "A52KeystreamFunction",
+      "v5_signature": "(key_bit_size=64, frame_bit_size=22, number_of_normal_clocks_at_initialization=100, number_of_rounds=228)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BiviumStreamCipher.__init__",
+      "legacy_signature": "self, iv_bit_size=80, key_bit_size=80, state_bit_size=177, number_of_initialization_clocks=4 * 177, keystream_bit_len=2 ** 8",
+      "path": "claasp/ciphers/stream_ciphers/bivium_stream_cipher.py",
+      "same_named_parameters": [
+        "iv_bit_size",
+        "key_bit_size",
+        "keystream_bit_len",
+        "number_of_initialization_clocks",
+        "state_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BiviumKeystreamFunction",
+      "v5_signature": "(iv_bit_size=80, key_bit_size=80, state_bit_size=177, number_of_initialization_clocks=708, keystream_bit_len=256)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BluetoothStreamCipherE0.__init__",
+      "legacy_signature": "self, key_bit_size=128, lfsr_state_bit_size=128, fsm_bit_size=4, keystream_bit_len=125",
+      "path": "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py",
+      "same_named_parameters": [
+        "fsm_bit_size",
+        "key_bit_size",
+        "keystream_bit_len",
+        "lfsr_state_bit_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "BluetoothE0KeystreamFunction",
+      "v5_signature": "(key_bit_size=128, lfsr_state_bit_size=128, fsm_bit_size=4, keystream_bit_len=125)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ChachaStreamCipher.__init__",
+      "legacy_signature": "self, block_bit_size=512, key_bit_size=256, number_of_rounds=20, block_count=1, chacha_constants=129519094746312487908866675886161683828, round_mode=ROUND_MODE_SINGLE",
+      "path": "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "block_count",
+        "chacha_constants",
+        "key_bit_size",
+        "number_of_rounds",
+        "round_mode"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ChaChaBlockFunction",
+      "v5_signature": "(block_bit_size=512, key_bit_size=256, number_of_rounds=20, block_count=1, chacha_constants=129519094746312487908866675886161683828, round_mode='single') -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "Snow3GStreamCipher.__init__",
+      "legacy_signature": "self, iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, keystream_word_size=2",
+      "path": "claasp/ciphers/stream_ciphers/snow3g_stream_cipher.py",
+      "same_named_parameters": [
+        "iv_bit_size",
+        "key_bit_size",
+        "keystream_word_size",
+        "number_of_initialization_clocks"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Snow3GKeystreamFunction",
+      "v5_signature": "(iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, keystream_word_size=2)"
+    },
+    {
+      "explicit_replacements": [
+        {
+          "legacy_parameter": "iv_bit_size",
+          "replacement_contract": "Trivium fixes the standardized IV to 80 bits; the legacy initialization and taps also hard-code that layout."
+        },
+        {
+          "legacy_parameter": "key_bit_size",
+          "replacement_contract": "Trivium fixes the standardized key to 80 bits; the legacy initialization and taps also hard-code that layout."
+        },
+        {
+          "legacy_parameter": "state_bit_size",
+          "replacement_contract": "Trivium fixes its three-register state to 288 bits; nonstandard sizes are not valid legacy Trivium layouts."
+        },
+        {
+          "legacy_parameter": "keystream_bit_len",
+          "replacement_contract": "TriviumKeystreamFunction(keystream_bit_size=...) is an explicit parameter rename."
+        }
+      ],
+      "legacy_constructor": "TriviumStreamCipher.__init__",
+      "legacy_signature": "self, iv_bit_size=80, key_bit_size=80, state_bit_size=288, number_of_initialization_clocks=1152, keystream_bit_len=512",
+      "path": "claasp/ciphers/stream_ciphers/trivium_stream_cipher.py",
+      "same_named_parameters": [
+        "number_of_initialization_clocks"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "TriviumKeystreamFunction",
+      "v5_signature": "(number_of_initialization_clocks: int = 1152, keystream_bit_size: int = 64) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ZucStreamCipher.__init__",
+      "legacy_signature": "self, iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, len_keystream_word=2",
+      "path": "claasp/ciphers/stream_ciphers/zuc_stream_cipher.py",
+      "same_named_parameters": [
+        "iv_bit_size",
+        "key_bit_size",
+        "len_keystream_word",
+        "number_of_initialization_clocks"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ZucKeystreamFunction",
+      "v5_signature": "(iv_bit_size=128, key_bit_size=128, number_of_initialization_clocks=32, len_keystream_word=2)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "CipherFourBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=16, key_bit_size=16, rotation_layer=1, sbox=None, permutations=None, number_of_rounds=5",
+      "path": "claasp/ciphers/toys/cipherfour_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "permutations",
+        "rotation_layer",
+        "sbox"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "CipherFour",
+      "v5_signature": "(block_bit_size: int = 16, key_bit_size: int = 16, rotation_layer: int = 1, sbox=None, permutations=None, number_of_rounds: int = 5) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "FancyBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=24, key_bit_size=24, number_of_rounds=20",
+      "path": "claasp/ciphers/toys/fancy_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Fancy",
+      "v5_signature": "(block_bit_size: int = 24, key_bit_size: int = 24, number_of_rounds: int = 20) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "HeysBlockCipher.__init__",
+      "legacy_signature": "self, block_bit_size=16, key_bit_size=80, number_of_rounds=4",
+      "path": "claasp/ciphers/toys/heys_block_cipher.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Heys",
+      "v5_signature": "(block_bit_size: int = 16, key_bit_size: int = 80, number_of_rounds: int = 4) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ToyAESBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds: int=10, word_size: int=8, state_size: int=4",
+      "path": "claasp/ciphers/toys/toyaes_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds",
+        "state_size",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ToyAES",
+      "v5_signature": "(number_of_rounds: int = 10, word_size: int = 8, state_size: int = 4) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ToyFeistel.__init__",
+      "legacy_signature": "self, block_bit_size=8, key_bit_size=8, sbox=[14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5], number_of_rounds=5",
+      "path": "claasp/ciphers/toys/toyfeistel.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "sbox"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ToyFeistel",
+      "v5_signature": "(block_bit_size: int = 8, key_bit_size: int = 8, sbox=(14, 9, 15, 0, 13, 4, 10, 11, 1, 2, 8, 3, 7, 6, 12, 5), number_of_rounds: int = 5) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ToySPN1.__init__",
+      "legacy_signature": "self, block_bit_size=6, key_bit_size=6, rotation_layer=1, sbox=[0, 5, 3, 2, 6, 1, 4, 7], number_of_rounds=2",
+      "path": "claasp/ciphers/toys/toyspn1.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_layer",
+        "sbox"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ToySPN1",
+      "v5_signature": "(block_bit_size: int = 6, key_bit_size: int = 6, rotation_layer: int = 1, sbox=(0, 5, 3, 2, 6, 1, 4, 7), number_of_rounds: int = 2) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "ToySPN2.__init__",
+      "legacy_signature": "self, block_bit_size=6, key_bit_size=6, rotation_layer=1, round_key_rotation=1, sbox=[0, 5, 3, 2, 6, 1, 4, 7], number_of_rounds=2",
+      "path": "claasp/ciphers/toys/toyspn2.py",
+      "same_named_parameters": [
+        "block_bit_size",
+        "key_bit_size",
+        "number_of_rounds",
+        "rotation_layer",
+        "round_key_rotation",
+        "sbox"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "ToySPN2",
+      "v5_signature": "(block_bit_size: int = 6, key_bit_size: int = 6, rotation_layer: int = 1, round_key_rotation: int = 1, sbox=(0, 5, 3, 2, 6, 1, 4, 7), number_of_rounds: int = 2) -> None"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "BlowfishBlockCipher.__init__",
+      "legacy_signature": "self, key=0, key_bit_size=128, number_of_rounds=NUMBER_OF_ROUNDS",
+      "path": "claasp/ciphers/block_ciphers/blowfish_block_cipher.py",
+      "same_named_parameters": [
+        "key",
+        "key_bit_size",
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Blowfish",
+      "v5_signature": "(key=0, key_bit_size=128, number_of_rounds=16)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "CraxBlockCipher.__init__",
+      "legacy_signature": "self, number_of_rounds=10",
+      "path": "claasp/ciphers/block_ciphers/crax_block_cipher.py",
+      "same_named_parameters": [
+        "number_of_rounds"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "CRAX",
+      "v5_signature": "(number_of_rounds=10)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "RC6BlockCipher.__init__",
+      "legacy_signature": "self, word_size=32, key_bit_size=128, number_of_rounds=20",
+      "path": "claasp/ciphers/block_ciphers/rc6_block_cipher.py",
+      "same_named_parameters": [
+        "key_bit_size",
+        "number_of_rounds",
+        "word_size"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "RC6",
+      "v5_signature": "(word_size=32, key_bit_size=128, number_of_rounds=20)"
+    },
+    {
+      "explicit_replacements": [],
+      "legacy_constructor": "AlzettePermutation.__init__",
+      "legacy_signature": "self, round_constant=SPARKLE_CONSTANTS[0]",
+      "path": "claasp/ciphers/permutations/alzette_permutation.py",
+      "same_named_parameters": [
+        "round_constant"
+      ],
+      "scope": "Constructor contract review only. Same spelling is not numerical parity; executable paired vectors, nondefault options and backend witnesses are recorded separately.",
+      "v5_class": "Alzette",
+      "v5_signature": "(round_constant=3084996962)"
+    }
+  ],
+  "schema_version": 1,
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387"
+}
