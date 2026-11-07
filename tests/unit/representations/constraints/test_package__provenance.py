@@ -147,7 +147,7 @@ def test_every_public_constraint_model_declares_an_explicit_reference_status():
         records.extend(declarations)
 
     assert len(models) == 145
-    assert len(records) == 148
+    assert len(records) == 152
     assert Counter(record.reference_status for record in records) == {
         ConstraintReferenceStatus.VERIFIED: 32,
         ConstraintReferenceStatus.NOT_APPLICABLE: 105,
