@@ -38,8 +38,10 @@ CATEGORY_EXPORTS = {
         "LowMC": "claasp.primitives.block_ciphers.lowmc",
         "MSX": "claasp.primitives.block_ciphers.msx",
         "Midori": "claasp.primitives.block_ciphers.midori",
+        "Noekeon": "claasp.primitives.block_ciphers.noekeon",
         "Piccolo": "claasp.primitives.block_ciphers.piccolo",
         "Present": "claasp.primitives.block_ciphers.present",
+        "Pride": "claasp.primitives.block_ciphers.pride",
         "Prince": "claasp.primitives.block_ciphers.prince",
         "PrinceV2": "claasp.primitives.block_ciphers.prince_v2",
         "RC5": "claasp.primitives.block_ciphers.rc5",
@@ -68,6 +70,7 @@ CATEGORY_EXPORTS = {
         "Twine": "claasp.primitives.block_ciphers.twine",
         "Twofish": "claasp.primitives.block_ciphers.twofish",
         "UKNIT": "claasp.primitives.block_ciphers.uknit",
+        "ULBC": "claasp.primitives.block_ciphers.ulbc",
         "Ublock": "claasp.primitives.block_ciphers.ublock",
         "UblockSingleLinearLayer": "claasp.primitives.block_ciphers.ublock.single_linear_layer",
         "Warp": "claasp.primitives.block_ciphers.warp",
@@ -167,6 +170,7 @@ CATEGORY_EXPORTS = {
         "SCARF": "claasp.primitives.tweakable_block_ciphers.scarf",
         "Threefish": "claasp.primitives.tweakable_block_ciphers.threefish",
         "Trax": "claasp.primitives.tweakable_block_ciphers.trax",
+        "ULBCTweakable": "claasp.primitives.tweakable_block_ciphers.ulbc",
     },
 }
 

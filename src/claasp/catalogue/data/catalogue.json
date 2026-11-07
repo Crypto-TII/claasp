@@ -3141,6 +3141,84 @@
       "category": "block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
+        "Constant",
+        "Rotate",
+        "SBox",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "family": "noekeon",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/test_noekeon.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.noekeon",
+      "name": "Noekeon",
+      "official_name": "Noekeon",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "key_mode": "direct",
+            "number_of_rounds": 16
+          }
+        },
+        {
+          "name": "standard-2",
+          "values": {
+            "key_mode": "indirect",
+            "number_of_rounds": 16
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
         "BitVectorSBox",
         "Constant",
         "LinearMap",
@@ -3263,6 +3341,78 @@
           "values": {
             "key_bit_size": 80,
             "number_of_rounds": 31
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Constant",
+        "LinearMap",
+        "ModularAdd",
+        "SBox",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "pride",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/test_pride.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.pride",
+      "name": "Pride",
+      "official_name": "Pride",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "number_of_rounds": 20
           }
         }
       ],
@@ -5859,6 +6009,84 @@
           "name": "standard-1",
           "values": {
             "number_of_rounds": 12
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Constant",
+        "Permutation",
+        "SBox",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "family": "ulbc",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/test_ulbc.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.ulbc",
+      "name": "ULBC",
+      "official_name": "ULBC",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "key_bit_size": 128,
+            "number_of_rounds": 18
+          }
+        },
+        {
+          "name": "standard-2",
+          "values": {
+            "key_bit_size": 256,
+            "number_of_rounds": 22
           }
         }
       ],
@@ -12453,6 +12681,100 @@
         }
       ],
       "tags": [
+        "tweakable_block_cipher",
+        "tweakable_block_ciphers"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "tweakable_block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Constant",
+        "LinearMap",
+        "Permutation",
+        "SBox",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "family": "ulbc_384t",
+      "fixed_evidence": [
+        "tests/unit/primitives/tweakable_block_ciphers/test_ulbc.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key",
+        "tweak"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        },
+        {
+          "name": "tweak",
+          "role": "tweak",
+          "visibility": "public"
+        }
+      ],
+      "kind": "tweakable_block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.tweakable_block_ciphers.ulbc",
+      "name": "ULBCTweakable",
+      "official_name": "ULBCTweakable",
+      "parameter_sets": [
+        {
+          "name": "standard-1",
+          "values": {
+            "key_bit_size": 128,
+            "number_of_rounds": 30
+          }
+        },
+        {
+          "name": "standard-2",
+          "values": {
+            "key_bit_size": 256,
+            "number_of_rounds": 30
+          }
+        },
+        {
+          "name": "standard-3",
+          "values": {
+            "key_bit_size": 384,
+            "number_of_rounds": 30
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "sbox_based",
         "tweakable_block_cipher",
         "tweakable_block_ciphers"
       ]

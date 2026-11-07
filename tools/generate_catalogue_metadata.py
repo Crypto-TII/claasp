@@ -17,6 +17,10 @@ REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
 SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/catalogue/data/catalogue.json"
 NATIVE_EVIDENCE = {
+    "Noekeon": ["tests/unit/primitives/block_ciphers/test_noekeon.py"],
+    "Pride": ["tests/unit/primitives/block_ciphers/test_pride.py"],
+    "ULBC": ["tests/unit/primitives/block_ciphers/test_ulbc.py"],
+    "ULBCTweakable": ["tests/unit/primitives/tweakable_block_ciphers/test_ulbc.py"],
     "Craft": ["tests/unit/primitives/block_ciphers/test_craft.py"],
     "SalsaBlockFunction": ["tests/unit/primitives/block_functions/test_salsa.py"],
 }
