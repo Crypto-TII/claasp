@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387",
+  "records": [
+    {
+      "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_deterministic_truncated_xor_differential_model_test.py",
+      "kind": "test",
+      "sha256": "179e92664f23e935da7db779cd1989d60adbec8ae9cb50c106eaff621f1c49c8",
+      "disposition": "supersede",
+      "status": "reviewed-architecture-replacement",
+      "v5_destination": "src/claasp/representations/constraints/smt/trails.py",
+      "evidence": [
+        "tests/unit/representations/constraints/smt/test_trails__legacy_missing_tests.py",
+        "tests/unit/representations/constraints/smt/test_trails.py",
+        "tests/integration/test_z3_integration.py"
+      ],
+      "scope": "The legacy truncated model test only asserts NotImplementedError; v5 supports construction and decoding. SMT string-helper spellings are replaced by immutable typed formulas and checked lowering; no raw legacy string-API compatibility is claimed."
+    },
+    {
+      "path": "tests/unit/cipher_modules/models/smt/utils/smt_model_utils_test.py",
+      "kind": "test",
+      "sha256": "7c35aee19994e33190ad7d55d17bdecbd407ea6770d6ffa0c1c9b4cb047c50fd",
+      "disposition": "supersede",
+      "status": "reviewed-architecture-replacement",
+      "v5_destination": "src/claasp/representations/constraints/smt/trails.py",
+      "evidence": [
+        "tests/unit/representations/constraints/smt/test_trails__legacy_missing_tests.py",
+        "tests/unit/representations/constraints/smt/test_trails.py",
+        "tests/integration/test_z3_integration.py"
+      ],
+      "scope": "The legacy truncated model test only asserts NotImplementedError; v5 supports construction and decoding. SMT string-helper spellings are replaced by immutable typed formulas and checked lowering; no raw legacy string-API compatibility is claimed."
+    }
+  ]
+}

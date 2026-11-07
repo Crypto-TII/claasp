@@ -61,7 +61,8 @@ def test_every_review_workflow_job_rejects_unrelated_develop_prs():
     quality_jobs = _job_blocks(QUALITY)
     image_jobs = _job_blocks(RELEASE_IMAGE)
 
-    assert len(quality_jobs) == 13
+    assert len(quality_jobs) == 14
+    assert "tensorflow-parity" in quality_jobs
     assert len(image_jobs) == 2
     assert all(REVIEW_CONDITION in block for block in quality_jobs.values())
     assert all(REVIEW_CONDITION in block for block in image_jobs.values())
