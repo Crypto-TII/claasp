@@ -1,9 +1,4 @@
-"""Published vectors and independent-circuit checks for the research catalogue.
-
-NOEKEON: designers' Noekeon_ref.zip/NoekeonTestVectors.txt.
-PRIDE: Appendix J vectors, also reproduced in obfusk/pypride's examples.
-uLBC: https://doi.org/10.62056/a63zzoja5, Appendix A (all six vectors).
-"""
+"""uLBC-384t Appendix A vectors and bit-exact key/tweak splitting."""
 
 import pytest
 
@@ -28,3 +23,17 @@ def test_ulbc_384t_published_vectors_and_bit_exact_key_tweak_splits(p, tk, c, ke
     if tweak_bits:
         inputs["tweak"] = tk & ((1 << tweak_bits) - 1)
     assert ULBCTweakable(key_bit_size=key_bits).evaluate(inputs) == c
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"key_bit_size": 127},
+        {"key_bit_size": 385},
+        {"number_of_rounds": 31},
+        {"number_of_rounds": False},
+    ],
+)
+def test_invalid_parameters(kwargs):
+    with pytest.raises(ValueError):
+        ULBCTweakable(**kwargs)

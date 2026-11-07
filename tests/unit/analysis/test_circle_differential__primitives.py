@@ -1,8 +1,7 @@
-"""Circle-pair experiments on catalogue graphs through the generic engine.
+"""Circle-difference verification on binary catalogue graphs.
 
-These establish evaluation and verification coverage, not attacks on the
-standard primitives. Pair construction and output differences use an
-independent packed-bit formula for the published four-bit operation.
+Pair construction and output differences use an independent packed-bit
+formula for the published four-bit operation.
 """
 
 from fractions import Fraction
