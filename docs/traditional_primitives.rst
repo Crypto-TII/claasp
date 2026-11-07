@@ -275,3 +275,49 @@ rather than private operations. Tests cover five published eSTREAM 80/80
 vectors, an all-zero 256-bit keystream, scalar/batch parity, and reduced
 instances checked against an independent transcription of the specification
 pseudocode.
+
+PRIDE, NOEKEON and uLBC
+-----------------------
+
+These primitives use the same component graphs, evaluation drivers and analysis
+interfaces as the rest of the catalogue. QARMAv2, MANTIS and Blink are also
+available under ``claasp.primitives``; they are separate existing designs.
+
+.. doctest::
+
+   >>> from claasp.primitives import Pride, Noekeon, ULBC, ULBCTweakable
+   >>> f"{Pride().evaluate(plaintext=0, key=0):016x}"
+   '82b4109fcc70bd1f'
+   >>> f"{Noekeon().evaluate(plaintext=0, key=0):032x}"
+   'b1656851699e29fa24b70148503d2dfc'
+   >>> f"{ULBC().evaluate(plaintext=0, key=0):032x}"
+   'e6b6b249c25994a425c480b852f4899a'
+   >>> f"{ULBCTweakable().evaluate(plaintext=0, key=0, tweak=0):032x}"
+   '64adeb0232294d9c1e268365764e674a'
+
+``Pride`` has a 64-bit block, a 128-bit key and twenty rounds. Its boundary
+permutations and byte-wise modular additions in the key schedule are retained.
+``Noekeon`` has a 128-bit block and key and sixteen rounds; select
+``key_mode="indirect"`` to derive the working key using the full zero-key NOEKEON instance.
+The default ``"direct"`` mode uses the supplied key as its working key.
+
+``ULBC(key_bit_size=128)`` and ``ULBC(key_bit_size=256)`` implement the published
+18- and 22-round variants. ``ULBCTweakable`` implements thirty-round uLBC-384t;
+its packed tweakey is ``key || tweak``, totalling 384 bits. The default split is
+a 128-bit key and a 256-bit tweak. ``key_bit_size`` can range from 128 to 384;
+at 384 there is no ``tweak`` input.
+
+All four classes accept ``number_of_rounds``. Reduced instances retain the
+respective primitive's whitening and final output transformation; they are
+standalone reduced block ciphers, rather than internal round windows of a full
+instance. Use graph slicing when an internal boundary is required.
+
+The implementations are checked against the `PRIDE design
+<https://eprint.iacr.org/2014/453>`_, the `NOEKEON specification and reference
+vectors <https://gro.noekeon.org/>`_, and all six vectors in appendix A of the
+`uLBC design paper <https://doi.org/10.62056/a63zzoja5>`_. For uLBC-384t,
+whitening includes all three subtweakeys, matching the authors' VHDL and the
+published nonzero vector; the paper's section 2.4 expression omits the third
+term. The round-constant table retains entry 23 as ``0xc0``, as printed and
+implemented in that VHDL. Later C++ variants in the authors' repository use
+different parameters and are not selected by these classes.

@@ -373,6 +373,18 @@ claasp.primitives.block_ciphers.lowmc
 .. automodule:: claasp.primitives.block_ciphers.lowmc
    :no-index:
 
+claasp.primitives.block_ciphers.noekeon
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.block_ciphers.noekeon
+   :no-index:
+
+claasp.primitives.block_ciphers.pride
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.block_ciphers.pride
+   :no-index:
+
 claasp.primitives.block_ciphers.simeck
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -395,6 +407,12 @@ claasp.primitives.block_ciphers.ublock
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.primitives.block_ciphers.ublock
+   :no-index:
+
+claasp.primitives.block_ciphers.ulbc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.block_ciphers.ulbc
    :no-index:
 
 claasp.primitives.block_functions
@@ -665,6 +683,12 @@ claasp.primitives.tweakable_block_ciphers.trax
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automodule:: claasp.primitives.tweakable_block_ciphers.trax
+   :no-index:
+
+claasp.primitives.tweakable_block_ciphers.ulbc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.primitives.tweakable_block_ciphers.ulbc
    :no-index:
 
 claasp.representations

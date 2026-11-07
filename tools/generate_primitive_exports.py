@@ -10,6 +10,10 @@ INVENTORY = ROOT / "tools/data/legacy_inventory.json"
 SINGLE_COMPONENT_CATALOGUE = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/primitives/_catalogue_exports.py"
 NATIVE_EXPORTS = (
+    ("block_ciphers", "Noekeon", "claasp.primitives.block_ciphers.noekeon"),
+    ("block_ciphers", "Pride", "claasp.primitives.block_ciphers.pride"),
+    ("block_ciphers", "ULBC", "claasp.primitives.block_ciphers.ulbc"),
+    ("tweakable_block_ciphers", "ULBCTweakable", "claasp.primitives.tweakable_block_ciphers.ulbc"),
     ("block_ciphers", "Craft", "claasp.primitives.block_ciphers.craft"),
     ("block_functions", "SalsaBlockFunction", "claasp.primitives.block_functions.salsa"),
 )

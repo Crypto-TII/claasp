@@ -29,7 +29,7 @@ def check() -> tuple[int, int, int, int, int]:
     primitives = catalogue["primitives"]
     by_name = {item["name"]: item for item in primitives}
     assert catalogue["schema_version"] == 2
-    assert len(by_name) == len(primitives) == len(ALL_EXPORTS) == 148
+    assert len(by_name) == len(primitives) == len(ALL_EXPORTS) == 152
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
     assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
     assert len(catalogue["components"]) == 23
