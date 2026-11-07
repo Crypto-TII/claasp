@@ -108,7 +108,12 @@ def trail_section(result, *, details=False):
                     ("Search backend", result.backend),
                     ("Search scope", result.scope),
                     ("Complete within scope", str(result.complete)),
-                    ("Optimal masks", str(result.optimal_mask_count)),
+                    (
+                        "Optimal masks",
+                        str(result.optimal_mask_count)
+                        if result.optimal_mask_count is not None
+                        else "not enumerated",
+                    ),
                 )
             )
         else:

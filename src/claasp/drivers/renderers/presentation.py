@@ -255,7 +255,7 @@ def _finish_figure(figure, *, show, save_to):
 
 
 def _plot_trail(
-    result: TrailSearchResult, *, show: bool, save_to: str | Path | None
+    result: TrailSearchResult, *, show: bool, save_to: str | Path | None, title: str | None = None
 ) -> FigureArtifact:
     if not result.round_transitions:
         raise ValueError("trail weight plots require recorded round transitions")
@@ -270,7 +270,7 @@ def _plot_trail(
         relative,
         tuple(cumulative),
         xlabel="Round",
-        title=f"XOR {kind} trail weight",
+        title=title or f"XOR {kind} trail weight",
         artifact_kind="trail_weights",
         show=show,
         save_to=save_to,

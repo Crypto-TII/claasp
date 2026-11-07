@@ -52,8 +52,10 @@ the full endpoint correlation. Circle-linear analysis can expose biases that
 ordinary parity checks miss, sometimes only for a particular class of keys.
 
 Use ``primitive.analysis.find_lowest_weight_circle_linear_trail(...)`` for
-the standard search workflow; the result retains its supported subgroup and
-key-class scope.
+the standard search workflow. The default optimized SPN backend retains its
+supported subgroup and exact affine key class. A generic solver backend also
+supports other binary graph structures and non-perfect transitions, with all
+auxiliary inputs explicitly fixed; see :doc:`advanced_circle_linear`.
 
 .. toctree::
    :maxdepth: 2

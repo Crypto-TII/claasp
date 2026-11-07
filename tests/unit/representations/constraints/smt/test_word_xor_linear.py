@@ -5,7 +5,7 @@ from dataclasses import replace
 import pytest
 
 from claasp import Primitive, UnitArrayType
-from claasp.components import BitwiseAnd, Xor
+from claasp.components import BitwiseAnd, SBox, Xor
 from claasp.drivers.solvers import SatResult, SatStatus
 from claasp.representations.constraints.smt import WordXorLinearSMTModel
 from claasp.unit_types import Word
@@ -106,3 +106,24 @@ def test_bitwise_and_word_composition_recounts_signs_and_weights():
     trail = model.decode_characteristic(dict.fromkeys(formula.variables, 1))
     assert trail.total_weight == 2 and trail.sign == 1
     assert model.check_characteristic(trail)
+
+
+def test_mixed_lookup_and_boolean_records_retain_graph_order():
+    primitive = Primitive(
+        "mixed", {"left": UnitArrayType(Word(2), (1,)), "right": UnitArrayType(Word(2), (1,))}
+    )
+    builder = primitive._builder
+    builder.add_round()
+    first = builder.add_component(SBox(primitive.graph.input("left"), (0, 1, 2, 3)))
+    middle = builder.add_component(
+        BitwiseAnd((first.select_all(), primitive.graph.input("right").select_all()))
+    )
+    last = builder.add_component(SBox(middle, (0, 1, 2, 3)))
+    builder.set_output(last)
+    model = WordXorLinearSMTModel(primitive, maximum_weight=2, nonzero_input="left")
+    formula = model.smt_formula()
+    trail = model.decode_characteristic(dict.fromkeys(formula.variables, 1))
+    assert tuple(step.component_id for step in trail.steps) == tuple(
+        f"{component.component_id}[0]" for component in primitive.graph.components
+    )
+    assert trail.total_weight == 2 and model.check_characteristic(trail)

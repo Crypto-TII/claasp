@@ -9,6 +9,7 @@ them. Outside this subgroup use the general CircleNetwork semantics.
 from dataclasses import dataclass, field
 from fractions import Fraction
 from functools import cached_property
+from heapq import heapify, heappop, heappush
 from pathlib import Path
 from typing import TYPE_CHECKING, TextIO
 
@@ -154,7 +155,7 @@ class CircleLinearTrailSearchResult:
     """
 
     cost: int
-    optimal_mask_count: int
+    optimal_mask_count: int | None
     representative: CircleLinearTrail
     complete: bool = True
     scope: str = "four-element perfect subgroup"
@@ -404,7 +405,7 @@ class CircleLinearTrailModel:
         )
 
     @cached_property
-    def _column_costs(self) -> tuple[tuple[int, tuple[int, ...], tuple[int, ...]], ...]:
+    def _column_outputs(self) -> tuple[tuple[int, ...], ...]:
         # Factor disjoint diffusion blocks before tabulating ranks. This is
         # generic connectivity detection, not a CRAFT matrix special case.
         groups = [{i} for i in range(self.cells)]
@@ -413,11 +414,17 @@ class CircleLinearTrailModel:
             touched = [group for group in groups if group & support]
             merged = set().union(*touched)
             groups = [group for group in groups if group not in touched] + [merged]
-        tables = []
-        for group in groups:
-            outputs = tuple(
+        return tuple(
+            tuple(
                 i for i, row in enumerate(self.diffusion_rows) if any(row >> j & 1 for j in group)
             )
+            for group in groups
+        )
+
+    @cached_property
+    def _column_costs(self) -> tuple[tuple[int, tuple[int, ...], tuple[int, ...]], ...]:
+        tables = []
+        for outputs in self._column_outputs:
             table = []
             for pattern in range(1 << len(outputs)):
                 rows = [0] * self.cells
@@ -438,14 +445,31 @@ class CircleLinearTrailModel:
             for _, outputs, table in self._column_costs
         )
 
-    def search(self, *, maximum_factor_states: int = 1 << 16) -> CircleLinearTrailSearchResult:
+    def search(
+        self,
+        *,
+        maximum_factor_states: int = 1 << 16,
+        backend="enumeration",
+        solver=None,
+        maximum_candidates=1 << 16,
+    ) -> CircleLinearTrailSearchResult:
         """Certify the subgroup optimum by two independent n-cell searches.
 
         The spatial map commutes with sigma, so alternating round costs
         depend separately on q and q XOR s. This replaces 2**(2*n) masks by
         two searches of 2**n states. A nontrivial zero-cost kernel is handled
         explicitly. Ties prefer the largest exact key class then lowest code.
-        Conflicting affine offsets are checked for every tied candidate.
+        Conflicting affine offsets are checked for every tied candidate. If a
+        whole weight level is infeasible, search continues at higher weights.
+        The budget bounds visited candidate masks as well as factor states;
+        exhausting it raises instead of reporting an unproved optimum.
+
+        ``backend='sat'`` encodes spatial propagation and column costs using
+        shared Boolean gates and cardinality constraints. It avoids the global
+        2**cells arrays. Affine key consistency is checked on each candidate;
+        infeasible masks are blocked before continuing. This returns one proven
+        optimum, without counting all optimal masks or maximizing key-class
+        size across ties. ``maximum_candidates`` bounds this refinement.
 
         EXAMPLES::
 
@@ -454,6 +478,17 @@ class CircleLinearTrailModel:
             >>> r.cost, r.optimal_mask_count, hex(r.representative.output_code)
             (8, 24, '0x1190000')
         """
+        if backend == "sat":
+            from claasp.analysis._circle_subgroup_sat import search_subgroup
+
+            return search_subgroup(
+                self,
+                solver=solver,
+                maximum_column_states=maximum_factor_states,
+                maximum_candidates=maximum_candidates,
+            )
+        if backend != "enumeration" or solver is not None:
+            raise ValueError("choose backend='sat' to supply a solver")
         size = 1 << self.cells
         if size > maximum_factor_states:
             raise ValueError("subgroup search exceeds maximum_factor_states")
@@ -472,24 +507,31 @@ class CircleLinearTrailModel:
                 else:
                     g[value] += costs[current]
                 current = spatial[current]
-        # Include nonzero masks in the kernels, not just nonzero codewords.
-        minimum = min(min(f[1:]), min(g[1:]))
-        left = [i for i, cost in enumerate(f) if cost <= minimum]
-        right = [i for i, cost in enumerate(g) if cost <= minimum]
-        if len(left) * len(right) > maximum_factor_states:
-            raise ValueError("optimal-mask enumeration exceeds maximum_factor_states")
-        codes = [
-            a | ((a ^ b) << self.cells)
-            for a in left
-            for b in right
-            if (a or b) and f[a] + g[b] == minimum
-        ]
-        if len(codes) > maximum_factor_states:
-            raise ValueError("too many optimal masks; increase maximum_factor_states")
-        trails = [self.trail(code) for code in sorted(codes)]
-        valid = [trail for trail in trails if trail.conditions.consistent]
+        # Merge sorted pair sums lazily: do not allocate 2**(2*cells) codes.
+        right = sorted(range(size), key=lambda i: (g[i], i))
+        queue = [(f[a] + g[right[0]], a, 0) for a in range(size)]
+        heapify(queue)
+        valid, minimum, visited = [], None, 0
+        while queue:
+            cost, a, index = heappop(queue)
+            if minimum is not None and cost > minimum:
+                break
+            b = right[index]
+            if index + 1 < size:
+                following = index + 1
+                heappush(queue, (f[a] + g[right[following]], a, following))
+            if not (a or b):
+                continue
+            visited += 1
+            if visited > maximum_factor_states:
+                raise ValueError("feasible-mask search exceeds maximum_factor_states")
+            trail = self.trail(a | ((a ^ b) << self.cells))
+            if trail.conditions.consistent:
+                minimum = cost
+                valid.append(trail)
         if not valid:
-            raise ValueError("no minimum-cost trail survives the supplied affine key schedule")
+            raise ValueError("no nonzero trail survives the supplied affine key schedule")
+        assert minimum is not None
         representative = min(
             valid, key=lambda trail: (-trail.conditions.key_count, trail.output_code)
         )

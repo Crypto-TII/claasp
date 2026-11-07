@@ -175,6 +175,75 @@ def test_tweak_can_make_key_conditions_inconsistent_and_is_never_averaged():
     assert saw_incompatible
 
 
+def test_search_continues_when_all_structural_minima_have_inconsistent_offsets():
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    base = CircleLinearTrailModel(brace, CRAFT_SBOX, (3, 2), (1, 0), 2)
+    model = CircleLinearTrailModel(
+        brace,
+        CRAFT_SBOX,
+        (3, 2),
+        (1, 0),
+        2,
+        affine_layers=tuple(
+            CircleAffineLayer(base.basis, base.basis, base.binary_rows(), offset)
+            for offset in (222, 207)
+        ),
+    )
+    all_trails = [model.trail(code) for code in range(1, 16)]
+    assert min(t.cost for t in all_trails) == 0
+    feasible = [t for t in all_trails if t.conditions.consistent]
+    assert min(t.cost for t in feasible) == 2
+    result = model.search()
+    assert result.cost == 2
+    assert result.optimal_mask_count == sum(t.cost == 2 for t in feasible)
+    assert result.representative.conditions.consistent
+
+
+def test_symbolic_search_matches_exhaustive_and_skips_infeasible_key_classes():
+    import shutil
+
+    if shutil.which("kissat") is None:
+        pytest.skip("requires kissat")
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    for rounds in (2, 4):
+        base = CircleLinearTrailModel(brace, CRAFT_SBOX, (3, 2), (1, 0), rounds)
+        model = CircleLinearTrailModel(
+            brace,
+            CRAFT_SBOX,
+            (3, 2),
+            (1, 0),
+            rounds,
+            affine_layers=tuple(
+                CircleAffineLayer(base.basis, base.basis, base.binary_rows(), offset)
+                for offset in (222, 207) * (rounds // 2)
+            ),
+        )
+        enumerated = model.search()
+        symbolic = model.search(backend="sat")
+        assert symbolic.cost == enumerated.cost
+        assert symbolic.representative.conditions.consistent
+        assert symbolic.optimal_mask_count is None
+        assert symbolic.backend == "perfect_subgroup_sat"
+
+
+def test_symbolic_32_cell_search_avoids_global_factor_state_enumeration():
+    import shutil
+
+    if shutil.which("kissat") is None:
+        pytest.skip("requires kissat")
+    brace = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+    rows = tuple(value << offset for offset in range(0, 32, 2) for value in (3, 2))
+    permutation = tuple(i ^ 1 for i in range(32))
+    model = CircleLinearTrailModel(brace, CRAFT_SBOX, rows, permutation, 4)
+    with pytest.raises(ValueError, match="maximum_factor_states"):
+        model.search()
+    result = model.search(backend="sat", maximum_factor_states=4)
+    # Sixteen disjoint copies of the independently exhaustible two-cell SPN.
+    expected = CircleLinearTrailModel(brace, CRAFT_SBOX, (3, 2), (1, 0), 4).search().cost
+    assert result.cost == expected == 2
+    assert result.representative.output_code
+
+
 @pytest.mark.parametrize(
     "rounds,output_code,tweak_bits",
     [

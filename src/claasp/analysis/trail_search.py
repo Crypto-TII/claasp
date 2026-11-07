@@ -233,6 +233,7 @@ def optimize_word_characteristic(
     fixed_input_differences=None,
     fixed_input_masks=None,
     fixed_inputs=None,
+    output_difference=None,
 ) -> TrailSearchResult:
     """Optimize exact characteristic probabilities and prove the optimum.
 
@@ -272,6 +273,7 @@ def optimize_word_characteristic(
                 maximum_weight=bound,
                 nonzero_input=policy.nonzero_input,
                 fixed_input_differences=policy.fixed_patterns,
+                output_difference=output_difference,
             )
         options = {
             "maximum_weight": bound,
@@ -426,6 +428,18 @@ def _optimize_probability_characteristic(
             lower, best = feasible
             if lower > upper:
                 raise RuntimeError("probability witness contradicts an earlier UNSAT bound")
+            # Dense lookup products can have hundreds of denominator bits.
+            # A witness may already be optimal even while the integer search
+            # interval remains enormous. Certify that immediately rather than
+            # bisecting every unused numerator between it and the upper bound.
+            if lower < denominator:
+                improvement = solve(lower + 1)
+                if improvement is None:
+                    upper = lower
+                    break
+                lower, best = improvement
+                if lower > upper:
+                    raise RuntimeError("probability witness contradicts an earlier UNSAT bound")
     if best is None:
         raise RuntimeError(
             f"no nonzero {kind.value} characteristic exists for {primitive.family_name!r}"
