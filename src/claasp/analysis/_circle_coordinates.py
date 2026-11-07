@@ -20,7 +20,22 @@ from claasp.unit_types import Bit
 
 @dataclass(frozen=True)
 class CircleCoordinateGraph:
-    """Original and derived graphs, their endpoint bases and fixed inputs."""
+    """Original and derived graphs, their endpoint bases and fixed inputs.
+
+    The derived primitive accepts only the selected public input in circle
+    coordinates. Auxiliary inputs of the original primitive have the retained
+    concrete values. Keep these bases when interpreting endpoint patterns.
+
+    EXAMPLES::
+
+        >>> from claasp.analysis import circle_coordinate_graph
+        >>> from claasp.primitives import BitVectorSBox
+        >>> graph = circle_coordinate_graph(BitVectorSBox(2, (0, 1, 3, 2)), input_name='input')
+        >>> graph.input_basis.width, graph.output_basis.width, graph.fixed_inputs
+        (2, 2, ())
+        >>> all(graph.primitive.evaluate(x) == graph.source.evaluate(x) for x in range(4))
+        True
+    """
 
     source: Primitive
     primitive: Primitive
