@@ -9,6 +9,7 @@ from claasp.cipher_modules.models.smt.solvers import Z3_EXT
 from claasp.cipher_modules.models.smt.utils import constants
 from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_variables
 from claasp.ciphers.block_ciphers.des_block_cipher import DESBlockCipher
+from claasp.ciphers.block_ciphers.gift_sbox_block_cipher import GiftSboxBlockCipher
 from claasp.ciphers.block_ciphers.rectangle_block_cipher import RectangleBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
@@ -158,6 +159,36 @@ def test_sbox_with_a_non_power_of_two_qdt_is_refused():
 
     with pytest.raises(ValueError, match="not a power of two"):
         smt.build_xor_quasidifferential_trail_model(weight=2)
+
+
+def test_gift_is_modelled_when_the_characteristic_avoids_the_unencodable_differentials():
+    # GIFT's S-box holds 3/8 on two of its differentials and powers of two on
+    # the rest, so a characteristic using neither of those two is encodable.
+    # Three rounds of the characteristic of eprint 2025/1031 weigh 14 and have
+    # two trails, summing to 2 * 2^-14 for the all-zero key.
+    gift = GiftSboxBlockCipher(block_bit_size=64, number_of_rounds=3).remove_key_schedule()
+    differences = {
+        INPUT_PLAINTEXT: 0x0000000000000202,
+        "intermediate_output_0_24": 0x0000000500000005,
+        "intermediate_output_1_26": 0x0000000002020000,
+        "cipher_output_2_26": 0x0000005000000050,
+    }
+    fixed_values = [
+        set_fixed_variables(input_id, "equal", range(16), (0,) * 16)
+        for input_id in gift.inputs
+        if input_id.startswith("key")
+    ] + [
+        set_fixed_variables(component_id, "equal", range(64), integer_to_bit_list(difference, 64, "big"))
+        for component_id, difference in differences.items()
+    ]
+    smt = SmtXorQuasidifferentialModel(gift)
+
+    result = smt.estimate_fixed_key_probability(
+        min_weight=14, max_weight=14, fixed_values=fixed_values, key=0, solver_name=Z3_EXT
+    )
+
+    assert result["num_trails_found"] == 2
+    assert result["estimated_probability"] == 2.0**-13
 
 
 def test_model_admits_the_masks_of_equation_4():

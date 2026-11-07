@@ -500,6 +500,35 @@ def deinterleave_qdt_matrix(qdt_matrix, n, m, primary: str = "diff"):
     return deinterleaved_matrix
 
 
+def _non_power_of_two_magnitudes(qdt_matrix):
+    """
+    Return the magnitudes of the non-zero coefficients of ``qdt_matrix`` that are not powers of two.
+
+    A coefficient of the matrix is a correlation, a signed number of the form ``k / 2**n``. What the
+    model stores is not the coefficient but its weight, ``-log2|coefficient|``, and it stores it as a
+    count of Boolean indicators, so the weight has to be a whole number. That holds exactly when the
+    magnitude is ``2**-k``. The magnitudes returned here are therefore the ones the model has no way
+    of expressing, and an empty result means the matrix is usable as it stands.
+
+    INPUT:
+
+    - ``qdt_matrix`` -- **NumPy array**; a quasidifferential transition matrix, or a block of one
+
+    EXAMPLES::
+
+        sage: import numpy as np
+        sage: from claasp.cipher_modules.models.smt.utils.utils import _non_power_of_two_magnitudes
+        sage: _non_power_of_two_magnitudes(np.array([[0.5, 0.0], [0.0, -1.0]])).tolist()
+        []
+        sage: _non_power_of_two_magnitudes(np.array([[0.375, 0.0], [0.0, -0.25]])).tolist()
+        [0.375]
+    """
+    magnitudes = np.unique(np.abs(qdt_matrix[qdt_matrix != 0]))
+    exponents = np.log2(magnitudes)
+
+    return magnitudes[np.abs(exponents - np.round(exponents)) > 1e-9]
+
+
 def check_qdt_feasibility(qdt_matrix):
     """
     Check that the non-zero coefficients of a quasidifferential transition matrix are powers of two.
@@ -508,6 +537,12 @@ def check_qdt_feasibility(qdt_matrix):
     thermometer of Boolean indicators, so it must be an integer. A coefficient of 3/8 has weight
     1.415 and would be recorded as 1 -- a silently optimistic weight, pooled with the genuine
     weight-1 transitions, and a correlation of 2^-1 instead of 3/8 in the sum of Theorem 4.1.
+
+    A characteristic uses one differential per S-box, and only that differential's ``2**m`` by
+    ``2**n`` block is written out, so pass the block. The whole matrix is for an S-box whose
+    differences are undecided, where the whole table is written out. Testing the whole matrix in the
+    first case would reject the GIFT S-box over the two differentials that hold 3/8, even for a
+    characteristic that uses neither.
 
     This mirrors ``claasp.components.sbox_component.check_table_feasibility``, which already refuses
     a DDT with a non-power-of-two entry for the SAT, SMT and MILP differential models. The two
@@ -534,9 +569,7 @@ def check_qdt_feasibility(qdt_matrix):
         ...
         ValueError: The S-box QDT of the cipher contains 0.375 which is not a power of two. Currently, SMT cannot handle it.
     """
-    magnitudes = np.unique(np.abs(qdt_matrix[qdt_matrix != 0]))
-    exponents = np.log2(magnitudes)
-    offending = magnitudes[np.abs(exponents - np.round(exponents)) > 1e-9]
+    offending = _non_power_of_two_magnitudes(qdt_matrix)
 
     if offending.size:
         raise ValueError(
@@ -594,8 +627,16 @@ def generate_weight_tables(qdt_matrix, n, m):
 
         {(b, a): {weight_loss: [(v, u), ...], ...}, ...}
 
-    Every ``(b, a)`` pair is present, mapping to an empty dictionary when the differential admits no
-    valid transition.
+    Every ``(b, a)`` pair is present, with two different ways of carrying no transition:
+
+    - an empty dictionary, when the differential has no non-zero coefficient, so it cannot happen
+    - ``None``, when it has a coefficient the model cannot weight, so it can happen but not be
+      modelled
+
+    The caller must not take the second for the first. An empty dictionary makes a characteristic
+    impossible, whereas ``None`` makes it unanswerable, so a characteristic that selects such a
+    differential is refused rather than reported as having no transition. Only that differential is
+    marked, the rest of the S-box being tabulated as usual.
 
     INPUT:
 
@@ -612,12 +653,16 @@ def generate_weight_tables(qdt_matrix, n, m):
         sage: generate_weight_tables(qdt, 1, 1)
         {(0, 0): {0: [(0, 0), (1, 1)]}, (0, 1): {}, (1, 0): {}, (1, 1): {0: [(0, 0), (1, 1)]}}
     """
-    check_qdt_feasibility(qdt_matrix)
-
     weights = {}
 
     for b in range(2**m):
         for a in range(2**n):
-            weights[(b, a)] = _weight_table_for_differential(qdt_matrix, n, m, b, a)
+            # The coefficients of the differential a -> b, one entry per mask pair (v, u).
+            block = qdt_matrix[2**m * b : 2**m * (b + 1), 2**n * a : 2**n * (a + 1)]
+
+            if _non_power_of_two_magnitudes(block).size:
+                weights[(b, a)] = None
+            else:
+                weights[(b, a)] = _weight_table_for_differential(qdt_matrix, n, m, b, a)
 
     return weights
