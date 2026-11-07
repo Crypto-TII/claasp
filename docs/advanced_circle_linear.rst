@@ -22,7 +22,7 @@ circle-coordinate component graph. For fixed auxiliary inputs, it computes
 original primitive are ordinary linear masks on :math:`G`. CLAASP rewrites
 the graph using ``GraphPropagation`` and reuses the existing XOR optimizer,
 component relations, independent characteristic checker, solver drivers and
-trail presentation. There is no second implementation of the cipher.
+trail presentation. The existing primitive graph supplies all component behavior.
 
 This path accepts different S-boxes in different rounds, bit permutations,
 general binary affine layers, Feistel wiring and nonlinear key schedules,
@@ -71,7 +71,7 @@ the usual finite input budget; ``samples=...`` instead gives seeded sampling
 evidence. Neither a small weight nor successful fixed-key verification proves
 an improved key-recovery attack. Key coverage, the endpoint correlation, outer
 round extension, dependent key guesses and total data/time/memory costs still
-need a cipher-specific analysis.
+need an analysis of the chosen primitive.
 
 The operation used in the introductory example
 ----------------------------------------------

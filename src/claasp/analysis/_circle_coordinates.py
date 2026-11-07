@@ -2,7 +2,7 @@
 
 The derived graph computes ``theta_out(E(theta_in(x), fixed_inputs))``.
 Its component characteristics are distinct from endpoint probabilities and
-correlations. No cipher shape, round boundary or key-schedule assumption is made.
+correlations. No primitive shape, round boundary or key-schedule assumption is made.
 """
 
 from copy import copy

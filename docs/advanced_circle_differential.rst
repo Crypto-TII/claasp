@@ -285,10 +285,10 @@ rules. Fixed-key graph equivalence is tested on CRAFT, PRIDE, NOEKEON, uLBC
 and SIMON, including final layers, bitsliced wiring and nonlinear schedules.
 Small-function solver optima are independently checked against direct circle
 DDTs and LATs. These checks establish implementation correctness, not a
-competitive attack on those full ciphers.
+competitive attack on those full primitives.
 
 The result optimizes a **component DDT product in the derived graph**.
-That product need not be the probability of a concrete whole-cipher trail:
+That product need not be the probability of a concrete trail through the full primitive:
 component events can be dependent at a fixed key. Use
 ``result.evaluate_endpoint()`` to enumerate the actual endpoint probability,
 or ``result.evaluate_endpoint(samples=..., seed=...)`` for sampling evidence.
