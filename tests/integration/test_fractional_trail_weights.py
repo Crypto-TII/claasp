@@ -202,3 +202,39 @@ def test_three_round_heys_supports_the_tutorial_fixed_plaintext_mask():
     assert result.trail.input_pattern.value == 1
     assert _probability(result) == _heys_linear_oracle(input_mask=1)
     assert result.is_optimal
+
+
+def test_large_denominator_optimum_is_certified_without_bitwise_bisection():
+    from claasp.components import SBox
+    from claasp.graph import Primitive, UnitArrayType
+    from claasp.unit_types import Word
+
+    class CountingSolver:
+        def __init__(self):
+            self.driver = KissatSolver()
+            self.calls = 0
+
+        def solve(self, formula):
+            self.calls += 1
+            return self.driver.solve(formula)
+
+    # A finite lookup control with both power-of-two and fractional DDT entries.
+    table = (11, 7, 5, 9, 10, 2, 1, 12, 8, 14, 13, 0, 15, 3, 6, 4)
+    primitive = Primitive("parallel_fractional", {"plaintext": UnitArrayType(Word(4), (16,))})
+    primitive._builder.add_round()
+    primitive._builder.set_output(
+        primitive._builder.add_component(SBox(primitive.graph.input("plaintext"), table))
+    )
+    solver = CountingSolver()
+    result = primitive.analysis.find_lowest_weight_xor_differential_trail(solver=solver)
+    counts = [
+        sum(table[x] ^ table[x ^ a] == b for x in range(16))
+        for a in range(1, 16)
+        for b in range(16)
+    ]
+    assert 6 in counts and max(counts) == 8
+    # One active cell attains probability 1/2. The other fifteen cells only
+    # enlarge the encoded denominator, not the number of necessary SAT calls.
+    assert result.is_optimal and result.trail.total_weight == 1
+    assert _probability(result) == Fraction(1, 2)
+    assert solver.calls <= 8

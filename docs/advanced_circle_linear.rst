@@ -68,10 +68,9 @@ introduce multiple trails whose signed contributions must be summed.
 The weight is :math:`-\log_2|C_{trail}|`, as in ordinary XOR-linear search.
 ``result.evaluate_endpoint()`` evaluates the original primitive exactly under
 the usual finite input budget; ``samples=...`` instead gives seeded sampling
-evidence. Neither a small weight nor successful fixed-key verification proves
-an improved key-recovery attack. Key coverage, the endpoint correlation, outer
-round extension, dependent key guesses and total data/time/memory costs still
-need an analysis of the chosen primitive.
+evidence. Endpoint evaluation retains the fixed inputs used for the search;
+the characteristic optimum and measured endpoint correlation describe
+different quantities.
 
 The operation used in the introductory example
 ----------------------------------------------

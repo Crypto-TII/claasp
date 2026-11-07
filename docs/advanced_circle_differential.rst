@@ -281,11 +281,8 @@ This search does not enumerate plaintexts and is not limited by
 ``maximum_inputs``. Its limits are solver resources, dense local lookup
 budgets and the ordinary XOR backend's supported components. Unsupported
 operations raise a capability error; they are not replaced by approximate
-rules. Fixed-key graph equivalence is tested on CRAFT, PRIDE, NOEKEON, uLBC
-and SIMON, including final layers, bitsliced wiring and nonlinear schedules.
-Small-function solver optima are independently checked against direct circle
-DDTs and LATs. These checks establish implementation correctness, not a
-competitive attack on those full primitives.
+rules. Graph composition preserves final layers, bitsliced wiring and
+nonlinear key schedules.
 
 The result optimizes a **component DDT product in the derived graph**.
 That product need not be the probability of a concrete trail through the full primitive:
@@ -295,8 +292,3 @@ or ``result.evaluate_endpoint(samples=..., seed=...)`` for sampling evidence.
 The :doc:`advanced circle-linear guide <advanced_circle_linear>` explains
 coordinate-map simplification and why the component decomposition matters.
 Concrete boundary-history constraints remain part of the concrete backend.
-
-Automatic operation discovery, efficient full-hull optimization and complete
-key-recovery cost optimization remain research tasks. A native CP formulation
-and stronger whole-affine-layer circle encodings are possible future
-optimizations; this implementation reuses existing XOR solver encodings.

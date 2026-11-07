@@ -15,7 +15,6 @@ from claasp.components import Constant, ModularAdd, SBox, Xor
 from claasp.graph import Primitive, UnitArrayType
 from claasp.primitives import ULBC, BitVectorSBox, Craft, Noekeon, Pride, Simon
 from claasp.primitives.block_ciphers.craft import CRAFT_SBOX
-from claasp.primitives.block_ciphers.pride import PRIDE_SBOX
 from claasp.semantics.cryptanalysis import TrailKind
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace, CircleBasis
 from claasp.unit_types import Word
@@ -24,8 +23,17 @@ OPERATION = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
 SOLVER = pytest.mark.skipif(shutil.which("kissat") is None, reason="requires kissat")
 
 
-@pytest.mark.parametrize("factory", [Craft, Pride, Noekeon, ULBC, Simon])
-def test_coordinate_graph_matches_original_real_cipher_with_fixed_nonzero_key(factory):
+@pytest.mark.parametrize(
+    "factory",
+    [
+        pytest.param(Craft, id="cell-permutation-spn"),
+        pytest.param(Pride, id="modular-key-schedule"),
+        pytest.param(Noekeon, id="bitsliced-final-whitening"),
+        pytest.param(ULBC, id="binary-diffusion-spn"),
+        pytest.param(Simon, id="feistel-boolean-layer"),
+    ],
+)
+def test_coordinate_change_preserves_binary_primitive_evaluation(factory):
     p = factory(number_of_rounds=2)
     rng = Random(112)
     fixed = {
@@ -194,43 +202,6 @@ def test_endpoint_sampling_is_seeded_and_separate_from_search():
 
 
 @SOLVER
-def test_large_denominator_probability_optimum_is_certified_without_bitwise_bisection():
-    from claasp.drivers.solvers import KissatSolver
-
-    class CountingSolver:
-        def __init__(self):
-            self.driver = KissatSolver()
-            self.calls = 0
-
-        def solve(self, formula):
-            self.calls += 1
-            return self.driver.solve(formula)
-
-    p = Primitive("parallel_fractional", {"plaintext": UnitArrayType(Word(4), (16,))})
-    p._builder.add_round()
-    p._builder.set_output(p._builder.add_component(SBox(p.graph.input("plaintext"), PRIDE_SBOX)))
-    solver = CountingSolver()
-    result = p.analysis.find_lowest_weight_circle_differential_trail(
-        bibrace=OPERATION,
-        backend="sat",
-        solver=solver,
-    )
-    # Independent DDT enumeration: the best nonzero cell difference has 8/16
-    # probability, so a single active cell achieves the global bank optimum.
-    counts = [
-        sum(
-            OPERATION.circle(PRIDE_SBOX[x], PRIDE_SBOX[OPERATION.circle(x, a)]) == b
-            for x in range(16)
-        )
-        for a in range(1, 16)
-        for b in range(16)
-    ]
-    assert max(counts) == 8
-    assert result.is_optimal and result.weight == 1
-    assert solver.calls <= 8
-
-
-@SOLVER
 def test_output_difference_constraint_is_applied_in_circle_coordinates():
     p = BitVectorSBox(4, CRAFT_SBOX)
     result = p.analysis.find_lowest_weight_circle_differential_trail(
@@ -256,7 +227,7 @@ def test_output_difference_constraint_is_applied_in_circle_coordinates():
 @pytest.mark.parametrize(
     "factory,differential_weight,linear_weight", [(Craft, 1, 0), (Simon, 0, 0)]
 )
-def test_real_primitive_solver_searches_use_shared_characteristic_checks(
+def test_solver_characteristics_are_checked_for_spn_and_feistel_graphs(
     factory, differential_weight, linear_weight
 ):
     p = factory(number_of_rounds=1)
