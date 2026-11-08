@@ -1,8 +1,7 @@
-"""Circle-pair experiments on catalogue graphs through the generic engine.
+"""Circle-difference verification on binary catalogue graphs.
 
-These establish evaluation and verification coverage, not attacks on the
-standard primitives. Pair construction and output differences use an
-independent packed-bit formula for the published four-bit operation.
+Pair construction and output differences use an independent packed-bit
+formula for the published four-bit operation.
 """
 
 from fractions import Fraction
@@ -10,7 +9,19 @@ from random import Random
 
 import pytest
 
-from claasp.primitives import AES, Craft, Present, Simon, Speck, ToyAES, ToySpeck
+from claasp.primitives import (
+    AES,
+    ULBC,
+    Craft,
+    Noekeon,
+    Present,
+    Pride,
+    Simon,
+    Speck,
+    ToyAES,
+    ToySpeck,
+    ULBCTweakable,
+)
 from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
 
 OPERATION = BinaryBibrace(4, ((0, 0, 8, 4),), (1,))
@@ -33,8 +44,22 @@ def _circle(x, y, width):
         Craft(number_of_rounds=2),
         Speck(number_of_rounds=2),
         Simon(number_of_rounds=2),
+        Noekeon(number_of_rounds=2),
+        Pride(number_of_rounds=2),
+        ULBC(number_of_rounds=2),
+        ULBCTweakable(number_of_rounds=2),
     ],
-    ids=["AES-2", "PRESENT-2", "CRAFT-2", "Speck32-2", "Simon32-2"],
+    ids=[
+        "AES-2",
+        "PRESENT-2",
+        "CRAFT-2",
+        "Speck32-2",
+        "Simon32-2",
+        "NOEKEON-2",
+        "PRIDE-2",
+        "uLBC-2",
+        "uLBC-384t-2",
+    ],
 )
 def test_standard_primitive_circle_sampling_matches_independent_pair_oracle(primitive):
     analysis = primitive.analysis.circle_differential(bibrace=OPERATION)
