@@ -30,6 +30,52 @@ class TruncatedPropagationResult:
     backend: str = "dependency_free"
     independently_valid: bool = True
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Bit states 0, 1 and ? are categorical differences, not weights.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = TruncatedPropagationResult((p,), 'example')
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Bit states 0, 1 and ? are categorical differences, not weights.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = TruncatedPropagationResult((p,), 'example')
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class CPCharacteristicResult:
@@ -46,6 +92,52 @@ class CPCharacteristicResult:
     solver: str
     provenance: tuple[str, ...]
     independently_valid: bool = True
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The view follows the decoded characteristic, including contradiction positions.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+            >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+            >>> result = CPCharacteristicResult(b, 0.0, 'example', ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The view follows the decoded characteristic, including contradiction positions.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+            >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+            >>> result = CPCharacteristicResult(b, 0.0, 'example', ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 def propagate_truncated_xor_difference(primitive, input_pattern):

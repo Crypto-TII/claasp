@@ -335,6 +335,48 @@ class PresentKeyScheduleXorDifferentialTrail:
     sbox_weights: tuple[int, ...]
     total_weight: int
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Relative and cumulative S-box weights describe key-schedule transitions.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = PresentKeyScheduleXorDifferentialTrail(1, (1, 2), (2,), 2)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Relative and cumulative S-box weights describe key-schedule transitions.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = PresentKeyScheduleXorDifferentialTrail(1, (1, 2), (2,), 2)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 class PresentProbabilisticKeyScheduleCPModel:
     """Recover exact probabilistic propagation in the PRESENT-80 key schedule.
@@ -2303,6 +2345,58 @@ class ModularAddBoomerangTrailResult:
 
         return 2 * self.search_weight + self.switch.weight
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The model exponent is twice each outer weight plus the local switch weight.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> from claasp.semantics.cryptanalysis import ModularAddBoomerangConnectivity, XorDifference
+            >>> z = XorDifference(0, 2)
+            >>> switch = ModularAddBoomerangConnectivity(z, z, z, z, 16)
+            >>> result = ModularAddBoomerangTrailResult(t, switch, t)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The model exponent is twice each outer weight plus the local switch weight.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> from claasp.semantics.cryptanalysis import ModularAddBoomerangConnectivity, XorDifference
+            >>> z = XorDifference(0, 2)
+            >>> switch = ModularAddBoomerangConnectivity(z, z, z, z, 16)
+            >>> result = ModularAddBoomerangTrailResult(t, switch, t)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 class ModularAddBoomerangTrailCPModel:
     """Compose top and bottom Word trails through an exact modular-add switch.
@@ -2682,6 +2776,56 @@ class SBoxBoomerangTrailResult:
         """Return the boomerang exponent with both trail probabilities squared."""
 
         return 2 * self.search_weight + self.switch.weight
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The model exponent includes twice each outer weight and the local BCT weight.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> from claasp.semantics.cryptanalysis import BoomerangConnectivity, XorDifference
+            >>> switch = BoomerangConnectivity(XorDifference(1, 2), XorDifference(2, 2), 2)
+            >>> result = SBoxBoomerangTrailResult(t, switch, t, 0)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The model exponent includes twice each outer weight and the local BCT weight.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> from claasp.semantics.cryptanalysis import BoomerangConnectivity, XorDifference
+            >>> switch = BoomerangConnectivity(XorDifference(1, 2), XorDifference(2, 2), 2)
+            >>> result = SBoxBoomerangTrailResult(t, switch, t, 0)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class SBoxBoomerangTrailCPModel:

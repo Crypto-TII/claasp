@@ -49,6 +49,28 @@ class BoomerangSearchResult:
         if self.trail is not None:
             self.trail.to_terminal(file=file)
 
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Outer weights exclude the switch; local switch probabilities are labelled separately.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = BoomerangSearchResult(BoomerangSearchStatus.UNKNOWN)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 def _search_status(status):
     value = status.value

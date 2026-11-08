@@ -91,7 +91,7 @@ def spn_division_property_trail(sbox_bit_size, sbox_degree, number_of_sboxes, ac
                 + sbox_bit_size * full_sboxes
             )
         trail.append(active_bits)
-    return trail
+    return _DivisionPropertyTrail(trail)
 
 
 def _feistel_function_evaluation(
@@ -169,7 +169,23 @@ def feistel_division_property_trail(
             )
         division_vectors = _minimal_vectors(next_vectors)
         trail.append(division_vectors)
-    return trail
+    return _DivisionPropertyTrail(trail)
+
+
+class _DivisionPropertyTrail(list):
+    """List-compatible retained division-property bounds at propagation steps."""
+
+    def to_terminal(self, *, file=None):
+        """Print propagation-step bounds without recomputing the search."""
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot division-property bounds at each retained algorithm step."""
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class DivisionPropertyPathSearch:

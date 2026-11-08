@@ -105,6 +105,29 @@ class QuasidifferentialTrail:
                 file=file,
             )
 
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Local signed factors and their cumulative product retain negative signs; they are not probabilities.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from fractions import Fraction
+            >>> result = QuasidifferentialTrail('example', {}, {}, 1, 0, (), Fraction(-1, 2))
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class QuasidifferentialEnumeration:
@@ -125,6 +148,48 @@ class QuasidifferentialEnumeration:
         if not self.complete:
             raise RuntimeError(self.diagnostic or "incomplete quasidifferential enumeration")
         return self
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Signed coefficients are displayed per retained trail with explicit completeness.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = QuasidifferentialEnumeration((), False, 'trail limit')
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Signed coefficients are displayed per retained trail with explicit completeness.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = QuasidifferentialEnumeration((), False, 'trail limit')
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,6 +253,29 @@ class FixedKeyProbabilityResult:
             ),
             file=file,
         )
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Signed partial sums may be negative; only complete enumeration can establish a probability.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from fractions import Fraction
+            >>> result = FixedKeyProbabilityResult(Fraction(-1, 4), False, 2, 'trail limit')
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class _IncompleteSolve(RuntimeError):

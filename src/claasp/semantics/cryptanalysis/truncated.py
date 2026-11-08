@@ -321,6 +321,48 @@ class ImpossiblePropagationBoundary:
         """Return whether any fixed position contradicts its counterpart."""
         return bool(self.contradictory_positions)
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Only opposing known differences contradict; two unknown states do not.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Only opposing known differences contradict; two unknown states do not.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class ProbabilisticTruncatedModularAddTransition:
@@ -402,6 +444,52 @@ class ProbabilisticTruncatedTrail:
     def weight(self) -> float:
         """Return the trail probability weight in bits."""
         return self.scaled_weight / 100
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Legacy fixed-point costs are shown in bits; this is not a measured full-primitive probability.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = ProbabilisticTruncatedTrail(p, p, ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Legacy fixed-point costs are shown in bits; this is not a measured full-primitive probability.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = ProbabilisticTruncatedTrail(p, p, ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 def check_probabilistic_truncated_modular_add(

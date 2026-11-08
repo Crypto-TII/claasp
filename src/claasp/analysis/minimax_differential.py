@@ -51,6 +51,28 @@ class MinimaxDifferentialResult:
             file=file,
         )
 
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Key-schedule and data-path weights are shown separately; their maximum is the objective.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = MinimaxDifferentialResult('unknown', diagnostic='solver timeout')
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 class MinimaxDifferentialAnalysis:
     """Restore the separate legacy key-schedule/data-path min-max search.

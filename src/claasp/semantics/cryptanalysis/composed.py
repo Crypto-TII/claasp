@@ -328,6 +328,56 @@ class BoomerangTrail:
         """Return the boomerang probability exponent ``2p + r + 2q``."""
         return 2 * self.upper.total_weight + self.switch.weight + 2 * self.lower.total_weight
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The model exponent is twice each outer weight plus the switch weight.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, BoomerangSwitchBoundary
+            >>> t = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+            >>> d = XorDifference(0, 1)
+            >>> switch = BoomerangSwitchBoundary(d, d, d, d, 1.)
+            >>> result = BoomerangTrail(t, switch, t)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The model exponent is twice each outer weight plus the switch weight.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, BoomerangSwitchBoundary
+            >>> t = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+            >>> d = XorDifference(0, 1)
+            >>> switch = BoomerangSwitchBoundary(d, d, d, d, 1.)
+            >>> result = BoomerangTrail(t, switch, t)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class XorDifferentialLinearTrail:
@@ -368,3 +418,55 @@ class XorDifferentialLinearTrail:
         p, r, q = self.differential.total_weight, self.connector.weight, self.linear.total_weight
         middle = log2((2 ** (r + 1)) - 1)
         return p + middle + 2 * q
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The connector contribution is log2(2^(r+1)-1), rather than a plain middle weight.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, XorMask, ProbabilisticTruncatedTrail, TruncatedXorDifference
+            >>> d = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+            >>> l = Trail(TrailKind.XOR_LINEAR, XorMask(0, 1), XorMask(0, 1), ())
+            >>> p = TruncatedXorDifference.parse('0')
+            >>> connector = ProbabilisticTruncatedTrail(p, p, ())
+            >>> result = XorDifferentialLinearTrail(d, connector, l)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The connector contribution is log2(2^(r+1)-1), rather than a plain middle weight.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, XorMask, ProbabilisticTruncatedTrail, TruncatedXorDifference
+            >>> d = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+            >>> l = Trail(TrailKind.XOR_LINEAR, XorMask(0, 1), XorMask(0, 1), ())
+            >>> p = TruncatedXorDifference.parse('0')
+            >>> connector = ProbabilisticTruncatedTrail(p, p, ())
+            >>> result = XorDifferentialLinearTrail(d, connector, l)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)

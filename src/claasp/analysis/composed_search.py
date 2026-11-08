@@ -48,15 +48,41 @@ class ImpossibleSearchResult:
         return self
 
     def to_terminal(self, *, file=None):
-        """Print candidate splits and the enumeration status."""
-        from claasp.presentation import Table, TableColumn, TableRow, render_terminal_table
+        """Print candidate boundaries, contradiction positions, and search status.
 
-        table = Table(
-            (TableColumn("split", "Middle round"), TableColumn("model", "Representation")),
-            tuple(TableRow.of(item.middle_round, item.representation) for item in self.candidates),
-        )
-        print(render_terminal_table(table), file=file)
-        print(f"{len(self.candidates)} candidate(s); {self.termination}", file=file)
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> stream = StringIO()
+            >>> ImpossibleSearchResult((), (1,), False, 'solver unknown').to_terminal(file=stream)
+            >>> 'solver unknown' in stream.getvalue()
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        An interrupted search has no invented candidate or probability.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = ImpossibleSearchResult((), (1,), False, 'solver unknown')
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 def search_impossible_differentials(
@@ -233,6 +259,28 @@ class XorDifferentialLinearSearchResult:
         print(f"partition: {self.partition}", file=file)
         print(f"component-product score: {self.score}", file=file)
         print(f"model optimization complete: {self.complete}", file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The objective is P_D * C_L²; the middle has no probability estimate.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = XorDifferentialLinearSearchResult(None, None, None, (), False)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 def _objective_formula(model):

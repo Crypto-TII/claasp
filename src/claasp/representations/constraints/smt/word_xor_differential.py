@@ -80,6 +80,28 @@ class WordXorDifferentialCharacteristic:
 
         to_terminal(characteristic_section(self, linear=False, details=details), file=file)
 
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Relative and cumulative weights follow component transitions; no round evidence is invented.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class WordXorDifferentialEnumeration:
@@ -128,6 +150,28 @@ class WordXorDifferentialEnumeration:
         from claasp.presentation._trail_queries import enumeration_section
 
         to_terminal(enumeration_section(self, linear=False, details=details), file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Weights are indexed by retained characteristic; incomplete enumeration is not a complete cluster.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = WordXorDifferentialEnumeration((), False, 0.0)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class WordXorDifferentialSMTModel:

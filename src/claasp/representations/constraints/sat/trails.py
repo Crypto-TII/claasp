@@ -461,6 +461,52 @@ class WordDeterministicTruncatedCharacteristic:
     component_patterns: tuple[tuple[str, TruncatedXorDifference], ...]
     semantic_assignment: tuple[tuple[str, int], ...]
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The view shows retained bit patterns with ? explicitly marked unknown.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = WordDeterministicTruncatedCharacteristic((('plaintext', p),), p, (), ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The view shows retained bit patterns with ? explicitly marked unknown.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = WordDeterministicTruncatedCharacteristic((('plaintext', p),), p, (), ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 @dataclass(frozen=True, slots=True)
 class WordDeterministicTruncatedEnumeration:
@@ -479,6 +525,48 @@ class WordDeterministicTruncatedEnumeration:
     complete: bool
     runtime_seconds: float
     metadata: tuple[tuple[str, str], ...]
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Retained truncated patterns are labelled by trail; completeness remains explicit.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = WordDeterministicTruncatedEnumeration((), False, 0.0, ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Retained truncated patterns are labelled by trail; completeness remains explicit.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = WordDeterministicTruncatedEnumeration((), False, 0.0, ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 def _truncated_pattern(bits, assignment):
@@ -1007,6 +1095,48 @@ class WordwiseDeterministicTruncatedCharacteristic:
     component_differences: tuple[tuple[str, tuple[WordwiseXorDifference, ...]], ...]
     semantic_assignment: tuple[tuple[str, int], ...]
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Zero, known, nonzero and unknown word states are distinct categories.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = WordwiseDeterministicTruncatedCharacteristic((), (), (), ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Zero, known, nonzero and unknown word states are distinct categories.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = WordwiseDeterministicTruncatedCharacteristic((), (), (), ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 class WordwiseDeterministicTruncatedSATModel:
     """Assemble exact four-state wordwise propagation as portable CNF.
@@ -1525,6 +1655,52 @@ class WordImpossibleSATTrail:
     boundary: ImpossiblePropagationBoundary
     semantic_assignment: tuple[tuple[str, int], ...]
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The two middle patterns and their contradictory bit positions are shown together.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+            >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+            >>> result = WordImpossibleSATTrail(None, None, b, ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The two middle patterns and their contradictory bit positions are shown together.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+            >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+            >>> result = WordImpossibleSATTrail(None, None, b, ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 SpeckImpossibleSATTrail = WordImpossibleSATTrail
 
@@ -1550,6 +1726,48 @@ class AutomaticWordImpossibleSATResult:
         """Return whether an independently decodable contradiction was found."""
 
         return self.trail is not None
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The report records attempted splits and termination; no witness is fabricated after UNSAT.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = AutomaticWordImpossibleSATResult(None, None, (1, 2), 'exhausted_unsat')
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The report records attempted splits and termination; no witness is fabricated after UNSAT.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = AutomaticWordImpossibleSATResult(None, None, (1, 2), 'exhausted_unsat')
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class WordImpossibleSATModel:
@@ -1830,6 +2048,48 @@ class WordwiseImpossibleSATTrail:
     backward: WordwiseDeterministicTruncatedCharacteristic
     middle: WordwiseImpossibleMiddle
     semantic_assignment: tuple[tuple[str, int], ...]
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Contradictions use the retained wordwise model evidence; unknown is a separate category.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> result = WordwiseImpossibleSATTrail(None, None, WordwiseImpossibleMiddle((2, 3), (0, 3), (0,)), ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Contradictions use the retained wordwise model evidence; unknown is a separate category.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> result = WordwiseImpossibleSATTrail(None, None, WordwiseImpossibleMiddle((2, 3), (0, 3), (0,)), ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class WordwiseImpossibleSATModel:
@@ -2123,6 +2383,52 @@ class SpeckSemiDeterministicTruncatedTrail:
         """Return the base-two probability weight."""
 
         return self.scaled_weight / 100
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Legacy fixed-point transition costs are converted to bits and labelled as model estimates.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = SpeckSemiDeterministicTruncatedTrail(p, p, ())
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Legacy fixed-point transition costs are converted to bits and labelled as model estimates.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse('01?')
+            >>> result = SpeckSemiDeterministicTruncatedTrail(p, p, ())
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class SpeckProbabilisticTruncatedSATModel:
@@ -2633,6 +2939,52 @@ class SharedDifferencePairedSATTrail:
 
         return self.left.total_weight + self.right.total_weight
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The two characteristic weights remain separate; their sum is the paired objective.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> result = SharedDifferencePairedSATTrail(t, t)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The two characteristic weights remain separate; their sum is the paired objective.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> result = SharedDifferencePairedSATTrail(t, t)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 class SharedDifferencePairedWordXorDifferentialSATModel:
     """Recover the legacy shared-difference paired characteristic search.
@@ -2953,6 +3305,54 @@ class SharedDifferencePairedXorDifferentialLinearSATTrail:
 
         return self.paired_differential.total_weight + 2 * self.linear.total_weight
 
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The paired differential weight and twice the linear weight form the objective.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> pair = SharedDifferencePairedSATTrail(t, t)
+            >>> result = SharedDifferencePairedXorDifferentialLinearSATTrail(pair, t)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The paired differential weight and twice the linear weight form the objective.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> pair = SharedDifferencePairedSATTrail(t, t)
+            >>> result = SharedDifferencePairedXorDifferentialLinearSATTrail(pair, t)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
+
 
 class SharedDifferencePairedWordXorDifferentialLinearSATModel:
     """Recover the legacy paired-input differential-linear SAT composition.
@@ -3224,6 +3624,58 @@ class WordSemiDeterministicXorDifferentialLinearSATTrail:
         """Return the recovered semi-deterministic middle estimate separately."""
 
         return self.middle.weight
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        The middle estimate is shown separately from differential plus twice-linear objective weights.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> from claasp.semantics.cryptanalysis import ProbabilisticTruncatedTrail, TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse("0")
+            >>> middle = ProbabilisticTruncatedTrail(p, p, ())
+            >>> result = WordSemiDeterministicXorDifferentialLinearSATTrail(t, middle, t)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        The middle estimate is shown separately from differential plus twice-linear objective weights.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> from claasp.semantics.cryptanalysis import ProbabilisticTruncatedTrail, TruncatedXorDifference
+            >>> p = TruncatedXorDifference.parse("0")
+            >>> middle = ProbabilisticTruncatedTrail(p, p, ())
+            >>> result = WordSemiDeterministicXorDifferentialLinearSATTrail(t, middle, t)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class WordSemiDeterministicXorDifferentialLinearSATModel:
@@ -3501,6 +3953,52 @@ class WordDeterministicXorDifferentialLinearSATTrail:
         """Return differential weight plus twice the linear weight."""
 
         return self.differential.total_weight + 2 * self.linear.total_weight
+
+    def to_terminal(self, *, file=None):
+        """Print retained evidence without rerunning a solver.
+
+        Differential and twice-linear contributions express the P_D * C_L² model score.
+
+        Output goes to standard output unless ``file`` is supplied.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> result = WordDeterministicXorDifferentialLinearSATTrail(t, None, t)
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> bool(output.getvalue().strip())
+            True
+        """
+        from claasp.presentation._search_results import _to_terminal
+
+        _to_terminal(self, file=file)
+
+    def plot(self, *, show=True, save_to=None):
+        """Plot retained evidence without rerunning a solver.
+
+        Differential and twice-linear contributions express the P_D * C_L² model score.
+
+        Requires the optional ``presentation`` extra. ``show=False`` suppresses
+        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        the figure and plotted numeric series. Empty searches show their status.
+
+        EXAMPLES::
+
+            >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+            >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+            >>> result = WordDeterministicXorDifferentialLinearSATTrail(t, None, t)
+            >>> artifact = result.plot(show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._search_results import _plot
+
+        return _plot(self, show=show, save_to=save_to)
 
 
 class WordDeterministicXorDifferentialLinearSATModel:
