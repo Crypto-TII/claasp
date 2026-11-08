@@ -208,8 +208,7 @@ def _fixtures():
 
 @pytest.fixture(autouse=True)
 def _close_figures():
-    import matplotlib
-
+    matplotlib = pytest.importorskip("matplotlib", reason="requires the presentation extra")
     matplotlib.use("Agg")
     yield
     from matplotlib import pyplot as plt
