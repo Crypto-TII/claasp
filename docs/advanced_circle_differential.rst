@@ -251,12 +251,44 @@ are not a solver-based local characteristic search. Use
 primitive domains. They verify a prespecified event and report sampling evidence,
 rather than certifying a global optimum. See :doc:`verification_circle_differential`.
 
-Future work
------------
+Solver-backed characteristic search
+-----------------------------------
 
-Scalable SAT, SMT, MILP and CP circle-differential characteristic search is
-left for future work. It requires circle-specific transition constraints within
-the shared propagation infrastructure, explicit operation layouts and key
-assumptions, and validation against concrete execution. The current bounded
-enumeration and verification methods provide small-domain reference results
-for checking those future models.
+Select ``backend="sat"`` (or ``"smt"`` / ``"milp"``) in
+``find_lowest_weight_circle_differential_trail`` to reuse the ordinary XOR
+optimizer on :math:`G=\theta_{out}\circ E\circ\theta_{in}`. All auxiliary
+inputs must be fixed explicitly. The graph transformation follows the shared
+``GraphPropagation`` schedule and retains existing component rules, including
+supported binary arithmetic and nonlinear key schedules. It does not require
+uniform SPN rounds or boundaries immediately after S-boxes.
+
+.. doctest::
+
+   >>> result = primitive.analysis.find_lowest_weight_circle_differential_trail(
+   ...     bibrace=operation, input_name="input", input_difference=7, backend="sat")
+   >>> result.input_pattern, result.output_pattern, result.weight, result.is_optimal
+   (7, 6, 0.0, True)
+   >>> result.evaluate_endpoint().probability
+   Fraction(1, 1)
+
+Here ``primitive`` and ``operation`` are the published four-bit example above.
+Omitting ``input_difference`` searches all nonzero input differences. Public
+endpoint patterns remain original packed circle differences; the solver's
+XOR differences are converted through the declared coordinate maps. Call
+``result.to_terminal()`` and ``result.plot()`` for the shared trail report.
+
+This search does not enumerate plaintexts and is not limited by
+``maximum_inputs``. Its limits are solver resources, dense local lookup
+budgets and the ordinary XOR backend's supported components. Unsupported
+operations raise a capability error; they are not replaced by approximate
+rules. Graph composition preserves final layers, bitsliced wiring and
+nonlinear key schedules.
+
+The result optimizes a **component DDT product in the derived graph**.
+That product need not be the probability of a concrete trail through the full primitive:
+component events can be dependent at a fixed key. Use
+``result.evaluate_endpoint()`` to enumerate the actual endpoint probability,
+or ``result.evaluate_endpoint(samples=..., seed=...)`` for sampling evidence.
+The :doc:`advanced circle-linear guide <advanced_circle_linear>` explains
+coordinate-map simplification and why the component decomposition matters.
+Concrete boundary-history constraints remain part of the concrete backend.

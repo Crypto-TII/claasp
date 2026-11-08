@@ -517,6 +517,12 @@
       "qualified_name": "claasp.analysis.CircleApproximation"
     },
     {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.CircleCoordinateGraph"
+    },
+    {
       "canonical_name": "claasp.analysis.circle_linear.CircleCorrelationEstimate",
       "defined_in": "claasp.analysis.circle_linear",
       "kind": "dataclass",
@@ -569,6 +575,12 @@
       "defined_in": "claasp.analysis.circle_linear_trails",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.CircleLinearTrailSearchResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.CircleTrailSearchResult"
     },
     {
       "canonical_name": "claasp.analysis.component_inspection.ComponentAnalysis",
@@ -1139,6 +1151,55 @@
       "defined_in": "claasp.semantics.cryptanalysis.trails",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.XorMask"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.__init__",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.fixed_inputs",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.fixed_inputs"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.input_basis",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.input_basis"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.input_name",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.input_name"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.output_basis",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.output_basis"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.primitive",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.primitive"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.source",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "documented_by": "claasp.analysis._circle_coordinates.CircleCoordinateGraph",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis._circle_coordinates.CircleCoordinateGraph.source"
     },
     {
       "canonical_name": "claasp.analysis.advanced_trails.CPCharacteristicResult.__init__",
@@ -1778,6 +1839,12 @@
       "defined_in": "claasp.analysis.composed",
       "kind": "function",
       "qualified_name": "claasp.analysis.check_speck32_xor_differential_linear_fixture"
+    },
+    {
+      "canonical_name": "claasp.analysis._circle_coordinates.circle_coordinate_graph",
+      "defined_in": "claasp.analysis._circle_coordinates",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.circle_coordinate_graph"
     },
     {
       "canonical_name": "claasp.analysis.circle_differential",
@@ -2510,6 +2577,93 @@
       "defined_in": "claasp.analysis.circle_linear_trails",
       "kind": "method",
       "qualified_name": "claasp.analysis.circle_linear_trails.CircleLinearTrailSearchResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "module",
+      "qualified_name": "claasp.analysis.circle_trail_search"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.__init__",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "documented_by": "claasp.analysis.circle_trail_search.CircleTrailSearchResult",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.coordinates",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "documented_by": "claasp.analysis.circle_trail_search.CircleTrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.coordinates"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.evaluate_endpoint",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.evaluate_endpoint"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.input_pattern",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.input_pattern"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.is_optimal",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.is_optimal"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.output_pattern",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.output_pattern"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.plot",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.plot"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.scope",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.scope"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.search_result",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "documented_by": "claasp.analysis.circle_trail_search.CircleTrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.search_result"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.to_terminal",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.weight",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "property",
+      "qualified_name": "claasp.analysis.circle_trail_search.CircleTrailSearchResult.weight"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.find_circle_characteristic",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.circle_trail_search.find_circle_characteristic"
     },
     {
       "canonical_name": "claasp.analysis.component_inspection",
@@ -4713,6 +4867,12 @@
       "defined_in": "claasp.analysis.monomial_workflows",
       "kind": "function",
       "qualified_name": "claasp.analysis.find_algebraic_degree"
+    },
+    {
+      "canonical_name": "claasp.analysis.circle_trail_search.find_circle_characteristic",
+      "defined_in": "claasp.analysis.circle_trail_search",
+      "kind": "function",
+      "qualified_name": "claasp.analysis.find_circle_characteristic"
     },
     {
       "canonical_name": "claasp.analysis.neural_workflows.find_good_input_difference",

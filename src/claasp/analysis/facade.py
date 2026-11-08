@@ -115,17 +115,30 @@ class Analysis:
     def find_lowest_weight_circle_linear_trail(
         self,
         *,
-        bibrace,
+        bibrace=None,
         input_name="plaintext",
         fixed_inputs=None,
         maximum_factor_states=1 << 16,
+        backend="perfect_subgroup_spn",
+        solver=None,
+        input_mask=None,
+        input_basis=None,
+        output_basis=None,
+        maximum_candidates=1 << 16,
     ):
-        """Find the lowest-weight circle-linear trail in the supported subgroup.
+        """Find a circle-linear characteristic in the selected search scope.
 
         The operation is fixed for the search. The returned result retains
         the representative trail, key class, search scope and optimum count.
         Unsupported graphs or operations are rejected by the model; this
         query does not claim unrestricted circle-linear optimality.
+
+        ``backend='sat'`` (or ``'smt'`` / ``'milp'``) uses the generic XOR
+        optimizer on an exact circle-coordinate graph, with all auxiliary
+        inputs explicitly fixed. It includes non-perfect transitions and
+        supports the same binary components as ordinary XOR trail search.
+        Its weight is minus log2 of the absolute component-correlation product,
+        using the same convention as the subgroup and ordinary XOR backends.
 
         EXAMPLES::
 
@@ -137,16 +150,43 @@ class Analysis:
             >>> result.cost, result.complete
             (8, True)
         """
+        if backend not in ("perfect_subgroup_spn", "perfect_subgroup_sat"):
+            from claasp.analysis.circle_trail_search import find_circle_characteristic
+
+            return find_circle_characteristic(
+                self.primitive,
+                TrailKind.XOR_LINEAR,
+                bibrace=bibrace,
+                input_basis=input_basis,
+                output_basis=output_basis,
+                input_name=input_name,
+                fixed_inputs=fixed_inputs,
+                input_pattern=input_mask,
+                backend=backend,
+                solver=solver,
+            )
+        if (
+            (solver is not None and backend != "perfect_subgroup_sat")
+            or input_mask is not None
+            or input_basis is not None
+            or output_basis is not None
+        ):
+            raise ValueError("solver and explicit masks/bases require a general solver backend")
         return self.circle_linear_trail_model(
             bibrace=bibrace,
             input_name=input_name,
             fixed_inputs=fixed_inputs,
-        ).search(maximum_factor_states=maximum_factor_states)
+        ).search(
+            maximum_factor_states=maximum_factor_states,
+            backend="sat" if backend == "perfect_subgroup_sat" else "enumeration",
+            solver=solver,
+            maximum_candidates=maximum_candidates,
+        )
 
     def find_lowest_weight_circle_differential_trail(
         self,
         *,
-        input_difference,
+        input_difference=None,
         output_difference=None,
         bibrace=None,
         input_basis=None,
@@ -156,8 +196,10 @@ class Analysis:
         boundaries=None,
         boundary_bases=None,
         maximum_inputs=1 << 16,
+        backend="concrete",
+        solver=None,
     ):
-        """Find the lowest-weight concrete circle-differential trail by enumeration.
+        """Find a concrete circle trail or a solver-backed characteristic.
 
         For a fixed nonzero input difference and fixed other inputs, maximising
         actual trail probability minimises minus log2(probability). Published
@@ -165,6 +207,13 @@ class Analysis:
         None for an impossible constrained endpoint. The exact input-domain
         budget is enforced before execution; this is not a solver query or a
         search over all input differences. Omitting operations selects XOR.
+
+        Select ``backend='sat'`` (or ``'smt'`` / ``'milp'``) for generic
+        characteristic optimization without plaintext enumeration. Omitting
+        ``input_difference`` then searches all nonzero input differences.
+        All other inputs must be explicitly fixed. This result is a component
+        DDT product in the derived coordinate graph, requiring separate
+        concrete verification before using it as a distinguisher probability.
 
         EXAMPLES::
 
@@ -174,6 +223,28 @@ class Analysis:
             >>> result.differences, result.probability
             ((1, 1), Fraction(1, 1))
         """
+        if backend != "concrete":
+            from claasp.analysis.circle_trail_search import find_circle_characteristic
+
+            if boundaries is not None or boundary_bases is not None:
+                raise ValueError("concrete boundary constraints require backend='concrete'")
+            return find_circle_characteristic(
+                self.primitive,
+                TrailKind.XOR_DIFFERENTIAL,
+                bibrace=bibrace,
+                input_basis=input_basis,
+                output_basis=output_basis,
+                input_name=input_name,
+                fixed_inputs=fixed_inputs,
+                input_pattern=input_difference,
+                output_pattern=output_difference,
+                backend=backend,
+                solver=solver,
+            )
+        if input_difference is None:
+            raise ValueError("concrete search requires input_difference")
+        if solver is not None:
+            raise ValueError("solver requires a general solver backend")
         return self.circle_differential(
             bibrace=bibrace,
             input_basis=input_basis,

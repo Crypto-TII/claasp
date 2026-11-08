@@ -1,5 +1,6 @@
 """Backend-independent analysis problems, constraints, and results."""
 
+from claasp.analysis._circle_coordinates import CircleCoordinateGraph, circle_coordinate_graph
 from claasp.analysis.advanced_trails import (
     CPCharacteristicResult,
     TruncatedPropagationResult,
@@ -44,6 +45,7 @@ from claasp.analysis.circle_linear_trails import (
     CircleLinearTrailModel,
     CircleLinearTrailSearchResult,
 )
+from claasp.analysis.circle_trail_search import CircleTrailSearchResult, find_circle_characteristic
 from claasp.analysis.component_inspection import (
     ComponentAnalysis,
     ComponentPropertiesResult,
@@ -246,6 +248,8 @@ __all__ = [
     "CircleLinearTrailModel",
     "CircleLinearRoundTransition",
     "CircleLinearTrailSearchResult",
+    "CircleTrailSearchResult",
+    "CircleCoordinateGraph",
     "CircleLinearTrail",
     "QuasidifferentialAnalysis",
     "QuasidifferentialTrail",
@@ -378,6 +382,8 @@ __all__ = [
     "generate_avalanche_dataset",
     "generate_random_dataset",
     "find_good_input_difference",
+    "find_circle_characteristic",
+    "circle_coordinate_graph",
     "find_impossible_xor_differential",
     "find_probabilistic_truncated_xor_differential",
     "find_sbox_boomerang_transition",

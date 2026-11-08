@@ -31,6 +31,12 @@ claasp.analysis.circle_linear_trails
 .. automodule:: claasp.analysis.circle_linear_trails
    :no-index:
 
+claasp.analysis.circle_trail_search
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: claasp.analysis.circle_trail_search
+   :no-index:
+
 claasp.analysis.component_inspection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

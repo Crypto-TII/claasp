@@ -596,6 +596,17 @@ class WordXorLinearSMTModel:
                     )
                     if (mask & offset).bit_count() % 2:
                         constant_sign *= -1
+        # Arithmetic and lookup records are collected separately by the
+        # encoder. Restore graph order before comparing with the independent
+        # checker, which visits mixed nonlinear layers in execution order.
+        order = {
+            f"{component.component_id}[{unit}]": (position, unit)
+            for position, component in enumerate(GraphPropagation(self.primitive).components)
+            for unit in range(
+                1 if isinstance(component, BitVectorSBox) else component.output_type.unit_count
+            )
+        }
+        steps.sort(key=lambda step: order[step.component_id])
         result = WordXorLinearCharacteristic(
             tuple(
                 (

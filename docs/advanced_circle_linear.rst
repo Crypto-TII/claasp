@@ -9,8 +9,68 @@ explores parameters and checks numerical CRAFT results.
 Use ``primitive.analysis.find_lowest_weight_circle_linear_trail(...)`` for
 the standard search-and-report workflow, following the XOR trail-query naming.
 For model inspection and supplied-mask trails, construct
-``primitive.analysis.circle_linear_trail_model(...)`` explicitly. Both paths
-use the same graph-derived model and restricted search backend.
+``primitive.analysis.circle_linear_trail_model(...)`` explicitly. The default
+query uses that restricted model. General solver search, described below,
+uses a coordinate transformation and the ordinary XOR trail engine.
+
+General characteristic search
+-----------------------------
+
+Select ``backend="sat"``, ``"smt"`` or ``"milp"`` to search an exact
+circle-coordinate component graph. For fixed auxiliary inputs, it computes
+:math:`G=\theta_{out}\circ E\circ\theta_{in}`. Circle-linear masks on the
+original primitive are ordinary linear masks on :math:`G`. CLAASP rewrites
+the graph using ``GraphPropagation`` and reuses the existing XOR optimizer,
+component relations, independent characteristic checker, solver drivers and
+trail presentation. The existing primitive graph supplies all component behavior.
+
+This path accepts different S-boxes in different rounds, bit permutations,
+general binary affine layers, Feistel wiring and nonlinear key schedules,
+subject to the existing XOR backend's component capabilities. Every auxiliary
+input, including the complete key and tweak if present, must have an explicit
+value. The real schedule is evaluated at those inputs; its round keys are
+never assumed independent. Binary extension-field encodings are accepted;
+odd-prime fields do not define the binary operations used here.
+
+For example, the four-bit CRAFT lookup can be searched outside the perfect
+subgroup, including a check whose best absolute correlation is only 1/2:
+
+.. doctest::
+
+   >>> from claasp.primitives import BitVectorSBox
+   >>> from claasp.primitives.block_ciphers.craft import CRAFT_SBOX
+   >>> from claasp.semantics.cryptanalysis.bibrace import BinaryBibrace
+   >>> operation = BinaryBibrace(4, ((8, 0, 8, 5),), (5,))
+   >>> primitive = BitVectorSBox(4, CRAFT_SBOX)
+   >>> result = primitive.analysis.find_lowest_weight_circle_linear_trail(
+   ...     bibrace=operation, input_name="input", input_mask=1, backend="sat")
+   >>> result.weight, result.is_optimal
+   (1.0, True)
+   >>> abs(result.evaluate_endpoint())
+   Fraction(1, 2)
+
+Use ``result.to_terminal()`` and ``result.plot()`` as with XOR trails.
+``result.coordinates.primitive`` retains the derived graph, and
+``result.search_result`` retains the ordinary checked solver result. Its
+internal masks belong to that graph. Endpoint masks remain circle character
+labels. ``input_basis`` and ``output_basis`` accept different ``CircleBasis``
+layouts when ``bibrace`` is omitted.
+
+Matching S-boxes are conjugated as whole lookup tables, preserving their exact
+circle-LATs. Inverse coordinate changes cancel through structural wiring;
+orphan changes are pruned before search. Small coordinate maps use lookup
+tables; larger maps use quadratic Boolean circuits. General diffusion stays
+in its existing graph representation. Consequently this is an optimum for
+the **derived component decomposition**, not necessarily the best decomposition
+or full-round circle correlation. Splitting a function into components can
+introduce multiple trails whose signed contributions must be summed.
+
+The weight is :math:`-\log_2|C_{trail}|`, as in ordinary XOR-linear search.
+``result.evaluate_endpoint()`` evaluates the original primitive exactly under
+the usual finite input budget; ``samples=...`` instead gives seeded sampling
+evidence. Endpoint evaluation retains the fixed inputs used for the search;
+the characteristic optimum and measured endpoint correlation describe
+different quantities.
 
 The operation used in the introductory example
 ----------------------------------------------
@@ -501,8 +561,24 @@ order. Thus the cost separates into functions of :math:`q` and
 :math:`q\oplus s`. Two :math:`2^n` enumerations certify the whole
 :math:`2^{2n}` subgroup search. Zero-cost nonzero masks are included. The
 default factor-state budget is :math:`2^{16}`. Affine key conditions are
-checked on all optimal candidates; if none survives, the method reports that
-fact rather than asserting an optimum at an unsearched higher cost.
+checked at every candidate weight; if an entire level is infeasible, search
+continues to higher levels. Exhausting the candidate budget raises an error
+instead of asserting an optimum.
+
+For larger cell counts, call ``model.search(backend="sat")`` or select
+``backend="perfect_subgroup_sat"`` in the analysis query. Shared Boolean gates
+and cardinality constraints encode mask propagation and local column ranks,
+without the global :math:`2^n` arrays. Each decoded mask is checked using the
+same exact affine master-key conditions; an inconsistent candidate is blocked
+and search continues. ``maximum_candidates`` bounds this refinement, and
+``maximum_factor_states`` bounds each column's rank table. A large connected
+diffusion block can still exceed that local table budget.
+
+The SAT path proves one optimum in the same subgroup. It does not enumerate
+all tied masks, so ``optimal_mask_count`` is ``None`` and the selected key
+class is not claimed largest among ties. The enumeration path retains that
+tie-breaking rule. Regressions compare both paths on small SPNs and exercise
+a 32-cell SPN that exceeds the enumeration budget.
 
 .. doctest::
 
