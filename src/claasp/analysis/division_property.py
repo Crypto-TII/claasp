@@ -25,6 +25,8 @@ round-copy test is sampled, as in legacy, and is not a proof of architecture.
 
 from math import ceil
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.components import (
     Add,
     BitVectorSBox,
@@ -172,20 +174,19 @@ def feistel_division_property_trail(
     return _DivisionPropertyTrail(trail)
 
 
-class _DivisionPropertyTrail(list):
-    """List-compatible retained division-property bounds at propagation steps."""
+class _DivisionPropertyTrail(list, _TerminalMixin, _PlotMixin):
+    """List-compatible retained division-property bounds at propagation steps.
 
-    def to_terminal(self, *, file=None):
-        """Print propagation-step bounds without recomputing the search."""
-        from claasp.presentation._search_results import _to_terminal
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
 
-        _to_terminal(self, file=file)
+    Print propagation-step bounds without recomputing the search.
 
-    def plot(self, *, show=True, save_to=None):
-        """Plot division-property bounds at each retained algorithm step."""
-        from claasp.drivers.renderers._search_results import _plot
+    Plotting
+    ~~~~~~~~
 
-        return _plot(self, show=show, save_to=save_to)
+    Plot division-property bounds at each retained algorithm step.
+    """
 
 
 class DivisionPropertyPathSearch:

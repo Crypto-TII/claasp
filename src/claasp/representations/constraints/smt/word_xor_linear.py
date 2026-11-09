@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from hashlib import sha256
 from typing import cast
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.components import (
     Add,
     BinaryAffineMap,
@@ -54,8 +55,23 @@ from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 @dataclass(frozen=True, slots=True)
-class WordXorLinearCharacteristic:
-    """Exact component characteristic, not a whole-primitive linear hull."""
+class WordXorLinearCharacteristic(_PlotMixin):
+    """Exact component characteristic, not a whole-primitive linear hull.
+
+    Plotting
+    ~~~~~~~~
+
+    Weights use absolute correlation, not squared correlation. The correlation sign stays in the report.
+
+    EXAMPLES::
+
+        >>> result = WordXorLinearCharacteristic((('plaintext', 1),), 1, (), -1, ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
+    """
 
     input_masks: tuple[tuple[str, int], ...]
     output_mask: int
@@ -87,32 +103,25 @@ class WordXorLinearCharacteristic:
 
         to_terminal(characteristic_section(self, linear=True, details=details), file=file)
 
-    def plot(self, *, show=True, save_to=None):
-        """Plot retained evidence without rerunning a solver.
-
-        Weights use absolute correlation, not squared correlation. The correlation sign stays in the report.
-
-        Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
-        the figure and plotted numeric series. Empty searches show their status.
-
-        EXAMPLES::
-
-            >>> result = WordXorLinearCharacteristic((('plaintext', 1),), 1, (), -1, ())
-            >>> artifact = result.plot(show=False)
-            >>> artifact.kind
-            'search_evidence'
-            >>> import matplotlib.pyplot as plt
-            >>> plt.close(artifact.figure)
-        """
-        from claasp.drivers.renderers._search_results import _plot
-
-        return _plot(self, show=show, save_to=save_to)
-
 
 @dataclass(frozen=True, slots=True)
-class WordXorLinearEnumeration:
-    """Enumeration is proof-complete only after terminal solver UNSAT."""
+class WordXorLinearEnumeration(_PlotMixin):
+    """Enumeration is proof-complete only after terminal solver UNSAT.
+
+    Plotting
+    ~~~~~~~~
+
+    Weights use absolute correlation per retained characteristic, not an aggregated hull.
+
+    EXAMPLES::
+
+        >>> result = WordXorLinearEnumeration((), False, 0.0)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
+    """
 
     trails: tuple[WordXorLinearCharacteristic, ...]
     complete: bool
@@ -140,28 +149,6 @@ class WordXorLinearEnumeration:
         from claasp.presentation._trail_queries import enumeration_section
 
         to_terminal(enumeration_section(self, linear=True, details=details), file=file)
-
-    def plot(self, *, show=True, save_to=None):
-        """Plot retained evidence without rerunning a solver.
-
-        Weights use absolute correlation per retained characteristic, not an aggregated hull.
-
-        Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
-        the figure and plotted numeric series. Empty searches show their status.
-
-        EXAMPLES::
-
-            >>> result = WordXorLinearEnumeration((), False, 0.0)
-            >>> artifact = result.plot(show=False)
-            >>> artifact.kind
-            'search_evidence'
-            >>> import matplotlib.pyplot as plt
-            >>> plt.close(artifact.figure)
-        """
-        from claasp.drivers.renderers._search_results import _plot
-
-        return _plot(self, show=show, save_to=save_to)
 
 
 class WordXorLinearSMTModel:

@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass, replace
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.components import (
     Constant,
     Identity,
@@ -20,7 +22,7 @@ from claasp.unit_types import Word
 
 
 @dataclass(frozen=True, slots=True)
-class PartitionedDifferentialTrail:
+class PartitionedDifferentialTrail(_TerminalMixin, _PlotMixin):
     """Checked local-transition characteristic with two distinct weight sums.
 
     EXAMPLES::
@@ -29,6 +31,34 @@ class PartitionedDifferentialTrail:
         3
         >>> PartitionedDifferentialTrail(None, 2, 3).total_weight
         5
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The min-max objective is 3 while the ordinary sum is 5; the plot preserves both path weights.
+
+    EXAMPLES::
+
+        >>> result = PartitionedDifferentialTrail(None, 2, 3)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The min-max objective is 3 while the ordinary sum is 5; the plot preserves both path weights.
+
+    EXAMPLES::
+
+        >>> result = PartitionedDifferentialTrail(None, 2, 3)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     characteristic: object
@@ -44,48 +74,6 @@ class PartitionedDifferentialTrail:
     def total_weight(self):
         """Return the ordinary total characteristic weight for comparison."""
         return self.key_schedule_weight + self.data_path_weight
-
-    def to_terminal(self, *, file=None):
-        """Print retained evidence without rerunning a solver.
-
-        The min-max objective is 3 while the ordinary sum is 5; the plot preserves both path weights.
-
-        Output goes to standard output unless ``file`` is supplied.
-
-        EXAMPLES::
-
-            >>> result = PartitionedDifferentialTrail(None, 2, 3)
-            >>> from io import StringIO
-            >>> output = StringIO()
-            >>> result.to_terminal(file=output)
-            >>> bool(output.getvalue().strip())
-            True
-        """
-        from claasp.presentation._search_results import _to_terminal
-
-        _to_terminal(self, file=file)
-
-    def plot(self, *, show=True, save_to=None):
-        """Plot retained evidence without rerunning a solver.
-
-        The min-max objective is 3 while the ordinary sum is 5; the plot preserves both path weights.
-
-        Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
-        the figure and plotted numeric series. Empty searches show their status.
-
-        EXAMPLES::
-
-            >>> result = PartitionedDifferentialTrail(None, 2, 3)
-            >>> artifact = result.plot(show=False)
-            >>> artifact.kind
-            'search_evidence'
-            >>> import matplotlib.pyplot as plt
-            >>> plt.close(artifact.figure)
-        """
-        from claasp.drivers.renderers._search_results import _plot
-
-        return _plot(self, show=show, save_to=save_to)
 
 
 class KeyScheduleMinimaxSATModel:

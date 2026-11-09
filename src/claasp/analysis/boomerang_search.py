@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from subprocess import TimeoutExpired
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.drivers.solvers import Z3Solver
 from claasp.representations.constraints.sat.boomerang import ARXBoomerangTrail, BoomerangSATModel
 
@@ -23,7 +24,7 @@ class BoomerangSearchStatus(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
-class BoomerangSearchResult:
+class BoomerangSearchResult(_PlotMixin):
     """Search completion within the explicitly restricted characteristic model.
 
     UNSAT means no characteristic in this model, not absence of a boomerang
@@ -33,6 +34,20 @@ class BoomerangSearchResult:
 
         >>> BoomerangSearchResult(BoomerangSearchStatus.UNKNOWN).is_optimal
         False
+
+    Plotting
+    ~~~~~~~~
+
+    Outer weights exclude the switch; local switch probabilities are labelled separately.
+
+    EXAMPLES::
+
+        >>> result = BoomerangSearchResult(BoomerangSearchStatus.UNKNOWN)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     status: BoomerangSearchStatus
@@ -48,28 +63,6 @@ class BoomerangSearchResult:
             print(self.diagnostic, file=file)
         if self.trail is not None:
             self.trail.to_terminal(file=file)
-
-    def plot(self, *, show=True, save_to=None):
-        """Plot retained evidence without rerunning a solver.
-
-        Outer weights exclude the switch; local switch probabilities are labelled separately.
-
-        Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
-        the figure and plotted numeric series. Empty searches show their status.
-
-        EXAMPLES::
-
-            >>> result = BoomerangSearchResult(BoomerangSearchStatus.UNKNOWN)
-            >>> artifact = result.plot(show=False)
-            >>> artifact.kind
-            'search_evidence'
-            >>> import matplotlib.pyplot as plt
-            >>> plt.close(artifact.figure)
-        """
-        from claasp.drivers.renderers._search_results import _plot
-
-        return _plot(self, show=show, save_to=save_to)
 
 
 def _search_status(status):

@@ -7,6 +7,8 @@ from math import inf, log2
 from pathlib import Path
 from typing import TYPE_CHECKING, TextIO
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.representations.constraints import ConstraintModelApplication
 from claasp.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
@@ -290,7 +292,7 @@ class TrailSearchMetadata:
 
 
 @dataclass(frozen=True, slots=True)
-class Trail:
+class Trail(_TerminalMixin, _PlotMixin):
     """A checked sequence of component transitions.
 
     EXAMPLES::
@@ -303,6 +305,34 @@ class Trail:
         ...     XorDifference(1, 1), (TrailStep("sbox_0", transition),))
         >>> trail.total_weight
         1.0
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Relative and cumulative component weights are shown without inventing round observations.
+
+    EXAMPLES::
+
+        >>> result = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1), XorDifference(1, 1), ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Relative and cumulative component weights are shown without inventing round observations.
+
+    EXAMPLES::
+
+        >>> result = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1), XorDifference(1, 1), ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     kind: TrailKind
@@ -350,48 +380,6 @@ class Trail:
             AnnotationEntry("primitive_output", AnnotationRole.OUTPUT, self.output_pattern)
         )
         return GraphAnnotation(primitive, self.semantics, entries)
-
-    def to_terminal(self, *, file=None):
-        """Print retained evidence without rerunning a solver.
-
-        Relative and cumulative component weights are shown without inventing round observations.
-
-        Output goes to standard output unless ``file`` is supplied.
-
-        EXAMPLES::
-
-            >>> result = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1), XorDifference(1, 1), ())
-            >>> from io import StringIO
-            >>> output = StringIO()
-            >>> result.to_terminal(file=output)
-            >>> bool(output.getvalue().strip())
-            True
-        """
-        from claasp.presentation._search_results import _to_terminal
-
-        _to_terminal(self, file=file)
-
-    def plot(self, *, show=True, save_to=None):
-        """Plot retained evidence without rerunning a solver.
-
-        Relative and cumulative component weights are shown without inventing round observations.
-
-        Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
-        the figure and plotted numeric series. Empty searches show their status.
-
-        EXAMPLES::
-
-            >>> result = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1), XorDifference(1, 1), ())
-            >>> artifact = result.plot(show=False)
-            >>> artifact.kind
-            'search_evidence'
-            >>> import matplotlib.pyplot as plt
-            >>> plt.close(artifact.figure)
-        """
-        from claasp.drivers.renderers._search_results import _plot
-
-        return _plot(self, show=show, save_to=save_to)
 
 
 @dataclass(frozen=True, slots=True)

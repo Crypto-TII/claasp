@@ -6,6 +6,7 @@ from math import isfinite, log2, prod
 from subprocess import TimeoutExpired
 from types import MappingProxyType
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.analysis.datasets import packed_bit_width
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.drivers.solvers.minizinc import CPResult, _parse_output
@@ -16,7 +17,7 @@ from claasp.representations.execution import ContinuousXorDifferentialExecutionD
 
 
 @dataclass(frozen=True, slots=True)
-class ContinuousCorrelationResult:
+class ContinuousCorrelationResult(_PlotMixin):
     """A checked heuristic correlation and the inputs/mask that produced it.
 
     Model completion is never a proof of a primitive's cryptographic security.
@@ -26,6 +27,20 @@ class ContinuousCorrelationResult:
         >>> result = ContinuousCorrelationResult({"state": (-1.,)}, (0.5,), 1, True, 'analytic')
         >>> (result.correlation, result.weight, result.claim_kind)
         (0.5, 1.0, 'heuristic')
+
+    Plotting
+    ~~~~~~~~
+
+    Signed output correlations and selected mask bits are shown in MSB-first order. These are heuristic values.
+
+    EXAMPLES::
+
+        >>> result = ContinuousCorrelationResult({}, (-0.5, 0.25), 2, False, 'analytic')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     inputs: Mapping[str, tuple[float, ...]]
@@ -101,28 +116,6 @@ class ContinuousCorrelationResult:
             ),
             file=file,
         )
-
-    def plot(self, *, show=True, save_to=None):
-        """Plot retained evidence without rerunning a solver.
-
-        Signed output correlations and selected mask bits are shown in MSB-first order. These are heuristic values.
-
-        Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
-        the figure and plotted numeric series. Empty searches show their status.
-
-        EXAMPLES::
-
-            >>> result = ContinuousCorrelationResult({}, (-0.5, 0.25), 2, False, 'analytic')
-            >>> artifact = result.plot(show=False)
-            >>> artifact.kind
-            'search_evidence'
-            >>> import matplotlib.pyplot as plt
-            >>> plt.close(artifact.figure)
-        """
-        from claasp.drivers.renderers._search_results import _plot
-
-        return _plot(self, show=show, save_to=save_to)
 
 
 class ContinuousDifferentialAnalysis:

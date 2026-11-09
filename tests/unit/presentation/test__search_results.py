@@ -1,11 +1,13 @@
 """Public search-result coverage and independently specified presentation evidence."""
 
+from dataclasses import is_dataclass
 from fractions import Fraction
 from io import StringIO
 from types import SimpleNamespace
 
 import pytest
 
+from claasp._result_presentation import PlotMixin, TerminalMixin
 from claasp.analysis.advanced_trails import CPCharacteristicResult, TruncatedPropagationResult
 from claasp.analysis.boomerang_search import BoomerangSearchResult, BoomerangSearchStatus
 from claasp.analysis.composed_search import (
@@ -219,6 +221,14 @@ def _close_figures():
 @pytest.mark.parametrize("name", list(_fixtures()))
 def test_all_search_result_families_render_retained_evidence(name, tmp_path):
     result = _fixtures()[name]
+    assert issubclass(type(result), PlotMixin)
+    assert type(result).plot is PlotMixin.plot
+    if isinstance(result, TerminalMixin):
+        assert type(result).to_terminal is TerminalMixin.to_terminal
+    else:
+        assert "to_terminal" in type(result).__dict__
+    if is_dataclass(result):
+        assert not hasattr(result, "__dict__")
     output = StringIO()
     result.to_terminal(file=output)
     assert output.getvalue().strip()
@@ -383,14 +393,7 @@ def test_result_family_inventory_covers_all_new_reporting_methods():
     for path in root.rglob("*.py"):
         for node in ast.parse(path.read_text()).body:
             if isinstance(node, ast.ClassDef) and any(
-                isinstance(method, ast.FunctionDef)
-                and method.name == "plot"
-                and any(
-                    isinstance(child, ast.ImportFrom)
-                    and child.module == "claasp.drivers.renderers._search_results"
-                    for child in ast.walk(method)
-                )
-                for method in node.body
+                isinstance(base, ast.Name) and base.id == "_PlotMixin" for base in node.bases
             ):
                 expected.add(node.name)
     assert expected == {type(result).__name__ for result in _fixtures().values()}
