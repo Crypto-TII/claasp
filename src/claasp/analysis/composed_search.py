@@ -84,8 +84,10 @@ def search_impossible_differentials(
     probability claim. Unsupported operations fail explicitly.
     ``representation='auto'`` uses wordwise propagation for finite-field input
     units (including AES bytes), and bitwise propagation for Bit/Word graphs.
-    Candidates explicitly record the representation. AES graph split 1 follows
-    its initial AddRoundKey; later splits follow complete encryption rounds.
+    Candidates explicitly record the representation. Automatic splits use
+    published internal graph boundaries. AES split 2 follows encryption round
+    one; graph round 0 contains key expansion/initial AddRoundKey and has no
+    published cut. Existing AES round observations retain their indexing.
     A complete empty result excludes candidates only in the selected truncated
     model; it is not a proof that the primitive has no impossible differential.
     Requires Kissat; these examples run in its integration job. A one-candidate
@@ -116,7 +118,15 @@ def search_impossible_differentials(
 
     if type(limit) is not int or limit <= 0:
         raise ValueError("limit must be a positive integer")
-    available = tuple(range(1, len(primitive.graph.rounds)))
+    if active_input not in primitive.graph.input_arrays:
+        raise ValueError("active_input must name a primitive input")
+    available = tuple(
+        number + 1
+        for number, _ in primitive.graph.round_output_boundaries
+        if number + 1 < len(primitive.graph.rounds)
+    )
+    if len(primitive.graph.rounds) > 1 and not available:
+        raise NotImplementedError("impossible search requires a published internal round boundary")
     if middle_round is not None and split_order is not None:
         raise ValueError("choose middle_round or split_order")
     splits = (
@@ -127,7 +137,7 @@ def search_impossible_differentials(
     if len(set(splits)) != len(splits) or any(
         type(value) is not int or value not in available for value in splits
     ):
-        raise ValueError("splits must be distinct internal round numbers")
+        raise ValueError("splits must be distinct published internal round boundaries")
     if representation not in {"auto", "bitwise", "wordwise"}:
         raise ValueError("representation must be auto, bitwise or wordwise")
     if representation == "auto":

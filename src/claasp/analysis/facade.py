@@ -939,7 +939,7 @@ class Analysis:
         Auto representation uses wordwise propagation on finite-field byte
         graphs such as AES, and bitwise propagation on Bit/Word graphs such as
         Speck. Set representation explicitly to select a model. Candidates
-        record the selected representation. AES split 1 is after AddRoundKey.
+        record the selected representation. AES split 2 is after encryption round 1.
 
         Requires Kissat; the integration job executes the examples below.
         A candidate limit is not an exhaustion proof: complete remains False.

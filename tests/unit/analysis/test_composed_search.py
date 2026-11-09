@@ -55,7 +55,7 @@ def test_aes_defaults_to_explicitly_reported_wordwise_model():
     candidate = result.candidates[0]
     assert candidate.representation == "wordwise"
     assert candidate.trail.middle.contradictory_positions
-    assert candidate.middle_round == 1  # Immediately after initial AddRoundKey.
+    assert candidate.middle_round == 2  # After the first published encryption round.
     # Independent concrete checks of an abstract impossible external pattern.
     from claasp.semantics.cryptanalysis import WordwiseDifferenceKind as Kind
 
@@ -96,7 +96,7 @@ def test_full_aes_returns_model_exhaustion_not_a_domain_error():
     assert not result.found and result.complete
     assert result.representation == "wordwise"
     assert result.termination == "exhausted UNSAT"
-    assert result.attempted_rounds == tuple(range(1, 11))
+    assert result.attempted_rounds == tuple(range(2, 11))
     from io import StringIO
 
     output = StringIO()
