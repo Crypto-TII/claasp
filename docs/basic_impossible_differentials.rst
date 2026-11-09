@@ -1,7 +1,7 @@
 Impossible differentials: introduction
 ======================================
 
-**What is an impossible differential cryptanalysis?**
+**What is an impossible differential?**
 
 Given a block cipher :math:`E : \mathbb{F}_2^{n} \times \mathbb{F}_2^{k} \to \mathbb{F}_2^{n}`, differential cryptanalysis studies how a specific input difference :math:`\delta` propagates to an output difference :math:`\gamma` through the cipher. More precisely, an attacker is interested in pairs :math:`(\delta, \gamma)` such that :math:`E_K(X) \oplus E_K(X \oplus \delta) = \gamma` holds with a high probability over all keys :math:`K` and plaintexts :math:`X`.
 
