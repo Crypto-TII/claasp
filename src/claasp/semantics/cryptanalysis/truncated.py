@@ -712,7 +712,9 @@ def propagate_single_active_aes_byte(
         raise ValueError("primitive must contain at least one AES round")
     if not isinstance(byte_index, int) or isinstance(byte_index, bool) or not 0 <= byte_index < 16:
         raise ValueError("byte_index must be in range(16)")
-    boundaries = primitive.graph.intermediate_outputs[0]
+    boundaries = next(
+        frame for frame in primitive.graph.intermediate_outputs if "shift_rows" in frame
+    )
     shifted = _named_component(
         primitive,
         boundaries["shift_rows"].source_id,

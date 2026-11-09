@@ -10,6 +10,7 @@ from typing import Any
 
 from claasp.components import (
     Add,
+    BinaryAffineMap,
     BitVectorSBox,
     BitwiseAnd,
     BitwiseNot,
@@ -495,9 +496,23 @@ def _truncated_pattern(bits, assignment):
 
 
 def _truncated_width(array_type):
-    if not isinstance(array_type.unit_type, (Bit, Word)):
-        raise NotImplementedError("truncated SAT lowering requires Bit or Word domains")
-    return 1 if isinstance(array_type.unit_type, Bit) else array_type.unit_type.width
+    if not isinstance(array_type.unit_type, (Bit, Word, BinaryExtensionField)):
+        raise NotImplementedError(
+            "truncated SAT lowering requires Bit, Word or binary-field domains"
+        )
+    return array_type.unit_type.encoded_bit_size
+
+
+def _truncated_binary_matrix(component):
+    from claasp.analysis.linear_properties import expand_binary_field_matrix
+
+    if isinstance(component, LinearMap) and isinstance(
+        component.output_type.unit_type, BinaryExtensionField
+    ):
+        return expand_binary_field_matrix(component.matrix, component.output_type.unit_type)
+    if not isinstance(component.output_type.unit_type, (Bit, BinaryExtensionField)):
+        raise NotImplementedError("truncated linear maps require binary fields or bits")
+    return component.matrix
 
 
 class WordDeterministicTruncatedSATModel:
@@ -625,7 +640,9 @@ class WordDeterministicTruncatedSATModel:
         def rule(component, operands, output):
             component_id = component.component_id
             width = _truncated_width(component.output_type)
-            if isinstance(component, Add) and not isinstance(component.output_type.unit_type, Bit):
+            if isinstance(component, Add) and not isinstance(
+                component.output_type.unit_type, (Bit, BinaryExtensionField)
+            ):
                 raise NotImplementedError(
                     "truncated Add requires Bit units; use ModularAdd or Xor for Word units"
                 )
@@ -731,6 +748,27 @@ class WordDeterministicTruncatedSATModel:
                     xor_relation(
                         tuple(operand[bit] for operand in operands), target, "truncated_xor"
                     )
+            elif isinstance(component, (LinearMap, BinaryAffineMap)):
+                matrix = _truncated_binary_matrix(component)
+                source = tuple(bit for group in operands for bit in group)
+                groups = (
+                    ((source, output),)
+                    if isinstance(component, LinearMap)
+                    else tuple(
+                        (source[i : i + width], output[i : i + width])
+                        for i in range(0, len(output), width)
+                    )
+                )
+                for local_source, local_output in groups:
+                    for row, target in zip(matrix, local_output):
+                        selected_bits = tuple(
+                            bit for bit, coefficient in zip(local_source, row) if coefficient
+                        )
+                        if selected_bits:
+                            xor_relation(selected_bits, target, "truncated_binary_linear")
+                        else:
+                            for name in target:
+                                add((-indices[name],), "truncated_binary_linear_zero")
             elif isinstance(component, (Identity, BitwiseNot)):
                 for source, target in zip(operands[0], output):
                     equal(source, target, "truncated_identity")
@@ -868,6 +906,26 @@ class WordDeterministicTruncatedSATModel:
                     for operand in items[1:]:
                         value = value.xor(operand)
                     expected_units.append(value)
+            elif isinstance(component, (LinearMap, BinaryAffineMap)):
+                matrix = _truncated_binary_matrix(component)
+                source = tuple(bit for operand in operands for bit in operand.bits)
+                groups = (
+                    (source,)
+                    if isinstance(component, LinearMap)
+                    else tuple(source[i : i + width] for i in range(0, len(source), width))
+                )
+                bits = []
+                for group in groups:
+                    for row in matrix:
+                        selected_bits = tuple(
+                            bit for bit, coefficient in zip(group, row) if coefficient
+                        )
+                        bits.append(
+                            TruncatedBit.UNKNOWN
+                            if TruncatedBit.UNKNOWN in selected_bits
+                            else TruncatedBit(str(sum(int(bit.value) for bit in selected_bits) % 2))
+                        )
+                expected_units = list(self._units(TruncatedXorDifference(tuple(bits)), width))
             elif isinstance(component, (Identity, BitwiseNot, Permutation)):
                 items = operand_units[0]
                 expected_units = (
@@ -1247,24 +1305,24 @@ class WordwiseDeterministicTruncatedSATModel:
                 for target in output:
                     add((indices[target[0][0]],), "wordwise_zero_constant")
             elif isinstance(component, LinearMap):
-                if any(coefficient == 0 for row in component.matrix for coefficient in row):
-                    raise NotImplementedError(
-                        "wordwise dense-layer abstraction requires every coefficient nonzero"
+                # Zero coefficients create no dependency. Apply the reviewed
+                # dense abstraction separately to the nonzero support of each row.
+                for row, target in zip(component.matrix, output):
+                    source = tuple(
+                        item for item, coefficient in zip(operands[0], row) if coefficient
                     )
-                source = operands[0]
-                for kinds in product(self._KINDS, repeat=len(source)):
-                    antecedent = tuple(
-                        -indices[item[0][kind.value]] for item, kind in zip(source, kinds)
-                    )
-                    active = sum(kind is not WordwiseDifferenceKind.ZERO for kind in kinds)
-                    target_kind = (
-                        WordwiseDifferenceKind.UNKNOWN
-                        if WordwiseDifferenceKind.UNKNOWN in kinds or active > 1
-                        else WordwiseDifferenceKind.NONZERO
-                        if active
-                        else WordwiseDifferenceKind.ZERO
-                    )
-                    for target in output:
+                    for kinds in product(self._KINDS, repeat=len(source)):
+                        antecedent = tuple(
+                            -indices[item[0][kind.value]] for item, kind in zip(source, kinds)
+                        )
+                        active = sum(kind is not WordwiseDifferenceKind.ZERO for kind in kinds)
+                        target_kind = (
+                            WordwiseDifferenceKind.UNKNOWN
+                            if WordwiseDifferenceKind.UNKNOWN in kinds or active > 1
+                            else WordwiseDifferenceKind.NONZERO
+                            if active
+                            else WordwiseDifferenceKind.ZERO
+                        )
                         add(
                             (*antecedent, indices[target[0][target_kind.value]]),
                             "wordwise_dense_linear_layer",
@@ -1391,8 +1449,17 @@ class WordwiseDeterministicTruncatedSATModel:
                     for _ in range(component.output_type.unit_count)
                 )
             elif isinstance(component, LinearMap):
-                expected = propagate_dense_wordwise_activity(
-                    operands[0], component.output_type.unit_count
+                width = component.output_type.unit_type.encoded_bit_size
+                assert width is not None
+                expected = tuple(
+                    propagate_dense_wordwise_activity(selected, 1)[0]
+                    if (
+                        selected := tuple(
+                            item for item, coefficient in zip(operands[0], row) if coefficient
+                        )
+                    )
+                    else WordwiseXorDifference(width, WordwiseDifferenceKind.ZERO)
+                    for row in component.matrix
                 )
             else:
                 return None
@@ -1591,8 +1658,10 @@ class WordImpossibleSATModel:
         output_pattern=None,
     ) -> None:
         selected = primitive.graph.input_arrays.get(active_input)
-        if selected is None or not isinstance(selected.array_type.unit_type, (Bit, Word)):
-            raise ValueError("active_input must name a Bit/Word primitive input")
+        if selected is None or not isinstance(
+            selected.array_type.unit_type, (Bit, Word, BinaryExtensionField)
+        ):
+            raise ValueError("active_input must name a Bit/Word/binary-field primitive input")
         if not isinstance(zero_difference_inputs, tuple) or any(
             name == active_input or name not in primitive.graph.input_arrays
             for name in zero_difference_inputs

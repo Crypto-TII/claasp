@@ -35,6 +35,7 @@ class ImpossibleSearchResult:
     attempted_rounds: tuple[int, ...]
     complete: bool
     termination: str
+    representation: str | None = None
 
     @property
     def found(self) -> bool:
@@ -57,6 +58,10 @@ class ImpossibleSearchResult:
         )
         print(render_terminal_table(table), file=file)
         print(f"{len(self.candidates)} candidate(s); {self.termination}", file=file)
+        if self.representation is not None:
+            print(f"Truncated model: {self.representation}", file=file)
+        if self.complete:
+            print("Exhaustion applies only to the selected truncated model.", file=file)
 
 
 def search_impossible_differentials(
@@ -68,7 +73,7 @@ def search_impossible_differentials(
     output_pattern=None,
     active_input="plaintext",
     zero_difference_inputs=None,
-    representation="bitwise",
+    representation="auto",
     solver=None,
     limit=1,
 ) -> ImpossibleSearchResult:
@@ -77,6 +82,12 @@ def search_impossible_differentials(
     A finite limit is not an exhaustion certificate. Wordwise candidates carry
     the existing model's abstract interpretation rather than a new concrete
     probability claim. Unsupported operations fail explicitly.
+    ``representation='auto'`` uses wordwise propagation for finite-field input
+    units (including AES bytes), and bitwise propagation for Bit/Word graphs.
+    Candidates explicitly record the representation. AES graph split 1 follows
+    its initial AddRoundKey; later splits follow complete encryption rounds.
+    A complete empty result excludes candidates only in the selected truncated
+    model; it is not a proof that the primitive has no impossible differential.
     Requires Kissat; these examples run in its integration job. A one-candidate
     limit finds a checked contradiction but does not exhaust the search.
 
@@ -87,6 +98,15 @@ def search_impossible_differentials(
         >>> result.found, result.complete  # doctest: +SKIP
         (True, False)
         >>> result.candidates[0].trail.boundary.is_impossible  # doctest: +SKIP
+        True
+
+    AES byte graphs select a wordwise model automatically. Requires Kissat::
+
+        >>> from claasp.primitives import AES
+        >>> result = AES(number_of_rounds=2).analysis.search_impossible_differentials()
+        >>> result.representation, result.candidates[0].representation, result.complete
+        ('wordwise', 'wordwise', False)
+        >>> bool(result.candidates[0].trail.middle.contradictory_positions)
         True
     """
     from claasp.representations.constraints.sat import (
@@ -108,8 +128,18 @@ def search_impossible_differentials(
         type(value) is not int or value not in available for value in splits
     ):
         raise ValueError("splits must be distinct internal round numbers")
-    if representation not in {"bitwise", "wordwise"}:
-        raise ValueError("representation must be bitwise or wordwise")
+    if representation not in {"auto", "bitwise", "wordwise"}:
+        raise ValueError("representation must be auto, bitwise or wordwise")
+    if representation == "auto":
+        from claasp.unit_types import BinaryExtensionField
+
+        selected = primitive.graph.input_arrays.get(active_input)
+        representation = (
+            "wordwise"
+            if selected is not None
+            and isinstance(selected.array_type.unit_type, BinaryExtensionField)
+            else "bitwise"
+        )
     zeros = (
         tuple(name for name in primitive.graph.input_arrays if name != active_input)
         if zero_difference_inputs is None
@@ -175,13 +205,13 @@ def search_impossible_differentials(
                 break
             if run.status is not SatStatus.SATISFIABLE:
                 return ImpossibleSearchResult(
-                    tuple(candidates), tuple(attempted), False, run.status.value
+                    tuple(candidates), tuple(attempted), False, run.status.value, representation
                 )
             if run.assignment is None or not query.is_satisfied(run.assignment):
                 raise RuntimeError("solver returned an invalid impossible-search witness")
             if len(candidates) == limit:
                 return ImpossibleSearchResult(
-                    tuple(candidates), tuple(attempted), False, "candidate limit"
+                    tuple(candidates), tuple(attempted), False, "candidate limit", representation
                 )
             trail = model.decode_trail(run.assignment)
             candidates.append(ImpossibleCandidate(split, trail, representation))
@@ -191,9 +221,11 @@ def search_impossible_differentials(
             # A one-candidate query is a search, not an exhaustive enumeration.
             if len(candidates) == limit:
                 return ImpossibleSearchResult(
-                    tuple(candidates), tuple(attempted), False, "candidate limit"
+                    tuple(candidates), tuple(attempted), False, "candidate limit", representation
                 )
-    return ImpossibleSearchResult(tuple(candidates), tuple(attempted), True, "exhausted UNSAT")
+    return ImpossibleSearchResult(
+        tuple(candidates), tuple(attempted), True, "exhausted UNSAT", representation
+    )
 
 
 @dataclass(frozen=True, slots=True)

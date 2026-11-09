@@ -32,7 +32,7 @@ def test_aes128_matches_fips_first_round_intermediate_values():
         source = result.value_of(selection.source.source_id)
         return tuple(source[position] for position in selection.positions)
 
-    intermediates = primitive.graph.intermediate_outputs[0]
+    intermediates = primitive.graph.intermediate_outputs[1]
     assert bytes(value(primitive._initial_state)).hex() == "00102030405060708090a0b0c0d0e0f0"
     assert bytes(value(intermediates["sub_bytes"])).hex() == "63cab7040953d051cd60e0e7ba70e18c"
     assert bytes(value(intermediates["shift_rows"])).hex() == "6353e08c0960e104cd70b751bacad0e7"
@@ -114,3 +114,18 @@ def test_aes_evaluate_many_validates_named_batch_inputs():
         aes.evaluate_many(plaintext=[0, 1], key=[0])
     with pytest.raises(ValueError, match="missing=.*key"):
         aes.evaluate_many(plaintext=[0, 1])
+
+
+def test_aes_publishes_aligned_initial_and_encryption_round_boundaries():
+    from claasp.transformations import slice_rounds
+
+    primitive = AES(number_of_rounds=2)
+    assert len(primitive.graph.round_outputs) == len(primitive.graph.rounds) == 3
+    prefix = slice_rounds(primitive, 0, 0).primitive
+    assert prefix.evaluate(plaintext=PLAINTEXT, key=KEY) == int.from_bytes(
+        bytes(a ^ b for a, b in zip(PLAINTEXT, KEY)), "big"
+    )
+    reduced = slice_rounds(primitive, 0, 1).primitive
+    assert reduced.evaluate(plaintext=PLAINTEXT, key=KEY) == AES(number_of_rounds=1).evaluate(
+        plaintext=PLAINTEXT, key=KEY
+    )

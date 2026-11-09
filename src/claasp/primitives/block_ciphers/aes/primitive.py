@@ -96,6 +96,10 @@ def _key_schedule(primitive, key, key_word_count, number_of_rounds, realization)
 class AES(Primitive):
     """Build AES directly from the steps in FIPS 197 Algorithms 1 and 2.
 
+    Graph round 0 contains key expansion and the initial AddRoundKey. Its
+    state is published before encryption rounds 1 through Nr, so slicing and
+    directional trail searches use boundaries aligned with graph rounds.
+
     The source deliberately uses the specification's ``state``, ``words``, and
     ``round_key`` vocabulary and leaves component identifiers to ``Primitive``.
 
@@ -160,6 +164,7 @@ class AES(Primitive):
         # state <- ADDROUNDKEY(state, round_key[0])
         state = self._builder.add_component(Add((self.graph.input("plaintext"), round_keys[0])))
         self._initial_state = state
+        self._builder.set_round_output(state)
 
         # Rounds 1..Nr follow FIPS 197's main algorithm. Reduced studies retain
         # MixColumns because they are prefixes of the standard AES execution.
