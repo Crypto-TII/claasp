@@ -469,6 +469,7 @@ class Analysis:
         self,
         *,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
     ) -> TrailSearchResult:
@@ -476,6 +477,7 @@ class Analysis:
 
         return self.find_optimal_trail(
             solver=solver,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
         )
@@ -486,6 +488,7 @@ class Analysis:
         *,
         backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
         solver: object | None = None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         fixed_input_masks=None,
@@ -510,7 +513,12 @@ class Analysis:
                 f"unsupported trail-search backend {backend!r}; choose one of {supported}"
             ) from error
 
+        from claasp.analysis.constraints import _trail_constraints
+
+        constraints = _trail_constraints(constraints, self.primitive)
         specialized = self._dependency_free_trail_search(selected_kind)
+        if constraints._items and selected_backend is TrailSearchBackend.DEPENDENCY_FREE:
+            raise NotImplementedError("constraints require a solver-backed trail backend")
         if selected_backend is TrailSearchBackend.DEPENDENCY_FREE:
             if solver is not None:
                 raise TypeError("dependency-free trail search cannot consume a custom solver")
@@ -521,7 +529,12 @@ class Analysis:
                 )
             return specialized()
         automatic = self._automatic_trail_search(selected_kind)
-        if selected_backend is TrailSearchBackend.AUTO and solver is None and automatic is not None:
+        if (
+            selected_backend is TrailSearchBackend.AUTO
+            and solver is None
+            and automatic is not None
+            and not constraints._items
+        ):
             return automatic()
         from claasp.analysis.trail_search import optimize_word_characteristic
 
@@ -530,6 +543,7 @@ class Analysis:
             selected_kind,
             backend=selected_backend.value,
             solver=solver,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
             fixed_input_masks=fixed_input_masks,
@@ -1406,6 +1420,7 @@ class Analysis:
         *,
         minimum_weight=None,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
@@ -1434,6 +1449,7 @@ class Analysis:
         model = self._xor_differential_query_model(
             maximum_weight,
             minimum_weight=minimum_weight,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
             output_difference=output_difference,
@@ -1446,6 +1462,7 @@ class Analysis:
         *,
         weight_tolerance=0,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
@@ -1471,6 +1488,7 @@ class Analysis:
         model = self._xor_differential_query_model(
             fixed_weight=fixed_weight,
             weight_tolerance=weight_tolerance,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
             output_difference=output_difference,
@@ -1483,6 +1501,7 @@ class Analysis:
         *,
         minimum_weight=None,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
@@ -1511,6 +1530,7 @@ class Analysis:
             maximum_weight,
             minimum_weight=minimum_weight,
             solver=solver,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
             output_difference=output_difference,
@@ -1523,6 +1543,7 @@ class Analysis:
         *,
         minimum_weight=None,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
@@ -1551,6 +1572,7 @@ class Analysis:
         model = self._xor_linear_query_model(
             maximum_weight,
             minimum_weight=minimum_weight,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,
@@ -1563,6 +1585,7 @@ class Analysis:
         *,
         weight_tolerance=0,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
@@ -1588,6 +1611,7 @@ class Analysis:
         model = self._xor_linear_query_model(
             fixed_weight=fixed_weight,
             weight_tolerance=weight_tolerance,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,
@@ -1600,6 +1624,7 @@ class Analysis:
         *,
         minimum_weight=None,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
@@ -1628,6 +1653,7 @@ class Analysis:
             maximum_weight,
             minimum_weight=minimum_weight,
             solver=solver,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,
@@ -1642,6 +1668,7 @@ class Analysis:
         minimum_weight=None,
         weight_tolerance=0,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
@@ -1677,6 +1704,7 @@ class Analysis:
             fixed_weight=fixed_weight,
             minimum_weight=minimum_weight,
             weight_tolerance=weight_tolerance,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
             output_difference=output_difference,
@@ -1690,17 +1718,23 @@ class Analysis:
         fixed_weight=None,
         minimum_weight=None,
         weight_tolerance=0,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
     ):
+        from claasp.analysis.constraints import _trail_constraints
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.representations.constraints.smt import WordXorDifferentialSMTModel
 
+        constraints = _trail_constraints(constraints, self.primitive)
+        constrained_inputs = {item.target for item in constraints._items}
         if fixed_input_differences is None:
             fixed_input_differences = (
                 {"key": 0}
-                if "key" in self.primitive.graph.input_arrays and nonzero_input != "key"
+                if "key" in self.primitive.graph.input_arrays
+                and nonzero_input != "key"
+                and "key" not in constrained_inputs
                 else {}
             )
         policy = resolve_input_policy(
@@ -1708,12 +1742,16 @@ class Analysis:
             nonzero_input,
             fixed_input_differences,
         )
+        for name in constrained_inputs:
+            if name not in fixed_input_differences:
+                policy.fixed_patterns.pop(name, None)
         model = WordXorDifferentialSMTModel(
             self.primitive,
             maximum_weight=maximum_weight,
             fixed_weight=fixed_weight,
             minimum_weight=minimum_weight,
             weight_tolerance=weight_tolerance,
+            constraints=constraints,
             nonzero_input=policy.nonzero_input,
             fixed_input_differences=policy.fixed_patterns,
             output_difference=output_difference,
@@ -1728,6 +1766,7 @@ class Analysis:
         fixed_weight=None,
         weight_tolerance=0,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
@@ -1763,6 +1802,7 @@ class Analysis:
             fixed_weight=fixed_weight,
             minimum_weight=minimum_weight,
             weight_tolerance=weight_tolerance,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,
@@ -1776,13 +1816,17 @@ class Analysis:
         fixed_weight=None,
         minimum_weight=None,
         weight_tolerance=0,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
     ):
+        from claasp.analysis.constraints import _trail_constraints
         from claasp.analysis.trail_search import resolve_input_policy
         from claasp.representations.constraints.smt import WordXorLinearSMTModel
 
+        constraints = _trail_constraints(constraints, self.primitive)
+        constrained_inputs = {item.target for item in constraints._items}
         policy = resolve_input_policy(
             self.primitive,
             nonzero_input,
@@ -1792,7 +1836,9 @@ class Analysis:
         if fixed_inputs is None and fixed_input_masks is None:
             fixed_inputs = (
                 {"key": 0}
-                if "key" in self.primitive.graph.input_arrays and nonzero_input != "key"
+                if "key" in self.primitive.graph.input_arrays
+                and nonzero_input != "key"
+                and "key" not in constrained_inputs
                 else {}
             )
         model = WordXorLinearSMTModel(
@@ -1801,6 +1847,7 @@ class Analysis:
             minimum_weight=minimum_weight,
             fixed_weight=fixed_weight,
             weight_tolerance=weight_tolerance,
+            constraints=constraints,
             nonzero_input=policy.nonzero_input,
             fixed_input_masks=policy.fixed_patterns,
             fixed_inputs=fixed_inputs,
@@ -1811,15 +1858,33 @@ class Analysis:
         self,
         *,
         solver=None,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
     ) -> TrailSearchResult:
-        """Find an exact minimum-weight XOR-linear characteristic."""
+        """Find an exact minimum-weight XOR-linear characteristic.
+
+        ``constraints`` combines solver-independent restrictions on any named
+        input mask, component output mask, or the external output mask. Use
+        ``fixed_inputs`` separately when concrete key values should be fixed.
+        The following example requires Kissat.
+
+        EXAMPLES::
+
+            >>> from claasp.analysis import Constraints
+            >>> from claasp.primitives import ToySpeck
+            >>> c = Constraints().nonzero('key').nonzero('plaintext')
+            >>> result = ToySpeck(1).analysis.find_lowest_weight_xor_linear_trail(constraints=c)
+            >>> masks = dict(result.input_patterns)
+            >>> masks['key'].value != 0 and masks['plaintext'].value != 0
+            True
+        """
 
         return self.find_optimal_trail(
             TrailKind.XOR_LINEAR,
             solver=solver,
+            constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,

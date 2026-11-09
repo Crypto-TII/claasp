@@ -158,6 +158,7 @@ class WordXorDifferentialSMTModel:
         fixed_weight=None,
         minimum_weight=None,
         weight_tolerance=0,
+        constraints=None,
         nonzero_input=None,
         fixed_input_differences=None,
         output_difference=None,
@@ -180,6 +181,9 @@ class WordXorDifferentialSMTModel:
             maximum_weight,
             fixed_weight,
         )
+        from claasp.analysis.constraints import _trail_constraints
+
+        self.constraints = _trail_constraints(constraints, primitive)
         self.nonzero_input = nonzero_input
         self.fixed_input_differences = dict(fixed_input_differences or {})
         self.output_difference = output_difference
@@ -418,6 +422,7 @@ class WordXorDifferentialSMTModel:
                         "fixed_difference",
                     )
         self._semantic_names = tuple(variables)
+        self.constraints._encode(unit_arrays, output, allocate, indices, add)
         self._weight_names = tuple(weights)
         self._probability_bits: tuple[int | bool, ...] = ()
         self._probability_denominator = 1
@@ -654,6 +659,7 @@ class WordXorDifferentialSMTModel:
             and trail.input_differences == inputs
             and trail.output_difference == output
             and _within_interval(trail.steps, self._weight_interval)
+            and self.constraints._check(self._unit_arrays, self._output, values)
             and (self.output_difference is None or output == self.output_difference)
             and (self.nonzero_input is None or dict(inputs)[self.nonzero_input] != 0)
             and all(

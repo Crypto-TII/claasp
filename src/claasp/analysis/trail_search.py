@@ -229,6 +229,7 @@ def optimize_word_characteristic(
     *,
     backend="sat",
     solver=None,
+    constraints=None,
     nonzero_input=None,
     fixed_input_differences=None,
     fixed_input_masks=None,
@@ -246,6 +247,10 @@ def optimize_word_characteristic(
         configuration required
     """
 
+    from claasp.analysis.constraints import _trail_constraints
+
+    constraints = _trail_constraints(constraints, primitive)
+    targeted_inputs = {item.target for item in constraints._items}
     _require_exact_trail_capability(primitive, kind, backend=backend)
     fixed = fixed_input_differences if kind is TrailKind.XOR_DIFFERENTIAL else fixed_input_masks
     policy = resolve_input_policy(
@@ -254,10 +259,17 @@ def optimize_word_characteristic(
         fixed,
         add_key_tweak_defaults=kind is TrailKind.XOR_DIFFERENTIAL,
     )
+    for name in targeted_inputs:
+        if (fixed or {}).get(name) is None:
+            policy.fixed_patterns.pop(name, None)
     resolved_fixed_inputs = dict(fixed_inputs or {})
     if kind is TrailKind.XOR_LINEAR and fixed_input_masks is None:
         for name in primitive.graph.input_arrays:
-            if name != policy.nonzero_input and ("key" in name.lower() or "tweak" in name.lower()):
+            if (
+                name not in targeted_inputs
+                and name != policy.nonzero_input
+                and ("key" in name.lower() or "tweak" in name.lower())
+            ):
                 resolved_fixed_inputs.setdefault(name, 0)
     selected_solver = _solver_for_backend(backend) if solver is None else solver
     if not callable(getattr(selected_solver, "solve", None)):
@@ -271,11 +283,13 @@ def optimize_word_characteristic(
             return WordXorDifferentialSATModel(
                 primitive,
                 maximum_weight=bound,
+                constraints=constraints,
                 nonzero_input=policy.nonzero_input,
                 fixed_input_differences=policy.fixed_patterns,
                 output_difference=output_difference,
             )
         options = {
+            "constraints": constraints,
             "maximum_weight": bound,
             "nonzero_input": policy.nonzero_input,
             "fixed_input_masks": policy.fixed_patterns,
@@ -361,6 +375,7 @@ def optimize_word_characteristic(
         components,
         _constraint_models(best_formula.constraint_models, backend, kind),
         rounds,
+        input_patterns=_external_patterns(primitive, kind, best),
     )
 
 
@@ -464,6 +479,7 @@ def _optimize_probability_characteristic(
         components,
         _constraint_models(formula.constraint_models, backend, kind),
         rounds,
+        input_patterns=_external_patterns(primitive, kind, best),
     )
 
 
@@ -644,3 +660,13 @@ __all__ = [
     "optimize_word_characteristic",
     "require_word_sat_capability",
 ]
+
+
+def _external_patterns(primitive, kind, characteristic):
+    linear = kind is TrailKind.XOR_LINEAR
+    pattern_type = XorMask if linear else XorDifference
+    inputs = characteristic.input_masks if linear else characteristic.input_differences
+    return tuple(
+        (name, pattern_type(value, primitive.graph.input_arrays[name].array_type.encoded_bit_size))
+        for name, value in inputs
+    )
