@@ -330,3 +330,19 @@ def test_not_equal_packed_value_and_explicit_defaults_are_not_silently_overridde
         )
         is None
     )
+
+
+def test_invalid_explicit_patterns_are_not_removed_by_constraint_defaults():
+    from claasp.analysis import Constraints
+    from claasp.primitives import ToySpeck
+
+    class ForbiddenSolver:
+        def solve(self, formula):
+            raise AssertionError("invalid input must fail before solving")
+
+    with pytest.raises(ValueError, match="fixed masks"):
+        ToySpeck(1).analysis.find_lowest_weight_xor_linear_trail(
+            constraints=Constraints().nonzero("key"),
+            fixed_input_masks={"key": None},
+            solver=ForbiddenSolver(),
+        )

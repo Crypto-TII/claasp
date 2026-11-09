@@ -260,7 +260,7 @@ def optimize_word_characteristic(
         add_key_tweak_defaults=kind is TrailKind.XOR_DIFFERENTIAL,
     )
     for name in targeted_inputs:
-        if (fixed or {}).get(name) is None:
+        if name not in (fixed or {}):
             policy.fixed_patterns.pop(name, None)
     resolved_fixed_inputs = dict(fixed_inputs or {})
     if kind is TrailKind.XOR_LINEAR and fixed_input_masks is None:
