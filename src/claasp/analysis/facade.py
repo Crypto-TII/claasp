@@ -1435,6 +1435,9 @@ class Analysis:
         Return None only after proved UNSAT. Solver errors and interruptions
         propagate; they never mean that no characteristic exists.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1477,6 +1480,9 @@ class Analysis:
         Non-integral weights use the same exact-probability interval checks
         as enumeration. None means proved UNSAT, not a solver interruption.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1517,6 +1523,9 @@ class Analysis:
         A finite limit can leave undiscovered trails. Call require_complete()
         before treating the returned trails as an exhaustive collection.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1558,6 +1567,9 @@ class Analysis:
         Return None only after proved UNSAT. Solver errors and interruptions
         propagate; they never mean that no characteristic exists.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1600,6 +1612,9 @@ class Analysis:
         Non-integral weights use the same exact-probability interval checks
         as enumeration. None means proved UNSAT, not a solver interruption.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1640,6 +1655,9 @@ class Analysis:
         A finite limit can leave undiscovered trails. Call require_complete()
         before treating the returned trails as an exhaustive collection.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1689,6 +1707,9 @@ class Analysis:
         equality at 1.42 would exclude it; the interval below includes it.
         Requires Z3; these examples run in the Z3 integration job.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::
@@ -1787,6 +1808,9 @@ class Analysis:
         interval. Check complete before claiming that every trail was found.
         Requires Z3; these examples run in the Z3 integration job.
 
+        Queries use portable Boolean CNF. Supplied SAT drivers such as
+        ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
+        SMT/MILP/CP adapters. The default solver remains Z3.
         The examples require the ``z3`` executable on PATH.
 
         EXAMPLES::

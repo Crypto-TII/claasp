@@ -1,7 +1,7 @@
 """Whole-word graph linear characteristics, including key-schedule fanout."""
 
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 from typing import cast
 
@@ -27,6 +27,7 @@ from claasp.components import (
 from claasp.drivers.solvers import SatStatus
 from claasp.graph import GraphPropagation
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints._propagation import component_applications
 from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt._probability_encoding import (
@@ -894,7 +895,7 @@ class WordXorLinearSMTModel:
         """Block semantic assignments, excluding auxiliary counter multiplicity."""
         if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
             raise ValueError("limit must be a positive integer")
-        formula = self.smt_formula()
+        formula = self.smt_formula().to_cnf()
         metadata = (
             ("primitive", self.primitive.family_name),
             ("weight_interval", repr(self._weight_interval)),
@@ -939,10 +940,10 @@ class WordXorLinearSMTModel:
         )
         with context as execution:
             while True:
-                current = SMTFormula(
-                    formula.variables,
-                    formula.assertions + tuple(blocks),
-                    formula.provenance + ("characteristic_block",) * len(blocks),
+                current = replace(
+                    formula,
+                    clauses=formula.clauses + tuple(blocks),
+                    provenance=formula.provenance + ("characteristic_block",) * len(blocks),
                 )
                 result = execution.solve(current)
                 runtime += result.runtime_seconds
@@ -950,9 +951,10 @@ class WordXorLinearSMTModel:
                     return WordXorLinearEnumeration(tuple(trails), True, runtime, metadata)
                 if result.status is not SatStatus.SATISFIABLE:
                     return WordXorLinearEnumeration(tuple(trails), False, runtime, metadata)
+                assignment = _checked_assignment(current, result)
                 if len(trails) == limit:
                     return WordXorLinearEnumeration(tuple(trails), False, runtime, metadata)
-                trail = self.decode_characteristic(result.assignment)
+                trail = self.decode_characteristic(assignment)
                 trails.append(trail)
                 blocks.append(
                     tuple(

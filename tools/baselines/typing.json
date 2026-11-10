@@ -1,29 +1,29 @@
 {
   "counts_by_code": {
-    "arg-type": 102,
+    "arg-type": 100,
     "assignment": 69,
     "attr-defined": 141,
     "call-arg": 7,
     "call-overload": 80,
     "dict-item": 28,
     "has-type": 22,
-    "index": 53,
+    "index": 50,
     "list-item": 4,
     "misc": 24,
     "no-redef": 1,
     "operator": 69,
     "return-value": 1,
     "type-var": 2,
-    "union-attr": 68,
+    "union-attr": 66,
     "var-annotated": 118
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
     "src/claasp": 620,
-    "tests": 133,
-    "tools": 36
+    "tests": 131,
+    "tools": 31
   },
-  "diagnostic_count": 789,
+  "diagnostic_count": 782,
   "diagnostics": [
     {
       "code": "operator",
@@ -238,22 +238,15 @@
     {
       "code": "misc",
       "column": 19,
-      "line": 71,
+      "line": 74,
       "message": "Value expression in dictionary comprehension has incompatible type \"object\"; expected type \"int\"",
       "path": "src/claasp/drivers/solvers/minizinc.py"
     },
     {
       "code": "var-annotated",
       "column": 22,
-      "line": 113,
+      "line": 118,
       "message": "Need type annotation for \"lines\"",
-      "path": "src/claasp/drivers/solvers/z3.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 21,
-      "line": 129,
-      "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"__iter__\" (not iterable)",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
@@ -265,22 +258,29 @@
     },
     {
       "code": "union-attr",
+      "column": 21,
+      "line": 139,
+      "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"__iter__\" (not iterable)",
+      "path": "src/claasp/drivers/solvers/z3.py"
+    },
+    {
+      "code": "union-attr",
       "column": 9,
-      "line": 167,
+      "line": 173,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"write\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 9,
-      "line": 168,
+      "line": 174,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"flush\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 13,
-      "line": 204,
+      "line": 210,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"close\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
@@ -3080,28 +3080,28 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 46,
+      "line": 47,
       "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 44,
-      "line": 264,
+      "line": 265,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 31,
-      "line": 265,
+      "line": 266,
       "message": "Unsupported operand types for * (\"int\" and \"None\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 47,
-      "line": 266,
+      "line": 267,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
@@ -3255,7 +3255,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 23,
+      "line": 22,
       "message": "Need type annotation for \"lines\" (hint: \"lines: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/exporters/dimacs.py"
     },
@@ -4394,20 +4394,6 @@
       "path": "tests/integration/test_minisat_integration.py"
     },
     {
-      "code": "index",
-      "column": 18,
-      "line": 254,
-      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
-      "path": "tests/integration/test_minizinc_integration.py"
-    },
-    {
-      "code": "index",
-      "column": 14,
-      "line": 280,
-      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
-      "path": "tests/integration/test_minizinc_integration.py"
-    },
-    {
       "code": "dict-item",
       "column": 10,
       "line": 491,
@@ -4459,7 +4445,7 @@
     {
       "code": "dict-item",
       "column": 10,
-      "line": 128,
+      "line": 131,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"UnitArray | Selection\"",
       "path": "tests/integration/test_z3_integration.py"
     },
@@ -4998,7 +4984,7 @@
     {
       "code": "arg-type",
       "column": 20,
-      "line": 101,
+      "line": 104,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },
@@ -5332,13 +5318,6 @@
       "path": "tools/benchmark_batch.py"
     },
     {
-      "code": "index",
-      "column": 18,
-      "line": 41,
-      "message": "Value of type \"Mapping[str, int] | None\" is not indexable",
-      "path": "tools/benchmark_cp_active_sboxes.py"
-    },
-    {
       "code": "union-attr",
       "column": 15,
       "line": 95,
@@ -5361,58 +5340,30 @@
     },
     {
       "code": "arg-type",
-      "column": 33,
-      "line": 93,
-      "message": "Argument 1 to \"solve\" of \"MiniZincSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"MiniZincModel | CNFFormula\"",
-      "path": "tools/benchmark_functional_word_components.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 33,
-      "line": 93,
+      "column": 37,
+      "line": 99,
       "message": "Argument 1 to \"solve\" of \"MinisatSolver\" has incompatible type \"CNFFormula | SMTFormula | MiniZincModel | Any\"; expected \"CNFFormula\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
-      "column": 14,
-      "line": 95,
-      "message": "Item \"CPResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
-      "path": "tools/benchmark_functional_word_components.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 14,
-      "line": 95,
-      "message": "Item \"SatResult\" of \"SatResult | Any | CPResult\" has no attribute \"is_feasible\"",
-      "path": "tools/benchmark_functional_word_components.py"
-    },
-    {
-      "code": "union-attr",
       "column": 37,
-      "line": 95,
+      "line": 101,
       "message": "Item \"CNFFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 37,
-      "line": 95,
+      "line": 101,
       "message": "Item \"MiniZincModel\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
       "code": "union-attr",
       "column": 37,
-      "line": 95,
+      "line": 101,
       "message": "Item \"SMTFormula\" of \"CNFFormula | SMTFormula | MiniZincModel | Any\" has no attribute \"is_feasible\"",
-      "path": "tools/benchmark_functional_word_components.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 65,
-      "line": 97,
-      "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"Mapping[str, int] | Any | None\"; expected \"Mapping[str, int | bool]\"",
       "path": "tools/benchmark_functional_word_components.py"
     },
     {
