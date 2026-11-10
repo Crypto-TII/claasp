@@ -99,6 +99,7 @@ def test_plot_image_data_and_both_contradiction_markers_match_retained_states(tm
     artifact = result.plot(show=False, save_to=target)
     try:
         assert target.read_bytes().startswith(b"\x89PNG")
+        assert "Red crosses mark" in artifact.figure._suptitle.get_text()
         axis = next(ax for ax in artifact.figure.axes if ax.images)
         matrix = axis.images[0].get_array()
         # Two meeting rows (after plaintext and boundary 1) preserve 0/1/? categories.

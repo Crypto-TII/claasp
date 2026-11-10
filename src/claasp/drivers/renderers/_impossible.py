@@ -22,7 +22,8 @@ def _plot(result, *, details, value_format, show, save_to):
         gridspec_kw={"height_ratios": heights},
     )
     try:
-        figure.suptitle("Impossible differential trail\n" + "\n".join(_notes(result)), fontsize=9)
+        notes = tuple(note.replace("! marks", "Red crosses mark") for note in _notes(result))
+        figure.suptitle("Impossible differential trail\n" + "\n".join(notes), fontsize=9)
         series = []
         if not groups:
             axes[0, 0].text(0.5, 0.5, "No retained witness to display.", ha="center")
