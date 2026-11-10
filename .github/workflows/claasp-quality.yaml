@@ -13,6 +13,10 @@ on:
     branches:
       - claasp-v5
       - develop
+      # Bases used by the trail-search support PR stack.
+      - feat/trail-constraints
+      - fix/aes-impossible
+      - fix/published-round-boundaries
       # Bases used by the CLAASP v5 tutorial-porting PR stack.
       - feat/latex-report-tables
       - feat/statistical-supplied-datasets
