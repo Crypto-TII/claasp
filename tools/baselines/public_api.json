@@ -295,6 +295,18 @@
       "qualified_name": "claasp.SerializationFailure"
     },
     {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverCatalog",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "dataclass",
+      "qualified_name": "claasp.SolverCatalog"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "dataclass",
+      "qualified_name": "claasp.SolverInfo"
+    },
+    {
       "canonical_name": "claasp.representations.source.model.SourceArtifact",
       "defined_in": "claasp.representations.source.model",
       "kind": "dataclass",
@@ -11349,6 +11361,18 @@
       "qualified_name": "claasp.drivers.solvers.SatStatus"
     },
     {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverCatalog",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "dataclass",
+      "qualified_name": "claasp.drivers.solvers.SolverCatalog"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "dataclass",
+      "qualified_name": "claasp.drivers.solvers.SolverInfo"
+    },
+    {
       "canonical_name": "claasp.drivers.solvers.z3.Z3Solver",
       "defined_in": "claasp.drivers.solvers.z3",
       "kind": "class",
@@ -11429,6 +11453,82 @@
       "documented_by": "claasp.drivers.solvers.base.SatStatus",
       "kind": "constructor",
       "qualified_name": "claasp.drivers.solvers.base.SatStatus.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverCatalog.__init__",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverCatalog",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverCatalog.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverCatalog.entries",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverCatalog",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverCatalog.entries"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverCatalog.to_terminal",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "method",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverCatalog.to_terminal"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverCatalog.view",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverCatalog",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverCatalog.view"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.__init__",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.detail",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.detail"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.driver",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.driver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.family",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.family"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.installed",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.installed"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.name",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.name"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.SolverInfo.requirement",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "documented_by": "claasp.drivers.solvers.catalog.SolverInfo",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.drivers.solvers.catalog.SolverInfo.requirement"
     },
     {
       "canonical_name": "claasp.drivers.solvers.cryptominisat.CryptoMiniSatSolver.__init__",
@@ -11972,6 +12072,12 @@
       "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
       "kind": "dataclass_field",
       "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.tree_percent"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.solver_catalog",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "function",
+      "qualified_name": "claasp.drivers.solvers.solver_catalog"
     },
     {
       "canonical_name": "claasp.drivers.solvers.z3.Z3Solver.__init__",
@@ -36717,6 +36823,12 @@
       "defined_in": "claasp.transformations.slicing",
       "kind": "function",
       "qualified_name": "claasp.slice_rounds"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.catalog.solver_catalog",
+      "defined_in": "claasp.drivers.solvers.catalog",
+      "kind": "function",
+      "qualified_name": "claasp.solver_catalog"
     },
     {
       "canonical_name": "claasp.transformations.slicing.split_dependencies",
