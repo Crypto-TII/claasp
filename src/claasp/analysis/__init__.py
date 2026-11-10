@@ -85,6 +85,7 @@ from claasp.analysis.composed_search import (
     search_impossible_differentials,
 )
 from claasp.analysis.constraints import (
+    Constraints,
     Equal,
     FixedValue,
     HammingWeight,
@@ -230,6 +231,7 @@ def __getattr__(name):
 
 
 __all__ = [
+    "Constraints",
     "ActiveSBoxResult",
     "WordwiseActivityAnalysis",
     "MinimaxDifferentialAnalysis",

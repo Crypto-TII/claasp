@@ -183,6 +183,7 @@ class WordXorLinearSMTModel:
         minimum_weight=None,
         fixed_weight=None,
         weight_tolerance=0,
+        constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
@@ -201,6 +202,9 @@ class WordXorLinearSMTModel:
         self._general_weight_query |= fixed_weight is not None
         self.primitive = primitive
         self.maximum_weight = maximum_weight
+        from claasp.analysis.constraints import _trail_constraints
+
+        self.constraints = _trail_constraints(constraints, primitive)
         self.nonzero_input = nonzero_input
         self.fixed_input_masks = dict(fixed_input_masks or {})
         self.fixed_inputs = dict(fixed_inputs or {})
@@ -484,6 +488,7 @@ class WordXorLinearSMTModel:
                     "fixed_external_mask",
                 )
         semantic_names = tuple(variables)
+        self.constraints._encode(unit_arrays, output, allocate, indices, add)
         self._weight_names = tuple(weights)
         self._probability_bits: tuple[int | bool, ...] = ()
         self._probability_denominator = 1
@@ -880,6 +885,7 @@ class WordXorLinearSMTModel:
             and trail.steps == tuple(steps)
             and trail.constant_sign == constant_sign
             and _within_interval(trail.steps, self._weight_interval)
+            and self.constraints._check(self._unit_arrays, self._output, values)
             and (self.nonzero_input is None or input_dict[self.nonzero_input] != 0)
             and all(input_dict[name] == value for name, value in self.fixed_input_masks.items())
         )

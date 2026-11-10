@@ -386,6 +386,9 @@ class Trail(_TerminalMixin, _PlotMixin):
 class TrailSearchResult:
     """A trail together with its optimization claim and search metadata.
 
+    ``input_patterns`` retains named input differences or masks when provided
+    by a solver-backed search, including additional constrained key inputs.
+
     EXAMPLES::
 
         >>> from claasp.semantics.cryptanalysis import (Trail, TrailKind,
@@ -403,6 +406,7 @@ class TrailSearchResult:
     component_transitions: tuple[TrailComponentTransition, ...] = ()
     constraint_models: tuple[ConstraintModelApplication, ...] = ()
     round_transitions: tuple[TrailRoundTransition, ...] = ()
+    input_patterns: tuple[tuple[str, BitPattern], ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.metadata, TrailSearchMetadata):
@@ -416,6 +420,13 @@ class TrailSearchResult:
                 if previous != application.model:
                     raise ValueError("a component cannot use conflicting constraint models")
         expected = XorDifference if self.trail.kind is TrailKind.XOR_DIFFERENTIAL else XorMask
+        names = tuple(name for name, _ in self.input_patterns)
+        if len(names) != len(set(names)) or any(
+            not isinstance(name, str) or not name for name in names
+        ):
+            raise ValueError("input pattern names must be nonempty and unique")
+        if any(not isinstance(pattern, expected) for _, pattern in self.input_patterns):
+            raise TypeError("named input patterns must match the trail kind")
         for component in self.component_transitions:
             if not isinstance(component.output_pattern, expected) or (
                 component.input_pattern is not None
