@@ -87,14 +87,17 @@ def test_z3_solves_and_independently_checks_word_differential_and_linear_trails(
     assert linear.check_characteristic(linear_trail)
 
 
-def test_z3_incremental_queries_reject_mutation_and_close_process():
+@pytest.mark.parametrize("start_cnf", (False, True))
+def test_z3_incremental_queries_reject_mutation_and_close_process(start_cnf):
     from claasp.representations.constraints.smt import SMTFormula
 
     formula = SMTFormula(("state",), ((1,),), ("fixed",))
-    with Z3Solver(timeout_seconds=10).incremental(formula) as session:
-        assert session.solve(formula).status is SatStatus.SATISFIABLE
+    initial = formula.to_cnf() if start_cnf else formula
+    with Z3Solver(timeout_seconds=10).incremental(initial) as session:
+        assert session.solve(initial).status is SatStatus.SATISFIABLE
         contradictory = SMTFormula(("state",), ((1,), (-1,)), ("fixed", "contradictory"))
-        assert session.solve(contradictory).status is SatStatus.UNSATISFIABLE
+        current = contradictory if start_cnf else contradictory.to_cnf()
+        assert session.solve(current).status is SatStatus.UNSATISFIABLE
         with pytest.raises(ValueError, match="append assertions"):
             session.solve(formula)
     assert session.process.poll() is not None

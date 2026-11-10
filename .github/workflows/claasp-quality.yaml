@@ -282,6 +282,9 @@ jobs:
       - name: Execute composed-search regressions and API doctests
         run: python -m pytest -m external tests/integration/test_sat_trail_assembly.py -k "public or api_doctests" -q
 
+      - name: Check portable trail-query routing
+        run: CLAASP_QUERY_BACKENDS=kissat,minisat python -m pytest -m external tests/integration/test_portable_trail_queries.py -q
+
   z3-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/') || github.base_ref == 'fix/aes-impossible' || github.base_ref == 'fix/published-round-boundaries'
     name: Z3 execution integration
@@ -309,6 +312,9 @@ jobs:
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=z3 python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q
+
+      - name: Check portable trail-query routing
+        run: CLAASP_QUERY_BACKENDS=z3 python -m pytest -m external tests/integration/test_portable_trail_queries.py -q
 
   glpk-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/') || github.base_ref == 'fix/aes-impossible' || github.base_ref == 'fix/published-round-boundaries'
@@ -340,6 +346,9 @@ jobs:
 
       - name: Check HiGHS compatibility with the public trail optimizer
         run: python -m pytest -m external tests/integration/test_highs_trail_search.py -q
+
+      - name: Check portable trail-query routing
+        run: CLAASP_QUERY_BACKENDS=glpk,highs python -m pytest -m external tests/integration/test_portable_trail_queries.py -q
 
   latex-rendering:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/') || github.base_ref == 'fix/aes-impossible' || github.base_ref == 'fix/published-round-boundaries'
@@ -417,6 +426,9 @@ jobs:
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=minizinc python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q
+
+      - name: Check portable trail-query routing
+        run: CLAASP_QUERY_BACKENDS=minizinc python -m pytest -m external tests/integration/test_portable_trail_queries.py -q
 
   dieharder-execution:
     if: github.event_name != 'pull_request' || github.base_ref == 'claasp-v5' || github.head_ref == 'claasp-v5' || startsWith(github.base_ref, 'feat/') || startsWith(github.base_ref, 'codex/') || github.base_ref == 'fix/aes-impossible' || github.base_ref == 'fix/published-round-boundaries'

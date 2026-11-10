@@ -1,6 +1,7 @@
 """Fast graph wiring and independent differential witness checks."""
 
 from dataclasses import replace
+from itertools import product
 
 import pytest
 
@@ -67,7 +68,11 @@ def test_incomplete_differential_enumeration_is_not_a_count_proof():
 
     class Solver:
         def solve(self, formula):
-            return SatResult(SatStatus.SATISFIABLE, dict.fromkeys(formula.variables, 0), 0, "", "")
+            for bits in product((0, 1), repeat=len(formula.variables)):
+                assignment = dict(zip(formula.variables, bits))
+                if formula.is_satisfied(assignment):
+                    return SatResult(SatStatus.SATISFIABLE, assignment, 0, "", "")
+            return SatResult(SatStatus.UNSATISFIABLE, None, 0, "", "")
 
     result = model.enumerate_trails(Solver(), limit=1)
     assert not result.complete and len(result.trails) == 1

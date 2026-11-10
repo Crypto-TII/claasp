@@ -1,12 +1,9 @@
-"""Guard against reintroducing generic ``cipher``/``ciphers`` vocabulary.
+"""Guard against obsolete generic Cipher identifiers in Python code.
 
-CLAASP v5 uses ``primitive`` as its generic public term. The word ``cipher``
-remains correct only where it names
-a real mathematical category (``block_cipher(s)``, ``tweakable_block_cipher(s)``,
-and their prose equivalents such as "block cipher") or is part of an
-established cryptographic term such as ``ciphertext`` or "stream cipher" used
-descriptively (for example to name the legacy construction that a fixed-length
-permutation was extracted from).
+CLAASP v5 uses Primitive for the generic graph abstraction. Documentation,
+comments and string literals may freely use cryptographic terminology,
+including the word cipher. Only executable Python identifiers are checked;
+real taxonomy names and the published name CipherFour remain valid.
 
 This module is dependency-free (standard library only) so it can run in the
 fast unit-test job without pulling in any optional tooling. It is exercised by
@@ -19,71 +16,44 @@ fast unit-test job without pulling in any optional tooling. It is exercised by
 
 from __future__ import annotations
 
+import io
 import re
 import sys
+import tokenize
 from dataclasses import dataclass
 from pathlib import Path
 
 NEXT_ROOT = Path(__file__).resolve().parents[1]
 
-#: Directories (relative to the ```` root) scanned for banned vocabulary.
-DEFAULT_SCAN_ROOTS = ("src/claasp", "docs")
+#: Source directories relative to the repository root.
+DEFAULT_SCAN_ROOTS = ("src/claasp",)
 
-#: File suffixes considered source/documentation text.
-SCANNED_SUFFIXES = (".py", ".rst")
+#: Only Python files contain executable identifiers.
+SCANNED_SUFFIXES = (".py",)
 
 #: Directory name fragments never scanned (build artifacts, caches).
 SKIPPED_DIR_PARTS = ("__pycache__", "_build", ".egg-info")
 
-#: Phrases that legitimately retain the word "cipher" because they name a
-#: real mathematical category (the v5 taxonomy's ``block_ciphers`` and
-#: ``tweakable_block_ciphers`` families, in both their identifier and prose
-#: spellings) or an established cryptographic term. Matching is
-#: case-insensitive; each entry is masked out of the text before the
-#: generic-vocabulary scan runs, so these exact phrases never trigger a
-#: violation while any other appearance of "cipher"/"ciphers" does.
+#: Valid taxonomy identifiers and the published teaching-primitive name.
 ALLOWED_PHRASES = (
-    # CipherFour is the published proper name of the teaching primitive, not
-    # generic public-API vocabulary.
     "CipherFour",
     "block_ciphers",
     "block_cipher",
-    "block ciphers",
-    "block cipher",
-    "block-ciphers",
-    "block-cipher",
     "tweakable_block_ciphers",
     "tweakable_block_cipher",
-    "tweakable block ciphers",
-    "tweakable block cipher",
-    "tweakable-block-ciphers",
-    "tweakable-block-cipher",
     "ciphertext",
-    "stream cipher",
-    "stream-cipher",
     "stream_cipher",
-    # Established construction-family names retained in exact publication
-    # titles and structured provenance records.
-    "ARX ciphers",
-    "SPN ciphers",
 )
-
 _ALLOWED_PATTERN = re.compile(
     "|".join(re.escape(phrase) for phrase in sorted(ALLOWED_PHRASES, key=len, reverse=True)),
     re.IGNORECASE,
 )
-#: Legacy CLAASP 4 module/path citations such as ``claasp.cipher_modules...``
-#: or ``claasp/ciphers/stream_ciphers/trivium_stream_cipher.py``. Legacy paths
-#: and evidence are explicitly allowed to keep their real spelling; the legacy
-#: top-level package is always spelled ``claasp`` followed immediately by a
-#: dot or slash, which never collides with the v5 package ``claasp``.
-_LEGACY_PATH_PATTERN = re.compile(r"\bclaasp[./][\w./]*")
 _CIPHER_PATTERN = re.compile("ciphers?", re.IGNORECASE)
 
 
 @dataclass(frozen=True, slots=True)
 class Violation:
-    """One disallowed occurrence of generic ``cipher``/``ciphers`` vocabulary."""
+    """One source line containing an obsolete generic Cipher identifier."""
 
     path: Path
     line_number: int
@@ -96,8 +66,7 @@ class Violation:
 def _mask_allowed_phrases(text: str) -> str:
     """Replace every allowed phrase with same-length filler so it cannot match."""
 
-    text = _ALLOWED_PATTERN.sub(lambda match: "#" * len(match.group(0)), text)
-    return _LEGACY_PATH_PATTERN.sub(lambda match: "#" * len(match.group(0)), text)
+    return _ALLOWED_PATTERN.sub(lambda match: "#" * len(match.group(0)), text)
 
 
 def _iter_scanned_files(roots: tuple[str, ...]) -> list[Path]:
@@ -117,40 +86,39 @@ def _iter_scanned_files(roots: tuple[str, ...]) -> list[Path]:
 
 
 def find_violations(roots: tuple[str, ...] = DEFAULT_SCAN_ROOTS) -> list[Violation]:
-    """Return every disallowed generic ``cipher``/``ciphers`` occurrence.
+    """Return obsolete identifiers, ignoring prose, comments and strings.
 
-    A violation is any appearance of "cipher" or "ciphers" (in any casing,
-    including inside identifiers such as ``CipherDiagram`` or
-    ``AESBlockCipher``) that is not part of an :data:`ALLOWED_PHRASES` entry.
+    Python tokenization also covers imports, attributes, parameters and class
+    names without mistaking docstrings or historical path citations for code.
+    Each offending source line is reported once.
     """
 
     violations: list[Violation] = []
     for path in _iter_scanned_files(roots):
         text = path.read_text(encoding="utf-8")
-        masked = _mask_allowed_phrases(text)
-        if not _CIPHER_PATTERN.search(masked):
-            continue
-        for line_number, (original_line, masked_line) in enumerate(
-            zip(text.splitlines(), masked.splitlines()), start=1
-        ):
-            if _CIPHER_PATTERN.search(masked_line):
-                violations.append(Violation(path, line_number, original_line))
+        lines = text.splitlines()
+        offending_lines = set()
+        for token in tokenize.generate_tokens(io.StringIO(text).readline):
+            if token.type == tokenize.NAME and _CIPHER_PATTERN.search(
+                _mask_allowed_phrases(token.string)
+            ):
+                offending_lines.add(token.start[0])
+        for line_number in sorted(offending_lines):
+            violations.append(Violation(path, line_number, lines[line_number - 1]))
     return violations
 
 
 def main() -> int:
     violations = find_violations()
     if not violations:
-        print("terminology guard: no generic 'cipher'/'ciphers' vocabulary found")
+        print("terminology guard: no obsolete Cipher identifiers found")
         return 0
-    print("terminology guard: disallowed generic 'cipher' vocabulary found:", file=sys.stderr)
+    print("terminology guard: obsolete Cipher identifiers found:", file=sys.stderr)
     for violation in violations:
         print(f"  {violation}", file=sys.stderr)
     print(
-        "\nUse 'primitive' for the generic graph abstraction and catalogue "
-        "vocabulary; 'cipher' remains correct only for the real "
-        "block_cipher(s)/tweakable_block_cipher(s) category, 'ciphertext', "
-        "or a named legacy construction such as 'stream cipher'.",
+        "\nUse Primitive/primitive for generic Python API identifiers. "
+        "The word cipher is allowed in documentation, comments and strings.",
         file=sys.stderr,
     )
     return 1

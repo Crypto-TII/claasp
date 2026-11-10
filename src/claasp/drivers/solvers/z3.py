@@ -42,14 +42,14 @@ class Z3Solver:
         return completed.stdout.strip()
 
     @contextmanager
-    def incremental(self, formula: SMTFormula):
+    def incremental(self, formula: SMTFormula | CNFFormula):
         """Reuse one isolated Z3 process for append-only Boolean formulas.
 
-        Per-query timeouts and complete named assignments use the same driver
-        contract as ``solve``. The process is always terminated on context exit.
+        Initial and appended queries accept ordinary CNF or Boolean SMT,
+        matching ``solve``. Per-query timeouts and complete named assignments
+        use the same contract. The process is always terminated on context exit.
         """
-        if not isinstance(formula, SMTFormula):
-            raise TypeError("formula must be an SMTFormula")
+        formula = _as_smt(formula)
         executable = shutil.which(self.executable)
         if executable is None:
             raise FileNotFoundError(f"Z3 executable {self.executable!r} was not found")
@@ -62,10 +62,7 @@ class Z3Solver:
     def solve(self, formula: SMTFormula | CNFFormula) -> SatResult:
         """Solve an SMT formula, accepting CNF at the shared facade boundary."""
 
-        if isinstance(formula, CNFFormula):
-            formula = SMTFormula.from_cnf(formula)
-        if not isinstance(formula, SMTFormula):
-            raise TypeError("formula must be an SMTFormula or CNFFormula")
+        formula = _as_smt(formula)
         executable = shutil.which(self.executable)
         if executable is None:
             raise FileNotFoundError(f"Z3 executable {self.executable!r} was not found")
@@ -103,6 +100,14 @@ class Z3Solver:
         return SatStatus.SATISFIABLE, {name: int(pairs[name] == "true") for name in variables}
 
 
+def _as_smt(formula: SMTFormula | CNFFormula) -> SMTFormula:
+    if isinstance(formula, CNFFormula):
+        return SMTFormula.from_cnf(formula)
+    if not isinstance(formula, SMTFormula):
+        raise TypeError("formula must be an SMTFormula or CNFFormula")
+    return formula
+
+
 class _IncrementalZ3:
     """Private process lifetime; the public representation remains immutable."""
 
@@ -135,6 +140,7 @@ class _IncrementalZ3:
             self.errors.append(line)
 
     def solve(self, formula):
+        formula = _as_smt(formula)
         previous = self.formula
         if (
             formula.variables != previous.variables

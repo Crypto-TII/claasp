@@ -10,6 +10,7 @@ from time import monotonic
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.representations.constraints.sat.cnf import CNFFormula
 from claasp.representations.constraints.sat.exporters import DimacsExporter
+from claasp.representations.constraints.sat.model import _require_plain_cnf
 
 
 class MinisatSolver:
@@ -34,8 +35,7 @@ class MinisatSolver:
     ) -> SatResult:
         """Solve ``formula`` with optional named unit assumptions."""
 
-        if not isinstance(formula, CNFFormula):
-            raise TypeError("formula must be a CNFFormula")
+        _require_plain_cnf(formula)
         executable = self._resolve_executable()
         assumption_clauses = self._assumption_clauses(formula, assumptions or {})
         augmented = CNFFormula(
