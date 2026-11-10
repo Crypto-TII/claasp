@@ -1,7 +1,6 @@
 """Optional external constraint-solver drivers."""
 
 from claasp.drivers.solvers.base import SatResult, SatStatus
-from claasp.drivers.solvers.catalog import SolverCatalog, SolverInfo, solver_catalog
 from claasp.drivers.solvers.cryptominisat import CryptoMiniSatSolver
 from claasp.drivers.solvers.kissat import KissatSolver
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
@@ -15,9 +14,6 @@ from claasp.drivers.solvers.minizinc import (
 from claasp.drivers.solvers.progress import MILPProgressLog, MILPProgressSnapshot
 
 __all__ = [
-    "SolverCatalog",
-    "SolverInfo",
-    "solver_catalog",
     "MILPProgressLog",
     "MILPProgressSnapshot",
     "CPEnumerationResult",

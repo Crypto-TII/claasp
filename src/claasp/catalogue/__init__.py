@@ -11,11 +11,13 @@ from claasp.catalogue.records import (
     PrimitiveRecord,
     RealizationRecord,
     RepresentationRecord,
+    SolverCatalogueResult,
 )
 
 catalogue = Catalogue()
 
 __all__ = [
+    "SolverCatalogueResult",
     "AnalysisRecord",
     "Catalogue",
     "ComponentRecord",

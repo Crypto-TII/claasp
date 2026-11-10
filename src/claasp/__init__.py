@@ -16,7 +16,6 @@ from claasp.drivers.native import (
     compile_native,
     run_compiled,
 )
-from claasp.drivers.solvers.catalog import SolverCatalog, SolverInfo, solver_catalog
 from claasp.drivers.source import (
     SourceExecutionResult,
     SourceExecutionStatus,
@@ -111,9 +110,6 @@ from claasp.transformations import (
 )
 
 __all__ = [
-    "SolverCatalog",
-    "SolverInfo",
-    "solver_catalog",
     "DEFAULT_INVERSE_REGISTRY",
     "AESKeySchedule",
     "AESRound",
