@@ -178,12 +178,26 @@ def enumerate_public_api(source_root: Path = SOURCE_ROOT) -> list[dict[str, Any]
         for defining_class in exported_class.__mro__:
             if defining_class is object or not defining_class.__module__.startswith("claasp"):
                 continue
-            if defining_class is not exported_class and id(defining_class) not in exported_classes:
-                continue
-            class_canonical = _canonical_name(defining_class, defining_class.__name__)
+            private_base = (
+                defining_class is not exported_class and id(defining_class) not in exported_classes
+            )
+            # Public methods inherited from an internal base remain part of the
+            # concrete receiver's API, without exporting the implementation base.
+            class_canonical = (
+                exported_canonical
+                if private_base
+                else _canonical_name(defining_class, defining_class.__name__)
+            )
             for name, value in vars(defining_class).items():
                 if name.startswith("_") and name != "__init__":
                     continue
+                if private_base:
+                    # Internal bases explicitly identify their contractual public
+                    # methods; other implementation helpers stay out of the API.
+                    if name not in vars(defining_class).get("__public_api_methods__", ()):
+                        continue
+                    if inspect.getattr_static(exported_class, name) is not value:
+                        continue
                 kind = _member_kind(name, value)
                 if kind is None:
                     continue
@@ -199,7 +213,9 @@ def enumerate_public_api(source_root: Path = SOURCE_ROOT) -> list[dict[str, Any]
                         "defined_in": defining_class.__module__,
                     },
                 )
-                if defining_class is not exported_class:
+                if private_base:
+                    member_records[qualified_name]["documented_by"] = exported_canonical
+                elif defining_class is not exported_class:
                     inherited_by[qualified_name].add(exported_canonical)
 
         if dataclasses.is_dataclass(exported_class):

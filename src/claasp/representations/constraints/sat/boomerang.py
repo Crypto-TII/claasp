@@ -3,6 +3,7 @@
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.components import Constant, Identity, ModularAdd, Permutation, Rotate, Xor
 from claasp.representations.constraints import (
     ConstraintBackend,
@@ -14,7 +15,7 @@ from claasp.unit_types import Word
 
 
 @dataclass(frozen=True, slots=True)
-class ARXBoomerangTrail:
+class ARXBoomerangTrail(_PlotMixin):
     """Two checked outer characteristics and exact local switch probabilities.
 
     The outer weight excludes the middle switch, as in legacy CLAASP. Neither
@@ -25,6 +26,22 @@ class ARXBoomerangTrail:
 
         >>> ARXBoomerangTrail.__dataclass_params__.frozen
         True
+
+    Plotting
+    ~~~~~~~~
+
+    Upper and lower characteristic weights exclude the middle switch. Local switch probabilities are separate.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> result = ARXBoomerangTrail(t, t, (), 0.0)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     upper: object

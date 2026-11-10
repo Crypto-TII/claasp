@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from hashlib import sha256
 from typing import cast
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.components import (
     Add,
     BinaryAffineMap,
@@ -54,8 +55,23 @@ from claasp.unit_types import BinaryExtensionField, Bit, Word
 
 
 @dataclass(frozen=True, slots=True)
-class WordXorLinearCharacteristic:
-    """Exact component characteristic, not a whole-primitive linear hull."""
+class WordXorLinearCharacteristic(_PlotMixin):
+    """Exact component characteristic, not a whole-primitive linear hull.
+
+    Plotting
+    ~~~~~~~~
+
+    Weights use absolute correlation, not squared correlation. The correlation sign stays in the report.
+
+    EXAMPLES::
+
+        >>> result = WordXorLinearCharacteristic((('plaintext', 1),), 1, (), -1, ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
+    """
 
     input_masks: tuple[tuple[str, int], ...]
     output_mask: int
@@ -89,8 +105,23 @@ class WordXorLinearCharacteristic:
 
 
 @dataclass(frozen=True, slots=True)
-class WordXorLinearEnumeration:
-    """Enumeration is proof-complete only after terminal solver UNSAT."""
+class WordXorLinearEnumeration(_PlotMixin):
+    """Enumeration is proof-complete only after terminal solver UNSAT.
+
+    Plotting
+    ~~~~~~~~
+
+    Weights use absolute correlation per retained characteristic, not an aggregated hull.
+
+    EXAMPLES::
+
+        >>> result = WordXorLinearEnumeration((), False, 0.0)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
+    """
 
     trails: tuple[WordXorLinearCharacteristic, ...]
     complete: bool
