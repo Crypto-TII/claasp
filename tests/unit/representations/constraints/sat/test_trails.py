@@ -32,9 +32,10 @@ from claasp.semantics.cryptanalysis import TruncatedXorDifference
 from claasp.unit_types import Word
 
 
-def _primitive(component):
+def _primitive(component, width=2):
     primitive = Primitive(
-        "boolean_word", {"left": UnitArrayType(Word(2), (1,)), "key": UnitArrayType(Word(2), (1,))}
+        "boolean_word",
+        {"left": UnitArrayType(Word(width), (1,)), "key": UnitArrayType(Word(width), (1,))},
     )
     primitive._builder.add_round()
     output = primitive._builder.add_component(
@@ -469,7 +470,8 @@ def test_bitwise_binary_field_linear_maps_cover_concrete_differences(pattern, ma
     "component_name", ("ModularAdd", "ModularSubtract", "BitwiseAnd", "BitwiseOr")
 )
 @pytest.mark.skipif(shutil.which("kissat") is None, reason="requires Kissat")
-def test_wordwise_elementary_sat_matches_independent_transfers(component_name):
+@pytest.mark.parametrize("width", (1, 2))
+def test_wordwise_elementary_sat_matches_independent_transfers(component_name, width):
     from itertools import product
 
     from claasp import components
@@ -479,13 +481,17 @@ def test_wordwise_elementary_sat_matches_independent_transfers(component_name):
     from claasp.semantics.cryptanalysis import WordwiseXorDifference as Difference
     from claasp.semantics.cryptanalysis._wordwise_operations import _boolean, _modular
 
-    primitive = _primitive(getattr(components, component_name))
-    abstract = (
-        Difference(2, Kind.ZERO),
-        Difference.known(2, 1),
-        Difference.known(2, 3),
-        Difference(2, Kind.NONZERO),
-        Difference(2, Kind.UNKNOWN),
+    primitive = _primitive(getattr(components, component_name), width)
+    abstract = tuple(
+        dict.fromkeys(
+            (
+                Difference(width, Kind.ZERO),
+                Difference.known(width, 1),
+                Difference.known(width, (1 << width) - 1),
+                Difference(width, Kind.NONZERO),
+                Difference(width, Kind.UNKNOWN),
+            )
+        )
     )
     transfer = _modular if component_name.startswith("Modular") else _boolean
     for left, right in product(abstract, repeat=2):
@@ -496,9 +502,11 @@ def test_wordwise_elementary_sat_matches_independent_transfers(component_name):
         trail = model.decode_characteristic(solved.assignment)
         assert trail.output_differences == (transfer((left, right)),)
         assert model.check_characteristic(trail)
-        assert not model.check_characteristic(
-            replace(trail, output_differences=(Difference.known(2, 2),))
+        wrong = Difference(
+            width,
+            Kind.UNKNOWN if trail.output_differences[0].kind is not Kind.UNKNOWN else Kind.ZERO,
         )
+        assert not model.check_characteristic(replace(trail, output_differences=(wrong,)))
 
 
 @pytest.mark.parametrize("kind", ("ZERO", "KNOWN", "NONZERO", "UNKNOWN"))
@@ -572,3 +580,34 @@ def test_wordwise_checker_rejects_corrupted_conversion_payload():
     )
     bad[name] = 1
     assert not model.check_characteristic(replace(trail, semantic_assignment=tuple(bad.items())))
+
+
+@pytest.mark.skipif(shutil.which("kissat") is None, reason="requires Kissat")
+def test_wordwise_pack_sat_covers_all_mixed_abstract_bit_patterns():
+    from itertools import product
+
+    from claasp.components import Identity
+    from claasp.drivers.solvers import KissatSolver
+    from claasp.representations.constraints.sat import WordwiseDeterministicTruncatedSATModel
+    from claasp.semantics.cryptanalysis import WordwiseDifferenceKind as Kind
+    from claasp.semantics.cryptanalysis import WordwiseXorDifference as Difference
+    from claasp.semantics.cryptanalysis._wordwise_operations import _pack
+    from claasp.unit_types import Bit
+
+    p = Primitive("pack_bits", {"input": UnitArrayType(Bit(), (3,))})
+    p._builder.add_round()
+    packed = p._builder.pack_bits(p.graph.input("input"), 3)
+    p._builder.set_output(p._builder.add_component(Identity(packed)))
+    bits = (
+        Difference(1, Kind.ZERO),
+        Difference.known(1, 1),
+        Difference(1, Kind.NONZERO),
+        Difference(1, Kind.UNKNOWN),
+    )
+    for pattern in product(bits, repeat=3):
+        model = WordwiseDeterministicTruncatedSATModel(
+            p, fixed_input_differences={"input": pattern}
+        )
+        solved = KissatSolver().solve(model.cnf_formula())
+        trail = model.decode_characteristic(solved.assignment)
+        assert trail.output_differences == (_pack(pattern, 3),)
