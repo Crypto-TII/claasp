@@ -1,7 +1,7 @@
 """Word-graph differential characteristics, including related-key paths."""
 
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from hashlib import sha256
 
@@ -27,6 +27,7 @@ from claasp.components import (
 from claasp.drivers.solvers import SatStatus
 from claasp.graph import GraphPropagation
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints._propagation import component_applications
 from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt._probability_encoding import (
@@ -78,23 +79,41 @@ class WordXorDifferentialCharacteristic(_PlotMixin):
     output_difference: int
     steps: tuple[TrailStep, ...]
     semantic_assignment: tuple[tuple[str, int], ...]
+    input_widths: tuple[tuple[str, int], ...] = ()
+    output_width: int | None = None
 
     @property
     def total_weight(self):
         return sum(step.transition.weight for step in self.steps)
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
-            >>> callable(WordXorDifferentialCharacteristic.to_terminal)
+            >>> from io import StringIO
+            >>> result = WordXorDifferentialCharacteristic((('plaintext', 1),), 2, (), ())
+            >>> output = StringIO()
+            >>> result.to_terminal(value_format="binary", file=output)
+            >>> 'plaintext=0b1' in output.getvalue()
+            True
+            >>> output = StringIO()
+            >>> result.to_terminal(details=True, value_format="underscore_one", file=output)
+            >>> '1_' in output.getvalue()
             True
         """
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import characteristic_section
 
-        to_terminal(characteristic_section(self, linear=False, details=details), file=file)
+        to_terminal(
+            characteristic_section(self, linear=False, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,8 +164,13 @@ class WordXorDifferentialEnumeration(_PlotMixin):
             total += probability
         return total
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
@@ -160,7 +184,10 @@ class WordXorDifferentialEnumeration(_PlotMixin):
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import enumeration_section
 
-        to_terminal(enumeration_section(self, linear=False, details=details), file=file)
+        to_terminal(
+            enumeration_section(self, linear=False, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 class WordXorDifferentialSMTModel:
@@ -663,6 +690,11 @@ class WordXorDifferentialSMTModel:
             _packed(self._output, assignment),
             self._steps_and_wiring(assignment),
             tuple((name, assignment[name]) for name in self._semantic_names),
+            tuple(
+                (name, item.array_type.unit_count * item.array_type.unit_type.encoded_bit_size)
+                for name, item in self.primitive.graph.input_arrays.items()
+            ),
+            len(self._output),
         )
         if not self.check_characteristic(result):
             raise ValueError("word differential witness violates exact graph semantics")
@@ -705,7 +737,7 @@ class WordXorDifferentialSMTModel:
 
         if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
             raise ValueError("limit must be a positive integer")
-        formula = self.smt_formula()
+        formula = self.smt_formula().to_cnf()
         metadata = (
             ("primitive", self.primitive.family_name),
             ("weight_interval", repr(self._weight_interval)),
@@ -749,18 +781,21 @@ class WordXorDifferentialSMTModel:
         )
         with context as execution:
             while True:
-                current = SMTFormula(
-                    formula.variables,
-                    formula.assertions + tuple(blocks),
-                    formula.provenance + ("characteristic_block",) * len(blocks),
+                current = replace(
+                    formula,
+                    clauses=formula.clauses + tuple(blocks),
+                    provenance=formula.provenance + ("characteristic_block",) * len(blocks),
                 )
                 result = execution.solve(current)
                 runtime += result.runtime_seconds
                 if result.status is SatStatus.UNSATISFIABLE:
                     return WordXorDifferentialEnumeration(tuple(trails), True, runtime, metadata)
-                if result.status is not SatStatus.SATISFIABLE or len(trails) == limit:
+                if result.status is not SatStatus.SATISFIABLE:
                     return WordXorDifferentialEnumeration(tuple(trails), False, runtime, metadata)
-                trail = self.decode_characteristic(result.assignment)
+                assignment = _checked_assignment(current, result)
+                if len(trails) == limit:
+                    return WordXorDifferentialEnumeration(tuple(trails), False, runtime, metadata)
+                trail = self.decode_characteristic(assignment)
                 trails.append(trail)
                 blocks.append(
                     tuple(

@@ -451,8 +451,13 @@ class TrailSearchResult:
         """Return whether the trail meets the claimed lower bound."""
         return self.trail.total_weight == self.lower_bound
 
-    def to_terminal(self, *, details: bool = False, file: TextIO | None = None) -> None:
+    def to_terminal(
+        self, *, details: bool = False, value_format="hex", file: TextIO | None = None
+    ) -> None:
         """Display round differences, or the full component evidence on request.
+
+        Use ``value_format="binary"`` for width-preserving ``0b`` values or
+        ``"underscore_one"`` for zeros shown as underscores, in either view.
 
         Presentation is imported only when this convenience method is called;
         producing and checking the typed result remain independent of a
@@ -476,7 +481,7 @@ class TrailSearchResult:
         from claasp.presentation import trail_section
         from claasp.presentation._terminal import to_terminal
 
-        to_terminal(trail_section(self, details=details), file=file)
+        to_terminal(trail_section(self, details=details, value_format=value_format), file=file)
 
     def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
         """Plot relative and cumulative trail weight against round number.

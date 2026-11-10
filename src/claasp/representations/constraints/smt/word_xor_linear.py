@@ -1,7 +1,7 @@
 """Whole-word graph linear characteristics, including key-schedule fanout."""
 
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from hashlib import sha256
 from typing import cast
 
@@ -27,6 +27,7 @@ from claasp.components import (
 from claasp.drivers.solvers import SatStatus
 from claasp.graph import GraphPropagation
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints._propagation import component_applications
 from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt._probability_encoding import (
@@ -78,6 +79,8 @@ class WordXorLinearCharacteristic(_PlotMixin):
     steps: tuple[TrailStep, ...]
     constant_sign: int
     semantic_assignment: tuple[tuple[str, int], ...]
+    input_widths: tuple[tuple[str, int], ...] = ()
+    output_width: int | None = None
 
     @property
     def total_weight(self):
@@ -90,18 +93,34 @@ class WordXorLinearCharacteristic(_PlotMixin):
             result *= step.transition.sign
         return result
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
-            >>> callable(WordXorLinearCharacteristic.to_terminal)
+            >>> from io import StringIO
+            >>> result = WordXorLinearCharacteristic((('plaintext', 1),), 2, (), -1, ())
+            >>> output = StringIO()
+            >>> result.to_terminal(value_format="binary", file=output)
+            >>> 'plaintext=0b1' in output.getvalue()
+            True
+            >>> output = StringIO()
+            >>> result.to_terminal(details=True, value_format="underscore_one", file=output)
+            >>> '1_' in output.getvalue()
             True
         """
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import characteristic_section
 
-        to_terminal(characteristic_section(self, linear=True, details=details), file=file)
+        to_terminal(
+            characteristic_section(self, linear=True, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,8 +152,13 @@ class WordXorLinearEnumeration(_PlotMixin):
             raise RuntimeError("linear characteristic enumeration is incomplete")
         return self
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
@@ -148,7 +172,10 @@ class WordXorLinearEnumeration(_PlotMixin):
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import enumeration_section
 
-        to_terminal(enumeration_section(self, linear=True, details=details), file=file)
+        to_terminal(
+            enumeration_section(self, linear=True, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 class WordXorLinearSMTModel:
@@ -657,6 +684,11 @@ class WordXorLinearSMTModel:
             tuple(steps),
             constant_sign,
             tuple((name, assignment[name]) for name in self._semantic_names),
+            tuple(
+                (name, item.array_type.unit_count * item.array_type.unit_type.encoded_bit_size)
+                for name, item in self.primitive.graph.input_arrays.items()
+            ),
+            len(self._output),
         )
         if not _within_interval(result.steps, self._weight_interval):
             raise ValueError("word linear witness exceeds weight bound")
@@ -894,7 +926,7 @@ class WordXorLinearSMTModel:
         """Block semantic assignments, excluding auxiliary counter multiplicity."""
         if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
             raise ValueError("limit must be a positive integer")
-        formula = self.smt_formula()
+        formula = self.smt_formula().to_cnf()
         metadata = (
             ("primitive", self.primitive.family_name),
             ("weight_interval", repr(self._weight_interval)),
@@ -939,10 +971,10 @@ class WordXorLinearSMTModel:
         )
         with context as execution:
             while True:
-                current = SMTFormula(
-                    formula.variables,
-                    formula.assertions + tuple(blocks),
-                    formula.provenance + ("characteristic_block",) * len(blocks),
+                current = replace(
+                    formula,
+                    clauses=formula.clauses + tuple(blocks),
+                    provenance=formula.provenance + ("characteristic_block",) * len(blocks),
                 )
                 result = execution.solve(current)
                 runtime += result.runtime_seconds
@@ -950,9 +982,10 @@ class WordXorLinearSMTModel:
                     return WordXorLinearEnumeration(tuple(trails), True, runtime, metadata)
                 if result.status is not SatStatus.SATISFIABLE:
                     return WordXorLinearEnumeration(tuple(trails), False, runtime, metadata)
+                assignment = _checked_assignment(current, result)
                 if len(trails) == limit:
                     return WordXorLinearEnumeration(tuple(trails), False, runtime, metadata)
-                trail = self.decode_characteristic(result.assignment)
+                trail = self.decode_characteristic(assignment)
                 trails.append(trail)
                 blocks.append(
                     tuple(

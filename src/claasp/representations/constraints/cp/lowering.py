@@ -25,10 +25,9 @@ class BooleanMiniZincLowerer:
     def lower(self, formula: CNFFormula) -> MiniZincModel:
         """Return a MiniZinc Boolean model equivalent to ``formula``."""
 
-        from claasp.representations.constraints.sat.model import CNFFormula
+        from claasp.representations.constraints.sat.model import _require_plain_cnf
 
-        if not isinstance(formula, CNFFormula):
-            raise TypeError("formula must be a CNFFormula")
+        _require_plain_cnf(formula)
         encoded = tuple(f"v_{name}" for name in formula.variables)
         declarations = tuple(f"var bool: {name};" for name in encoded)
         constraints = tuple(

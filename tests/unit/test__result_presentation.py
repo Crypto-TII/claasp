@@ -26,7 +26,10 @@ def test_inherited_methods_forward_the_actual_receiver_and_options(monkeypatch, 
         calls.append((receiver, show, save_to))
         return figure
 
-    def terminal(receiver, *, file):
+    terminal_options = []
+
+    def terminal(receiver, *, details, value_format, file):
+        terminal_options.append((details, value_format))
         assert receiver is result
         print(receiver.value, file=file)
 
@@ -38,6 +41,9 @@ def test_inherited_methods_forward_the_actual_receiver_and_options(monkeypatch, 
     output = StringIO()
     assert result.to_terminal(file=output) is None
     assert output.getvalue() == "7\n"
+    assert terminal_options == [(False, "hex")]
+    result.to_terminal(details=True, value_format="binary", file=StringIO())
+    assert terminal_options[-1] == (True, "binary")
     assert result.plot() is figure
     assert calls[-1] == (result, True, None)
 

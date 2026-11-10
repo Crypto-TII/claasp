@@ -161,4 +161,14 @@ class NativeXorCNFFormula(CNFFormula):
         )
 
 
+def _require_plain_cnf(formula: CNFFormula) -> None:
+    """Reject formats whose extra constraints a plain-CNF consumer would lose."""
+    if not isinstance(formula, CNFFormula):
+        raise TypeError("formula must be a CNFFormula")
+    if isinstance(formula, NativeXorCNFFormula) and formula.xor_clauses:
+        raise TypeError(
+            "native XOR clauses require CryptoMiniSatSolver or explicit expanded_cnf() conversion"
+        )
+
+
 __all__ = ["CNFFormula", "NativeXorCNFFormula"]

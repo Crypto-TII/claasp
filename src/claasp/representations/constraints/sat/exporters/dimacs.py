@@ -1,7 +1,7 @@
 """DIMACS serialization of the Boolean CNF representation."""
 
 from claasp.representations.constraints.sat.cnf import CNFFormula
-from claasp.representations.constraints.sat.model import NativeXorCNFFormula
+from claasp.representations.constraints.sat.model import NativeXorCNFFormula, _require_plain_cnf
 
 
 class DimacsExporter:
@@ -18,8 +18,7 @@ class DimacsExporter:
     def export(self, formula: CNFFormula, *, include_variable_map: bool = True) -> str:
         """Return deterministic DIMACS text, optionally with name comments."""
 
-        if not isinstance(formula, CNFFormula):
-            raise TypeError("formula must be a CNFFormula")
+        _require_plain_cnf(formula)
         lines = []
         if include_variable_map:
             lines.extend(f"c {index} {name}" for index, name in enumerate(formula.variables, 1))

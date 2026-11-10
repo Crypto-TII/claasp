@@ -1,6 +1,7 @@
 """Independent word-mask validation and enumeration completeness contracts."""
 
 from dataclasses import replace
+from itertools import product
 
 import pytest
 
@@ -41,12 +42,14 @@ def test_word_mask_witness_and_arithmetic_checker_agree_and_reject_tampering():
 
 def test_path_limit_cannot_be_reported_as_complete():
     model = _xor_model()
-    formula = model.smt_formula()
-    assignment = dict.fromkeys(formula.variables, 1)
 
     class Solver:
         def solve(self, formula):
-            return SatResult(SatStatus.SATISFIABLE, assignment, 0, "", "")
+            for bits in product((0, 1), repeat=len(formula.variables)):
+                assignment = dict(zip(formula.variables, bits))
+                if formula.is_satisfied(assignment):
+                    return SatResult(SatStatus.SATISFIABLE, assignment, 0, "", "")
+            return SatResult(SatStatus.UNSATISFIABLE, None, 0, "", "")
 
     result = model.enumerate_trails(Solver(), limit=1)
     assert not result.complete and len(result.trails) == 1
