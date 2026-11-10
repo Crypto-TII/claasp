@@ -698,8 +698,13 @@ def _boundary_view(forward, backward, contradictions, *, wordwise):
 
 
 def _to_terminal(result, *, details=False, value_format="hex", file=None):
+    from claasp.presentation._impossible import _is_impossible
     from claasp.semantics.cryptanalysis import Trail
 
+    if _is_impossible(result):
+        from claasp.presentation._impossible import _to_terminal as impossible_terminal
+
+        return impossible_terminal(result, details=details, value_format=value_format, file=file)
     if isinstance(result, Trail):
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation.adapters import trail_section

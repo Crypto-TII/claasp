@@ -332,6 +332,13 @@ def slice_primitive(
         for source_id in index.topological_ids
         if source_id in source_unit_arrays
     )
+    # Retain labels from the exact round correspondence. Source-name mappings
+    # alone cannot identify boundaries containing a repacked slice of an input.
+    object.__setattr__(
+        derived,
+        "_source_round_labels",
+        tuple((target.number, number) for number, target in derived_round_by_original.items()),
+    )
     return TransformationResult(derived, source_map)
 
 

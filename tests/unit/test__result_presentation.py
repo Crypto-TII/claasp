@@ -22,8 +22,8 @@ def test_inherited_methods_forward_the_actual_receiver_and_options(monkeypatch, 
     destination = tmp_path / "evidence.png"
     calls = []
 
-    def plot(receiver, *, show, save_to):
-        calls.append((receiver, show, save_to))
+    def plot(receiver, *, details, value_format, show, save_to):
+        calls.append((receiver, show, save_to, details, value_format))
         return figure
 
     terminal_options = []
@@ -36,7 +36,7 @@ def test_inherited_methods_forward_the_actual_receiver_and_options(monkeypatch, 
     monkeypatch.setattr(renderer, "_plot", plot)
     monkeypatch.setattr(presentation, "_to_terminal", terminal)
     assert result.plot(show=False, save_to=destination) is figure
-    assert calls == [(result, False, destination)]
+    assert calls == [(result, False, destination, False, "hex")]
     assert calls[0][0] is result
     output = StringIO()
     assert result.to_terminal(file=output) is None
@@ -45,7 +45,9 @@ def test_inherited_methods_forward_the_actual_receiver_and_options(monkeypatch, 
     result.to_terminal(details=True, value_format="binary", file=StringIO())
     assert terminal_options[-1] == (True, "binary")
     assert result.plot() is figure
-    assert calls[-1] == (result, True, None)
+    assert calls[-1] == (result, True, None, False, "hex")
+    assert result.plot(details=True, value_format="binary", show=False) is figure
+    assert calls[-1] == (result, False, None, True, "binary")
 
 
 def test_mixins_preserve_slotted_frozen_dataclass_storage():

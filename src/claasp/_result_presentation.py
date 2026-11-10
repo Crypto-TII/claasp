@@ -13,11 +13,14 @@ class PlotMixin:
     __slots__ = ()
     __public_api_methods__ = ("plot",)
 
-    def plot(self, *, show=True, save_to=None):
+    def plot(self, *, details=False, value_format="hex", show=True, save_to=None):
         """Plot retained evidence without repeating a search.
 
         Requires the optional ``presentation`` extra. ``show=False`` suppresses
-        display; ``save_to`` writes a file. Returns a ``FigureArtifact`` with
+        display; ``save_to`` writes a file. Impossible-differential results
+        show the retained round path, both meeting states and contradictions;
+        ``details=True`` includes component states and ``value_format`` selects
+        notation for exact word annotations. Returns a ``FigureArtifact`` with
         the figure and numeric series. Result-specific views and examples are
         documented on the result class.
 
@@ -33,7 +36,7 @@ class PlotMixin:
         """
         from claasp.drivers.renderers._search_results import _plot
 
-        return _plot(self, show=show, save_to=save_to)
+        return _plot(self, details=details, value_format=value_format, show=show, save_to=save_to)
 
 
 class TerminalMixin:

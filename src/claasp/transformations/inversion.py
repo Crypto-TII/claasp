@@ -675,6 +675,17 @@ def partial_inverse(
         )
 
     derived._builder.set_output(_assembled(derived, equivalents, target_atoms))
+    # Preserve available original round-state wires without adding graph operations.
+    # The inverse graph has one execution round; original labels are kept separately.
+    object.__setattr__(
+        derived,
+        "_inverse_round_boundaries",
+        tuple(
+            (number, tuple(equivalents[atom] for piece in pieces for atom in _atoms(piece)))
+            for number, pieces in primitive.graph.round_output_boundaries
+            if all(atom in equivalents for piece in pieces for atom in _atoms(piece))
+        ),
+    )
     record = TransformationRecord(
         "partial_inverse",
         (("target", target_selection.source.source_id), ("known", ",".join(boundaries))),

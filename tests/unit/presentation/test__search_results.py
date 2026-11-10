@@ -237,9 +237,26 @@ def test_all_search_result_families_render_retained_evidence(name, tmp_path):
     assert artifact.kind == "search_evidence"
     assert target.read_bytes().startswith(b"\x89PNG\r\n\x1a\n")
     # Compare the figure artists to the returned data, not just method existence.
-    plotted = [tuple(line.get_ydata()) for ax in artifact.figure.axes for line in ax.lines]
-    assert plotted == [values for _, values in artifact.series]
-    assert len(artifact.figure.axes) == max(1, len(_view(result).panels))
+    from claasp.presentation._impossible import _is_impossible
+
+    if _is_impossible(result):
+        import numpy as np
+
+        plotted = [
+            tuple(np.ma.compressed(row))
+            for ax in artifact.figure.axes
+            for image in ax.images
+            for row in image.get_array()
+        ]
+        assert plotted == [
+            values
+            for label, values in artifact.series
+            if not label.endswith(": contradiction positions")
+        ]
+    else:
+        plotted = [tuple(line.get_ydata()) for ax in artifact.figure.axes for line in ax.lines]
+        assert plotted == [values for _, values in artifact.series]
+        assert len(artifact.figure.axes) == max(1, len(_view(result).panels))
 
 
 def _series(result):
@@ -255,16 +272,24 @@ def test_exact_characteristic_weights_and_linear_sign():
 
 
 def test_impossible_contradictions_and_unknown_categories():
-    data = list(_series(_fixtures()["impossible_search"]).values())
+    data = [
+        values
+        for label, values in _series(_fixtures()["impossible_search"]).items()
+        if "meeting state" in label or label.endswith(": contradiction positions")
+    ]
     assert data == [(0.0, 1.0, 2.0), (0.0, 0.0, 2.0), (0.0, 1.0, 0.0)]
     # Both unknown bits are represented explicitly and do not contradict.
     artifact = _fixtures()["impossible_search"].plot(show=False)
-    assert [tick.get_text() for tick in artifact.figure.axes[0].get_yticklabels()] == [
+    assert [tick.get_text() for tick in artifact.figure.axes[-1].get_yticklabels()] == [
         "0",
         "1",
         "?",
     ]
-    data = list(_series(_fixtures()["wordwise_impossible"]).values())
+    data = [
+        values
+        for label, values in _series(_fixtures()["wordwise_impossible"]).items()
+        if "meeting state" in label or label.endswith(": contradiction positions")
+    ]
     assert data == [(1.0, 3.0), (0.0, 3.0), (1.0, 0.0)]
 
 
@@ -454,7 +479,7 @@ def test_multiple_candidates_and_complete_relaxation_keep_labels():
     second = ImpossibleCandidate(2, sample.candidates[0].trail, "bitwise")
     result = ImpossibleSearchResult((*sample.candidates, second), (1, 2), False, "candidate limit")
     artifact = result.plot(show=False)
-    assert len(artifact.series) == 6
+    assert sum(label.endswith(": contradiction positions") for label, _ in artifact.series) == 2
     assert "middle round 2" in artifact.series[-1][0]
     bound = ActiveSBoxResult("optimal", 5, True)
     assert "proved lower bound" in _view(bound).panels[0].labels

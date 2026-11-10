@@ -1883,6 +1883,9 @@ class WordImpossibleSATTrail(_TerminalMixin, _PlotMixin):
     backward: WordDeterministicTruncatedCharacteristic
     boundary: ImpossiblePropagationBoundary
     semantic_assignment: tuple[tuple[str, int], ...]
+    middle_round: int | None = None
+    forward_rounds: tuple[tuple[int, TruncatedXorDifference], ...] = ()
+    backward_rounds: tuple[tuple[int, TruncatedXorDifference], ...] = ()
 
 
 SpeckImpossibleSATTrail = WordImpossibleSATTrail
@@ -1995,8 +1998,17 @@ class WordImpossibleSATModel:
         self.middle_round = middle_round
         self.active_input = active_input
         self.zero_difference_inputs = zero_difference_inputs
-        prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
-        suffix = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1).primitive
+        from claasp.representations.constraints.sat._impossible_observations import _round_labels
+
+        prefix_slice = slice_rounds(primitive, 0, middle_round - 1)
+        suffix_slice = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1)
+        prefix, suffix = prefix_slice.primitive, suffix_slice.primitive
+        self._forward_round_labels = _round_labels(
+            primitive, prefix_slice, start=0, stop=middle_round
+        )
+        self._backward_round_labels = _round_labels(
+            primitive, suffix_slice, start=middle_round, stop=len(primitive.graph.rounds)
+        )
         inverse = invert_primitive(
             suffix,
             recover_input="state",
@@ -2129,11 +2141,30 @@ class WordImpossibleSATModel:
         expected = ImpossiblePropagationBoundary(forward.output_pattern, backward.output_pattern)
         if boundary != expected or not boundary.is_impossible:
             raise ValueError("decoded directional trails do not form an impossible boundary")
+        from claasp.representations.constraints.sat._impossible_observations import _decode_rounds
+
+        forward_assignment = {
+            name: assignment[mapped] for name, mapped in self._forward_map.items()
+        }
+        backward_assignment = {
+            name: assignment[mapped] for name, mapped in self._backward_map.items()
+        }
         return WordImpossibleSATTrail(
             forward,
             backward,
             boundary,
             tuple((name, int(bool(assignment[name]))) for name in self._formula.variables),
+            self.middle_round,
+            _decode_rounds(
+                self.forward_model, forward_assignment, self._forward_round_labels, wordwise=False
+            ),
+            _decode_rounds(
+                self.backward_model,
+                backward_assignment,
+                self._backward_round_labels,
+                inverse=True,
+                wordwise=False,
+            ),
         )
 
 
@@ -2259,6 +2290,9 @@ class WordwiseImpossibleSATTrail(_TerminalMixin, _PlotMixin):
     backward: WordwiseDeterministicTruncatedCharacteristic
     middle: WordwiseImpossibleMiddle
     semantic_assignment: tuple[tuple[str, int], ...]
+    middle_round: int | None = None
+    forward_rounds: tuple[tuple[int, tuple[WordwiseXorDifference, ...]], ...] = ()
+    backward_rounds: tuple[tuple[int, tuple[WordwiseXorDifference, ...]], ...] = ()
 
 
 class WordwiseImpossibleSATModel:
@@ -2313,8 +2347,17 @@ class WordwiseImpossibleSATModel:
         self.middle_round = middle_round
         self.active_input = active_input
         self.zero_difference_inputs = zero_difference_inputs
-        prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
-        suffix = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1).primitive
+        from claasp.representations.constraints.sat._impossible_observations import _round_labels
+
+        prefix_slice = slice_rounds(primitive, 0, middle_round - 1)
+        suffix_slice = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1)
+        prefix, suffix = prefix_slice.primitive, suffix_slice.primitive
+        self._forward_round_labels = _round_labels(
+            primitive, prefix_slice, start=0, stop=middle_round
+        )
+        self._backward_round_labels = _round_labels(
+            primitive, suffix_slice, start=middle_round, stop=len(primitive.graph.rounds)
+        )
         inverse = invert_primitive(
             suffix,
             recover_input="state",
@@ -2455,11 +2498,30 @@ class WordwiseImpossibleSATModel:
             or (forward_state, backward_state) not in self._INCOMPATIBLE
         ):
             raise ValueError("selected wordwise middle pair is not contradictory")
+        from claasp.representations.constraints.sat._impossible_observations import _decode_rounds
+
+        forward_assignment = {
+            name: assignment[mapped] for name, mapped in self._forward_map.items()
+        }
+        backward_assignment = {
+            name: assignment[mapped] for name, mapped in self._backward_map.items()
+        }
         return WordwiseImpossibleSATTrail(
             forward,
             backward,
             WordwiseImpossibleMiddle(forward_states, backward_states, (position,)),
             tuple((name, int(bool(assignment[name]))) for name in self._formula.variables),
+            self.middle_round,
+            _decode_rounds(
+                self.forward_model, forward_assignment, self._forward_round_labels, wordwise=True
+            ),
+            _decode_rounds(
+                self.backward_model,
+                backward_assignment,
+                self._backward_round_labels,
+                inverse=True,
+                wordwise=True,
+            ),
         )
 
 

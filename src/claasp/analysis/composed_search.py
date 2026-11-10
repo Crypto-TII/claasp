@@ -35,7 +35,39 @@ class ImpossibleSearchResult(_TerminalMixin, _PlotMixin):
     Terminal reporting
     ~~~~~~~~~~~~~~~~~~
 
-    Print candidate boundaries, contradiction positions, and search status.
+    Print the full retained forward/backward round trail in a single difference
+    column. The middle boundary appears twice, once per direction; ``!`` marks
+    contradictory bit/word positions in both rows. ``details=True`` adds component
+    evidence. ``value_format="binary"`` uses MSB-first ``0b`` patterns;
+    ``"underscore_one"`` prints zero as ``_``. Unknown ``?`` and abstract nonzero
+    words ``*`` remain distinct from exact values. Graph boundary labels match
+    ``middle_round`` (for AES these include the initial key/round graph offset).
+
+    Requires Kissat for this runnable end-to-end example::
+
+        >>> from claasp.primitives import Speck
+        >>> result = Speck(number_of_rounds=6).analysis.search_impossible_differentials()  # doctest: +SKIP
+        >>> result.to_terminal(value_format="underscore_one")  # doctest: +SKIP
+        >>> result.to_terminal(details=True, value_format="binary")  # doctest: +SKIP
+        >>> figure = result.plot(show=False, save_to="impossible.png")  # doctest: +SKIP
+
+    Presentation also works without a solver from already retained evidence::
+
+        >>> from claasp.representations.constraints.sat import WordImpossibleSATTrail
+        >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+        >>> boundary = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+        >>> witness = WordImpossibleSATTrail(None, None, boundary, (), middle_round=2)
+        >>> result = ImpossibleSearchResult((ImpossibleCandidate(2, witness, 'bitwise'),), (2,), False, 'candidate limit')
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(value_format="underscore_one", file=output)
+        >>> '_1?' in output.getvalue(), output.getvalue().count('.!.')
+        (True, 2)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.series[-1][1]
+        (0.0, 1.0, 0.0)
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
 
     EXAMPLES::
 
