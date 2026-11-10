@@ -25,6 +25,7 @@ from sage.arith.misc import is_power_of_two
 from sage.crypto.sbox import SBox
 from claasp.cipher_modules.models.smt.utils import utils
 from claasp.cipher_modules.models.smt.utils.utils import (
+    check_qdt_feasibility,
     deinterleave_qdt_matrix,
     generate_weight_tables,
     quasidifferential_transition_matrix,
@@ -2537,6 +2538,11 @@ class Sbox(Component):
         A transition is allowed if the corresponding QDT coefficient is
         non-zero.
 
+        The model holds a weight as a whole number, so a differential
+        holding a coefficient that is not a power of two is refused. Only
+        the differential the characteristic selects is checked, or the
+        whole table when it selects none.
+
         INPUT:
 
         - ``model`` -- **model object**; a ``SmtXorQuasidifferentialModel`` instance
@@ -2609,6 +2615,16 @@ class Sbox(Component):
         # An S-box the characteristic leaves undecided keeps its whole table.
         if self.id in model.sbox_differences:
             a_fixed, b_fixed = model.sbox_differences[self.id]
+            # The characteristic picks one differential, and only its block of
+            # the QDT goes into the model, so only that block has to be
+            # encodable. The check comes before the filter below, or else a
+            # differential the model cannot weight would look like one that
+            # cannot happen.
+            rows, columns = 2**self.output_bit_size, 2**self.input_bit_size
+            block = model.sboxes_qdt_matrices[cache_key][
+                rows * b_fixed : rows * (b_fixed + 1), columns * a_fixed : columns * (a_fixed + 1)
+            ]
+            check_qdt_feasibility(block)
             transitions = [
                 transition
                 for transition in transitions
@@ -2620,6 +2636,10 @@ class Sbox(Component):
                     f"{a_fixed:#x} -> {b_fixed:#x} has no quasidifferential "
                     f"transition, so the characteristic is impossible"
                 )
+        else:
+            # Nothing fixes the differences, so the whole table is written out
+            # and all of it has to be encodable.
+            check_qdt_feasibility(model.sboxes_qdt_matrices[cache_key])
 
         max_weight = max(transition["weight"] for transition in transitions)
         weight_bit_ids = model._qdt_local_weight_variables(self, max_weight)
