@@ -46,6 +46,9 @@ def test_review_workflows_accept_review_and_stack_bases():
         "feat/fractional-trail-queries",
         "feat/boolean-algebraic-systems",
         "feat/monomial-analysis-workflows",
+        "feat/trail-constraints",
+        "fix/aes-impossible",
+        "fix/published-round-boundaries",
     }
     for workflow in (QUALITY, RELEASE_IMAGE):
         # Restrict the check to pull-request routing, excluding push branches
