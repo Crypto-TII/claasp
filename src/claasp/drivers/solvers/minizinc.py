@@ -12,7 +12,10 @@ from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
+from typing import overload
 
+from claasp.drivers.solvers.base import SatResult, SatStatus
+from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints.cp import MiniZincModel
 from claasp.representations.constraints.sat import CNFFormula
 
@@ -120,13 +123,40 @@ class MiniZincSolver:
         self.executable = executable
         self.timeout_seconds = timeout_seconds
 
-    def solve(self, model: MiniZincModel | CNFFormula) -> CPResult:
-        """Run a MiniZinc or portable CNF representation."""
+    @overload
+    def solve(self, model: MiniZincModel) -> CPResult: ...
+
+    @overload
+    def solve(self, model: CNFFormula) -> SatResult: ...
+
+    def solve(self, model: MiniZincModel | CNFFormula) -> CPResult | SatResult:
+        """Run a native CP model or return a checked SAT result for CNF.
+
+        Native MiniZinc models retain ``CPResult`` and ``CPStatus``. Portable
+        Boolean queries use ``SatResult`` and ``SatStatus`` consistently with
+        the SAT, SMT and MILP solver adapters. Unknown outcomes never establish
+        Boolean infeasibility.
+        """
 
         if isinstance(model, CNFFormula):
             from claasp.representations.constraints.cp import BooleanMiniZincLowerer
 
-            model = BooleanMiniZincLowerer().lower(model)
+            solved = self.solve(BooleanMiniZincLowerer().lower(model))
+            if solved.status is CPStatus.UNKNOWN:
+                raise RuntimeError("MiniZinc returned unknown; Boolean infeasibility is not proved")
+            boolean_status = (
+                SatStatus.SATISFIABLE
+                if solved.status is CPStatus.SATISFIED
+                else SatStatus.UNSATISFIABLE
+            )
+            assignment = (
+                _checked_assignment(model, solved)
+                if boolean_status is SatStatus.SATISFIABLE
+                else None
+            )
+            return SatResult(
+                boolean_status, assignment, solved.runtime_seconds, solved.stdout, solved.stderr
+            )
         if not isinstance(model, MiniZincModel):
             raise TypeError("model must be a MiniZincModel or CNFFormula")
         executable = shutil.which(self.executable)

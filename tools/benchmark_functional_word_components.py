@@ -7,6 +7,7 @@ import platform
 import sys
 from pathlib import Path
 from statistics import median
+from typing import Any
 
 from claasp import PrimitiveBuilder, UnitArrayType
 from claasp.components import (
@@ -26,7 +27,7 @@ from claasp.drivers.solvers import (
     SatStatus,
     Z3Solver,
 )
-from claasp.representations.constraints.cp import BooleanMiniZincLowerer
+from claasp.representations.constraints.cp import BooleanMiniZincLowerer, MiniZincModel
 from claasp.representations.constraints.milp import BooleanGraphMILPModel
 from claasp.representations.constraints.sat import BooleanCNFModel
 from claasp.representations.constraints.smt import BooleanSMTModel
@@ -90,7 +91,12 @@ def main():
     )
     rows = []
     for backend, solver, formulation, expected in workloads:
-        results = [solver.solve(formulation) for _ in range(args.repeats)]
+        results: list[Any]
+        if isinstance(solver, MiniZincSolver):
+            assert isinstance(formulation, MiniZincModel)
+            results = [solver.solve(formulation) for _ in range(args.repeats)]
+        else:
+            results = [solver.solve(formulation) for _ in range(args.repeats)]
         valid = all(
             (result.is_feasible and formulation.is_feasible(result.assignment))
             if backend == "MILP"
