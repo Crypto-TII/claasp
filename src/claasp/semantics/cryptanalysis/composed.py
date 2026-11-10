@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from math import log2
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.semantics.cryptanalysis.trails import Trail, TrailKind, XorDifference
 from claasp.semantics.cryptanalysis.truncated import ProbabilisticTruncatedTrail
 
@@ -294,7 +296,7 @@ class BoomerangSwitchBoundary:
 
 
 @dataclass(frozen=True, slots=True)
-class BoomerangTrail:
+class BoomerangTrail(_TerminalMixin, _PlotMixin):
     """Two differential trails joined by an explicit switch boundary.
 
     EXAMPLES::
@@ -306,6 +308,42 @@ class BoomerangTrail:
         ...     XorDifference(0, 2), XorDifference(3, 2), 1.5)
         >>> BoomerangTrail(upper, switch, lower).total_weight
         1.5
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The model exponent is twice each outer weight plus the switch weight.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, BoomerangSwitchBoundary
+        >>> t = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+        >>> d = XorDifference(0, 1)
+        >>> switch = BoomerangSwitchBoundary(d, d, d, d, 1.)
+        >>> result = BoomerangTrail(t, switch, t)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The model exponent is twice each outer weight plus the switch weight.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, BoomerangSwitchBoundary
+        >>> t = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+        >>> d = XorDifference(0, 1)
+        >>> switch = BoomerangSwitchBoundary(d, d, d, d, 1.)
+        >>> result = BoomerangTrail(t, switch, t)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     upper: Trail
@@ -330,7 +368,7 @@ class BoomerangTrail:
 
 
 @dataclass(frozen=True, slots=True)
-class XorDifferentialLinearTrail:
+class XorDifferentialLinearTrail(_TerminalMixin, _PlotMixin):
     """Differential prefix, probabilistic connector, and linear suffix.
 
     EXAMPLES::
@@ -342,6 +380,44 @@ class XorDifferentialLinearTrail:
         ...     TruncatedXorDifference.parse("00"), TruncatedXorDifference.parse("??"), ())
         >>> XorDifferentialLinearTrail(differential, connector, linear).total_weight
         0.0
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The connector contribution is log2(2^(r+1)-1), rather than a plain middle weight.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, XorMask, ProbabilisticTruncatedTrail, TruncatedXorDifference
+        >>> d = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+        >>> l = Trail(TrailKind.XOR_LINEAR, XorMask(0, 1), XorMask(0, 1), ())
+        >>> p = TruncatedXorDifference.parse('0')
+        >>> connector = ProbabilisticTruncatedTrail(p, p, ())
+        >>> result = XorDifferentialLinearTrail(d, connector, l)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The connector contribution is log2(2^(r+1)-1), rather than a plain middle weight.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference, XorMask, ProbabilisticTruncatedTrail, TruncatedXorDifference
+        >>> d = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(0, 1), XorDifference(0, 1), ())
+        >>> l = Trail(TrailKind.XOR_LINEAR, XorMask(0, 1), XorMask(0, 1), ())
+        >>> p = TruncatedXorDifference.parse('0')
+        >>> connector = ProbabilisticTruncatedTrail(p, p, ())
+        >>> result = XorDifferentialLinearTrail(d, connector, l)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     differential: Trail

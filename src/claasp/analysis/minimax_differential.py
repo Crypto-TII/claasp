@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from subprocess import TimeoutExpired
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.drivers.solvers import Z3Solver
 from claasp.representations.constraints.sat.partitioned_differential import (
     KeyScheduleMinimaxSATModel,
@@ -11,13 +12,27 @@ from claasp.representations.constraints.sat.partitioned_differential import (
 
 
 @dataclass(frozen=True, slots=True)
-class MinimaxDifferentialResult:
+class MinimaxDifferentialResult(_PlotMixin):
     """A checked candidate and explicit optimization completion status.
 
     EXAMPLES::
 
         >>> MinimaxDifferentialResult('unknown').is_optimal
         False
+
+    Plotting
+    ~~~~~~~~
+
+    Key-schedule and data-path weights are shown separately; their maximum is the objective.
+
+    EXAMPLES::
+
+        >>> result = MinimaxDifferentialResult('unknown', diagnostic='solver timeout')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     status: str

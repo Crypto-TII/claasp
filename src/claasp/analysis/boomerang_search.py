@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from enum import Enum
 from subprocess import TimeoutExpired
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.drivers.solvers import Z3Solver
 from claasp.representations.constraints.sat.boomerang import ARXBoomerangTrail, BoomerangSATModel
 
@@ -23,7 +24,7 @@ class BoomerangSearchStatus(str, Enum):
 
 
 @dataclass(frozen=True, slots=True)
-class BoomerangSearchResult:
+class BoomerangSearchResult(_PlotMixin):
     """Search completion within the explicitly restricted characteristic model.
 
     UNSAT means no characteristic in this model, not absence of a boomerang
@@ -33,6 +34,20 @@ class BoomerangSearchResult:
 
         >>> BoomerangSearchResult(BoomerangSearchStatus.UNKNOWN).is_optimal
         False
+
+    Plotting
+    ~~~~~~~~
+
+    Outer weights exclude the switch; local switch probabilities are labelled separately.
+
+    EXAMPLES::
+
+        >>> result = BoomerangSearchResult(BoomerangSearchStatus.UNKNOWN)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     status: BoomerangSearchStatus
