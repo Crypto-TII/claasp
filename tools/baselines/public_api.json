@@ -643,6 +643,12 @@
       "qualified_name": "claasp.analysis.ComponentTableResult"
     },
     {
+      "canonical_name": "claasp.analysis.constraints.Constraints",
+      "defined_in": "claasp.analysis.constraints",
+      "kind": "class",
+      "qualified_name": "claasp.analysis.Constraints"
+    },
+    {
       "canonical_name": "claasp.analysis.continuous_differential.ContinuousCorrelationResult",
       "defined_in": "claasp.analysis.continuous_differential",
       "kind": "dataclass",
@@ -3817,6 +3823,43 @@
       "documented_by": "claasp.analysis.composed_search.XorDifferentialLinearSearchResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.analysis.composed_search.XorDifferentialLinearSearchResult.trail"
+    },
+    {
+      "canonical_name": "claasp.analysis.constraints.Constraints.__init__",
+      "defined_in": "claasp.analysis.constraints",
+      "documented_by": "claasp.analysis.constraints.Constraints",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.constraints.Constraints.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.constraints.Constraints.equal",
+      "defined_in": "claasp.analysis.constraints",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.constraints.Constraints.equal"
+    },
+    {
+      "canonical_name": "claasp.analysis.constraints.Constraints.hamming_weight",
+      "defined_in": "claasp.analysis.constraints",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.constraints.Constraints.hamming_weight"
+    },
+    {
+      "canonical_name": "claasp.analysis.constraints.Constraints.nonzero",
+      "defined_in": "claasp.analysis.constraints",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.constraints.Constraints.nonzero"
+    },
+    {
+      "canonical_name": "claasp.analysis.constraints.Constraints.not_equal",
+      "defined_in": "claasp.analysis.constraints",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.constraints.Constraints.not_equal"
+    },
+    {
+      "canonical_name": "claasp.analysis.constraints.Constraints.zero",
+      "defined_in": "claasp.analysis.constraints",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.constraints.Constraints.zero"
     },
     {
       "canonical_name": "claasp.analysis.constraints.Equal.__init__",
@@ -35664,6 +35707,13 @@
       "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
       "kind": "dataclass_field",
       "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.constraint_models"
+    },
+    {
+      "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.input_patterns",
+      "defined_in": "claasp.semantics.cryptanalysis.trails",
+      "documented_by": "claasp.semantics.cryptanalysis.trails.TrailSearchResult",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.input_patterns"
     },
     {
       "canonical_name": "claasp.semantics.cryptanalysis.trails.TrailSearchResult.is_optimal",

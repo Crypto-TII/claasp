@@ -321,7 +321,9 @@ def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -
         and model.reference_title is not None
     }
     return ReportSection(
-        "Trail", tables=(summary, steps), citations=tuple(citation_values.values())
+        "Trail",
+        tables=(summary, steps, *_named_inputs(result)),
+        citations=tuple(citation_values.values()),
     )
 
 
@@ -383,7 +385,7 @@ def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
     from claasp.presentation._trail import round_table
 
     table = round_table(rows, pattern=pattern, quantity=quantity, notes=notes)
-    return ReportSection("Trail", tables=(table,))
+    return ReportSection("Trail", tables=(table, *_named_inputs(result)))
 
 
 def trace_section(trace: ExecutionTrace) -> ReportSection:
@@ -1506,3 +1508,18 @@ def _neural_conclusion(result):
         "These tests concern this fixed model and test budget; non-detection does not rule out other distinguishers."
     )
     return "Conclusion:\n" + fill(" ".join(statements), width=88)
+
+
+def _named_inputs(result):
+    if not isinstance(result, TrailSearchResult) or not result.input_patterns:
+        return ()
+    return (
+        Table(
+            (TableColumn("input", "Input"), TableColumn("pattern", "Mask / difference")),
+            tuple(
+                TableRow((_text(name), _text(_bit_pattern(pattern))))
+                for name, pattern in result.input_patterns
+            ),
+            "External input patterns",
+        ),
+    )
