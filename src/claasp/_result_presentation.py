@@ -42,9 +42,12 @@ class TerminalMixin:
     __slots__ = ()
     __public_api_methods__ = ("to_terminal",)
 
-    def to_terminal(self, *, file=None):
+    def to_terminal(self, *, details=False, value_format="hex", file=None):
         """Print retained evidence and status without repeating a search.
 
+        For exact trails, ``details=True`` includes component values and
+        ``value_format`` selects ``hex``, ``binary`` (``0b`` prefix), or
+        ``underscore_one`` (zero as ``_``, one as ``1``), MSB first.
         Output goes to standard output unless ``file`` is supplied. No plotting
         dependency is required. See the result class for its evidence-specific
         interpretation and examples.
@@ -61,4 +64,4 @@ class TerminalMixin:
         """
         from claasp.presentation._search_results import _to_terminal
 
-        _to_terminal(self, file=file)
+        _to_terminal(self, details=details, value_format=value_format, file=file)

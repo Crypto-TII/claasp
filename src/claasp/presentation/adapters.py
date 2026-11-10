@@ -121,10 +121,12 @@ def _canonical(value: object) -> str:
     raise TypeError(f"unsupported presentation value {type(value).__name__}")
 
 
-def _bit_pattern(pattern: BitPattern) -> str:
-    width = pattern.width
-    digits = (width + 3) // 4
-    return f"0x{pattern.value:0{digits}x}"
+def _bit_pattern(pattern: BitPattern, value_format="hex") -> str:
+    from claasp.presentation._trail_values import _format_trail_value
+
+    return _format_trail_value(
+        pattern.value, pattern.width, value_format=value_format, pad_hex=True
+    )
 
 
 def _ratio(numerator: int, denominator: int) -> str:
@@ -157,7 +159,9 @@ def _property_evidence(result: ComponentPropertyResult) -> PresentationEvidence:
     return PresentationEvidence(classification, complete=result.complete, bound_direction=direction)
 
 
-def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -> ReportSection:
+def trail_section(
+    result: Trail | TrailSearchResult, *, details: bool = False, value_format="hex"
+) -> ReportSection:
     """Present round boundaries by default, or complete component evidence.
 
     EXAMPLES::
@@ -169,8 +173,11 @@ def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -
         required arguments rejected
     """
 
+    from claasp.presentation._trail_values import _validate_value_format
+
+    _validate_value_format(value_format)
     if not details:
-        return _trail_overview_section(result)
+        return _trail_overview_section(result, value_format=value_format)
 
     trail = result.trail if isinstance(result, TrailSearchResult) else result
     constraint_models = result.constraint_models if isinstance(result, TrailSearchResult) else ()
@@ -182,8 +189,8 @@ def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -
     show_references = bool(constraint_models)
     summary_rows = [
         TableRow((_text("kind"), _text(trail.kind.value))),
-        TableRow((_text("input"), _text(_bit_pattern(trail.input_pattern)))),
-        TableRow((_text("output"), _text(_bit_pattern(trail.output_pattern)))),
+        TableRow((_text("input"), _text(_bit_pattern(trail.input_pattern, value_format)))),
+        TableRow((_text("output"), _text(_bit_pattern(trail.output_pattern, value_format)))),
         TableRow((_text("total weight"), _number(trail.total_weight, ValueKind.WEIGHT))),
     ]
     if isinstance(result, TrailSearchResult):
@@ -246,9 +253,9 @@ def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -
                     _text(
                         "—"
                         if component.input_pattern is None
-                        else _bit_pattern(component.input_pattern)
+                        else _bit_pattern(component.input_pattern, value_format)
                     ),
-                    _text(_bit_pattern(component.output_pattern)),
+                    _text(_bit_pattern(component.output_pattern, value_format)),
                     _text(
                         "1/1"
                         if component.local_transition is None
@@ -277,8 +284,8 @@ def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -
                 (
                     _text("—"),
                     _text(step.transition.kind.value),
-                    _text(_bit_pattern(step.transition.input_pattern)),
-                    _text(_bit_pattern(step.transition.output_pattern)),
+                    _text(_bit_pattern(step.transition.input_pattern, value_format)),
+                    _text(_bit_pattern(step.transition.output_pattern, value_format)),
                     _text(_ratio(step.transition.numerator, step.transition.denominator)),
                     _integer(step.transition.sign),
                     _number(step.transition.weight, ValueKind.WEIGHT),
@@ -322,12 +329,14 @@ def trail_section(result: Trail | TrailSearchResult, *, details: bool = False) -
     }
     return ReportSection(
         "Trail",
-        tables=(summary, steps, *_named_inputs(result)),
+        tables=(summary, steps, *_named_inputs(result, value_format=value_format)),
         citations=tuple(citation_values.values()),
     )
 
 
-def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
+def _trail_overview_section(
+    result: Trail | TrailSearchResult, *, value_format="hex"
+) -> ReportSection:
     trail = result.trail if isinstance(result, TrailSearchResult) else result
     is_differential = trail.kind.value == "xor_differential"
     quantity = "probability" if is_differential else "correlation"
@@ -336,7 +345,7 @@ def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
         TableRow(
             (
                 _text("input"),
-                _text(_bit_pattern(trail.input_pattern)),
+                _text(_bit_pattern(trail.input_pattern, value_format)),
                 _text("1/1"),
                 _text("1/1"),
             )
@@ -360,7 +369,7 @@ def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
                 TableRow(
                     (
                         _integer(transition.round_number + 1),
-                        _text(_bit_pattern(transition.output_pattern)),
+                        _text(_bit_pattern(transition.output_pattern, value_format)),
                         _text(relative_text),
                         _text(cumulative_text),
                     )
@@ -373,7 +382,7 @@ def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
             TableRow(
                 (
                     _text("output"),
-                    _text(_bit_pattern(trail.output_pattern)),
+                    _text(_bit_pattern(trail.output_pattern, value_format)),
                     _text(_ratio(cumulative.numerator, cumulative.denominator)),
                     _text(_ratio(cumulative.numerator, cumulative.denominator)),
                 )
@@ -385,7 +394,7 @@ def _trail_overview_section(result: Trail | TrailSearchResult) -> ReportSection:
     from claasp.presentation._trail import round_table
 
     table = round_table(rows, pattern=pattern, quantity=quantity, notes=notes)
-    return ReportSection("Trail", tables=(table, *_named_inputs(result)))
+    return ReportSection("Trail", tables=(table, *_named_inputs(result, value_format=value_format)))
 
 
 def trace_section(trace: ExecutionTrace) -> ReportSection:
@@ -1510,14 +1519,14 @@ def _neural_conclusion(result):
     return "Conclusion:\n" + fill(" ".join(statements), width=88)
 
 
-def _named_inputs(result):
+def _named_inputs(result, *, value_format="hex"):
     if not isinstance(result, TrailSearchResult) or not result.input_patterns:
         return ()
     return (
         Table(
             (TableColumn("input", "Input"), TableColumn("pattern", "Mask / difference")),
             tuple(
-                TableRow((_text(name), _text(_bit_pattern(pattern))))
+                TableRow((_text(name), _text(_bit_pattern(pattern, value_format))))
                 for name, pattern in result.input_patterns
             ),
             "External input patterns",
