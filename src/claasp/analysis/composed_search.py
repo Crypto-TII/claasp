@@ -164,6 +164,9 @@ def search_impossible_differentials(
             and isinstance(selected.array_type.unit_type, BinaryExtensionField)
             else "bitwise"
         )
+    from claasp.analysis._impossible_capabilities import _require_impossible_capability
+
+    _require_impossible_capability(primitive, representation)
     zeros = (
         tuple(name for name in primitive.graph.input_arrays if name != active_input)
         if zero_difference_inputs is None

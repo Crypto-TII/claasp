@@ -25,6 +25,7 @@ from claasp.components import (
     Permutation,
     Rotate,
     SBox,
+    Shift,
     Xor,
 )
 from claasp.drivers.solvers import SatStatus
@@ -844,6 +845,18 @@ class WordDeterministicTruncatedSATModel:
                         units[source_unit], output[target_unit * width : (target_unit + 1) * width]
                     ):
                         equal(source, target, "truncated_permutation")
+            elif isinstance(component, Shift):
+                offset = component.amount if component.direction == "left" else -component.amount
+                for unit in range(component.output_type.unit_count):
+                    source = operands[0][unit * width : (unit + 1) * width]
+                    target = output[unit * width : (unit + 1) * width]
+                    for bit, names in enumerate(target):
+                        position = bit + offset
+                        if 0 <= position < width:
+                            equal(source[position], names, "truncated_shift")
+                        else:
+                            for name in names:
+                                add((-indices[name],), "truncated_shift_zero")
             elif isinstance(component, Rotate):
                 offset = component.amount if component.direction == "right" else -component.amount
                 for unit in range(component.output_type.unit_count):
@@ -995,6 +1008,19 @@ class WordDeterministicTruncatedSATModel:
                     if isinstance(component, Permutation)
                     else list(items)
                 )
+            elif isinstance(component, Shift):
+                offset = component.amount if component.direction == "left" else -component.amount
+                expected_units = [
+                    TruncatedXorDifference(
+                        tuple(
+                            item.bits[bit + offset]
+                            if 0 <= bit + offset < width
+                            else TruncatedBit.ZERO
+                            for bit in range(width)
+                        )
+                    )
+                    for item in operand_units[0]
+                ]
             elif isinstance(component, Rotate):
                 method = "rotate_right" if component.direction == "right" else "rotate_left"
                 expected_units = [
@@ -1162,6 +1188,9 @@ class WordwiseDeterministicTruncatedSATModel:
     The model retains concrete nonzero word differences, exact cancellation
     through field addition/XOR, bijective S-box activity, direct wiring, and
     the reviewed dense nonzero-coefficient linear-layer abstraction.
+    Modular addition/subtraction and Boolean gates use conservative activity
+    transfers; carries do not preserve a known XOR value. Pack/unpack bindings
+    retain known bits and may forget correlations in abstract nonzero words.
 
     EXAMPLES::
 
@@ -1173,6 +1202,21 @@ class WordwiseDeterministicTruncatedSATModel:
         >>> formula = model.cnf_formula()
         >>> (formula.variable_count > 0, "wordwise_nonzero_input" in formula.provenance)
         (True, True)
+
+    Carries may change a known XOR value. One changing modular-add operand
+    guarantees a nonzero output, but not the same value. Requires Kissat::
+
+        >>> from claasp.primitives.single_component_primitives import ModularAdd as AddPrimitive
+        >>> from claasp.semantics.cryptanalysis import WordwiseXorDifference as Difference
+        >>> from claasp.semantics.cryptanalysis import WordwiseDifferenceKind as Kind
+        >>> from claasp.drivers.solvers import KissatSolver
+        >>> model = WordwiseDeterministicTruncatedSATModel(AddPrimitive(3),
+        ...     fixed_input_differences={"input_0": (Difference.known(3, 1),),
+        ...                              "input_1": (Difference(3, Kind.ZERO),)})
+        >>> solved = KissatSolver().solve(model.cnf_formula())
+        >>> trail = model.decode_characteristic(solved.assignment)
+        >>> trail.output_differences[0].kind.name
+        'NONZERO'
     """
 
     model_provenance = _verified_model(
@@ -1196,6 +1240,9 @@ class WordwiseDeterministicTruncatedSATModel:
         zero_difference_inputs=(),
         nonzero_input=None,
     ) -> None:
+        from claasp.analysis._impossible_capabilities import _require_impossible_capability
+
+        _require_impossible_capability(primitive, "wordwise")
         self.primitive = primitive
         if nonzero_input is not None and nonzero_input not in primitive.graph.input_arrays:
             raise ValueError("unknown nonzero input")
@@ -1258,6 +1305,8 @@ class WordwiseDeterministicTruncatedSATModel:
         def equivalent(left, right, label):
             add((-indices[left], indices[right]), label)
             add((indices[left], -indices[right]), label)
+
+        converted: list[tuple[Any, ...]] = []
 
         def word(name, width):
             states = tuple(allocate(f"{name}_{kind.name.lower()}") for kind in self._KINDS)
@@ -1345,12 +1394,57 @@ class WordwiseDeterministicTruncatedSATModel:
             for name, array_type in sources
         }
 
-        def unsupported_conversion(*args):
-            raise NotImplementedError("wordwise propagation does not support pack/unpack bindings")
+        def binding_word(width):
+            result = word(f"__wordwise_binding_{len(converted)}", width)
+            converted.append(result)
+            return result
 
-        operands_by_id, output = propagation.unit_wiring(
-            unit_arrays, pack=unsupported_conversion, unpack=unsupported_conversion
-        )
+        def disjunction(literals):
+            target = indices[allocate(f"__wordwise_gate_{len(variables)}")]
+            for literal in literals:
+                add((-literal, target), "wordwise_binding_or")
+            add((-target, *literals), "wordwise_binding_or")
+            return target
+
+        def conjunction(target, literals):
+            for literal in literals:
+                add((-target, literal), "wordwise_binding_and")
+            add((target, *(-literal for literal in literals)), "wordwise_binding_and")
+
+        def pack(bits, width):
+            target = binding_word(width)
+            ones = tuple(disjunction((indices[item[0][1]], indices[item[0][2]])) for item in bits)
+            unknown = disjunction(tuple(indices[item[0][3]] for item in bits))
+            active = disjunction(ones)
+            for state, conditions in zip(
+                target[0],
+                ((-unknown, -active), (-unknown, active), (unknown, active), (unknown, -active)),
+            ):
+                conjunction(indices[state], conditions)
+            for bit, one in zip(target[1], ones):
+                conjunction(indices[bit], (indices[target[0][1]], one))
+            return target
+
+        def unpack(source, width):
+            result = tuple(binding_word(1) for _ in range(width))
+            for target, value in zip(result, source[1]):
+                add((-indices[source[0][0]], indices[target[0][0]]), "wordwise_unpack_zero")
+                add(
+                    (-indices[source[0][1]], -indices[value], indices[target[0][1]]),
+                    "wordwise_unpack_known",
+                )
+                add(
+                    (-indices[source[0][1]], indices[value], indices[target[0][0]]),
+                    "wordwise_unpack_known",
+                )
+                for kind in (2, 3):
+                    add(
+                        (-indices[source[0][kind]], indices[target[0][3]]),
+                        "wordwise_unpack_abstract",
+                    )
+            return result
+
+        operands_by_id, output = propagation.unit_wiring(unit_arrays, pack=pack, unpack=unpack)
 
         def rule(component, operands, output):
             if isinstance(component, (Add, Xor)):
@@ -1366,12 +1460,39 @@ class WordwiseDeterministicTruncatedSATModel:
                         target,
                         f"{component.component_id}_{position}",
                     )
+            elif isinstance(component, (ModularAdd, ModularSubtract, BitwiseAnd, BitwiseOr)):
+                for position, target in enumerate(output):
+                    sources = tuple(items[position] for items in operands)
+                    if isinstance(component, (ModularAdd, ModularSubtract)) and len(target[1]) == 1:
+                        xor_words(sources, target, f"{component.component_id}_{position}")
+                        continue
+                    if len(sources) == 1:
+                        equal_words(sources[0], target, "wordwise_unary_identity")
+                        continue
+                    for kinds in product(self._KINDS, repeat=len(sources)):
+                        active = sum(kind is not WordwiseDifferenceKind.ZERO for kind in kinds)
+                        result_kind = (
+                            WordwiseDifferenceKind.ZERO
+                            if not active
+                            else WordwiseDifferenceKind.NONZERO
+                            if isinstance(component, (ModularAdd, ModularSubtract))
+                            and active == 1
+                            and WordwiseDifferenceKind.UNKNOWN not in kinds
+                            else WordwiseDifferenceKind.UNKNOWN
+                        )
+                        add(
+                            tuple(
+                                -indices[item[0][kind.value]] for item, kind in zip(sources, kinds)
+                            )
+                            + (indices[target[0][result_kind.value]],),
+                            "wordwise_conservative_operation",
+                        )
             elif isinstance(component, SBox):
                 if sorted(component.table) != list(range(len(component.table))):
                     raise NotImplementedError("wordwise S-box propagation requires a bijection")
                 for source, target in zip(operands[0], output):
                     through_bijection(source, target, "wordwise_bijective_sbox")
-            elif isinstance(component, Identity):
+            elif isinstance(component, (Identity, BitwiseNot)):
                 for source, target in zip(operands[0], output):
                     equal_words(source, target, "wordwise_wiring")
             elif isinstance(component, Rotate):
@@ -1462,7 +1583,7 @@ class WordwiseDeterministicTruncatedSATModel:
         self._unit_arrays, self._operands, self._output = unit_arrays, operands_by_id, output
         self._semantic_names = tuple(
             name
-            for words in unit_arrays.values()
+            for words in (*unit_arrays.values(), tuple(converted))
             for states, value in words
             for name in (*states, *value)
         )
@@ -1470,7 +1591,26 @@ class WordwiseDeterministicTruncatedSATModel:
             tuple(variables),
             tuple(clauses),
             tuple(provenance),
-            (ConstraintModelApplication(self.model_provenance),),
+            (
+                ConstraintModelApplication(self.model_provenance),
+                ConstraintModelApplication(
+                    _direct_model(
+                        ConstraintBackend.SAT,
+                        "WordwiseElementaryTransfers",
+                        "wordwise_deterministic_truncated_xor",
+                        "conservative modular/Boolean transfer and bit/word conversion",
+                        "Operand-wise bijectivity preserves one active modular operand; Boolean operations preserve equality; conversion forgets joint correlations. Exhaustive small-domain correctness tests check containment.",
+                    ),
+                    tuple(
+                        c.component_id
+                        for c in self.primitive.graph.components
+                        if c.component_id is not None
+                        and isinstance(
+                            c, (ModularAdd, ModularSubtract, BitwiseAnd, BitwiseOr, BitwiseNot)
+                        )
+                    ),
+                ),
+            ),
         )
         return self._formula
 
@@ -1478,11 +1618,16 @@ class WordwiseDeterministicTruncatedSATModel:
     def _decode_words(words, assignment):
         decoded = []
         for states, value_names in words:
-            kind = next(kind for kind in WordwiseDifferenceKind if assignment[states[kind.value]])
+            kinds = tuple(kind for kind in WordwiseDifferenceKind if assignment[states[kind.value]])
+            if len(kinds) != 1:
+                raise ValueError("wordwise state must select exactly one category")
+            kind = kinds[0]
             value = sum(
                 int(bool(assignment[name])) << (len(value_names) - 1 - bit)
                 for bit, name in enumerate(value_names)
             )
+            if kind is not WordwiseDifferenceKind.KNOWN and value:
+                raise ValueError("abstract wordwise values must use the canonical zero payload")
             decoded.append(
                 WordwiseXorDifference.known(len(value_names), value)
                 if kind is WordwiseDifferenceKind.KNOWN
@@ -1494,16 +1639,32 @@ class WordwiseDeterministicTruncatedSATModel:
         patterns = {
             name: self._decode_words(words, assignment) for name, words in self._unit_arrays.items()
         }
+        from claasp.semantics.cryptanalysis._wordwise_operations import (
+            _boolean,
+            _modular,
+            _pack,
+            _unpack,
+        )
+
+        semantic_operands, semantic_output = GraphPropagation(self.primitive).unit_wiring(
+            patterns, pack=_pack, unpack=_unpack
+        )
         for component in self.primitive.graph.components:
-            operands = tuple(
+            operands = semantic_operands[component.component_id]
+            if operands != tuple(
                 self._decode_words(words, assignment)
                 for words in self._operands[component.component_id]
-            )
+            ):
+                return None
             if isinstance(component, (Add, Xor)):
                 expected = tuple(WordwiseXorDifference.xor_many(items) for items in zip(*operands))
+            elif isinstance(component, (ModularAdd, ModularSubtract)):
+                expected = tuple(_modular(items) for items in zip(*operands))
+            elif isinstance(component, (BitwiseAnd, BitwiseOr)):
+                expected = tuple(_boolean(items) for items in zip(*operands))
             elif isinstance(component, SBox):
                 expected = tuple(item.through_bijection() for item in operands[0])
-            elif isinstance(component, Identity):
+            elif isinstance(component, (Identity, BitwiseNot)):
                 expected = operands[0]
             elif isinstance(component, Rotate):
                 expected = tuple(
@@ -1555,6 +1716,8 @@ class WordwiseDeterministicTruncatedSATModel:
                 return None
             if patterns[component.component_id] != expected:
                 return None
+        if self._decode_words(self._output, assignment) != semantic_output:
+            return None
         return patterns
 
     def decode_characteristic(self, assignment):
@@ -1591,7 +1754,10 @@ class WordwiseDeterministicTruncatedSATModel:
             value not in (0, 1) for value in assignment.values()
         ):
             return False
-        patterns = self._evaluate(assignment)
+        try:
+            patterns = self._evaluate(assignment)
+        except ValueError:
+            return False
         if patterns is None:
             return False
         inputs = tuple((name, patterns[name]) for name in self.primitive.graph.input_arrays)
@@ -1828,7 +1994,11 @@ class WordImpossibleSATModel:
         prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
         suffix = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1).primitive
         inverse = invert_primitive(
-            suffix, recover_input="state", retained_inputs=zero_difference_inputs
+            suffix,
+            recover_input="state",
+            retained_inputs=tuple(
+                name for name in zero_difference_inputs if name in suffix.graph.input_arrays
+            ),
         ).primitive
         zero_patterns = {
             name: "0"
@@ -1838,7 +2008,11 @@ class WordImpossibleSATModel:
             )
             for name in zero_difference_inputs
         }
-        forward_patterns = dict(zero_patterns)
+        forward_patterns = {
+            name: value
+            for name, value in zero_patterns.items()
+            if name in prefix.graph.input_arrays
+        }
         if input_pattern is not None:
             forward_patterns[active_input] = input_pattern
         self.forward_model = WordDeterministicTruncatedSATModel(
@@ -1849,7 +2023,11 @@ class WordImpossibleSATModel:
         self.backward_model = WordDeterministicTruncatedSATModel(
             inverse,
             fixed_input_patterns={
-                **zero_patterns,
+                **{
+                    name: value
+                    for name, value in zero_patterns.items()
+                    if name in inverse.graph.input_arrays
+                },
                 **({"output": output_pattern} if output_pattern is not None else {}),
             },
             nonzero_input="output",
@@ -2134,7 +2312,11 @@ class WordwiseImpossibleSATModel:
         prefix = slice_rounds(primitive, 0, middle_round - 1).primitive
         suffix = slice_rounds(primitive, middle_round, len(primitive.graph.rounds) - 1).primitive
         inverse = invert_primitive(
-            suffix, recover_input="state", retained_inputs=zero_difference_inputs
+            suffix,
+            recover_input="state",
+            retained_inputs=tuple(
+                name for name in zero_difference_inputs if name in suffix.graph.input_arrays
+            ),
         ).primitive
 
         def zeros(unit_array):
@@ -2147,12 +2329,16 @@ class WordwiseImpossibleSATModel:
             )
 
         forward_fixed = {
-            name: zeros(primitive.graph.input_arrays[name]) for name in zero_difference_inputs
+            name: zeros(primitive.graph.input_arrays[name])
+            for name in zero_difference_inputs
+            if name in prefix.graph.input_arrays
         }
         if input_differences is not None:
             forward_fixed[active_input] = input_differences
         backward_fixed = {
-            name: zeros(inverse.graph.input_arrays[name]) for name in zero_difference_inputs
+            name: zeros(inverse.graph.input_arrays[name])
+            for name in zero_difference_inputs
+            if name in inverse.graph.input_arrays
         }
         if output_differences is not None:
             backward_fixed["output"] = output_differences
