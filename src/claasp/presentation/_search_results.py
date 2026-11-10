@@ -697,7 +697,19 @@ def _boundary_view(forward, backward, contradictions, *, wordwise):
     )
 
 
-def _to_terminal(result, *, file=None):
+def _to_terminal(result, *, details=False, value_format="hex", file=None):
+    from claasp.semantics.cryptanalysis import Trail
+
+    if isinstance(result, Trail):
+        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation.adapters import trail_section
+
+        return to_terminal(
+            trail_section(result, details=details, value_format=value_format), file=file
+        )
+    if details or value_format != "hex":
+        raise ValueError("details and value_format are supported for exact trail reports")
+
     from claasp.presentation import Table, TableColumn, TableRow, render_terminal_table
 
     view = _view(result)

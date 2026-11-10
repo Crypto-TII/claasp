@@ -1,5 +1,6 @@
 """Presentation of retained exact word-characteristic queries."""
 
+from claasp.presentation._trail_values import _format_trail_value, _validate_value_format
 from claasp.presentation.model import ReportSection, Table, TableColumn, TableRow
 
 
@@ -11,12 +12,16 @@ def _summary(rows, title):
     )
 
 
-def _inputs(trail, linear):
+def _inputs(trail, linear, value_format):
     values = trail.input_masks if linear else trail.input_differences
-    return ", ".join(f"{name}=0x{value:x}" for name, value in values)
+    widths = dict(trail.input_widths)
+    return ", ".join(
+        f"{name}={_format_trail_value(value, widths.get(name), value_format=value_format)}"
+        for name, value in values
+    )
 
 
-def _components(trail, title, linear):
+def _components(trail, title, linear, value_format):
     columns = [
         TableColumn("component", "Component"),
         TableColumn("input", "Input"),
@@ -30,8 +35,16 @@ def _components(trail, title, linear):
         transition = step.transition
         values = [
             step.component_id,
-            f"0x{transition.input_pattern.value:x}",
-            f"0x{transition.output_pattern.value:x}",
+            _format_trail_value(
+                transition.input_pattern.value,
+                transition.input_pattern.width,
+                value_format=value_format,
+            ),
+            _format_trail_value(
+                transition.output_pattern.value,
+                transition.output_pattern.width,
+                value_format=value_format,
+            ),
             f"{transition.weight:.6g}",
         ]
         if linear:
@@ -40,18 +53,19 @@ def _components(trail, title, linear):
     return Table(tuple(columns), tuple(rows), title)
 
 
-def characteristic_section(trail, *, linear, details=False):
+def characteristic_section(trail, *, linear, details=False, value_format="hex"):
+    _validate_value_format(value_format)
     output = trail.output_mask if linear else trail.output_difference
     rows = [
         ("weight", f"{trail.total_weight:.6g}"),
-        ("input", _inputs(trail, linear)),
-        ("output", f"0x{output:x}"),
+        ("input", _inputs(trail, linear, value_format)),
+        ("output", _format_trail_value(output, trail.output_width, value_format=value_format)),
     ]
     if linear:
         rows.append(("sign", str(trail.sign)))
     tables = [_summary(rows, "Characteristic summary")]
     if details:
-        tables.append(_components(trail, "Component transitions", linear))
+        tables.append(_components(trail, "Component transitions", linear, value_format))
     return ReportSection(
         "XOR-linear characteristic" if linear else "XOR-differential characteristic",
         ("Component characteristic; no optimality claim.",),
@@ -59,7 +73,8 @@ def characteristic_section(trail, *, linear, details=False):
     )
 
 
-def enumeration_section(result, *, linear, details=False):
+def enumeration_section(result, *, linear, details=False, value_format="hex"):
+    _validate_value_format(value_format)
     metadata = dict(result.reproducibility)
     rows = [
         ("characteristics", str(len(result.trails))),
@@ -80,7 +95,12 @@ def enumeration_section(result, *, linear, details=False):
     trails = []
     for index, trail in enumerate(result.trails):
         output = trail.output_mask if linear else trail.output_difference
-        values = [str(index), f"{trail.total_weight:.6g}", _inputs(trail, linear), f"0x{output:x}"]
+        values = [
+            str(index),
+            f"{trail.total_weight:.6g}",
+            _inputs(trail, linear, value_format),
+            _format_trail_value(output, trail.output_width, value_format=value_format),
+        ]
         if linear:
             values.append(str(trail.sign))
         trails.append(TableRow.of(*values))
@@ -90,7 +110,7 @@ def enumeration_section(result, *, linear, details=False):
     ]
     if details:
         tables.extend(
-            _components(trail, f"Characteristic {index} components", linear)
+            _components(trail, f"Characteristic {index} components", linear, value_format)
             for index, trail in enumerate(result.trails)
         )
     status = (

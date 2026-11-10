@@ -79,23 +79,41 @@ class WordXorDifferentialCharacteristic(_PlotMixin):
     output_difference: int
     steps: tuple[TrailStep, ...]
     semantic_assignment: tuple[tuple[str, int], ...]
+    input_widths: tuple[tuple[str, int], ...] = ()
+    output_width: int | None = None
 
     @property
     def total_weight(self):
         return sum(step.transition.weight for step in self.steps)
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
-            >>> callable(WordXorDifferentialCharacteristic.to_terminal)
+            >>> from io import StringIO
+            >>> result = WordXorDifferentialCharacteristic((('plaintext', 1),), 2, (), ())
+            >>> output = StringIO()
+            >>> result.to_terminal(value_format="binary", file=output)
+            >>> 'plaintext=0b1' in output.getvalue()
+            True
+            >>> output = StringIO()
+            >>> result.to_terminal(details=True, value_format="underscore_one", file=output)
+            >>> '1_' in output.getvalue()
             True
         """
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import characteristic_section
 
-        to_terminal(characteristic_section(self, linear=False, details=details), file=file)
+        to_terminal(
+            characteristic_section(self, linear=False, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -146,8 +164,13 @@ class WordXorDifferentialEnumeration(_PlotMixin):
             total += probability
         return total
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
@@ -161,7 +184,10 @@ class WordXorDifferentialEnumeration(_PlotMixin):
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import enumeration_section
 
-        to_terminal(enumeration_section(self, linear=False, details=details), file=file)
+        to_terminal(
+            enumeration_section(self, linear=False, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 class WordXorDifferentialSMTModel:
@@ -664,6 +690,11 @@ class WordXorDifferentialSMTModel:
             _packed(self._output, assignment),
             self._steps_and_wiring(assignment),
             tuple((name, assignment[name]) for name in self._semantic_names),
+            tuple(
+                (name, item.array_type.unit_count * item.array_type.unit_type.encoded_bit_size)
+                for name, item in self.primitive.graph.input_arrays.items()
+            ),
+            len(self._output),
         )
         if not self.check_characteristic(result):
             raise ValueError("word differential witness violates exact graph semantics")

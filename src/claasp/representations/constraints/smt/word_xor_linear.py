@@ -79,6 +79,8 @@ class WordXorLinearCharacteristic(_PlotMixin):
     steps: tuple[TrailStep, ...]
     constant_sign: int
     semantic_assignment: tuple[tuple[str, int], ...]
+    input_widths: tuple[tuple[str, int], ...] = ()
+    output_width: int | None = None
 
     @property
     def total_weight(self):
@@ -91,18 +93,34 @@ class WordXorLinearCharacteristic(_PlotMixin):
             result *= step.transition.sign
         return result
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
-            >>> callable(WordXorLinearCharacteristic.to_terminal)
+            >>> from io import StringIO
+            >>> result = WordXorLinearCharacteristic((('plaintext', 1),), 2, (), -1, ())
+            >>> output = StringIO()
+            >>> result.to_terminal(value_format="binary", file=output)
+            >>> 'plaintext=0b1' in output.getvalue()
+            True
+            >>> output = StringIO()
+            >>> result.to_terminal(details=True, value_format="underscore_one", file=output)
+            >>> '1_' in output.getvalue()
             True
         """
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import characteristic_section
 
-        to_terminal(characteristic_section(self, linear=True, details=details), file=file)
+        to_terminal(
+            characteristic_section(self, linear=True, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -134,8 +152,13 @@ class WordXorLinearEnumeration(_PlotMixin):
             raise RuntimeError("linear characteristic enumeration is incomplete")
         return self
 
-    def to_terminal(self, *, details: bool = False, file=None) -> None:
+    def to_terminal(self, *, details: bool = False, value_format="hex", file=None) -> None:
         """Print retained characteristic evidence without starting a solver.
+
+        ``value_format`` selects ``hex`` (default), MSB-first ``binary``
+        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        Model-produced results retain full input/output widths, including
+        leading zeros. The same notation applies with ``details=True``.
 
         EXAMPLES::
 
@@ -149,7 +172,10 @@ class WordXorLinearEnumeration(_PlotMixin):
         from claasp.presentation._terminal import to_terminal
         from claasp.presentation._trail_queries import enumeration_section
 
-        to_terminal(enumeration_section(self, linear=True, details=details), file=file)
+        to_terminal(
+            enumeration_section(self, linear=True, details=details, value_format=value_format),
+            file=file,
+        )
 
 
 class WordXorLinearSMTModel:
@@ -658,6 +684,11 @@ class WordXorLinearSMTModel:
             tuple(steps),
             constant_sign,
             tuple((name, assignment[name]) for name in self._semantic_names),
+            tuple(
+                (name, item.array_type.unit_count * item.array_type.unit_type.encoded_bit_size)
+                for name, item in self.primitive.graph.input_arrays.items()
+            ),
+            len(self._output),
         )
         if not _within_interval(result.steps, self._weight_interval):
             raise ValueError("word linear witness exceeds weight bound")
