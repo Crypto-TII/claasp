@@ -59,4 +59,5 @@ class Simeck(Primitive):
                     constant(self, width, c_value ^ ((z_value >> round_number) & 1)),
                 )
                 keys = [new_key, keys[0], keys[1], keys[3]]
+            self._builder.set_round_output(left, right)
         self._builder.set_output(concatenate(self, left, right))

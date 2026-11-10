@@ -35,6 +35,12 @@ class Poseidon(Primitive):
         >>> primitive.evaluate((0, 1))
         (4, 15)
 
+    Round states are published at their original graph indices and can be
+    used for slicing. This does not enable XOR-trail models over prime fields::
+
+        >>> tuple(index for index, _ in primitive.graph.round_output_boundaries)
+        (0, 1, 2)
+
     These are teaching parameters, not a secure parameter set.
     """
 
@@ -96,6 +102,7 @@ class Poseidon(Primitive):
             )
             state = self._builder.add_component(linear_map)
 
+            self._builder.set_round_output(state)
         self._builder.set_output(state)
 
     @staticmethod

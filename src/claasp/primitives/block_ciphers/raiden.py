@@ -49,4 +49,5 @@ class Raiden(Primitive):
                 block[index] = add(
                     self, block[index], xor(self, shift(self, summed, -left_shift_amount), mixed)
                 )
+            self._builder.set_round_output(*block)
         self._builder.set_output(concatenate(self, *block))

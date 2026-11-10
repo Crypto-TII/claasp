@@ -68,6 +68,10 @@ class Aradi(Primitive):
                 if round_number % 2 == 0
                 else [k0, k4, k2, k6, k1, k5, k3, k7]
             )
+            if round_number < number_of_rounds - 1:
+                self._builder.set_round_output(*state)
         final_key = [split_word(self, key[index], 16) for index in range(4)]
         state = [xor(self, value, final_key[index]) for index, value in enumerate(state)]
-        self._builder.set_output(concatenate(self, *state))
+        output = concatenate(self, *state)
+        self._builder.set_round_output(output)
+        self._builder.set_output(output)

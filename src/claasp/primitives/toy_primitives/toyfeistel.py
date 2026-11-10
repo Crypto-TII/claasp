@@ -51,4 +51,8 @@ class ToyFeistel(Primitive):
             round_constant = constant_bits(self, half, round_number)
             low = xor_bits(self, mixed[right_positions], round_constant)
             key = concatenate(self, (mixed[left_positions], low))
-        self._builder.set_output(concatenate(self, (state[right_positions], state[left_positions])))
+            if round_number < number_of_rounds:
+                self._builder.set_round_output(state)
+        output = concatenate(self, (state[right_positions], state[left_positions]))
+        self._builder.set_round_output(output)
+        self._builder.set_output(output)

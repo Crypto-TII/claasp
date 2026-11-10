@@ -44,4 +44,5 @@ class ToySPN1(Primitive):
             state = rotate_bits(
                 self, state, rotation_layer, component_id=f"round_{round_number}_rotation"
             )
+            self._builder.set_round_output(state)
         self._builder.set_output(state)

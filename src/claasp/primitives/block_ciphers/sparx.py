@@ -112,5 +112,9 @@ class SPARX(Primitive):
                 updated.append(value)
                 key = key_update(key, round_number * word_count + index + 1)
             state = diffusion(updated)
+            if round_number < rounds - 1:
+                self._builder.set_round_output(*state)
         state = [xor(self, value, key[index]) for index, value in enumerate(state)]
-        self._builder.set_output(concatenate(self, *state))
+        output = concatenate(self, *state)
+        self._builder.set_round_output(output)
+        self._builder.set_output(output)

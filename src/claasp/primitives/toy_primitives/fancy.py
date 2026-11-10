@@ -104,4 +104,5 @@ class Fancy(Primitive):
                 xor_left = xor_bits(self, add_left, rotated, key_and[:6])
                 xor_right = xor_bits(self, add_right, shifted, key_and[6:])
                 state = concatenate(self, (add_left, xor_left, add_right, xor_right))
+            self._builder.set_round_output(state)
         self._builder.set_output(state)

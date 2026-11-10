@@ -64,6 +64,10 @@ def estream_bytes_to_bit_sequence(value: int, byte_length: int) -> int:
     bits inside each byte.  It is its own inverse and is used for keys, IVs and
     keystreams alike.
 
+    The loaded register state and each initialization-clock state are published
+    as round boundaries. Internal output-clock cuts are not published: register state alone
+    does not retain the already emitted keystream prefix.
+
     EXAMPLES::
         >>> from claasp.primitives.block_functions.trivium import (
         ...     estream_bytes_to_bit_sequence)
@@ -167,6 +171,9 @@ class TriviumKeystreamFunction(Primitive):
         if len(state) != STATE_BIT_SIZE:
             raise AssertionError("Trivium state layout must cover exactly 288 bits")
 
+        boundary = self._builder.join(*state)
+        self._builder.set_round_output(boundary)
+        state = [boundary[index] for index in range(STATE_BIT_SIZE)]
         keystream = []
         for clock in range(clocks + keystream_bit_size):
             self._builder.add_round()
@@ -174,6 +181,12 @@ class TriviumKeystreamFunction(Primitive):
             state, keystream_bit = self._clock(state, emitting)
             if emitting:
                 keystream.append(keystream_bit)
+            else:
+                boundary = self._builder.join(*state)
+                self._builder.set_round_output(boundary)
+                state = [boundary[index] for index in range(STATE_BIT_SIZE)]
+        if keystream_bit_size:
+            self._builder.set_round_output(*keystream)
         self._builder.set_output(keystream if keystream_bit_size else state)
 
     def _clock(self, state, emitting):

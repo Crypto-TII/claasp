@@ -55,4 +55,7 @@ class CHAM(Primitive):
                 round_keys[round_number % len(round_keys)],
             )
             state[target] = rotate(self, add(self, first, second), outer_amount)
+            boundary = self._builder.join(*state)
+            self._builder.set_round_output(boundary)
+            state = [boundary[index] for index in range(4)]
         self._builder.set_output(concatenate(self, *state))

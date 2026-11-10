@@ -20,6 +20,17 @@ class MiMC(Primitive):
         >>> primitive.evaluate(5)
         5
 
+    Round states are published at their original graph indices and can be
+    used for slicing. This does not enable XOR-trail models over prime fields::
+
+        >>> tuple(index for index, _ in primitive.graph.round_output_boundaries)
+        (0, 1, 2)
+        >>> from claasp.transformations import slice_rounds
+        >>> prefix = slice_rounds(primitive, 0, 0).primitive
+        >>> suffix = slice_rounds(primitive, 1, 2).primitive
+        >>> suffix.evaluate(state=prefix.evaluate(state=5))
+        5
+
     These are teaching parameters, not a secure parameter set.
     """
 
@@ -43,4 +54,5 @@ class MiMC(Primitive):
             power = Power(addition_output, exponent, component_id=f"power_{round_number}_2")
             state = self._builder.add_component(power)
 
+            self._builder.set_round_output(state)
         self._builder.set_output(state)

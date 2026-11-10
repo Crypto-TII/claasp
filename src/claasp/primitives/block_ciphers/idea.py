@@ -60,6 +60,7 @@ class IDEA(Primitive):
                 if round_number == number_of_rounds - 1
                 else [out1, out3, out2, out4]
             )
+            self._builder.set_round_output(*state)
         self._builder.add_round()
         final = subkeys[6 * number_of_rounds :]
         state = [
@@ -68,4 +69,6 @@ class IDEA(Primitive):
             add(self, state[2], final[2]),
             idea_multiply(self, state[3], final[3]),
         ]
-        self._builder.set_output(concatenate(self, *state))
+        final_output = concatenate(self, *state)
+        self._builder.set_round_output(final_output)
+        self._builder.set_output(final_output)
