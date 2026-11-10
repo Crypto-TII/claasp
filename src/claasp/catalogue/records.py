@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
+from typing import TextIO
 
 
 def _freeze(value):
@@ -232,7 +233,48 @@ class DriverAvailabilityRecord:
     detail: str | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class SolverCatalogueResult:
+    """A solver query over the catalogue's existing immutable driver records.
+
+    ``entries`` always contains ``DriverRecord`` objects. ``availability`` holds
+    explicit probes for ``available`` and ``both`` queries; it is empty for the
+    default ``supported`` query. Discovery reads registered metadata; detection
+    checks local dependencies and named configurations without running solves.
+
+    EXAMPLES::
+
+        >>> from claasp.catalogue import catalogue, SolverCatalogueResult
+        >>> result = catalogue.solvers()
+        >>> isinstance(result, SolverCatalogueResult)
+        True
+        >>> result.entries == catalogue.drivers(kind="solver"), result.availability
+        (True, ())
+    """
+
+    entries: tuple[DriverRecord, ...]
+    availability: tuple[DriverAvailabilityRecord, ...]
+    view: str
+
+    def to_terminal(self, *, file: TextIO | None = None) -> None:
+        """Print registered solver capabilities and requested availability evidence.
+
+        EXAMPLES::
+
+            >>> from claasp.catalogue import catalogue
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> catalogue.solvers().to_terminal(file=output)
+            >>> 'kissat' in output.getvalue() and 'SingularDriver' in output.getvalue()
+            True
+        """
+        from claasp.presentation._solver_catalogue import _to_terminal
+
+        _to_terminal(self, file=file)
+
+
 __all__ = [
+    "SolverCatalogueResult",
     "AnalysisRecord",
     "ComponentRecord",
     "DriverAvailabilityRecord",

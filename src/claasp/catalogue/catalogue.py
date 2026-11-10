@@ -18,6 +18,7 @@ from claasp.catalogue.records import (
     PrimitiveRecord,
     RealizationRecord,
     RepresentationRecord,
+    SolverCatalogueResult,
 )
 
 FILTER_ALIASES = {
@@ -427,6 +428,52 @@ class Catalogue:
             if all(record.values.get(name) == value for name, value in requested.items())
         )
 
+    def solvers(self, *, view: str = "supported") -> SolverCatalogueResult:
+        """Query registered solvers and optionally detect their local availability.
+
+        The default ``supported`` view reads the same records as
+        ``drivers(kind="solver")`` and performs no availability probes.
+        ``available`` retains successful dependency/configuration probes;
+        ``both`` retains every registered solver with its detection evidence.
+        New backends must be registered in the catalogue metadata. Availability
+        probes use the existing ``driver_availability`` rules: PATH lookup,
+        Python package discovery, and named MiniZinc configuration checks.
+        They do not run solves, validate licenses, or certify model compatibility.
+
+        EXAMPLES::
+
+            >>> from claasp.catalogue import catalogue
+            >>> result = catalogue.solvers()
+            >>> result.entries == catalogue.drivers(kind="solver")
+            True
+            >>> from io import StringIO
+            >>> output = StringIO()
+            >>> result.to_terminal(file=output)
+            >>> 'Solver' in output.getvalue() and 'msolve' in output.getvalue()
+            True
+            >>> # Explicit local detection and a comparison table:
+            >>> catalogue.solvers(view="both").to_terminal()  # doctest: +SKIP
+            >>> # Programmatic access uses the existing driver/probe record types:
+            >>> installed = catalogue.solvers(view="available")  # doctest: +SKIP
+            >>> installed.entries  # doctest: +SKIP
+            >>> catalogue.solvers(view="invalid")
+            Traceback (most recent call last):
+            ...
+            ValueError: view must be 'supported', 'available', or 'both'
+        """
+        if view not in ("supported", "available", "both"):
+            raise ValueError("view must be 'supported', 'available', or 'both'")
+        entries = self.drivers(kind="solver")
+        probes = (
+            ()
+            if view == "supported"
+            else tuple(self.driver_availability(record) for record in entries)
+        )
+        if view == "available":
+            probes = tuple(probe for probe in probes if probe.available)
+            entries = tuple(probe.driver for probe in probes)
+        return SolverCatalogueResult(entries, probes, view)
+
     def drivers(
         self,
         *,
@@ -464,7 +511,12 @@ class Catalogue:
             resolved = shutil.which(record.target or "")
             return DriverAvailabilityRecord(record, resolved is not None, resolved=resolved)
         if record.availability == "python_module":
-            available = importlib.util.find_spec(record.target or "") is not None
+            try:
+                available = importlib.util.find_spec(record.target or "") is not None
+            except (ImportError, OSError, ValueError) as error:
+                return DriverAvailabilityRecord(
+                    record, False, detail=f"Module discovery failed: {error}"
+                )
             return DriverAvailabilityRecord(
                 record, available, resolved=record.target if available else None
             )
@@ -475,13 +527,28 @@ class Catalogue:
                 return DriverAvailabilityRecord(
                     record, False, detail="MiniZinc executable not found"
                 )
-            completed = subprocess.run(
-                (resolved, "--solvers"),
-                text=True,
-                capture_output=True,
-                check=False,
-                timeout=10,
-            )
+            try:
+                completed = subprocess.run(
+                    (resolved, "--solvers"),
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                    timeout=10,
+                )
+            except subprocess.TimeoutExpired:
+                return DriverAvailabilityRecord(
+                    record,
+                    False,
+                    resolved=resolved,
+                    detail="MiniZinc configuration probe timed out after 10 seconds",
+                )
+            except OSError as error:
+                return DriverAvailabilityRecord(
+                    record,
+                    False,
+                    resolved=resolved,
+                    detail=f"MiniZinc configuration probe failed: {error}",
+                )
             available = (
                 completed.returncode == 0 and solver_name.lower() in completed.stdout.lower()
             )
