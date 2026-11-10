@@ -5,12 +5,20 @@ from io import StringIO
 
 import pytest
 
-from claasp.primitives import AES, Speck
+from claasp.primitives import AES, Simon, Speck, ToyFeistel
 
 pytestmark = pytest.mark.external
 
 
-@pytest.mark.parametrize("primitive", (Speck(number_of_rounds=6), AES(number_of_rounds=2)))
+@pytest.mark.parametrize(
+    "primitive",
+    (
+        Speck(number_of_rounds=6),
+        AES(number_of_rounds=2),
+        Simon(number_of_rounds=4),
+        ToyFeistel(number_of_rounds=5),
+    ),
+)
 def test_public_search_retains_original_round_labels_and_meeting_patterns(primitive):
     if shutil.which("kissat") is None:
         pytest.skip("Kissat not installed")

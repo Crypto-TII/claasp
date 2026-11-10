@@ -2,6 +2,15 @@
 
 
 def _round_labels(original, sliced, *, start, stop):
+    correspondence = getattr(sliced.primitive, "_source_round_labels", None)
+    if correspondence is not None:
+        available = {number for number, _ in sliced.primitive.graph.round_output_boundaries}
+        published = {number for number, _ in original.graph.round_output_boundaries}
+        retained: dict[int, tuple[int, ...]] = {}
+        for target, number in correspondence:
+            if target in available and number in published and start <= number < stop:
+                retained[target] = (*retained.get(target, ()), number + 1)
+        return retained
     source_map = sliced.source_map
     targets = {}
     for number, pieces in sliced.primitive.graph.round_output_boundaries:

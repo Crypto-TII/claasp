@@ -51,3 +51,15 @@ def test_complete_word_aliases_preserve_known_values_and_abstract_activity():
             _decode_words=lambda words, assignment, source=source: (source,),
         )
         assert _decode_rounds(model, {}, {0: (1,)}, wordwise=True)[0][1] == (source,)
+
+
+def test_slicer_round_correspondence_handles_repacked_partial_input_boundaries():
+    original = SimpleNamespace(
+        graph=SimpleNamespace(round_output_boundaries=((2, ("original wire",)),))
+    )
+    derived = SimpleNamespace(
+        _source_round_labels=((0, 2),),
+        graph=SimpleNamespace(round_output_boundaries=((0, ("repacked state",)),)),
+    )
+    sliced = SimpleNamespace(primitive=derived, source_map={})
+    assert _round_labels(original, sliced, start=2, stop=3) == {0: (3,)}
