@@ -245,3 +245,30 @@ def test_zero_input_primitive_reports_an_ambiguous_boundary():
     with pytest.raises(TransformationError) as caught:
         invert_primitive(graph)
     assert caught.value.reason is TransformationFailureReason.AMBIGUOUS_BOUNDARY
+
+
+def test_inverse_retains_original_round_state_wires_without_extra_operations():
+    from claasp.graph.propagation import resolve_selection
+
+    primitive = Speck(number_of_rounds=3)
+    inverse = invert_primitive(primitive, retained_inputs=("key",)).primitive
+    ciphertext = primitive.evaluate(PLAINTEXT, KEY)
+    forward = primitive.evaluate_with_trace(PLAINTEXT, KEY)
+    backward = inverse.evaluate_with_trace(ciphertext, KEY)
+    originals = dict(primitive.graph.round_output_boundaries)
+    retained = vars(inverse)["_inverse_round_boundaries"]
+    assert tuple(number for number, _ in retained) == tuple(originals)
+    forward_bindings = {item.binding_id: item for item in primitive.graph.bindings}
+    backward_bindings = {item.binding_id: item for item in inverse.graph.bindings}
+    for number, pieces in retained:
+        expected = tuple(
+            value
+            for part in originals[number]
+            for value in resolve_selection(part, forward.values, forward_bindings)
+        )
+        observed = tuple(
+            value
+            for part in pieces
+            for value in resolve_selection(part, backward.values, backward_bindings)
+        )
+        assert observed == expected

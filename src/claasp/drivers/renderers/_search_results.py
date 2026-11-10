@@ -1,7 +1,20 @@
 """Optional Matplotlib rendering of retained trail search evidence."""
 
 
-def _plot(result, *, show, save_to):
+def _plot(result, *, show, save_to, details=False, value_format="hex"):
+    from claasp.presentation._impossible import _is_impossible
+
+    if _is_impossible(result):
+        from claasp.drivers.renderers._impossible import _plot as impossible_plot
+
+        return impossible_plot(
+            result, details=details, value_format=value_format, show=show, save_to=save_to
+        )
+    if details or value_format != "hex":
+        raise ValueError(
+            "plot details and value_format are supported for impossible trail diagrams"
+        )
+
     from claasp.drivers.renderers.presentation import FigureArtifact, _finish_figure, _matplotlib
     from claasp.presentation._search_results import _view
     from claasp.provenance import DriverIdentity, DriverKind

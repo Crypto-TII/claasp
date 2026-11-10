@@ -276,6 +276,9 @@ jobs:
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=minisat python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q
 
+      - name: Verify full impossible-trail presentation
+        run: python -m pytest -m external tests/integration/test_impossible_presentation.py -q
+
       - name: Execute composed-search regressions and API doctests
         run: python -m pytest -m external tests/integration/test_sat_trail_assembly.py -k "public or api_doctests" -q
 
