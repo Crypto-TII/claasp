@@ -182,6 +182,10 @@ def _notes(result):
         notes.append(f"Complete: {result.complete}")
     if hasattr(result, "termination"):
         notes.append(f"Termination: {result.termination}")
+    if getattr(result, "representation", None) is not None:
+        notes.append(f"Truncated model: {result.representation}")
+    if getattr(result, "complete", False):
+        notes.append("Exhaustion applies only to the selected truncated model.")
     if hasattr(result, "attempted_rounds"):
         notes.append(f"Attempted middle rounds: {result.attempted_rounds}")
     notes.extend(
@@ -189,7 +193,7 @@ def _notes(result):
             "! marks contradictory MSB-first bit/word positions in both middle rows.",
             "? is unknown; * is a nonzero word of unspecified value.",
             "Round labels count original graph boundaries. Below ↑ propagates from ciphertext.",
-            "Retained abstract model contradiction; no whole-cipher probability claim.",
+            "Retained abstract evidence; no whole-primitive probability claim.",
         )
     )
     return tuple(notes)

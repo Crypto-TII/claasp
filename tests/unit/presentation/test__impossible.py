@@ -121,3 +121,11 @@ def test_empty_unknown_search_does_not_invent_a_trail():
         details=True, value_format="binary", file=output
     )
     assert "No retained witness" in output.getvalue() and "solver unknown" in output.getvalue()
+
+
+def test_empty_complete_search_keeps_model_and_qualified_exhaustion_scope():
+    output = StringIO()
+    ImpossibleSearchResult((), (2, 3), True, "exhausted UNSAT", "wordwise").to_terminal(file=output)
+    assert "Truncated model: wordwise" in output.getvalue()
+    assert "Exhaustion applies only to the selected truncated model." in output.getvalue()
+    assert "No retained witness" in output.getvalue()
