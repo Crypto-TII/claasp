@@ -104,6 +104,7 @@ class ChaChaBlockFunction(Primitive):
                     rotations,
                     f"r{half_round}_q{quarter}",
                 )
+            self._builder.set_round_output(*state)
         self._builder.add_round()
         summed = [
             self._builder.add_component(
@@ -112,7 +113,9 @@ class ChaChaBlockFunction(Primitive):
             for index, (before, after) in enumerate(zip(feed_forward, state))
         ]
         bits = [self._builder.unpack_bits(word) for word in summed]
-        self._builder.set_output(bits)
+        final_output = bits
+        self._builder.set_round_output(*final_output)
+        self._builder.set_output(final_output)
 
     def _half_quarter_round(self, a, b, c, d, rotations, prefix):
         a = self._builder.add_component(ModularAdd((a, b), component_id=f"{prefix}_add0"))

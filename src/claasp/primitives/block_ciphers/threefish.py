@@ -97,10 +97,13 @@ class Threefish(Primitive):
                         ),
                     )
                 )
-            permuted = [None] * count
+            permuted = list(state)
             for source, destination in enumerate(PERMUTATIONS[parameter_index]):
                 permuted[destination] = mixed[source]
             state = permuted
+            self._builder.set_round_output(*state)
         self._builder.add_round()
         state = inject(rounds // 4)
-        self._builder.set_output(concatenate(self, *state))
+        final_output = concatenate(self, *state)
+        self._builder.set_round_output(final_output)
+        self._builder.set_output(final_output)

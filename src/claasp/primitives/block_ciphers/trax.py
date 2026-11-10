@@ -87,6 +87,10 @@ class TRAX(Primitive):
                     ROUND_CONSTANTS[(4 * step_number + branch) % 8],
                 )
             state_x, state_y = linear(state_x, state_y)
+            if step_number < number_of_rounds - 1:
+                self._builder.set_round_output(
+                    *(value for pair in zip(state_x, state_y) for value in pair)
+                )
         output = []
         for branch in range(4):
             output.extend(
@@ -95,4 +99,6 @@ class TRAX(Primitive):
                     xor(self, state_y[branch], key[2 * branch + 1]),
                 )
             )
-        self._builder.set_output(concatenate(self, *output))
+        output = concatenate(self, *output)
+        self._builder.set_round_output(output)
+        self._builder.set_output(output)
