@@ -185,6 +185,12 @@ def _view(result: Any) -> _View:
             f"termination: {result.termination}",
             f"attempted middle rounds: {result.attempted_rounds}",
             f"retained candidates: {len(result.candidates)}",
+            *((f"Truncated model: {result.representation}",) if result.representation else ()),
+            *(
+                ("Exhaustion applies only to the selected truncated model.",)
+                if result.complete
+                else ()
+            ),
         )
         panels = tuple(
             panel

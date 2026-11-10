@@ -336,19 +336,15 @@ def slice_primitive(
 
 
 def _round_observation(primitive: Primitive, round_number: int):
-    states = tuple(primitive.graph.round_outputs)
-    if round_number < 0 or round_number >= len(states):
+    boundaries = dict(primitive.graph.round_output_boundaries)
+    if round_number not in boundaries:
         raise TransformationError(
             TransformationFailureReason.AMBIGUOUS_BOUNDARY,
             "primitive does not publish the requested round-state boundary",
             source_ids=(str(round_number),),
         )
-    state = states[round_number]
-    if isinstance(state, Mapping):
-        if "state" in state:
-            return state["state"]
-        return tuple(state.values())
-    return state
+    selections = boundaries[round_number]
+    return selections[0] if len(selections) == 1 else selections
 
 
 def slice_rounds(

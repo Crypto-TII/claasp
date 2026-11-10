@@ -944,11 +944,16 @@ class Analysis:
         output_pattern=None,
         active_input="plaintext",
         zero_difference_inputs=None,
-        representation="bitwise",
+        representation="auto",
         solver=None,
         limit=1,
     ):
         """Search or enumerate checked impossible-model external pattern pairs.
+
+        Auto representation uses wordwise propagation on finite-field byte
+        graphs such as AES, and bitwise propagation on Bit/Word graphs such as
+        Speck. Set representation explicitly to select a model. Candidates
+        record the selected representation. AES split 2 is after encryption round 1.
 
         Requires Kissat; the integration job executes the examples below.
         A candidate limit is not an exhaustion proof: complete remains False.

@@ -114,3 +114,22 @@ def test_aes_evaluate_many_validates_named_batch_inputs():
         aes.evaluate_many(plaintext=[0, 1], key=[0])
     with pytest.raises(ValueError, match="missing=.*key"):
         aes.evaluate_many(plaintext=[0, 1])
+
+
+def test_aes_slicing_uses_graph_indices_and_preserves_round_observations():
+    from claasp.transformations import slice_rounds
+    from claasp.transformations.contracts import TransformationError
+
+    primitive = AES(number_of_rounds=2)
+    assert len(primitive.graph.round_outputs) == 2
+    assert tuple(number for number, _ in primitive.graph.round_output_boundaries) == (1, 2)
+    assert "sub_bytes" in primitive.graph.intermediate_outputs[0]
+    with pytest.raises(TransformationError, match="does not publish"):
+        slice_rounds(primitive, 0, 0)
+    first = slice_rounds(primitive, 0, 1).primitive
+    first_output = first.evaluate(plaintext=PLAINTEXT, key=KEY)
+    assert first_output == AES(number_of_rounds=1).evaluate(plaintext=PLAINTEXT, key=KEY)
+    suffix = slice_rounds(primitive, 2, 2).primitive
+    assert suffix.evaluate(state=first_output, key=KEY) == primitive.evaluate(
+        plaintext=PLAINTEXT, key=KEY
+    )

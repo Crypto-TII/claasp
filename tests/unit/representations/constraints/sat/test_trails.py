@@ -401,3 +401,64 @@ def test_semi_deterministic_differential_linear_sat_validates_configuration():
             middle_maximum_scaled_weight=None,
             linear_maximum_weight=1,
         )
+
+
+def _sparse_binary_field_primitive(matrix=((1, 0), (1, 1))):
+    from claasp.components import LinearMap
+    from claasp.unit_types import BinaryExtensionField
+
+    p = Primitive("sparse_field", {"input": UnitArrayType(BinaryExtensionField(2, 0b111), (2,))})
+    p._builder.add_round()
+    output = p._builder.add_component(LinearMap(p.graph.input("input"), matrix))
+    p._builder.set_round_output(output)
+    p._builder.set_output(output)
+    return p
+
+
+def test_sparse_wordwise_matrix_ignores_zero_coefficient_dependencies():
+    import shutil
+
+    if not shutil.which("kissat"):
+        pytest.skip("requires Kissat")
+    from claasp.drivers.solvers import KissatSolver
+    from claasp.representations.constraints.sat import WordwiseDeterministicTruncatedSATModel
+    from claasp.semantics.cryptanalysis import (
+        WordwiseDifferenceKind as Kind,
+    )
+    from claasp.semantics.cryptanalysis import (
+        WordwiseXorDifference as Difference,
+    )
+
+    p = _sparse_binary_field_primitive()
+    model = WordwiseDeterministicTruncatedSATModel(
+        p,
+        fixed_input_differences={"input": (Difference(2, Kind.ZERO), Difference(2, Kind.UNKNOWN))},
+    )
+    result = KissatSolver().solve(model.cnf_formula())
+    trail = model.decode_characteristic(result.assignment)
+    assert tuple(d.kind for d in trail.output_differences) == (Kind.ZERO, Kind.UNKNOWN)
+    # Every concrete difference is contained in its decoded abstract output.
+    for y in range(4):
+        assert p.evaluate(input=y) == y
+
+
+@pytest.mark.parametrize("pattern", ["0000", "0100", "01?0", "????"])
+@pytest.mark.parametrize("matrix", [((1, 0), (1, 1)), ((2, 0), (3, 1))])
+def test_bitwise_binary_field_linear_maps_cover_concrete_differences(pattern, matrix):
+    import shutil
+
+    if not shutil.which("kissat"):
+        pytest.skip("requires Kissat")
+    from claasp.drivers.solvers import KissatSolver
+
+    p = _sparse_binary_field_primitive(matrix)
+    model = WordDeterministicTruncatedSATModel(p, fixed_input_patterns={"input": pattern})
+    solved = KissatSolver().solve(model.cnf_formula())
+    trail = model.decode_characteristic(solved.assignment)
+    expected = str(trail.output_pattern)
+    for value in range(16):
+        bits = f"{value:04b}"
+        if all(a == "?" or a == b for a, b in zip(pattern, bits)):
+            output = p.evaluate(input=value)
+            assert isinstance(output, int)
+            assert all(a == "?" or a == b for a, b in zip(expected, f"{output:04b}"))
