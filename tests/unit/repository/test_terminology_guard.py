@@ -1,13 +1,4 @@
-"""Enforce M10.9a: no generic 'cipher'/'ciphers' vocabulary in public v5 code.
-
-CLAASP v5 renamed the generic graph abstraction ``Cipher`` to ``Primitive``
-and the public catalogue package ``ciphers`` to ``primitives`` (see the
-"Primitive terminology and catalogue taxonomy" section of
-``tools/terminology_guard.py``). This test wires
-:mod:`tools.terminology_guard` into the routine fast unit-test run so a
-regression to the transitional vocabulary fails CI immediately, without a
-separate job.
-"""
+"""Keep obsolete generic Cipher identifiers out of executable v5 source."""
 
 import importlib.util
 import sys
@@ -33,10 +24,10 @@ def _module():
     return module
 
 
-def test_source_and_docs_contain_no_generic_cipher_vocabulary():
+def test_source_contains_no_obsolete_cipher_identifiers():
     module = _module()
     violations = module.find_violations()
-    assert not violations, "generic 'cipher' vocabulary reintroduced:\n" + "\n".join(
+    assert not violations, "obsolete Cipher identifiers reintroduced:\n" + "\n".join(
         str(violation) for violation in violations
     )
 
@@ -56,7 +47,7 @@ def test_guard_still_detects_a_reintroduced_generic_cipher_reference(tmp_path):
     finally:
         module.NEXT_ROOT = original_root
 
-    assert len(violations) == 2
+    assert len(violations) == 1
 
 
 def test_guard_allows_the_real_block_cipher_taxonomy_and_ciphertext(tmp_path):
@@ -78,3 +69,35 @@ def test_guard_allows_the_real_block_cipher_taxonomy_and_ciphertext(tmp_path):
         module.NEXT_ROOT = original_root
 
     assert violations == []
+
+
+def test_guard_allows_cipher_in_documentation_comments_and_strings(tmp_path):
+    module = _module()
+    source = tmp_path / "src" / "claasp"
+    source.mkdir(parents=True)
+    (source / "fine.py").write_text(
+        '"""The cipher propagates differences. Legacy Cipher API."""\n'
+        "# Split the cipher at an internal boundary.\n"
+        'description = "claasp.ciphers and Cipher are historical names"\n'
+        "class CipherFour: pass\n"
+        "block_cipher = ciphertext = stream_cipher = None\n"
+    )
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "example.rst").write_text(
+        "Given a block cipher, split the cipher at each internal boundary.\n"
+        "Historical example: class CipherFoo.\n"
+    )
+    module.NEXT_ROOT = tmp_path
+    assert module.find_violations(("src/claasp", "docs")) == []
+
+
+def test_guard_detects_obsolete_imports_attributes_and_parameters(tmp_path):
+    module = _module()
+    source = tmp_path / "src" / "claasp"
+    source.mkdir(parents=True)
+    (source / "regressed.py").write_text(
+        "from claasp.ciphers import Cipher\ndef analyze(cipher):\n    return cipher.CipherDiagram\n"
+    )
+    module.NEXT_ROOT = tmp_path
+    assert [item.line_number for item in module.find_violations()] == [1, 2, 3]
