@@ -2,9 +2,11 @@
 
 from dataclasses import dataclass
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+
 
 @dataclass(frozen=True, slots=True)
-class ActiveSBoxResult:
+class ActiveSBoxResult(_PlotMixin):
     """A wordwise relaxation objective, with a lower bound only after optimality.
 
     EXAMPLES::
@@ -13,6 +15,20 @@ class ActiveSBoxResult:
         True
         >>> ActiveSBoxResult('optimal', 5, True).lower_bound
         5
+
+    Plotting
+    ~~~~~~~~
+
+    An incomplete relaxation shows a candidate objective, never a proved lower bound.
+
+    EXAMPLES::
+
+        >>> result = ActiveSBoxResult('feasible', 5, False)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     status: str

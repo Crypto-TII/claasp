@@ -12,6 +12,8 @@ from fractions import Fraction
 from math import log2
 from types import MappingProxyType
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.drivers.solvers import SatStatus, Z3Solver
 from claasp.representations.constraints.sat.quasidifferential import (
     QuasidifferentialSATModel,
@@ -21,7 +23,7 @@ from claasp.semantics.cryptanalysis.quasidifferential import QuasidifferentialTr
 
 
 @dataclass(frozen=True, slots=True)
-class QuasidifferentialTrail:
+class QuasidifferentialTrail(_PlotMixin):
     """One independently checked signed trail, including key-mask information.
 
     EXAMPLES::
@@ -29,6 +31,21 @@ class QuasidifferentialTrail:
         >>> result = QuasidifferentialTrail('toy', {}, {}, 1, 0, (), Fraction(-1, 2))
         >>> (result.coefficient, result.weight, result.is_optimal)
         (Fraction(-1, 2), 1.0, False)
+
+    Plotting
+    ~~~~~~~~
+
+    Local signed factors and their cumulative product retain negative signs; they are not probabilities.
+
+    EXAMPLES::
+
+        >>> from fractions import Fraction
+        >>> result = QuasidifferentialTrail('example', {}, {}, 1, 0, (), Fraction(-1, 2))
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     primitive: str
@@ -107,13 +124,41 @@ class QuasidifferentialTrail:
 
 
 @dataclass(frozen=True, slots=True)
-class QuasidifferentialEnumeration:
+class QuasidifferentialEnumeration(_TerminalMixin, _PlotMixin):
     """A trail set with an explicit completeness verdict.
 
     EXAMPLES::
 
         >>> QuasidifferentialEnumeration((), True).require_complete().trails
         ()
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Signed coefficients are displayed per retained trail with explicit completeness.
+
+    EXAMPLES::
+
+        >>> result = QuasidifferentialEnumeration((), False, 'trail limit')
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Signed coefficients are displayed per retained trail with explicit completeness.
+
+    EXAMPLES::
+
+        >>> result = QuasidifferentialEnumeration((), False, 'trail limit')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     trails: tuple[QuasidifferentialTrail, ...]
@@ -128,7 +173,7 @@ class QuasidifferentialEnumeration:
 
 
 @dataclass(frozen=True, slots=True)
-class FixedKeyProbabilityResult:
+class FixedKeyProbabilityResult(_PlotMixin):
     """A signed partial sum, with exact probability exposed only on completion.
 
     EXAMPLES::
@@ -136,6 +181,21 @@ class FixedKeyProbabilityResult:
         >>> result = FixedKeyProbabilityResult(Fraction(1, 2), True, 2)
         >>> result.probability
         Fraction(1, 2)
+
+    Plotting
+    ~~~~~~~~
+
+    Signed partial sums may be negative; only complete enumeration can establish a probability.
+
+    EXAMPLES::
+
+        >>> from fractions import Fraction
+        >>> result = FixedKeyProbabilityResult(Fraction(-1, 4), False, 2, 'trail limit')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     signed_sum: Fraction

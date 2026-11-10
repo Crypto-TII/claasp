@@ -7,6 +7,8 @@ from math import inf, log2
 from pathlib import Path
 from typing import TYPE_CHECKING, TextIO
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.representations.constraints import ConstraintModelApplication
 from claasp.semantics.base import XOR_DIFFERENTIAL, XOR_LINEAR
 
@@ -290,7 +292,7 @@ class TrailSearchMetadata:
 
 
 @dataclass(frozen=True, slots=True)
-class Trail:
+class Trail(_TerminalMixin, _PlotMixin):
     """A checked sequence of component transitions.
 
     EXAMPLES::
@@ -303,6 +305,34 @@ class Trail:
         ...     XorDifference(1, 1), (TrailStep("sbox_0", transition),))
         >>> trail.total_weight
         1.0
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Relative and cumulative component weights are shown without inventing round observations.
+
+    EXAMPLES::
+
+        >>> result = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1), XorDifference(1, 1), ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Relative and cumulative component weights are shown without inventing round observations.
+
+    EXAMPLES::
+
+        >>> result = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 1), XorDifference(1, 1), ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     kind: TrailKind

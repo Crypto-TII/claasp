@@ -2,6 +2,8 @@
 
 from dataclasses import dataclass
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.drivers.solvers import CPStatus, MiniZincSolver
 from claasp.semantics import PROBABILISTIC_TRUNCATED_XOR
 from claasp.semantics.cryptanalysis import (
@@ -16,13 +18,45 @@ from claasp.semantics.cryptanalysis import (
 
 
 @dataclass(frozen=True, slots=True)
-class TruncatedPropagationResult:
+class TruncatedPropagationResult(_TerminalMixin, _PlotMixin):
     """Independently checked deterministic-truncated round boundaries.
 
     EXAMPLES::
 
         >>> callable(TruncatedPropagationResult)
         True
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Bit states 0, 1 and ? are categorical differences, not weights.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse('01?')
+        >>> result = TruncatedPropagationResult((p,), 'example')
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Bit states 0, 1 and ? are categorical differences, not weights.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse('01?')
+        >>> result = TruncatedPropagationResult((p,), 'example')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     boundaries: tuple[TruncatedXorDifference, ...]
@@ -32,13 +66,45 @@ class TruncatedPropagationResult:
 
 
 @dataclass(frozen=True, slots=True)
-class CPCharacteristicResult:
+class CPCharacteristicResult(_TerminalMixin, _PlotMixin):
     """A decoded and independently validated CP characteristic.
 
     EXAMPLES::
 
         >>> callable(CPCharacteristicResult)
         True
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The view follows the decoded characteristic, including contradiction positions.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+        >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+        >>> result = CPCharacteristicResult(b, 0.0, 'example', ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The view follows the decoded characteristic, including contradiction positions.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+        >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+        >>> result = CPCharacteristicResult(b, 0.0, 'example', ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     characteristic: object

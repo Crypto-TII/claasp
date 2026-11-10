@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import cast
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.analysis.linear_properties import exact_branch_number, matrix_rank
 from claasp.components import (
     Add,
@@ -277,7 +279,7 @@ class PresentFixedActiveSBoxesMILPModel(PresentXorDifferentialMILPModel):
 
 
 @dataclass(frozen=True, slots=True)
-class WordwiseActivityResult:
+class WordwiseActivityResult(_TerminalMixin, _PlotMixin):
     """A validated word-activity assignment and its active S-box count.
 
     EXAMPLES::
@@ -285,6 +287,34 @@ class WordwiseActivityResult:
         >>> result = WordwiseActivityResult(5, (("state_0", 1),))
         >>> result.active_sboxes
         5
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The activity assignment is a relaxation witness, not a proof of an optimal exact differential.
+
+    EXAMPLES::
+
+        >>> result = WordwiseActivityResult(1, (('sbox_0', 1),))
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The activity assignment is a relaxation witness, not a proof of an optimal exact differential.
+
+    EXAMPLES::
+
+        >>> result = WordwiseActivityResult(1, (('sbox_0', 1),))
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     active_sboxes: int

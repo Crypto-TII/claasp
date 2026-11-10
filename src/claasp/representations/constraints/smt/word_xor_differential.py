@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from hashlib import sha256
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.components import (
     Add,
     BinaryAffineMap,
@@ -55,8 +56,23 @@ from .word_xor_linear import _packed
 
 
 @dataclass(frozen=True, slots=True)
-class WordXorDifferentialCharacteristic:
-    """Component-product differential evidence, not an aggregated differential."""
+class WordXorDifferentialCharacteristic(_PlotMixin):
+    """Component-product differential evidence, not an aggregated differential.
+
+    Plotting
+    ~~~~~~~~
+
+    Relative and cumulative weights follow component transitions; no round evidence is invented.
+
+    EXAMPLES::
+
+        >>> result = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
+    """
 
     input_differences: tuple[tuple[str, int], ...]
     output_difference: int
@@ -82,7 +98,24 @@ class WordXorDifferentialCharacteristic:
 
 
 @dataclass(frozen=True, slots=True)
-class WordXorDifferentialEnumeration:
+class WordXorDifferentialEnumeration(_PlotMixin):
+    """Retained WordXorDifferentialEnumeration evidence.
+
+    Plotting
+    ~~~~~~~~
+
+    Weights are indexed by retained characteristic; incomplete enumeration is not a complete cluster.
+
+    EXAMPLES::
+
+        >>> result = WordXorDifferentialEnumeration((), False, 0.0)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
+    """
+
     trails: tuple[WordXorDifferentialCharacteristic, ...]
     complete: bool
     runtime_seconds: float

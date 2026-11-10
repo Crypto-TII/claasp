@@ -8,6 +8,8 @@ from hashlib import sha256
 from itertools import combinations, product
 from typing import Any
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.components import (
     Add,
     BinaryAffineMap,
@@ -444,7 +446,7 @@ def _enumerate(model, formula, solver, enumeration_type, metadata, limit):
 
 
 @dataclass(frozen=True, slots=True)
-class WordDeterministicTruncatedCharacteristic:
+class WordDeterministicTruncatedCharacteristic(_TerminalMixin, _PlotMixin):
     """One independently checked deterministic-truncated Word-graph witness.
 
     EXAMPLES::
@@ -455,6 +457,38 @@ class WordDeterministicTruncatedCharacteristic:
         ... )
         >>> str(characteristic.output_pattern)
         '0'
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The view shows retained bit patterns with ? explicitly marked unknown.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse('01?')
+        >>> result = WordDeterministicTruncatedCharacteristic((('plaintext', p),), p, (), ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The view shows retained bit patterns with ? explicitly marked unknown.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse('01?')
+        >>> result = WordDeterministicTruncatedCharacteristic((('plaintext', p),), p, (), ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     input_patterns: tuple[tuple[str, TruncatedXorDifference], ...]
@@ -464,7 +498,7 @@ class WordDeterministicTruncatedCharacteristic:
 
 
 @dataclass(frozen=True, slots=True)
-class WordDeterministicTruncatedEnumeration:
+class WordDeterministicTruncatedEnumeration(_TerminalMixin, _PlotMixin):
     """Results and reproducibility metadata from a truncated SAT search.
 
     EXAMPLES::
@@ -474,6 +508,34 @@ class WordDeterministicTruncatedEnumeration:
         ... )
         >>> (result.complete, dict(result.metadata)["solver"])
         (True, 'MinisatSolver')
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Retained truncated patterns are labelled by trail; completeness remains explicit.
+
+    EXAMPLES::
+
+        >>> result = WordDeterministicTruncatedEnumeration((), False, 0.0, ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Retained truncated patterns are labelled by trail; completeness remains explicit.
+
+    EXAMPLES::
+
+        >>> result = WordDeterministicTruncatedEnumeration((), False, 0.0, ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     trails: tuple[WordDeterministicTruncatedCharacteristic, ...]
@@ -1047,7 +1109,7 @@ class WordDeterministicTruncatedSATModel:
 
 
 @dataclass(frozen=True, slots=True)
-class WordwiseDeterministicTruncatedCharacteristic:
+class WordwiseDeterministicTruncatedCharacteristic(_TerminalMixin, _PlotMixin):
     """A decoded four-state wordwise characteristic over a complete graph.
 
     EXAMPLES::
@@ -1058,6 +1120,34 @@ class WordwiseDeterministicTruncatedCharacteristic:
         ... )
         >>> trail.output_differences[0].kind.name
         'ZERO'
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Zero, known, nonzero and unknown word states are distinct categories.
+
+    EXAMPLES::
+
+        >>> result = WordwiseDeterministicTruncatedCharacteristic((), (), (), ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Zero, known, nonzero and unknown word states are distinct categories.
+
+    EXAMPLES::
+
+        >>> result = WordwiseDeterministicTruncatedCharacteristic((), (), (), ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     input_differences: tuple[tuple[str, tuple[WordwiseXorDifference, ...]], ...]
@@ -1568,7 +1658,7 @@ class WordDeterministicTruncatedNativeXorSATModel(WordDeterministicTruncatedSATM
 
 
 @dataclass(frozen=True, slots=True)
-class WordImpossibleSATTrail:
+class WordImpossibleSATTrail(_TerminalMixin, _PlotMixin):
     """One independently checked impossible-differential Word-graph witness.
 
     EXAMPLES::
@@ -1585,6 +1675,38 @@ class WordImpossibleSATTrail:
         ... )
         >>> trail.boundary.contradictory_positions
         (1,)
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The two middle patterns and their contradictory bit positions are shown together.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+        >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+        >>> result = WordImpossibleSATTrail(None, None, b, ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The two middle patterns and their contradictory bit positions are shown together.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary, TruncatedXorDifference
+        >>> b = ImpossiblePropagationBoundary(TruncatedXorDifference.parse('01?'), TruncatedXorDifference.parse('00?'))
+        >>> result = WordImpossibleSATTrail(None, None, b, ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     forward: WordDeterministicTruncatedCharacteristic
@@ -1597,7 +1719,7 @@ SpeckImpossibleSATTrail = WordImpossibleSATTrail
 
 
 @dataclass(frozen=True, slots=True)
-class AutomaticWordImpossibleSATResult:
+class AutomaticWordImpossibleSATResult(_TerminalMixin, _PlotMixin):
     """Outcome of deterministic split-round enumeration.
 
     EXAMPLES::
@@ -1605,6 +1727,34 @@ class AutomaticWordImpossibleSATResult:
         >>> result = AutomaticWordImpossibleSATResult(None, None, (1, 2), "exhausted_unsat")
         >>> result.found
         False
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The report records attempted splits and termination; no witness is fabricated after UNSAT.
+
+    EXAMPLES::
+
+        >>> result = AutomaticWordImpossibleSATResult(None, None, (1, 2), 'exhausted_unsat')
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The report records attempted splits and termination; no witness is fabricated after UNSAT.
+
+    EXAMPLES::
+
+        >>> result = AutomaticWordImpossibleSATResult(None, None, (1, 2), 'exhausted_unsat')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     middle_round: int | None
@@ -1886,13 +2036,41 @@ class WordwiseImpossibleMiddle:
 
 
 @dataclass(frozen=True, slots=True)
-class WordwiseImpossibleSATTrail:
+class WordwiseImpossibleSATTrail(_TerminalMixin, _PlotMixin):
     """Two independently checked wordwise graphs joined by a contradiction.
 
     EXAMPLES::
 
         >>> WordwiseImpossibleMiddle((0,), (2,), (0,)).contradictory_positions
         (0,)
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Contradictions use the retained wordwise model evidence; unknown is a separate category.
+
+    EXAMPLES::
+
+        >>> result = WordwiseImpossibleSATTrail(None, None, WordwiseImpossibleMiddle((2, 3), (0, 3), (0,)), ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Contradictions use the retained wordwise model evidence; unknown is a separate category.
+
+    EXAMPLES::
+
+        >>> result = WordwiseImpossibleSATTrail(None, None, WordwiseImpossibleMiddle((2, 3), (0, 3), (0,)), ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     forward: WordwiseDeterministicTruncatedCharacteristic
@@ -2163,7 +2341,7 @@ class SemiDeterministicModularAddTransition:
 
 
 @dataclass(frozen=True, slots=True)
-class SpeckSemiDeterministicTruncatedTrail:
+class SpeckSemiDeterministicTruncatedTrail(_TerminalMixin, _PlotMixin):
     """A decoded Speck trail using recovered look-ahead-window additions.
 
     EXAMPLES::
@@ -2175,6 +2353,38 @@ class SpeckSemiDeterministicTruncatedTrail:
         ... )
         >>> (empty.scaled_weight, empty.weight)
         (0, 0.0)
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Legacy fixed-point transition costs are converted to bits and labelled as model estimates.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse('01?')
+        >>> result = SpeckSemiDeterministicTruncatedTrail(p, p, ())
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Legacy fixed-point transition costs are converted to bits and labelled as model estimates.
+
+    EXAMPLES::
+
+        >>> from claasp.semantics.cryptanalysis import TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse('01?')
+        >>> result = SpeckSemiDeterministicTruncatedTrail(p, p, ())
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     input_pattern: TruncatedXorDifference
@@ -2677,7 +2887,7 @@ class WordXorDifferentialSATModel:
 
 
 @dataclass(frozen=True, slots=True)
-class SharedDifferencePairedSATTrail:
+class SharedDifferencePairedSATTrail(_TerminalMixin, _PlotMixin):
     """Two characteristics sharing one input difference.
 
     Corresponding modular-add output differences are mutually exclusive, as
@@ -2691,6 +2901,38 @@ class SharedDifferencePairedSATTrail:
         ... )
         >>> trail.total_weight
         5
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The two characteristic weights remain separate; their sum is the paired objective.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> result = SharedDifferencePairedSATTrail(t, t)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The two characteristic weights remain separate; their sum is the paired objective.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> result = SharedDifferencePairedSATTrail(t, t)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     left: Any
@@ -2998,7 +3240,7 @@ class WordXorLinearSATModel:
 
 
 @dataclass(frozen=True, slots=True)
-class SharedDifferencePairedXorDifferentialLinearSATTrail:
+class SharedDifferencePairedXorDifferentialLinearSATTrail(_TerminalMixin, _PlotMixin):
     """Two shared-input differential prefixes joined to one linear suffix.
 
     The objective is both differential weights plus twice the linear weight.
@@ -3011,6 +3253,40 @@ class SharedDifferencePairedXorDifferentialLinearSATTrail:
         ... )
         >>> trail.total_weight
         11
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The paired differential weight and twice the linear weight form the objective.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> pair = SharedDifferencePairedSATTrail(t, t)
+        >>> result = SharedDifferencePairedXorDifferentialLinearSATTrail(pair, t)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The paired differential weight and twice the linear weight form the objective.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> pair = SharedDifferencePairedSATTrail(t, t)
+        >>> result = SharedDifferencePairedXorDifferentialLinearSATTrail(pair, t)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     paired_differential: SharedDifferencePairedSATTrail
@@ -3263,7 +3539,7 @@ class SharedDifferencePairedWordXorDifferentialLinearSATModel:
 
 
 @dataclass(frozen=True, slots=True)
-class WordSemiDeterministicXorDifferentialLinearSATTrail:
+class WordSemiDeterministicXorDifferentialLinearSATTrail(_TerminalMixin, _PlotMixin):
     """An exact differential, semi-deterministic middle, and linear suffix.
 
     EXAMPLES::
@@ -3276,6 +3552,44 @@ class WordSemiDeterministicXorDifferentialLinearSATTrail:
         ... )
         >>> (trail.legacy_objective_weight, trail.middle_weight)
         (8, 0.41)
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    The middle estimate is shown separately from differential plus twice-linear objective weights.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> from claasp.semantics.cryptanalysis import ProbabilisticTruncatedTrail, TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse("0")
+        >>> middle = ProbabilisticTruncatedTrail(p, p, ())
+        >>> result = WordSemiDeterministicXorDifferentialLinearSATTrail(t, middle, t)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    The middle estimate is shown separately from differential plus twice-linear objective weights.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> from claasp.semantics.cryptanalysis import ProbabilisticTruncatedTrail, TruncatedXorDifference
+        >>> p = TruncatedXorDifference.parse("0")
+        >>> middle = ProbabilisticTruncatedTrail(p, p, ())
+        >>> result = WordSemiDeterministicXorDifferentialLinearSATTrail(t, middle, t)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     differential: Any
@@ -3542,7 +3856,7 @@ class WordSemiDeterministicXorDifferentialLinearSATModel:
 
 
 @dataclass(frozen=True, slots=True)
-class WordDeterministicXorDifferentialLinearSATTrail:
+class WordDeterministicXorDifferentialLinearSATTrail(_TerminalMixin, _PlotMixin):
     """One decoded differential, deterministic-truncated, and linear witness.
 
     The objective is the characteristic convention used by the legacy SAT
@@ -3559,6 +3873,38 @@ class WordDeterministicXorDifferentialLinearSATTrail:
         ... )
         >>> trail.total_weight
         8
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Differential and twice-linear contributions express the P_D * C_L² model score.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> result = WordDeterministicXorDifferentialLinearSATTrail(t, None, t)
+        >>> from io import StringIO
+        >>> output = StringIO()
+        >>> result.to_terminal(file=output)
+        >>> bool(output.getvalue().strip())
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    Differential and twice-linear contributions express the P_D * C_L² model score.
+
+    EXAMPLES::
+
+        >>> from claasp.representations.constraints.smt.word_xor_differential import WordXorDifferentialCharacteristic
+        >>> t = WordXorDifferentialCharacteristic((('plaintext', 1),), 1, (), ())
+        >>> result = WordDeterministicXorDifferentialLinearSATTrail(t, None, t)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     differential: Any

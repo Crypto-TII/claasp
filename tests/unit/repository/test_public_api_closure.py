@@ -215,3 +215,54 @@ print(','.join(sorted(forbidden & {name.split('.')[0] for name in set(sys.module
     )
 
     assert result.stdout.strip() == ""
+
+
+def test_internal_mixin_methods_remain_documented_on_public_results():
+    entries = {
+        entry["qualified_name"]: entry for entry in public_api_closure.enumerate_public_api()
+    }
+    receiver = "claasp.analysis.composed_search.ImpossibleSearchResult"
+    for method in ("plot", "to_terminal"):
+        record = entries[f"{receiver}.{method}"]
+        assert record["canonical_name"] == f"{receiver}.{method}"
+        assert record["defined_in"] == "claasp._result_presentation"
+        assert record["documented_by"] == receiver
+    assert not any(name.startswith("claasp._result_presentation.") for name in entries)
+
+
+def test_internal_base_inventory_honors_declared_methods_and_receiver_overrides(monkeypatch):
+    from types import SimpleNamespace
+
+    class InternalBase:
+        __public_api_methods__ = ("plot", "to_terminal")
+
+        def plot(self):
+            pass
+
+        def to_terminal(self):
+            pass
+
+        def helper(self):
+            pass
+
+    class Receiver(InternalBase):
+        def to_terminal(self):
+            pass
+
+    InternalBase.__module__ = "claasp._fixture"
+    InternalBase.__qualname__ = "InternalBase"
+    Receiver.__module__ = "claasp.fixture"
+    Receiver.__qualname__ = "Receiver"
+    module = SimpleNamespace(__all__=["Receiver"], Receiver=Receiver)
+    monkeypatch.setattr(
+        public_api_closure, "public_modules", lambda source_root: ("claasp.fixture",)
+    )
+    monkeypatch.setattr(public_api_closure.importlib, "import_module", lambda name: module)
+    entries = {
+        entry["qualified_name"]: entry for entry in public_api_closure.enumerate_public_api()
+    }
+    assert entries["claasp.fixture.Receiver.plot"]["defined_in"] == "claasp._fixture"
+    assert entries["claasp.fixture.Receiver.plot"]["documented_by"] == "claasp.fixture.Receiver"
+    assert entries["claasp.fixture.Receiver.to_terminal"]["defined_in"] == "claasp.fixture"
+    assert "claasp.fixture.Receiver.helper" not in entries
+    assert not any(name.startswith("claasp._fixture") for name in entries)

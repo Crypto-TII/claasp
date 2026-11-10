@@ -3,6 +3,8 @@
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
+from claasp._result_presentation import PlotMixin as _PlotMixin
+from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.drivers.solvers import KissatSolver, SatStatus
 
 
@@ -22,13 +24,40 @@ class ImpossibleCandidate:
 
 
 @dataclass(frozen=True, slots=True)
-class ImpossibleSearchResult:
+class ImpossibleSearchResult(_TerminalMixin, _PlotMixin):
     """Candidates and explicit exhaustion status for the selected split search.
 
     EXAMPLES::
 
         >>> ImpossibleSearchResult((), (), True, "exhausted UNSAT").found
         False
+
+    Terminal reporting
+    ~~~~~~~~~~~~~~~~~~
+
+    Print candidate boundaries, contradiction positions, and search status.
+
+    EXAMPLES::
+
+        >>> from io import StringIO
+        >>> stream = StringIO()
+        >>> ImpossibleSearchResult((), (1,), False, 'solver unknown').to_terminal(file=stream)
+        >>> 'solver unknown' in stream.getvalue()
+        True
+
+    Plotting
+    ~~~~~~~~
+
+    An interrupted search has no invented candidate or probability.
+
+    EXAMPLES::
+
+        >>> result = ImpossibleSearchResult((), (1,), False, 'solver unknown')
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     candidates: tuple[ImpossibleCandidate, ...]
@@ -47,21 +76,6 @@ class ImpossibleSearchResult:
         if not self.complete:
             raise RuntimeError("impossible search is incomplete: " + self.termination)
         return self
-
-    def to_terminal(self, *, file=None):
-        """Print candidate splits and the enumeration status."""
-        from claasp.presentation import Table, TableColumn, TableRow, render_terminal_table
-
-        table = Table(
-            (TableColumn("split", "Middle round"), TableColumn("model", "Representation")),
-            tuple(TableRow.of(item.middle_round, item.representation) for item in self.candidates),
-        )
-        print(render_terminal_table(table), file=file)
-        print(f"{len(self.candidates)} candidate(s); {self.termination}", file=file)
-        if self.representation is not None:
-            print(f"Truncated model: {self.representation}", file=file)
-        if self.complete:
-            print("Exhaustion applies only to the selected truncated model.", file=file)
 
 
 def search_impossible_differentials(
@@ -239,7 +253,7 @@ def search_impossible_differentials(
 
 
 @dataclass(frozen=True, slots=True)
-class XorDifferentialLinearSearchResult:
+class XorDifferentialLinearSearchResult(_PlotMixin):
     """Exact optimum of a declared characteristic score, not measured correlation.
 
     score = differential component probability * linear component correlation².
@@ -250,6 +264,20 @@ class XorDifferentialLinearSearchResult:
 
         >>> XorDifferentialLinearSearchResult(None, None, None, (), True).found
         False
+
+    Plotting
+    ~~~~~~~~
+
+    The objective is P_D * C_L²; the middle has no probability estimate.
+
+    EXAMPLES::
+
+        >>> result = XorDifferentialLinearSearchResult(None, None, None, (), False)
+        >>> artifact = result.plot(show=False)
+        >>> artifact.kind
+        'search_evidence'
+        >>> import matplotlib.pyplot as plt
+        >>> plt.close(artifact.figure)
     """
 
     trail: object | None
