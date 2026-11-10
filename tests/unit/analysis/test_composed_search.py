@@ -1,3 +1,5 @@
+import shutil
+
 import pytest
 
 from claasp.analysis import ImpossibleSearchResult, XorDifferentialLinearSearchResult
@@ -117,3 +119,54 @@ def test_explicit_bitwise_search_supports_small_binary_field_graphs():
     ).analysis.search_impossible_differentials(representation="bitwise")
     assert result.representation == "bitwise"
     assert result.complete or result.found
+
+
+@pytest.mark.parametrize(
+    "name", ("Speck", "Simon", "ChaChaPermutation", "SalsaPermutation", "ChaChaBlockFunction")
+)
+@pytest.mark.skipif(shutil.which("kissat") is None, reason="requires Kissat")
+def test_extended_wordwise_search_returns_checked_candidates(name):
+    from claasp import primitives
+
+    p = getattr(primitives, name)(number_of_rounds=2)
+    active = (
+        "plaintext" if "plaintext" in p.graph.input_arrays else next(iter(p.graph.input_arrays))
+    )
+    result = p.analysis.search_impossible_differentials(
+        active_input=active, representation="wordwise"
+    )
+    assert result.found and not result.complete
+    candidate = result.candidates[0]
+    assert candidate.representation == "wordwise"
+    assert candidate.trail.middle.contradictory_positions
+
+
+@pytest.mark.skipif(shutil.which("kissat") is None, reason="requires Kissat")
+def test_wordwise_arx_candidate_cannot_match_any_small_concrete_pair():
+    from itertools import product
+
+    from claasp.semantics.cryptanalysis import WordwiseDifferenceKind as Kind
+
+    p = ToySpeck(2)
+    candidate = p.analysis.search_impossible_differentials(representation="wordwise").candidates[0]
+    inputs = dict(candidate.trail.forward.input_differences)["plaintext"]
+    outputs = dict(candidate.trail.backward.input_differences)["output"]
+
+    def allowed(difference):
+        if difference.kind in (Kind.ZERO, Kind.KNOWN):
+            return (difference.value,)
+        return range(int(difference.kind is Kind.NONZERO), 1 << difference.width)
+
+    width = inputs[0].width
+    for words in product(*(allowed(item) for item in inputs)):
+        delta = sum(value << (width * (len(words) - 1 - i)) for i, value in enumerate(words))
+        for value in range(1 << (width * len(words))):
+            first = p.evaluate(plaintext=value, key=0)
+            second = p.evaluate(plaintext=value ^ delta, key=0)
+            assert isinstance(first, int) and isinstance(second, int)
+            actual = first ^ second
+            actual_words = tuple(
+                (actual >> (width * (len(words) - 1 - i))) & ((1 << width) - 1)
+                for i in range(len(words))
+            )
+            assert not all(word in allowed(item) for word, item in zip(actual_words, outputs))
