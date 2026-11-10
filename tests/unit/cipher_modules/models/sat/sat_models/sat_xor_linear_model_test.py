@@ -1,9 +1,13 @@
 import math
 from os import path, remove
 
+import pytest
+
 from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
-from claasp.cipher_modules.models.sat.solvers import CRYPTOMINISAT_EXT
+from claasp.cipher_modules.models.sat.solvers import CRYPTOMINISAT_EXT, KISSAT_EXT
 from claasp.cipher_modules.models.utils import linear_checker_for_block_cipher_single_key, set_fixed_variables
+from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.name_mappings import SATISFIABLE
 
@@ -143,3 +147,83 @@ def test_fix_variables_value_xor_linear_constraints():
         "plaintext_3_o",
         "-ciphertext_0_o -ciphertext_1_o -ciphertext_2_o ciphertext_3_o",
     ]
+
+
+# Goal: the search with Matsui bounds finds the same optimum as the plain search and only adds weight constraints
+# to the unchanged propagation model.
+@pytest.mark.parametrize(
+    "cipher, matsui_bounds, lowest_weight",
+    [
+        (PresentBlockCipher(number_of_rounds=4), [1, 2, 4], 6),
+        (SpeckBlockCipher(number_of_rounds=7), [0, 0, 1, 3, 5, 7], 9),
+        (SimonBlockCipher(number_of_rounds=6), [0, 1, 2, 3, 4], 6),
+    ],
+)
+def test_find_lowest_weight_xor_linear_trail_with_matsui_bounds(cipher, matsui_bounds, lowest_weight):
+    plain = SatXorLinearModel(cipher).find_lowest_weight_xor_linear_trail(solver_name=KISSAT_EXT)
+    sat = SatXorLinearModel(cipher)
+    trail = sat.find_lowest_weight_xor_linear_trail_with_matsui_bounds(matsui_bounds, solver_name=KISSAT_EXT)
+    assert plain["total_weight"] == trail["total_weight"] == lowest_weight
+    assert trail["status"] == SATISFIABLE
+    assert trail["test_name"] == "find_lowest_weight_xor_linear_trail_with_matsui_bounds"
+
+    # the model is the unchanged propagation model plus the new weight constraints only
+    reference = SatXorLinearModel(cipher)
+    reference.build_xor_linear_trail_model()
+    number_of_propagation_constraints = len(reference.model_constraints)
+    assert sat.model_constraints[:number_of_propagation_constraints] == reference.model_constraints
+    new_variables = sat._variables_list[len(reference._variables_list) :]
+    assert sat._variables_list[: len(reference._variables_list)] == reference._variables_list
+    assert new_variables
+    assert all(variable.startswith("matsui_") for variable in new_variables)
+
+
+# Goal: the search starting from a given weight still finds the optimum and writes the solver log file.
+def test_find_lowest_weight_xor_linear_trail_with_matsui_bounds_start_weight_and_log(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck = SpeckBlockCipher(number_of_rounds=7)
+    sat = SatXorLinearModel(speck)
+    log_file_name = f"{speck.id}__sat_find_lowest_weight_xor_linear_trail_with_matsui_bounds__{KISSAT_EXT}solver.log"
+    try:
+        trail = sat.find_lowest_weight_xor_linear_trail_with_matsui_bounds(
+            [0, 0, 1, 3, 5, 7], solver_name=KISSAT_EXT, start_weight=8, log=True
+        )
+        assert trail["total_weight"] == 9
+        assert path.exists(log_file_name)
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+
+# Goal: the weight variables of the linear model are correctly grouped by round, also when the key schedule is
+# removed, and a mismatch with the model raises an error.
+def test_hw_variables_by_round_xor_linear():
+    speck = SpeckBlockCipher(number_of_rounds=3)
+    sat = SatXorLinearModel(speck)
+    sat.build_xor_linear_trail_model()
+    hw_variables_by_round = sat._hw_variables_by_round()
+    assert [len(round_variables) for round_variables in hw_variables_by_round] == [16, 16, 16]
+    assert all(variable.startswith("hw_modadd_0_") for variable in hw_variables_by_round[0])
+    assert all(variable.startswith("hw_modadd_2_") for variable in hw_variables_by_round[2])
+    # the model must contain the weight variables of its components
+    sat._variables_list.append("hw_extra")
+    with pytest.raises(ValueError, match="do not match"):
+        sat._hw_variables_by_round()
+
+
+# Goal: the documented round-by-round loop, feeding each optimum as the next Matsui bound, gives the lowest weights
+# found by the classical search.
+@pytest.mark.parametrize(
+    "cipher_class, lowest_weights",
+    [
+        (PresentBlockCipher, [1, 2, 4, 6, 8, 10]),
+        (SpeckBlockCipher, [0, 0, 1, 3, 5, 7, 9]),
+    ],
+)
+def test_find_lowest_weight_xor_linear_trail_with_matsui_bounds_round_by_round(cipher_class, lowest_weights):
+    matsui_bounds = []
+    for number_of_rounds in range(1, len(lowest_weights) + 1):
+        sat = SatXorLinearModel(cipher_class(number_of_rounds=number_of_rounds))
+        trail = sat.find_lowest_weight_xor_linear_trail_with_matsui_bounds(matsui_bounds, solver_name=KISSAT_EXT)
+        matsui_bounds.append(int(trail["total_weight"]))
+    assert matsui_bounds == lowest_weights
