@@ -44,7 +44,9 @@ def test_sat_requires_a_decodable_and_independently_checked_witness(assignment):
 
     class Model:
         def smt_formula(self):
-            return "formula"
+            from claasp.representations.constraints.smt import SMTFormula
+
+            return SMTFormula((), (), ())
 
         def decode_characteristic(self, values):
             assert values == {}
@@ -59,3 +61,18 @@ def test_sat_requires_a_decodable_and_independently_checked_witness(assignment):
     )
     with pytest.raises(RuntimeError, match="assignment|independent graph validation"):
         first_characteristic(Model(), driver)
+
+
+@pytest.mark.parametrize("kind", ("linear", "differential"))
+def test_unknown_enumeration_retains_incompleteness_and_uses_portable_cnf(kind):
+    from claasp.representations.constraints.sat import CNFFormula
+
+    class Unknown:
+        def solve(self, formula):
+            assert isinstance(formula, CNFFormula)
+            return SimpleNamespace(status="unknown", assignment=None, runtime_seconds=0.0)
+
+    result = getattr(ToySpeck(1).analysis, f"enumerate_xor_{kind}_trails")(1, solver=Unknown())
+    assert not result.complete and not result.trails
+    with pytest.raises(RuntimeError, match="incomplete"):
+        result.require_complete()

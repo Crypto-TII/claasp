@@ -9,7 +9,8 @@ from claasp.representations.constraints import (
     _direct_model,
     _verified_model,
 )
-from claasp.representations.constraints.sat import BooleanCNFModel, CNFFormula
+from claasp.representations.constraints.sat import BooleanCNFModel
+from claasp.representations.constraints.sat.model import _require_plain_cnf
 
 from .model import (
     ConstraintSense,
@@ -32,6 +33,7 @@ def cnf_to_milp(formula):
 
     EXAMPLES::
 
+        >>> from claasp.representations.constraints.sat import CNFFormula
         >>> formula = CNFFormula(("x", "y"), ((1, -2),), ("implication",))
         >>> model = cnf_to_milp(formula)
         >>> model.is_feasible({"x": 1, "y": 1})
@@ -39,8 +41,7 @@ def cnf_to_milp(formula):
         >>> model.is_feasible({"x": 0, "y": 1})
         False
     """
-    if not isinstance(formula, CNFFormula):
-        raise TypeError("formula must be a CNFFormula")
+    _require_plain_cnf(formula)
     constraints = []
     for number, clause in enumerate(formula.clauses):
         terms, negative = {}, 0

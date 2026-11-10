@@ -47,16 +47,37 @@ class SMTFormula:
     def from_cnf(cls, formula: CNFFormula) -> "SMTFormula":
         """Translate a Boolean CNF without changing its logical semantics."""
 
-        from claasp.representations.constraints.sat.model import CNFFormula
+        from claasp.representations.constraints.sat.model import _require_plain_cnf
 
-        if not isinstance(formula, CNFFormula):
-            raise TypeError("formula must be a CNFFormula")
+        _require_plain_cnf(formula)
         return cls(
             formula.variables,
             formula.clauses,
             formula.provenance,
             formula.constraint_models,
         )
+
+    def to_cnf(self) -> CNFFormula:
+        """Return the same named Boolean clauses for portable solver execution.
+
+        This container holds disjunctive Boolean assertions, so conversion
+        changes no variables, clauses, or provenance and introduces no auxiliaries.
+
+        EXAMPLES::
+
+            >>> formula = SMTFormula(("key", "plaintext"), ((1,), (2,)),
+            ...                      ("nonzero key", "nonzero plaintext"))
+            >>> cnf = formula.to_cnf()
+            >>> cnf.is_satisfied({"key": 1, "plaintext": 1})
+            True
+            >>> cnf.is_satisfied({"key": 0, "plaintext": 1})
+            False
+            >>> SMTFormula.from_cnf(cnf) == formula
+            True
+        """
+        from claasp.representations.constraints.sat.model import CNFFormula
+
+        return CNFFormula(self.variables, self.assertions, self.provenance, self.constraint_models)
 
     @property
     def assertion_count(self) -> int:

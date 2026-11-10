@@ -38,6 +38,7 @@ from claasp.representations.constraints import (
     _unaudited_model,
     _verified_model,
 )
+from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints._propagation import (
     component_applications as _component_applications,
 )
@@ -434,9 +435,12 @@ def _enumerate(model, formula, solver, enumeration_type, metadata, limit):
             runtime += result.runtime_seconds
             if result.status is SatStatus.UNSATISFIABLE:
                 return enumeration_type(tuple(trails), True, runtime, metadata)
-            if result.status is not SatStatus.SATISFIABLE or len(trails) == limit:
+            if result.status is not SatStatus.SATISFIABLE:
                 return enumeration_type(tuple(trails), False, runtime, metadata)
-            trail = model.decode_characteristic(result.assignment)
+            assignment = _checked_assignment(current, result)
+            if len(trails) == limit:
+                return enumeration_type(tuple(trails), False, runtime, metadata)
+            trail = model.decode_characteristic(assignment)
             trails.append(trail)
             blocks.append(
                 tuple(

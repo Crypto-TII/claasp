@@ -245,15 +245,8 @@
     {
       "code": "var-annotated",
       "column": 22,
-      "line": 113,
+      "line": 118,
       "message": "Need type annotation for \"lines\"",
-      "path": "src/claasp/drivers/solvers/z3.py"
-    },
-    {
-      "code": "union-attr",
-      "column": 21,
-      "line": 129,
-      "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"__iter__\" (not iterable)",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
@@ -265,22 +258,29 @@
     },
     {
       "code": "union-attr",
+      "column": 21,
+      "line": 139,
+      "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"__iter__\" (not iterable)",
+      "path": "src/claasp/drivers/solvers/z3.py"
+    },
+    {
+      "code": "union-attr",
       "column": 9,
-      "line": 167,
+      "line": 173,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"write\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 9,
-      "line": 168,
+      "line": 174,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"flush\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 13,
-      "line": 204,
+      "line": 210,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"close\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
@@ -3080,28 +3080,28 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 46,
+      "line": 47,
       "message": "Need type annotation for \"terms\" (hint: \"terms: dict[<type>, <type>] = ...\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "arg-type",
       "column": 44,
-      "line": 264,
+      "line": 265,
       "message": "Argument 1 to \"range\" has incompatible type \"int | None\"; expected \"SupportsIndex\"",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 31,
-      "line": 265,
+      "line": 266,
       "message": "Unsupported operand types for * (\"int\" and \"None\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
     {
       "code": "operator",
       "column": 47,
-      "line": 266,
+      "line": 267,
       "message": "Unsupported operand types for - (\"None\" and \"int\")",
       "path": "src/claasp/representations/constraints/milp/lowering.py"
     },
@@ -3255,7 +3255,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 23,
+      "line": 22,
       "message": "Need type annotation for \"lines\" (hint: \"lines: list[<type>] = ...\")",
       "path": "src/claasp/representations/constraints/sat/exporters/dimacs.py"
     },
@@ -4459,7 +4459,7 @@
     {
       "code": "dict-item",
       "column": 10,
-      "line": 128,
+      "line": 131,
       "message": "Dict entry 0 has incompatible type \"str\": \"Selection | None\"; expected \"str\": \"UnitArray | Selection\"",
       "path": "tests/integration/test_z3_integration.py"
     },
@@ -4998,7 +4998,7 @@
     {
       "code": "arg-type",
       "column": 20,
-      "line": 101,
+      "line": 104,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"tuple[UnitArray, UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "tests/unit/representations/constraints/smt/test_word_xor_linear.py"
     },

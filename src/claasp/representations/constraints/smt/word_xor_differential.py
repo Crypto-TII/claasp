@@ -1,7 +1,7 @@
 """Word-graph differential characteristics, including related-key paths."""
 
 from contextlib import nullcontext
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from fractions import Fraction
 from hashlib import sha256
 
@@ -27,6 +27,7 @@ from claasp.components import (
 from claasp.drivers.solvers import SatStatus
 from claasp.graph import GraphPropagation
 from claasp.representations.constraints import ConstraintBackend, _direct_model
+from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints._propagation import component_applications
 from claasp.representations.constraints.smt._cardinality import _at_most
 from claasp.representations.constraints.smt._probability_encoding import (
@@ -705,7 +706,7 @@ class WordXorDifferentialSMTModel:
 
         if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:
             raise ValueError("limit must be a positive integer")
-        formula = self.smt_formula()
+        formula = self.smt_formula().to_cnf()
         metadata = (
             ("primitive", self.primitive.family_name),
             ("weight_interval", repr(self._weight_interval)),
@@ -749,18 +750,21 @@ class WordXorDifferentialSMTModel:
         )
         with context as execution:
             while True:
-                current = SMTFormula(
-                    formula.variables,
-                    formula.assertions + tuple(blocks),
-                    formula.provenance + ("characteristic_block",) * len(blocks),
+                current = replace(
+                    formula,
+                    clauses=formula.clauses + tuple(blocks),
+                    provenance=formula.provenance + ("characteristic_block",) * len(blocks),
                 )
                 result = execution.solve(current)
                 runtime += result.runtime_seconds
                 if result.status is SatStatus.UNSATISFIABLE:
                     return WordXorDifferentialEnumeration(tuple(trails), True, runtime, metadata)
-                if result.status is not SatStatus.SATISFIABLE or len(trails) == limit:
+                if result.status is not SatStatus.SATISFIABLE:
                     return WordXorDifferentialEnumeration(tuple(trails), False, runtime, metadata)
-                trail = self.decode_characteristic(result.assignment)
+                assignment = _checked_assignment(current, result)
+                if len(trails) == limit:
+                    return WordXorDifferentialEnumeration(tuple(trails), False, runtime, metadata)
+                trail = self.decode_characteristic(assignment)
                 trails.append(trail)
                 blocks.append(
                     tuple(
