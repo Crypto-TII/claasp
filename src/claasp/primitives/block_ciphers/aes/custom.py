@@ -93,6 +93,7 @@ __catalogue__ = (
     _entry(
         "primitive",
         CustomAES,
+        instances_from=False,
         evidence=("tests/unit/primitives/block_ciphers/aes/test_package.py",),
     ),
 )

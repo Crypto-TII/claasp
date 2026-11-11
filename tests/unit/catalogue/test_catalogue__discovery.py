@@ -304,3 +304,30 @@ def test_new_native_primitive_cannot_inherit_unrelated_test_evidence(discovery, 
 def test_misspelled_driver_kind_is_rejected():
     with pytest.raises(ValueError, match="unknown driver kind"):
         _entry("driver", object, name="example", kind="sovler", availability="builtin")
+
+
+def test_convenience_classes_reuse_their_official_family_and_studies_have_none():
+    from claasp.primitives import AES, AES128, CustomAES, Present, Present80, ToySpeck
+
+    assert AES128().instances == AES().instances
+    assert Present80().instances == Present().instances
+    assert catalogue.primitive("AES128").official_instances_from == "AES"
+    assert catalogue.primitive("Present80").official_instances_from == "Present"
+    assert CustomAES().instances == ()
+    assert ToySpeck().instances == ()
+    for name in ("MiMC", "Poseidon"):
+        row = catalogue.primitive(name)
+        cls = getattr(importlib.import_module(row.module), name)
+        assert cls(**row.parameter_sets[0].values).instances == ()
+
+
+def test_unknown_and_cyclic_official_families_are_rejected(discovery, entries):
+    payload = json.loads((ROOT / "src/claasp/catalogue/data/catalogue.json").read_text())
+    rows = {row["name"]: row for row in payload["primitives"]}
+    rows["AES128"]["official_instances_from"] = "Missing"
+    with pytest.raises(ValueError, match="unknown official instance family"):
+        discovery.validate_payload(payload, entries)
+    rows["AES128"]["official_instances_from"] = "AES"
+    rows["AES"]["official_instances_from"] = "AES128"
+    with pytest.raises(ValueError, match="cyclic official instance family"):
+        discovery.validate_payload(payload, entries)

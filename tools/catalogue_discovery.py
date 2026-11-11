@@ -290,7 +290,20 @@ def validate_payload(payload, entries):
     declarations = {
         row.name: row.declaration for row in entries if row.declaration.category == "primitive"
     }
+    by_name = {row["name"]: row for row in payload["primitives"]}
     for row in payload["primitives"]:
+        current = row
+        seen = {row["name"]}
+        while current["official_instances_from"] is not None:
+            target = current["official_instances_from"]
+            if target not in by_name:
+                raise ValueError(f"{row['name']}: unknown official instance family")
+            if target == current["name"]:
+                break
+            if target in seen:
+                raise ValueError(f"{row['name']}: cyclic official instance family")
+            seen.add(target)
+            current = by_name[target]
         signature = inspect.signature(declarations[row["name"]].implementation)
         for parameters in row["parameter_sets"]:
             # Constructor defaults may supply omitted parameters; binding catches

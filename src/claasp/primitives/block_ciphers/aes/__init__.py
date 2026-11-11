@@ -19,6 +19,9 @@ __all__ = [
 __catalogue__ = (
     _entry("primitive", AES),
     _entry(
-        "primitive", AES128, evidence=("tests/unit/primitives/block_ciphers/aes/test_package.py",)
+        "primitive",
+        AES128,
+        instances_from=AES,
+        evidence=("tests/unit/primitives/block_ciphers/aes/test_package.py",),
     ),
 )

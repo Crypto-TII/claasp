@@ -23,7 +23,7 @@ def _entry(category: str, implementation: Any, **metadata: Any) -> _Entry:
     if not callable(implementation):
         raise TypeError("catalogue implementations must be classes or functions")
     fields = {
-        "primitive": {"name", "evidence", "labels", "example"},
+        "primitive": {"name", "evidence", "labels", "example", "instances_from"},
         "driver": {"name", "kind", "availability", "target", "target_parameter"},
         "representation": {"name", "kind", "components", "domains", "drivers", "scope"},
         "analysis": {

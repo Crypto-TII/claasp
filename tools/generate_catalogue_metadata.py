@@ -161,10 +161,26 @@ def build_catalogue(entries=None) -> dict:
                     )
                 )
             )
+            official_class = declaration.metadata.get(
+                "instances_from", False if example is not None else primitive_class
+            )
+            official_name = None
+            if official_class is not False and "noncanonical_legacy_regression" not in labels:
+                candidates = [
+                    row.name
+                    for row in primitive_entries.values()
+                    if row.declaration.implementation is official_class
+                ]
+                if len(candidates) != 1:
+                    raise ValueError(
+                        f"{name}: official instance family must reference one registered primitive class"
+                    )
+                official_name = candidates[0]
             primitives.append(
                 {
                     "name": name,
                     "official_name": classification["official_name"],
+                    "official_instances_from": official_name,
                     "module": module_name,
                     "category": category,
                     "family": primitive.family_name,

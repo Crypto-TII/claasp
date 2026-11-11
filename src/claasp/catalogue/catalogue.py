@@ -123,6 +123,7 @@ def _primitive_record(item: dict) -> PrimitiveRecord:
         classification_basis=item["classification_basis"],
         fixed_evidence=tuple(item["fixed_evidence"]),
         parameter_sets=parameter_sets,
+        official_instances_from=item.get("official_instances_from", name),
         realizations=realizations,
     )
 

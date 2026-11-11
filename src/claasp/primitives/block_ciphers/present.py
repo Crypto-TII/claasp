@@ -146,6 +146,9 @@ class Present80(Present):
 __catalogue__ = (
     _entry("primitive", Present),
     _entry(
-        "primitive", Present80, evidence=("tests/unit/primitives/block_ciphers/test_present.py",)
+        "primitive",
+        Present80,
+        instances_from=Present,
+        evidence=("tests/unit/primitives/block_ciphers/test_present.py",),
     ),
 )

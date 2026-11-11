@@ -58,5 +58,10 @@ class ToySpeck(Primitive):
 
 
 __catalogue__ = (
-    _entry("primitive", ToySpeck, evidence=("tests/unit/primitives/toy_primitives/test_speck.py",)),
+    _entry(
+        "primitive",
+        ToySpeck,
+        instances_from=False,
+        evidence=("tests/unit/primitives/toy_primitives/test_speck.py",),
+    ),
 )

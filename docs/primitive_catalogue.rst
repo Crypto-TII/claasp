@@ -82,7 +82,7 @@ record rather than importing the implementation:
 .. doctest::
 
    >>> [item.name for item in catalogue.drivers(kind="execution_engine")]
-   ['python_scalar', 'python_batch', 'python_transposed_batch', 'python_generated_source', 'native_generated_c']
+   ['native_generated_c', 'python_batch', 'python_generated_source', 'python_scalar', 'python_transposed_batch']
    >>> catalogue.driver_availability("python_scalar").available
    True
 
@@ -92,11 +92,11 @@ than being inferred from package names. Queries work in either direction:
 .. doctest::
 
    >>> [item.name for item in catalogue.representations(component="Power")]
-   ['concrete_execution', 'primitive_serialization', 'python_generated_source', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
+   ['concrete_execution', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'primitive_serialization', 'python_generated_source', 'singular_program']
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
    ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
    >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-   ['minizinc', 'kissat', 'cryptominisat', 'minisat', 'z3', 'glpk']
+   ['cryptominisat', 'glpk', 'kissat', 'minisat', 'minizinc', 'z3']
    >>> "enumerate_xor_differential_trails" in {
    ...     item.name for item in catalogue.analyses(primitive="Speck")}
    True
