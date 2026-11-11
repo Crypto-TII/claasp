@@ -22,6 +22,7 @@ from math import ceil
 import numpy as np
 from sage.crypto.sbox import SBox
 
+from claasp.cipher_modules.spn_structure import SpnStructure
 from claasp.editor import get_key_schedule_component_ids
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN,
                                   PERMUTATION_COMPONENT, SBOX, WORD_OPERATION)
@@ -406,21 +407,22 @@ def _detect_structure(cipher, bijective_function):
 
 
 def _spn_parameters(cipher):
-    layers = _nonlinear_layers(cipher)
-    components = [component for layer in layers for component, _ in layer]
-    if any(component.type != SBOX for component in components):
-        raise ValueError("the nonlinear components must be S-boxes")
-    sbox_bit_size = components[0].input_bit_size
-    if any(component.input_bit_size != sbox_bit_size or component.output_bit_size != sbox_bit_size
-           for component in components):
+    layers = SpnStructure(cipher).layers  # raises UnsupportedCipherError, a ValueError
+    if len(layers) != cipher.number_of_rounds:
+        raise ValueError("every round must have a nonlinear layer")
+    sboxes = [sbox for layer in layers for sbox in layer.sboxes]
+    sbox_sizes = {len(positions) for positions, _ in sboxes}
+    if len(sbox_sizes) != 1:
         raise ValueError("all S-boxes must map l bits to l bits")
-    if not all(SBox(table).is_permutation() for table in {tuple(component.description) for component in components}):
+    sbox_bit_size = sbox_sizes.pop()
+    tables = {table for _, table in sboxes}
+    if not all(SBox(table).is_permutation() for table in tables):
         raise ValueError("the S-boxes must be bijective")
-    number_of_sboxes = len(layers[0])
-    if any(len(layer) != number_of_sboxes for layer in layers) or \
+    number_of_sboxes = len(layers[0].sboxes)
+    if any(len(layer.sboxes) != number_of_sboxes for layer in layers) or \
             number_of_sboxes * sbox_bit_size != cipher.output_bit_size:
         raise ValueError("every round must apply the same number of S-boxes to the whole state")
-    sbox_degree = max(degree for layer in layers for _, degree in layer)
+    sbox_degree = max(SBox(table).max_degree() for table in tables)
     if sbox_degree < 2:
         raise ValueError("the S-boxes must be nonlinear")
     return {"sbox_bit_size": sbox_bit_size, "sbox_degree": sbox_degree, "number_of_sboxes": number_of_sboxes}

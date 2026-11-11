@@ -1,5 +1,6 @@
 import pytest
 
+from claasp.cipher import Cipher
 from claasp.cipher_modules.division_property_path_search import (
     DivisionPropertyPathSearch,
     feistel_division_property_trail,
@@ -12,6 +13,7 @@ from claasp.ciphers.block_ciphers.serpent_block_cipher import SerpentBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
+from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.toys.toyspn1 import ToySPN1
 
@@ -89,6 +91,38 @@ def test_feistel_division_property_trail_on_todo_tables(parameters, table):
 ], ids=["aes", "serpent", "simon48"])
 def test_structure(cipher, structure):
     assert DivisionPropertyPathSearch(cipher).structure == structure
+
+
+def test_keccak_has_the_same_structure_with_sbox_or_not_and_components():
+    sbox_form = DivisionPropertyPathSearch(KeccakSboxPermutation(number_of_rounds=2, word_size=4))
+    circuit_form = DivisionPropertyPathSearch(KeccakPermutation(number_of_rounds=2, word_size=4))
+    assert sbox_form.structure == circuit_form.structure == "(5, 2, 20)-SPN"
+
+
+PRESENT_SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
+
+
+def _toy_spn(bypass):
+    """4-bit rounds x -> S(x) + c, plus bit 1 of x XORed into bit 0 when ``bypass`` (a path around the S-box)."""
+    cipher = Cipher("toy", "permutation", ["plaintext"], [4], 4)
+    state = "plaintext"
+    for constant in (0x1, 0x3, 0x7):
+        cipher.add_round()
+        sbox = cipher.add_sbox_component([state], [[0, 1, 2, 3]], 4, PRESENT_SBOX)
+        links, positions = [sbox.id, cipher.add_constant_component(4, constant).id], [[0, 1, 2, 3], [0, 1, 2, 3]]
+        if bypass:
+            links += [state, cipher.add_constant_component(3, 0).id]
+            positions += [[1], [0, 1, 2]]
+        state = cipher.add_xor_component(links, positions, 4).id
+    cipher.add_cipher_output_component([state], [[0, 1, 2, 3]], 4)
+    return cipher
+
+
+def test_a_bypassed_sbox_layer_is_not_an_spn():
+    # the (l, d, m)-SPN model needs every state bit to go through the S-boxes in every round
+    assert DivisionPropertyPathSearch(_toy_spn(bypass=False)).structure == "(4, 3, 1)-SPN"
+    with pytest.raises(ValueError, match="avoiding the nonlinear layer"):
+        DivisionPropertyPathSearch(_toy_spn(bypass=True))
 
 
 def test_structure_given_by_the_caller():
