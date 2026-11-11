@@ -143,6 +143,14 @@ def build_catalogue(entries=None) -> dict:
             labels = list(declaration.metadata.get("labels", ()))
             if name in canonical_realization_classes:
                 labels.append("realization_family")
+            if (
+                source is None
+                and category != "single_component_primitives"
+                and not declaration.metadata.get("evidence")
+            ):
+                raise ValueError(
+                    f"{name}: native primitive declaration needs explicit test evidence"
+                )
             evidence = (
                 sorted(test_evidence.get(source.get("milestone_owner"), ()))
                 if source is not None

@@ -267,7 +267,14 @@ def validate_payload(payload, entries):
         actual = [row["name"] for row in payload[section]]
         if len(actual) != len(set(actual)) or set(actual) != names:
             raise ValueError(f"{section}: catalogue membership differs from implementations")
+    import claasp.unit_types as unit_types
+
+    domain_names = {name for name in unit_types.__all__ if name != "UnitType"}
     for row in payload["representations"]:
+        if not set(row["domains"]) <= domain_names:
+            raise ValueError(f"{row['name']}: unknown domains")
+        if row["scope"] not in {"generic_graph", "component", "result"}:
+            raise ValueError(f"{row['name']}: unknown scope")
         for field, section in (("components", "components"), ("drivers", "drivers")):
             if not set(row[field]) <= expected[section]:
                 raise ValueError(f"{row['name']}: unknown {field}")

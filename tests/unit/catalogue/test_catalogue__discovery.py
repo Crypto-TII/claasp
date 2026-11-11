@@ -277,3 +277,30 @@ def test_non_solver_driver_cannot_be_silently_omitted(discovery, entries):
     without_tensorflow = tuple(row for row in entries if row.name != "tensorflow_distinguisher")
     with pytest.raises(ValueError, match="driver lacks.*TensorFlowDistinguisherDriver"):
         discovery.validate_public_api(without_tensorflow)
+
+
+@pytest.mark.parametrize("field,value", [("domains", ["misspelled"]), ("scope", "misspelled")])
+def test_invalid_domains_and_scope_are_rejected(discovery, entries, field, value):
+    payload = json.loads((ROOT / "src/claasp/catalogue/data/catalogue.json").read_text())
+    payload["representations"][0][field] = value
+    with pytest.raises(ValueError, match=f"unknown {field}"):
+        discovery.validate_payload(payload, entries)
+
+
+def test_new_native_primitive_cannot_inherit_unrelated_test_evidence(discovery, entries):
+    from dataclasses import replace
+
+    generator = importlib.import_module("generate_catalogue_metadata")
+    altered = tuple(
+        replace(row, declaration=_entry("primitive", row.declaration.implementation))
+        if row.name == "ToySpeck"
+        else row
+        for row in entries
+    )
+    with pytest.raises(ValueError, match="ToySpeck:.*explicit test evidence"):
+        generator.build_catalogue(altered)
+
+
+def test_misspelled_driver_kind_is_rejected():
+    with pytest.raises(ValueError, match="unknown driver kind"):
+        _entry("driver", object, name="example", kind="sovler", availability="builtin")

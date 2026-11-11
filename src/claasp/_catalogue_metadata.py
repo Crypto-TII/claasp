@@ -51,6 +51,15 @@ def _entry(category: str, implementation: Any, **metadata: Any) -> _Entry:
     unknown = set(metadata) - fields[category]
     if unknown:
         raise ValueError(f"unknown {category} metadata: {sorted(unknown)}")
+    if category == "driver" and metadata.get("kind") not in {
+        "solver",
+        "external_tool",
+        "renderer",
+        "compiler",
+        "execution_engine",
+        "analysis_driver",
+    }:
+        raise ValueError("unknown driver kind")
     if category == "driver" and metadata.get("availability") not in {
         "builtin",
         "executable",
