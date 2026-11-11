@@ -15,11 +15,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 """
-Find the SPN structure of a cipher: the nonlinear layer of each round, made of S-boxes covering the whole state.
+Check that a cipher is an SPN and find its substitution layers.
 
-A nonlinear layer is a set of S-box components, or a chi-like layer of NOT / AND / XOR components whose rows become
-S-boxes of at most 16 bits. The key schedule is left out. Other ciphers raise :class:`UnsupportedCipherError`,
-including SPNs whose nonlinear layer does not split into such S-boxes.
+Leaving out the key schedule, every round must be a substitution layer, made of S-boxes applied in parallel to the
+whole state, followed only by affine operations (linear layer, key and constant additions). The S-boxes are S-box
+components, or the rows of a chi-like layer of NOT / AND / XOR components, of at most 16 bits. Other ciphers raise
+:class:`UnsupportedCipherError`, including SPNs whose nonlinear layer does not split into such S-boxes.
 """
 import copy
 from dataclasses import dataclass
@@ -273,7 +274,8 @@ def _check_layer_boundaries(cipher, layers, state_input):
 
 class SpnStructure:
     """
-    The SPN structure of ``cipher``: the nonlinear layer of each round.
+    The SPN structure of ``cipher``: checks that every round is a substitution layer followed by affine operations,
+    and gives the substitution layers.
 
     Building the object only reads the component graph, leaving out the key schedule, and raises
     :class:`UnsupportedCipherError` unless:
