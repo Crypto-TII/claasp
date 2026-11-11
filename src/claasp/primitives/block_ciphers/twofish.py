@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 import math
 from itertools import chain
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -448,3 +448,6 @@ class Twofish(BitGraphPrimitive):
             [self.MDS, self.state_MDS_polynomial, 8],
         )
         return z.id
+
+
+__catalogue__ = (_entry("primitive", Twofish),)

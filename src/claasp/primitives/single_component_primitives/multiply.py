@@ -1,5 +1,6 @@
 """Primitive consisting of one unit_type-polymorphic multiplication."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Multiply as MultiplyComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -49,3 +50,6 @@ class Multiply(Primitive):
 
 
 __all__ = ["Multiply"]
+
+
+__catalogue__ = (_entry("primitive", Multiply),)

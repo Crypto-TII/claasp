@@ -4,6 +4,7 @@ import shutil
 import subprocess
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.algebra.base import AlgebraExecutionResult
 
 
@@ -33,3 +34,15 @@ class SingularDriver:
         if completed.returncode != 0:
             raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
         return AlgebraExecutionResult(completed.stdout, completed.stderr, elapsed)
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        SingularDriver,
+        name="singular",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

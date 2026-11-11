@@ -1,5 +1,6 @@
 """CipherFour teaching primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._bit_graph import bit_type, permute_bits, sbox_layer, xor_bits
@@ -63,3 +64,6 @@ class CipherFour(Primitive):
         state = xor_bits(self, state, key[tuple(range(5 * block_bit_size, 6 * block_bit_size))])
         self._builder.set_round_output(state)
         self._builder.set_output(state)
+
+
+__catalogue__ = (_entry("primitive", CipherFour),)

@@ -1,5 +1,6 @@
 """Sage-independent typed graph definitions."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.binding import BindingKind, ValueBinding
 from claasp.graph.component import Component
 from claasp.graph.composite import (
@@ -77,3 +78,41 @@ __all__ = [
     "secret_input",
     "select_realization",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        Primitive,
+        name="concrete_execution",
+        kind="execution",
+        components=(
+            "Add",
+            "BinaryAffineMap",
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "FeedbackRegister",
+            "IDEAMultiply",
+            "Identity",
+            "LinearMap",
+            "ModularAdd",
+            "ModularMultiply",
+            "ModularSubtract",
+            "Multiply",
+            "Permutation",
+            "Power",
+            "Rotate",
+            "SBox",
+            "Shift",
+            "VariableRotate",
+            "VariableShift",
+            "Xor",
+        ),
+        domains=("BinaryExtensionField", "Bit", "PrimeField", "Word"),
+        drivers=("python_batch", "python_scalar", "python_transposed_batch"),
+        scope="generic_graph",
+    ),
+)

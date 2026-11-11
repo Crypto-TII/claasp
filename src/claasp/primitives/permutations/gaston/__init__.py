@@ -1,5 +1,6 @@
 """Gaston permutation family and retained realizations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.primitives._realizations import realization, register_realizations
 
 from .primitive import Gaston
@@ -47,3 +48,6 @@ register_realizations(
 )
 
 __all__ = ["Gaston", "GastonSbox", "GastonSboxTheta"]
+
+
+__catalogue__ = (_entry("primitive", Gaston),)

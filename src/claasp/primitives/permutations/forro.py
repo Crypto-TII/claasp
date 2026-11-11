@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -14,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import (
     BitGraphPrimitive,
     add_intermediate_output_component_latin_dances_permutations,
@@ -164,3 +165,6 @@ class Forro(BitGraphPrimitive):
             word_size,
             rot_amount,
         )
+
+
+__catalogue__ = (_entry("primitive", Forro),)

@@ -1,5 +1,6 @@
 """Single-component logical-unit permutation primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Permutation as PermutationComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Bit, Word
@@ -57,3 +58,6 @@ class Permutation(Primitive):
 
 
 __all__ = ["Permutation"]
+
+
+__catalogue__ = (_entry("primitive", Permutation),)

@@ -1,5 +1,6 @@
 """Primitive consisting of one bitwise NOT."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BitwiseNot as BitwiseNotComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -39,3 +40,6 @@ class BitwiseNot(Primitive):
 
 
 __all__ = ["BitwiseNot"]
+
+
+__catalogue__ = (_entry("primitive", BitwiseNot),)

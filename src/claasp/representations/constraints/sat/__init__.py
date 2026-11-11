@@ -1,5 +1,6 @@
 """Dependency-free Boolean/CNF constraint representations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.representations.constraints.sat.boomerang import ARXBoomerangTrail, BoomerangSATModel
 from claasp.representations.constraints.sat.components import (
     BooleanFunctionalSATModel,
@@ -144,3 +145,71 @@ __all__ = [
     "WordwiseImpossibleSATTrail",
     "find_word_impossible_sat",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        BooleanCNFModel,
+        name="boolean_cnf",
+        kind="constraint",
+        components=(
+            "Add",
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "Permutation",
+            "Rotate",
+            "Xor",
+        ),
+        domains=("Bit", "Word"),
+        drivers=("cryptominisat", "glpk", "kissat", "minisat", "minizinc", "z3"),
+        scope="generic_graph",
+    ),
+    _entry(
+        "representation",
+        WordXorDifferentialSATModel,
+        name="word_differential_sat",
+        kind="constraint",
+        components=(
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "ModularSubtract",
+            "Permutation",
+            "Rotate",
+            "Shift",
+            "Xor",
+        ),
+        domains=("Word",),
+        drivers=("minisat",),
+        scope="generic_graph",
+    ),
+    _entry(
+        "representation",
+        WordXorLinearSATModel,
+        name="word_linear_sat",
+        kind="constraint",
+        components=(
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "ModularSubtract",
+            "Permutation",
+            "Rotate",
+            "Shift",
+            "Xor",
+        ),
+        domains=("Word",),
+        drivers=("minisat",),
+        scope="generic_graph",
+    ),
+)

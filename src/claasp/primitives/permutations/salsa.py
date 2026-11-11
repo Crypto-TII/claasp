@@ -1,5 +1,6 @@
 """The fixed-length Salsa permutation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import ModularAdd, Rotate, Xor
 from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
 from claasp.primitives.permutations._arx_rounds import stage_configuration
@@ -139,3 +140,6 @@ class SalsaPermutation(Primitive):
         return self._builder.add_component(
             Xor((destination, rotated), component_id=f"{prefix}_xor")
         )
+
+
+__catalogue__ = (_entry("primitive", SalsaPermutation),)

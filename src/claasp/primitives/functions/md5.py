@@ -25,6 +25,7 @@ The input is named *key* because the MD5 function can be seen like a
 symmetric primitive whose plaintext is the initial state and key is the input.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 
@@ -236,3 +237,6 @@ class MD5SingleBlockFunction(BitGraphPrimitive):
             [list(range(self.word_size)) for _ in range(4)],
             self.word_size * 4,
         )
+
+
+__catalogue__ = (_entry("primitive", MD5SingleBlockFunction),)

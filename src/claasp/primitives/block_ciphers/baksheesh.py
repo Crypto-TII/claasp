@@ -1,3 +1,4 @@
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -128,3 +129,6 @@ class Baksheesh(BitGraphPrimitive):
         rotate = self.add_rotate_component(key[0], key[1], self.key_bit_size, 1)
         key = ([rotate.id], [list(range(self.key_bit_size))])
         return key
+
+
+__catalogue__ = (_entry("primitive", Baksheesh),)

@@ -11,6 +11,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 from claasp.provenance import DriverIdentity, DriverKind, ResultProvenance
 from claasp.representations.source import SourceArtifact, SourceLanguage
@@ -414,3 +415,15 @@ __all__ = [
     "compile_native",
     "run_compiled",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        compile_native,
+        name="native_generated_c",
+        kind="execution_engine",
+        availability="executable",
+        target_parameter="compiler",
+    ),
+)

@@ -1,5 +1,6 @@
 """Sage-independent polynomial constraint representations and lowering."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.representations.constraints.polynomial.boolean import (
     BooleanMonomial,
     BooleanPolynomial,
@@ -38,3 +39,17 @@ __all__ = [
     "monomial_transition_table",
     "vectorial_anf",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        PrimeFieldPolynomialModel,
+        name="prime_field_polynomial",
+        kind="constraint",
+        components=("Add", "Constant", "Identity", "LinearMap", "Multiply", "Permutation", "Power"),
+        domains=("PrimeField",),
+        drivers=(),
+        scope="generic_graph",
+    ),
+)

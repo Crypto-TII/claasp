@@ -1,5 +1,6 @@
 """Extended Tiny Encryption Algorithm (XTEA)."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._word_graph import add, concatenate, constant, select, shift, word_type, xor
@@ -68,3 +69,6 @@ class XTEA(Primitive):
             right = add(self, right, xor(self, nonlinear, keyed))
             self._builder.set_round_output(left, right)
         self._builder.set_output(concatenate(self, left, right))
+
+
+__catalogue__ = (_entry("primitive", XTEA),)

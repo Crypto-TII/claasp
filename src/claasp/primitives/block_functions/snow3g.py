@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -508,3 +510,6 @@ class Snow3GKeystreamFunction(BitGraphPrimitive):
                 (clock_number + 1) * WORD_SIZE,
             ).id
         return keystream
+
+
+__catalogue__ = (_entry("primitive", Snow3GKeystreamFunction),)

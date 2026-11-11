@@ -1,5 +1,6 @@
 """Primitive consisting of one unit_type-polymorphic linear map."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import LinearMap as LinearMapComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Bit
@@ -51,3 +52,6 @@ class LinearMap(Primitive):
 
 
 __all__ = ["LinearMap"]
+
+
+__catalogue__ = (_entry("primitive", LinearMap),)

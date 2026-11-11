@@ -1,5 +1,6 @@
 """Tiny Encryption Algorithm (TEA)."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._word_graph import add, concatenate, constant, select, shift, word_type, xor
@@ -57,3 +58,6 @@ class TEA(Primitive):
             right = add(self, right, mix)
             self._builder.set_round_output(left, right)
         self._builder.set_output(concatenate(self, left, right))
+
+
+__catalogue__ = (_entry("primitive", TEA),)

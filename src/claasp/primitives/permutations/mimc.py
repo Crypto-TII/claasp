@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Add, Constant, Power
 from claasp.graph import Primitive, UnitArrayType
 from claasp.unit_types import PrimeField
@@ -56,3 +57,13 @@ class MiMC(Primitive):
 
             self._builder.set_round_output(state)
         self._builder.set_output(state)
+
+
+__catalogue__ = (
+    _entry(
+        "primitive",
+        MiMC,
+        evidence=("tests/unit/primitives/permutations/test_mimc.py",),
+        example={"modulus": 17, "exponent": 3, "round_constants": (1, 2, 4)},
+    ),
+)

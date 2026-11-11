@@ -1,5 +1,7 @@
 """MixColumn realization of QARMAv2."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
@@ -764,3 +765,6 @@ class QARMAv2MixColumn(BitGraphPrimitive):
             [maj_key_rotated], [list(range(maj_key_size))], maj_key_size, 17
         )
         return maj_key
+
+
+__catalogue__ = (_entry("primitive", QARMAv2MixColumn, labels=("equivalent_realization",)),)

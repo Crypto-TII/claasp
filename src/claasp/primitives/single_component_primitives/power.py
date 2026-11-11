@@ -2,6 +2,7 @@
 
 from math import gcd
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Power as PowerComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import BinaryExtensionField, Bit, PrimeField
@@ -53,3 +54,6 @@ class Power(Primitive):
 
 
 __all__ = ["Power"]
+
+
+__catalogue__ = (_entry("primitive", Power),)

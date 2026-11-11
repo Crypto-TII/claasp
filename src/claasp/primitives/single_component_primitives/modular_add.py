@@ -1,5 +1,6 @@
 """Single-component modular-addition primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import ModularAdd as ModularAddComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -48,3 +49,6 @@ class ModularAdd(Primitive):
 
 
 __all__ = ["ModularAdd"]
+
+
+__catalogue__ = (_entry("primitive", ModularAdd),)

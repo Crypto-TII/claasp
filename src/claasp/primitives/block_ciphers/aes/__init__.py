@@ -1,5 +1,6 @@
 """Canonical AES and explicitly separate research variants."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.composites.aes import AES_AFFINE_MATRIX, AES_SBOX
 
 from .custom import CustomAES
@@ -13,3 +14,11 @@ __all__ = [
     "PARAMETERS_CONFIGURATION_LIST",
     "CustomAES",
 ]
+
+
+__catalogue__ = (
+    _entry("primitive", AES),
+    _entry(
+        "primitive", AES128, evidence=("tests/unit/primitives/block_ciphers/aes/test_package.py",)
+    ),
+)

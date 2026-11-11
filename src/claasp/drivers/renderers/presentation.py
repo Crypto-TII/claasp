@@ -11,6 +11,7 @@ from enum import Enum
 from math import pi
 from pathlib import Path
 
+from claasp._catalogue_metadata import _entry
 from claasp.analysis.avalanche import AvalancheResult
 from claasp.analysis.component_properties import (
     PropertyClaim,
@@ -863,3 +864,15 @@ def _plot_neural_tests(result, *, show, save_to):
         (("test accuracy", accuracy), ("chance lower", lower), ("chance upper", upper)),
         MatplotlibPresentationDriver.identity,
     )
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        MatplotlibPresentationDriver,
+        name="matplotlib_presentation",
+        kind="renderer",
+        availability="python_module",
+        target="matplotlib",
+    ),
+)

@@ -1,5 +1,7 @@
 """S-box realization of the Gaston permutation."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
 
@@ -210,3 +211,6 @@ class GastonSbox(BitGraphPrimitive):
             state_chi.append(BitState(output_ids, [[i]] * WORD_SIZE))
 
         return state_chi
+
+
+__catalogue__ = (_entry("primitive", GastonSbox, labels=("equivalent_realization",)),)

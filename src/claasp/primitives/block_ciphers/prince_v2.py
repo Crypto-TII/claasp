@@ -1,5 +1,7 @@
 """PRINCEv2 block primitive from its revised specification."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -292,3 +293,6 @@ class PrinceV2(BitGraphPrimitive):
         pre_whitening = self.pre_whitening()
         final_xor = self.prince_core(pre_whitening, number_of_rounds)
         self.add_primitive_output_component([final_xor.id], [list(range(64))], 64)
+
+
+__catalogue__ = (_entry("primitive", PrinceV2),)

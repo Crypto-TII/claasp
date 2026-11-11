@@ -1,5 +1,6 @@
 """Deterministic source representations compiled from typed graphs."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.representations.source.c import C_COMPILER, compile_c_source
 from claasp.representations.source.model import (
     SourceArtifact,
@@ -50,3 +51,80 @@ __all__ = [
     "compile_python_source",
     "compile_source",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        compile_python_source,
+        name="python_source_compiler",
+        kind="compiler",
+        availability="builtin",
+    ),
+    _entry(
+        "driver",
+        compile_c_source,
+        name="c_source_compiler",
+        kind="compiler",
+        availability="builtin",
+    ),
+    _entry(
+        "representation",
+        compile_python_source,
+        name="python_generated_source",
+        kind="source",
+        components=(
+            "Add",
+            "BinaryAffineMap",
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "FeedbackRegister",
+            "IDEAMultiply",
+            "Identity",
+            "LinearMap",
+            "ModularAdd",
+            "ModularMultiply",
+            "ModularSubtract",
+            "Multiply",
+            "Permutation",
+            "Power",
+            "Rotate",
+            "SBox",
+            "Shift",
+            "VariableRotate",
+            "VariableShift",
+            "Xor",
+        ),
+        domains=("BinaryExtensionField", "Bit", "PrimeField", "Word"),
+        drivers=("python_generated_source", "python_source_compiler"),
+        scope="generic_graph",
+    ),
+    _entry(
+        "representation",
+        compile_c_source,
+        name="c_generated_source",
+        kind="source",
+        components=(
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "ModularSubtract",
+            "Permutation",
+            "Rotate",
+            "Shift",
+            "VariableRotate",
+            "VariableShift",
+            "Xor",
+        ),
+        domains=("Bit", "Word"),
+        drivers=("c_source_compiler", "native_generated_c"),
+        scope="generic_graph",
+    ),
+)

@@ -1,5 +1,6 @@
 """Primitive consisting of one bitwise AND."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BitwiseAnd as BitwiseAndComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -41,3 +42,6 @@ class BitwiseAnd(Primitive):
 
 
 __all__ = ["BitwiseAnd"]
+
+
+__catalogue__ = (_entry("primitive", BitwiseAnd),)

@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -14,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp.primitive_inputs import INPUT_FRAME, INPUT_KEY, STREAM_CIPHER
 
@@ -192,3 +193,6 @@ class A51KeystreamFunction(BitGraphPrimitive):
         regs = BitState([self.get_current_component_id()], [list(range(regs_size))])
 
         return regs
+
+
+__catalogue__ = (_entry("primitive", A51KeystreamFunction),)

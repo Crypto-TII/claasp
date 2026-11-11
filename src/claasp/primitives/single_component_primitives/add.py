@@ -1,5 +1,6 @@
 """Primitive consisting of one unit_type-polymorphic addition."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Add as AddComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -49,3 +50,6 @@ class Add(Primitive):
 
 
 __all__ = ["Add"]
+
+
+__catalogue__ = (_entry("primitive", Add),)

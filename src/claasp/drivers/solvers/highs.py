@@ -3,6 +3,7 @@
 from time import monotonic
 from typing import overload
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.representations.constraints.milp.model import (
@@ -142,3 +143,15 @@ class HighsSolver:
 
 
 __all__ = ["HighsSolver"]
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        HighsSolver,
+        name="highs",
+        kind="solver",
+        availability="python_module",
+        target="scipy",
+    ),
+)

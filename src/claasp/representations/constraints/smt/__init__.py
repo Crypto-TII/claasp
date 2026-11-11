@@ -1,5 +1,6 @@
 """Dependency-free SMT constraint representations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.representations.constraints.smt.components import (
     ModularAddDeterministicTruncatedSMTModel,
     ModularAddXorDifferentialSMTModel,
@@ -35,3 +36,71 @@ __all__ = [
     "WordDeterministicTruncatedSMTModel",
     "WordXorLinearSMTModel",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        BooleanSMTModel,
+        name="boolean_smt",
+        kind="constraint",
+        components=(
+            "Add",
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "Permutation",
+            "Rotate",
+            "Xor",
+        ),
+        domains=("Bit", "Word"),
+        drivers=("z3",),
+        scope="generic_graph",
+    ),
+    _entry(
+        "representation",
+        WordXorDifferentialSMTModel,
+        name="word_differential_smt",
+        kind="constraint",
+        components=(
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "ModularSubtract",
+            "Permutation",
+            "Rotate",
+            "Shift",
+            "Xor",
+        ),
+        domains=("Word",),
+        drivers=("z3",),
+        scope="generic_graph",
+    ),
+    _entry(
+        "representation",
+        WordXorLinearSMTModel,
+        name="word_linear_smt",
+        kind="constraint",
+        components=(
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "Identity",
+            "ModularAdd",
+            "ModularSubtract",
+            "Permutation",
+            "Rotate",
+            "Shift",
+            "Xor",
+        ),
+        domains=("Word",),
+        drivers=("z3",),
+        scope="generic_graph",
+    ),
+)

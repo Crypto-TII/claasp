@@ -26,6 +26,7 @@ seen like a symmetric primitive whose plaintext is the initial state and key is
 the input.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 
@@ -418,3 +419,6 @@ class SHA2SingleBlockFunction(BitGraphPrimitive):
         )
 
         return BitState(Wt.id, [list(range(self.word_size))])
+
+
+__catalogue__ = (_entry("primitive", SHA2SingleBlockFunction),)

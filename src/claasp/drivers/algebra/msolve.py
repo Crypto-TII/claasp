@@ -6,6 +6,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.algebra.base import AlgebraExecutionResult
 
 
@@ -39,3 +40,15 @@ class MsolveDriver:
                 raise RuntimeError(completed.stderr.strip() or completed.stdout.strip())
             result_text = output_path.read_text(encoding="utf-8")
         return AlgebraExecutionResult(completed.stdout, completed.stderr, elapsed, result_text)
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        MsolveDriver,
+        name="msolve",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

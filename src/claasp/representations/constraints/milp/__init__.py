@@ -1,5 +1,6 @@
 """Dependency-free mixed-integer linear constraint representations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.representations.constraints.milp.components import (
     BitwiseAndDeterministicTruncatedMILPModel,
     BitwiseAndDeterministicTruncatedOneHotMILPModel,
@@ -153,3 +154,17 @@ __all__ = [
     "wordwise_pattern",
     "xor_arities_for_binary_matrix",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        BooleanMonomialGraphMILPModel,
+        name="boolean_monomial_milp",
+        kind="constraint",
+        components=("BitwiseAnd", "Constant", "Rotate", "Xor"),
+        domains=("Bit", "Word"),
+        drivers=("glpk", "highs"),
+        scope="generic_graph",
+    ),
+)

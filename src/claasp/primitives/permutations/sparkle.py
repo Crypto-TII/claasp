@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
-
 from copy import deepcopy
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
 
@@ -242,3 +241,6 @@ class Sparkle(BitGraphPrimitive):
         state = self.linear_layer(state)
 
         return state
+
+
+__catalogue__ = (_entry("primitive", Sparkle),)

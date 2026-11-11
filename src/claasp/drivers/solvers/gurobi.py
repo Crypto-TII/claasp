@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.drivers.solvers.progress import MILPProgressLog
 from claasp.representations.constraints.milp.model import (
@@ -228,3 +229,15 @@ class GurobiSolver:
 
 
 __all__ = ["GurobiSolutionPoolResult", "GurobiSolver"]
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        GurobiSolver,
+        name="gurobi",
+        kind="solver",
+        availability="python_module",
+        target="gurobipy",
+    ),
+)

@@ -1,5 +1,7 @@
 """Legacy-regression S-box representation of Simeck."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -198,3 +199,6 @@ class SimeckSbox(BitGraphPrimitive):
         keys_buffer[0] = new_key_left
 
         return keys_buffer
+
+
+__catalogue__ = (_entry("primitive", SimeckSbox, labels=("noncanonical_legacy_regression",)),)

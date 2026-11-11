@@ -1,5 +1,7 @@
 """Legacy-regression S-box representation of Simon."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -256,3 +257,6 @@ class SimonSbox(BitGraphPrimitive):
                 [xor_id], [list(range(self.word_size))], self.word_size
             )
             round_keys[round_number] = xor_id, list(range(self.word_size))
+
+
+__catalogue__ = (_entry("primitive", SimonSbox, labels=("noncanonical_legacy_regression",)),)

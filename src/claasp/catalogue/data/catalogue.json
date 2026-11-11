@@ -1,6 +1,65 @@
 {
   "analyses": [
     {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.algebraic_degree",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "algebraic_degree",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.anf",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "anf",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.autond",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "autond",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [
+        "python_scalar"
+      ],
+      "entry_point": "Primitive.analysis.avalanche",
+      "evidence": "empirical",
+      "kind": "statistical",
+      "name": "avalanche",
+      "primitives": [],
+      "representations": [
+        "concrete_execution"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.circle_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "circle_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
       "drivers": [
         "python_scalar"
       ],
@@ -14,6 +73,61 @@
       ],
       "required_components": [],
       "restriction": "binary character bases; exact bounded endpoints or seeded estimates; subgroup search has explicit applicability"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.circle_linear_trail_model",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "circle_linear_trail_model",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component_analysis",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component_analysis",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component_groups",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component_groups",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component_properties",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component_properties",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [
@@ -32,19 +146,48 @@
       "restriction": "applicability and evidence strength are reported per semantic component and unit_type"
     },
     {
-      "drivers": [
-        "python_scalar"
-      ],
-      "entry_point": "Primitive.analysis.avalanche",
-      "evidence": "empirical",
-      "kind": "statistical",
-      "name": "avalanche",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.continuous_differential_evaluate",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "continuous_differential_evaluate",
       "primitives": [],
-      "representations": [
-        "concrete_execution"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": null
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.continuous_diffusion",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "continuous_diffusion",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.continuous_evaluate",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "continuous_evaluate",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.division_property",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "division_property",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [
@@ -97,6 +240,223 @@
       "restriction": null
     },
     {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_all_xor_differential_trails_with_weight_at_most",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_all_xor_differential_trails_with_weight_at_most",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_all_xor_linear_trails_with_weight_at_most",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_all_xor_linear_trails_with_weight_at_most",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_good_neural_input_difference",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_good_neural_input_difference",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_highest_correlation_continuous_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_highest_correlation_continuous_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_impossible_xor_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_impossible_xor_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_number_of_active_sboxes",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_number_of_active_sboxes",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_boomerang_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_boomerang_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_circle_differential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_circle_differential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_circle_linear_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_circle_linear_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [
+        "minisat"
+      ],
+      "entry_point": "Primitive.analysis.find_lowest_weight_xor_differential_trail",
+      "evidence": "exact",
+      "kind": "xor_differential",
+      "name": "find_lowest_weight_xor_differential_trail",
+      "primitives": [],
+      "representations": [
+        "word_differential_sat"
+      ],
+      "required_components": [],
+      "restriction": "capability-based graph support plus specialized PRESENT/Speck slices"
+    },
+    {
+      "drivers": [
+        "minisat"
+      ],
+      "entry_point": "Primitive.analysis.find_lowest_weight_xor_linear_trail",
+      "evidence": "exact",
+      "kind": "xor_linear",
+      "name": "find_lowest_weight_xor_linear_trail",
+      "primitives": [],
+      "representations": [
+        "word_linear_sat"
+      ],
+      "required_components": [],
+      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_xor_quasidifferential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_xor_quasidifferential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_minimax_xor_differential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_minimax_xor_differential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_boomerang_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_boomerang_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_continuous_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_continuous_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_differential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_differential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_differential_trail_with_fixed_weight",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_differential_trail_with_fixed_weight",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_linear_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_linear_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_linear_trail_with_fixed_weight",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_linear_trail_with_fixed_weight",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
       "drivers": [
         "minisat"
       ],
@@ -113,34 +473,37 @@
       "restriction": "capability-based graph support; specialized dependency-free PRESENT/Speck slices"
     },
     {
-      "drivers": [
-        "minisat"
-      ],
-      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_differential\")",
-      "evidence": "exact",
-      "kind": "xor_differential",
-      "name": "find_lowest_weight_xor_differential_trail",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_optimal_xor_differential_linear_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_optimal_xor_differential_linear_trail",
       "primitives": [],
-      "representations": [
-        "word_differential_sat"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": "capability-based graph support plus specialized PRESENT/Speck slices"
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
-      "drivers": [
-        "minisat"
-      ],
-      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_linear\")",
-      "evidence": "exact",
-      "kind": "xor_linear",
-      "name": "find_lowest_weight_xor_linear_trail",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_probabilistic_truncated_xor_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_probabilistic_truncated_xor_differential",
       "primitives": [],
-      "representations": [
-        "word_linear_sat"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_sbox_boomerang_transition",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_sbox_boomerang_transition",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [],
@@ -156,6 +519,77 @@
         "BitVectorSBox"
       ],
       "restriction": null
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.neural_blackbox",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "neural_blackbox",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.neural_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "neural_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.polynomial_system",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "polynomial_system",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [
+        "matplotlib_presentation",
+        "text_presentation"
+      ],
+      "entry_point": "claasp.presentation.present",
+      "evidence": "qualified",
+      "kind": "result_presentation",
+      "name": "present",
+      "primitives": [],
+      "representations": [
+        "report_presentation"
+      ],
+      "required_components": [],
+      "restriction": "consumes already-produced typed results and never executes an analysis"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.propagate_truncated_xor_difference",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "propagate_truncated_xor_difference",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.quasidifferential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "quasidifferential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [
@@ -178,6 +612,39 @@
       "restriction": null
     },
     {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.run_autond",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "run_autond",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.run_statistical_tests",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "run_statistical_tests",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.search_impossible_differentials",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "search_impossible_differentials",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
       "drivers": [
         "cryptominisat",
         "glpk",
@@ -198,135 +665,152 @@
       "restriction": null
     },
     {
-      "drivers": [
-        "matplotlib_presentation",
-        "text_presentation"
-      ],
-      "entry_point": "claasp.presentation.present",
-      "evidence": "qualified",
-      "kind": "result_presentation",
-      "name": "present",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.superpoly",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "superpoly",
       "primitives": [],
-      "representations": [
-        "report_presentation"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": "consumes already-produced typed results and never executes an analysis"
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.train_staged_neural_distinguisher",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "train_staged_neural_distinguisher",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.two_subset_division_property",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "two_subset_division_property",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     }
   ],
   "components": [
     {
-      "module": "claasp.primitives.single_component_primitives.add",
+      "module": "claasp.components.algebraic.add",
       "name": "Add",
       "primitive_wrapper": "Add"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.binary_affine_map",
+      "module": "claasp.components.algebraic.binary_affine_map",
       "name": "BinaryAffineMap",
       "primitive_wrapper": "BinaryAffineMap"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bit_vector_sbox",
+      "module": "claasp.components.substitution.bit_vector_sbox",
       "name": "BitVectorSBox",
       "primitive_wrapper": "BitVectorSBox"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bitwise_and",
+      "module": "claasp.components.word.bitwise_and",
       "name": "BitwiseAnd",
       "primitive_wrapper": "BitwiseAnd"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bitwise_not",
+      "module": "claasp.components.word.bitwise_not",
       "name": "BitwiseNot",
       "primitive_wrapper": "BitwiseNot"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bitwise_or",
+      "module": "claasp.components.word.bitwise_or",
       "name": "BitwiseOr",
       "primitive_wrapper": "BitwiseOr"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.constant",
+      "module": "claasp.components.structural.constant",
       "name": "Constant",
       "primitive_wrapper": "Constant"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.feedback_register",
+      "module": "claasp.components.feedback.feedback_register",
       "name": "FeedbackRegister",
       "primitive_wrapper": "FeedbackRegister"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.idea_multiply",
+      "module": "claasp.components.word.idea_multiply",
       "name": "IDEAMultiply",
       "primitive_wrapper": "IDEAMultiply"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.identity",
+      "module": "claasp.components.structural.identity",
       "name": "Identity",
       "primitive_wrapper": "Identity"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.linear_map",
+      "module": "claasp.components.algebraic.linear_map",
       "name": "LinearMap",
       "primitive_wrapper": "LinearMap"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.modular_add",
+      "module": "claasp.components.word.modular_add",
       "name": "ModularAdd",
       "primitive_wrapper": "ModularAdd"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.modular_multiply",
+      "module": "claasp.components.word.modular_multiply",
       "name": "ModularMultiply",
       "primitive_wrapper": "ModularMultiply"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.modular_subtract",
+      "module": "claasp.components.word.modular_subtract",
       "name": "ModularSubtract",
       "primitive_wrapper": "ModularSubtract"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.multiply",
+      "module": "claasp.components.algebraic.multiply",
       "name": "Multiply",
       "primitive_wrapper": "Multiply"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.permutation",
+      "module": "claasp.components.structural.permutation",
       "name": "Permutation",
       "primitive_wrapper": "Permutation"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.power",
+      "module": "claasp.components.algebraic.power",
       "name": "Power",
       "primitive_wrapper": "Power"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.rotate",
+      "module": "claasp.components.word.rotate",
       "name": "Rotate",
       "primitive_wrapper": "Rotate"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.sbox",
+      "module": "claasp.components.substitution.sbox",
       "name": "SBox",
       "primitive_wrapper": "SBox"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.shift",
+      "module": "claasp.components.word.shift",
       "name": "Shift",
       "primitive_wrapper": "Shift"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.variable_rotate",
+      "module": "claasp.components.word.variable_rotate",
       "name": "VariableRotate",
       "primitive_wrapper": "VariableRotate"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.variable_shift",
+      "module": "claasp.components.word.variable_shift",
       "name": "VariableShift",
       "primitive_wrapper": "VariableShift"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.xor",
+      "module": "claasp.components.word.xor",
       "name": "Xor",
       "primitive_wrapper": "Xor"
     }
@@ -334,179 +818,23 @@
   "drivers": [
     {
       "availability": "builtin",
-      "implementation": "claasp.representations.execution:ScalarExecutionDriver",
-      "kind": "execution_engine",
-      "name": "python_scalar",
-      "representations": [
-        "concrete_execution"
-      ],
-      "target": null
-    },
-    {
-      "availability": "builtin",
-      "implementation": "claasp.representations.execution:BatchExecutionDriver",
-      "kind": "execution_engine",
-      "name": "python_batch",
-      "representations": [
-        "concrete_execution"
-      ],
-      "target": null
-    },
-    {
-      "availability": "builtin",
-      "implementation": "claasp.representations.execution:TransposedBatchExecutionDriver",
-      "kind": "execution_engine",
-      "name": "python_transposed_batch",
-      "representations": [
-        "concrete_execution"
-      ],
-      "target": null
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
-      "kind": "solver",
-      "name": "minizinc",
-      "representations": [
-        "boolean_cnf"
-      ],
-      "target": "minizinc"
-    },
-    {
-      "availability": "minizinc_solver",
-      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
-      "kind": "solver",
-      "name": "minizinc_chuffed",
-      "representations": [],
-      "target": "minizinc:chuffed"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.kissat:KissatSolver",
-      "kind": "solver",
-      "name": "kissat",
-      "representations": [
-        "boolean_cnf"
-      ],
-      "target": "kissat"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
-      "kind": "solver",
-      "name": "cryptominisat",
-      "representations": [
-        "boolean_cnf"
-      ],
-      "target": "cryptominisat5"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.minisat:MinisatSolver",
-      "kind": "solver",
-      "name": "minisat",
-      "representations": [
-        "boolean_cnf",
-        "word_differential_sat",
-        "word_linear_sat"
-      ],
-      "target": "minisat"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.z3:Z3Solver",
-      "kind": "solver",
-      "name": "z3",
-      "representations": [
-        "boolean_cnf",
-        "boolean_smt",
-        "word_differential_smt",
-        "word_linear_smt"
-      ],
-      "target": "z3"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.glpk:GLPKSolver",
-      "kind": "solver",
-      "name": "glpk",
-      "representations": [
-        "boolean_cnf",
-        "boolean_monomial_milp"
-      ],
-      "target": "glpsol"
-    },
-    {
-      "availability": "python_module",
-      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
-      "kind": "solver",
-      "name": "highs",
-      "representations": [
-        "boolean_monomial_milp"
-      ],
-      "target": "scipy"
-    },
-    {
-      "availability": "python_module",
-      "implementation": "claasp.drivers.solvers.gurobi:GurobiSolver",
-      "kind": "solver",
-      "name": "gurobi",
-      "representations": [],
-      "target": "gurobipy"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.algebra.singular:SingularDriver",
-      "kind": "solver",
-      "name": "singular",
-      "representations": [
-        "singular_program"
-      ],
-      "target": "Singular"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.algebra.msolve:MsolveDriver",
-      "kind": "solver",
-      "name": "msolve",
-      "representations": [
-        "msolve_input"
-      ],
-      "target": "msolve"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.statistical.dieharder:DieharderDriver",
-      "kind": "external_tool",
-      "name": "dieharder",
-      "representations": [],
-      "target": "dieharder"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.statistical.nist:NistStsDriver",
-      "kind": "external_tool",
-      "name": "nist_sts",
-      "representations": [],
-      "target": "niststs"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.renderers.latex:LaTeXDriver",
+      "implementation": "claasp.representations.diagrams:ASCIIArtSerializer",
       "kind": "renderer",
-      "name": "latex",
+      "name": "ascii_diagram",
       "representations": [
         "primitive_diagram"
       ],
-      "target": "pdflatex"
+      "target": null
     },
     {
-      "availability": "python_module",
-      "implementation": "claasp.drivers.neural.sklearn_driver:SklearnMLPDriver",
-      "kind": "external_tool",
-      "name": "sklearn_mlp",
-      "representations": [],
-      "target": "sklearn"
+      "availability": "builtin",
+      "implementation": "claasp.representations.source:compile_c_source",
+      "kind": "compiler",
+      "name": "c_source_compiler",
+      "representations": [
+        "c_generated_source"
+      ],
+      "target": null
     },
     {
       "availability": "builtin",
@@ -529,14 +857,71 @@
       "target": "minizinc"
     },
     {
-      "availability": "builtin",
-      "implementation": "claasp.presentation:render_report",
-      "kind": "renderer",
-      "name": "text_presentation",
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
+      "kind": "solver",
+      "name": "cryptominisat",
       "representations": [
-        "report_presentation"
+        "boolean_cnf"
       ],
-      "target": null
+      "target": "cryptominisat5"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.statistical.dieharder:DieharderDriver",
+      "kind": "external_tool",
+      "name": "dieharder",
+      "representations": [],
+      "target": "dieharder"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.glpk:GLPKSolver",
+      "kind": "solver",
+      "name": "glpk",
+      "representations": [
+        "boolean_cnf",
+        "boolean_monomial_milp"
+      ],
+      "target": "glpsol"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.gurobi:GurobiSolver",
+      "kind": "solver",
+      "name": "gurobi",
+      "representations": [],
+      "target": "gurobipy"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
+      "kind": "solver",
+      "name": "highs",
+      "representations": [
+        "boolean_monomial_milp"
+      ],
+      "target": "scipy"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.kissat:KissatSolver",
+      "kind": "solver",
+      "name": "kissat",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "kissat"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.renderers.latex:LaTeXDriver",
+      "kind": "renderer",
+      "name": "latex",
+      "representations": [
+        "primitive_diagram"
+      ],
+      "target": "pdflatex"
     },
     {
       "availability": "python_module",
@@ -549,32 +934,70 @@
       "target": "matplotlib"
     },
     {
-      "availability": "builtin",
-      "implementation": "claasp.representations.diagrams:ASCIIArtSerializer",
-      "kind": "renderer",
-      "name": "ascii_diagram",
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.minisat:MinisatSolver",
+      "kind": "solver",
+      "name": "minisat",
       "representations": [
-        "primitive_diagram"
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
-      "target": null
+      "target": "minisat"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
+      "kind": "solver",
+      "name": "minizinc",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "minizinc"
+    },
+    {
+      "availability": "minizinc_solver",
+      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
+      "kind": "solver",
+      "name": "minizinc_chuffed",
+      "representations": [],
+      "target": "minizinc:chuffed"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.algebra.msolve:MsolveDriver",
+      "kind": "solver",
+      "name": "msolve",
+      "representations": [
+        "msolve_input"
+      ],
+      "target": "msolve"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.native:compile_native",
+      "kind": "execution_engine",
+      "name": "native_generated_c",
+      "representations": [
+        "c_generated_source"
+      ],
+      "target": "cc"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.statistical.nist:NistStsDriver",
+      "kind": "external_tool",
+      "name": "nist_sts",
+      "representations": [],
+      "target": "niststs"
     },
     {
       "availability": "builtin",
-      "implementation": "claasp.representations.diagrams:TikZSerializer",
-      "kind": "renderer",
-      "name": "tikz_diagram",
+      "implementation": "claasp.representations.execution:BatchExecutionDriver",
+      "kind": "execution_engine",
+      "name": "python_batch",
       "representations": [
-        "primitive_diagram"
-      ],
-      "target": null
-    },
-    {
-      "availability": "builtin",
-      "implementation": "claasp.representations.source:compile_python_source",
-      "kind": "compiler",
-      "name": "python_source_compiler",
-      "representations": [
-        "python_generated_source"
+        "concrete_execution"
       ],
       "target": null
     },
@@ -590,23 +1013,92 @@
     },
     {
       "availability": "builtin",
-      "implementation": "claasp.representations.source:compile_c_source",
-      "kind": "compiler",
-      "name": "c_source_compiler",
+      "implementation": "claasp.representations.execution:ScalarExecutionDriver",
+      "kind": "execution_engine",
+      "name": "python_scalar",
       "representations": [
-        "c_generated_source"
+        "concrete_execution"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.representations.source:compile_python_source",
+      "kind": "compiler",
+      "name": "python_source_compiler",
+      "representations": [
+        "python_generated_source"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.representations.execution:TransposedBatchExecutionDriver",
+      "kind": "execution_engine",
+      "name": "python_transposed_batch",
+      "representations": [
+        "concrete_execution"
       ],
       "target": null
     },
     {
       "availability": "executable",
-      "implementation": "claasp.drivers.native:compile_native",
-      "kind": "execution_engine",
-      "name": "native_generated_c",
+      "implementation": "claasp.drivers.algebra.singular:SingularDriver",
+      "kind": "solver",
+      "name": "singular",
       "representations": [
-        "c_generated_source"
+        "singular_program"
       ],
-      "target": "cc"
+      "target": "Singular"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.neural.sklearn_driver:SklearnMLPDriver",
+      "kind": "external_tool",
+      "name": "sklearn_mlp",
+      "representations": [],
+      "target": "sklearn"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.neural.tensorflow_driver:TensorFlowDistinguisherDriver",
+      "kind": "external_tool",
+      "name": "tensorflow_distinguisher",
+      "representations": [],
+      "target": "tensorflow"
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.presentation:render_report",
+      "kind": "renderer",
+      "name": "text_presentation",
+      "representations": [
+        "report_presentation"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.representations.diagrams:TikZSerializer",
+      "kind": "renderer",
+      "name": "tikz_diagram",
+      "representations": [
+        "primitive_diagram"
+      ],
+      "target": null
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.z3:Z3Solver",
+      "kind": "solver",
+      "name": "z3",
+      "representations": [
+        "boolean_cnf",
+        "boolean_smt",
+        "word_differential_smt",
+        "word_linear_smt"
+      ],
+      "target": "z3"
     }
   ],
   "milestone": "M10.15g",
@@ -675,6 +1167,98 @@
           "values": {
             "key_bit_size": 256,
             "number_of_rounds": 14
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "sbox_semantics",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "lookup",
+          "priority": 0,
+          "provenance": [
+            "FIPS 197 substitution table"
+          ],
+          "structure": [
+            "lookup_sbox",
+            "matrix_linear_layer"
+          ]
+        },
+        {
+          "capabilities": [
+            "algebraic_semantics",
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "algebraic",
+          "priority": 10,
+          "provenance": [
+            "FIPS 197 section 5.1.1"
+          ],
+          "structure": [
+            "binary_affine_map",
+            "field_inverse",
+            "matrix_linear_layer"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "Constant",
+        "LinearMap",
+        "Permutation",
+        "SBox"
+      ],
+      "domains": [
+        "BinaryExtensionField"
+      ],
+      "family": "aes",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/aes/test_package.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.aes",
+      "name": "AES128",
+      "official_name": "AES128",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "number_of_rounds": 10,
+            "realization": "lookup"
           }
         }
       ],
@@ -1572,6 +2156,337 @@
           "values": {
             "number_of_rounds": 32,
             "round_offset": 0
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "Constant",
+        "LinearMap",
+        "Permutation",
+        "SBox"
+      ],
+      "domains": [
+        "BinaryExtensionField"
+      ],
+      "family": "custom_aes",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/aes/test_package.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.aes.custom",
+      "name": "CustomAES",
+      "official_name": "CustomAES",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "include_mix_columns": true,
+            "key_bit_size": 128,
+            "number_of_rounds": null,
+            "sbox_table": [
+              99,
+              124,
+              119,
+              123,
+              242,
+              107,
+              111,
+              197,
+              48,
+              1,
+              103,
+              43,
+              254,
+              215,
+              171,
+              118,
+              202,
+              130,
+              201,
+              125,
+              250,
+              89,
+              71,
+              240,
+              173,
+              212,
+              162,
+              175,
+              156,
+              164,
+              114,
+              192,
+              183,
+              253,
+              147,
+              38,
+              54,
+              63,
+              247,
+              204,
+              52,
+              165,
+              229,
+              241,
+              113,
+              216,
+              49,
+              21,
+              4,
+              199,
+              35,
+              195,
+              24,
+              150,
+              5,
+              154,
+              7,
+              18,
+              128,
+              226,
+              235,
+              39,
+              178,
+              117,
+              9,
+              131,
+              44,
+              26,
+              27,
+              110,
+              90,
+              160,
+              82,
+              59,
+              214,
+              179,
+              41,
+              227,
+              47,
+              132,
+              83,
+              209,
+              0,
+              237,
+              32,
+              252,
+              177,
+              91,
+              106,
+              203,
+              190,
+              57,
+              74,
+              76,
+              88,
+              207,
+              208,
+              239,
+              170,
+              251,
+              67,
+              77,
+              51,
+              133,
+              69,
+              249,
+              2,
+              127,
+              80,
+              60,
+              159,
+              168,
+              81,
+              163,
+              64,
+              143,
+              146,
+              157,
+              56,
+              245,
+              188,
+              182,
+              218,
+              33,
+              16,
+              255,
+              243,
+              210,
+              205,
+              12,
+              19,
+              236,
+              95,
+              151,
+              68,
+              23,
+              196,
+              167,
+              126,
+              61,
+              100,
+              93,
+              25,
+              115,
+              96,
+              129,
+              79,
+              220,
+              34,
+              42,
+              144,
+              136,
+              70,
+              238,
+              184,
+              20,
+              222,
+              94,
+              11,
+              219,
+              224,
+              50,
+              58,
+              10,
+              73,
+              6,
+              36,
+              92,
+              194,
+              211,
+              172,
+              98,
+              145,
+              149,
+              228,
+              121,
+              231,
+              200,
+              55,
+              109,
+              141,
+              213,
+              78,
+              169,
+              108,
+              86,
+              244,
+              234,
+              101,
+              122,
+              174,
+              8,
+              186,
+              120,
+              37,
+              46,
+              28,
+              166,
+              180,
+              198,
+              232,
+              221,
+              116,
+              31,
+              75,
+              189,
+              139,
+              138,
+              112,
+              62,
+              181,
+              102,
+              72,
+              3,
+              246,
+              14,
+              97,
+              53,
+              87,
+              185,
+              134,
+              193,
+              29,
+              158,
+              225,
+              248,
+              152,
+              17,
+              105,
+              217,
+              142,
+              148,
+              155,
+              30,
+              135,
+              233,
+              206,
+              85,
+              40,
+              223,
+              140,
+              161,
+              137,
+              13,
+              191,
+              230,
+              66,
+              104,
+              65,
+              153,
+              45,
+              15,
+              176,
+              84,
+              187,
+              22
+            ]
           }
         }
       ],
@@ -3348,6 +4263,76 @@
           "name": "default",
           "values": {
             "key_bit_size": 80,
+            "number_of_rounds": 31
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "BitVectorSBox",
+        "Constant",
+        "Permutation"
+      ],
+      "domains": [
+        "Bit"
+      ],
+      "family": "present",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/test_present.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.present",
+      "name": "Present80",
+      "official_name": "Present80",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
             "number_of_rounds": 31
           }
         }
@@ -8985,6 +9970,74 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
+        "Add",
+        "Constant",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "family": "mimc",
+      "fixed_evidence": [
+        "tests/unit/primitives/permutations/test_mimc.py"
+      ],
+      "input_roles": [
+        "state"
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "role": "state",
+          "visibility": "public"
+        }
+      ],
+      "kind": "permutation",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.permutations.mimc",
+      "name": "MiMC",
+      "official_name": "MiMC",
+      "parameter_sets": [
+        {
+          "name": "teaching-example",
+          "values": {
+            "exponent": 3,
+            "modulus": 17,
+            "round_constants": [
+              1,
+              2,
+              4
+            ]
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "permutations"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "permutations",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
         "BitwiseAnd",
         "Rotate",
         "Shift",
@@ -9116,6 +10169,96 @@
       "tags": [
         "permutations",
         "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "permutations",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "Constant",
+        "LinearMap",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "family": "poseidon",
+      "fixed_evidence": [
+        "tests/unit/primitives/permutations/poseidon/test_package.py"
+      ],
+      "input_roles": [
+        "state"
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "role": "state",
+          "visibility": "public"
+        }
+      ],
+      "kind": "permutation",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.permutations.poseidon",
+      "name": "Poseidon",
+      "official_name": "Poseidon",
+      "parameter_sets": [
+        {
+          "name": "teaching-example",
+          "values": {
+            "exponent": 3,
+            "full_rounds": 2,
+            "linear_layer": [
+              [
+                1,
+                1
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            "modulus": 17,
+            "partial_rounds": 1,
+            "round_constants": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "permutations"
       ]
     },
     {
@@ -11882,6 +13025,76 @@
     {
       "authenticity": "canonical",
       "bijectivity_obligation": true,
+      "category": "toy_primitives",
+      "classification_basis": "reviewed retained-input bijectivity classification (M10.10h7)",
+      "components": [
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "family": "toy_speck",
+      "fixed_evidence": [
+        "tests/unit/primitives/toy_primitives/test_speck.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.toy_primitives.speck",
+      "name": "ToySpeck",
+      "official_name": "ToySpeck",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "number_of_rounds": 4
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "arx",
+        "toy_primitives"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
       "category": "tweakable_block_ciphers",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
@@ -12904,6 +14117,67 @@
     },
     {
       "components": [
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [
+        "c_source_compiler",
+        "native_generated_c"
+      ],
+      "implementation": "claasp.representations.source:compile_c_source",
+      "kind": "source",
+      "name": "c_generated_source",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "FeedbackRegister",
+        "LinearMap",
+        "ModularAdd",
+        "Permutation",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "component_bounded",
+        "component_minizinc"
+      ],
+      "implementation": "claasp.analysis:analyze_component_property",
+      "kind": "analysis",
+      "name": "component_properties",
+      "scope": "component"
+    },
+    {
+      "components": [
         "Add",
         "BinaryAffineMap",
         "BitVectorSBox",
@@ -12945,44 +14219,6 @@
       "scope": "generic_graph"
     },
     {
-      "components": [
-        "Add",
-        "BinaryAffineMap",
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "FeedbackRegister",
-        "IDEAMultiply",
-        "Identity",
-        "LinearMap",
-        "ModularAdd",
-        "ModularMultiply",
-        "ModularSubtract",
-        "Multiply",
-        "Permutation",
-        "Power",
-        "Rotate",
-        "SBox",
-        "Shift",
-        "VariableRotate",
-        "VariableShift",
-        "Xor"
-      ],
-      "domains": [
-        "BinaryExtensionField",
-        "Bit",
-        "PrimeField",
-        "Word"
-      ],
-      "drivers": [],
-      "implementation": "claasp.serialization:serialize_primitive",
-      "kind": "serialization",
-      "name": "primitive_serialization",
-      "scope": "generic_graph"
-    },
-    {
       "components": [],
       "domains": [
         "BinaryExtensionField",
@@ -12995,77 +14231,6 @@
       "kind": "serialization",
       "name": "execution_artifact_serialization",
       "scope": "result"
-    },
-    {
-      "components": [
-        "Add",
-        "BinaryAffineMap",
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "FeedbackRegister",
-        "IDEAMultiply",
-        "Identity",
-        "LinearMap",
-        "ModularAdd",
-        "ModularMultiply",
-        "ModularSubtract",
-        "Multiply",
-        "Permutation",
-        "Power",
-        "Rotate",
-        "SBox",
-        "Shift",
-        "VariableRotate",
-        "VariableShift",
-        "Xor"
-      ],
-      "domains": [
-        "BinaryExtensionField",
-        "Bit",
-        "PrimeField",
-        "Word"
-      ],
-      "drivers": [
-        "python_generated_source",
-        "python_source_compiler"
-      ],
-      "implementation": "claasp.representations.source:compile_python_source",
-      "kind": "source",
-      "name": "python_generated_source",
-      "scope": "generic_graph"
-    },
-    {
-      "components": [
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "Identity",
-        "ModularAdd",
-        "ModularSubtract",
-        "Permutation",
-        "Rotate",
-        "Shift",
-        "VariableRotate",
-        "VariableShift",
-        "Xor"
-      ],
-      "domains": [
-        "Bit",
-        "Word"
-      ],
-      "drivers": [
-        "c_source_compiler",
-        "native_generated_c"
-      ],
-      "implementation": "claasp.representations.source:compile_c_source",
-      "kind": "source",
-      "name": "c_generated_source",
-      "scope": "generic_graph"
     },
     {
       "components": [
@@ -13151,6 +14316,97 @@
     },
     {
       "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [],
+      "implementation": "claasp.serialization:serialize_primitive",
+      "kind": "serialization",
+      "name": "primitive_serialization",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "python_generated_source",
+        "python_source_compiler"
+      ],
+      "implementation": "claasp.representations.source:compile_python_source",
+      "kind": "source",
+      "name": "python_generated_source",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [],
+      "domains": [],
+      "drivers": [
+        "matplotlib_presentation",
+        "text_presentation"
+      ],
+      "implementation": "claasp.presentation:ReportData",
+      "kind": "presentation",
+      "name": "report_presentation",
+      "scope": "result"
+    },
+    {
+      "components": [
         "BitVectorSBox"
       ],
       "domains": [
@@ -13226,6 +14482,31 @@
         "Word"
       ],
       "drivers": [
+        "z3"
+      ],
+      "implementation": "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
+      "kind": "constraint",
+      "name": "word_differential_smt",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "drivers": [
         "minisat"
       ],
       "implementation": "claasp.representations.constraints.sat:WordXorLinearSATModel",
@@ -13253,84 +14534,17 @@
       "drivers": [
         "z3"
       ],
-      "implementation": "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
-      "kind": "constraint",
-      "name": "word_differential_smt",
-      "scope": "generic_graph"
-    },
-    {
-      "components": [
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "Identity",
-        "ModularAdd",
-        "ModularSubtract",
-        "Permutation",
-        "Rotate",
-        "Shift",
-        "Xor"
-      ],
-      "domains": [
-        "Word"
-      ],
-      "drivers": [
-        "z3"
-      ],
       "implementation": "claasp.representations.constraints.smt:WordXorLinearSMTModel",
       "kind": "constraint",
       "name": "word_linear_smt",
       "scope": "generic_graph"
-    },
-    {
-      "components": [
-        "BinaryAffineMap",
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "FeedbackRegister",
-        "LinearMap",
-        "ModularAdd",
-        "Permutation",
-        "Rotate",
-        "SBox",
-        "Shift",
-        "Xor"
-      ],
-      "domains": [
-        "BinaryExtensionField",
-        "Bit",
-        "PrimeField",
-        "Word"
-      ],
-      "drivers": [
-        "component_bounded",
-        "component_minizinc"
-      ],
-      "implementation": "claasp.analysis:analyze_component_property",
-      "kind": "analysis",
-      "name": "component_properties",
-      "scope": "component"
-    },
-    {
-      "components": [],
-      "domains": [],
-      "drivers": [
-        "matplotlib_presentation",
-        "text_presentation"
-      ],
-      "implementation": "claasp.presentation:ReportData",
-      "kind": "presentation",
-      "name": "report_presentation",
-      "scope": "result"
     }
   ],
   "schema_version": 2,
   "sources": {
     "classification": "tools/data/legacy_inventory.json",
-    "components": "tools/data/single_component_catalogue.json",
+    "components": "claasp.components public Component types",
+    "membership": "implementation-owned __catalogue__ declarations",
     "realizations": "tools/data/realization_catalogue.json"
   }
 }

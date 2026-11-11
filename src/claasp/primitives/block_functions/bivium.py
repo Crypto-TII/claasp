@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -14,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
@@ -151,3 +151,6 @@ class BiviumKeystreamFunction(BitGraphPrimitive):
                 [ks, z], [list(range(clock_number)), [0]], clock_number + 1
             ).id
         return ks
+
+
+__catalogue__ = (_entry("primitive", BiviumKeystreamFunction),)

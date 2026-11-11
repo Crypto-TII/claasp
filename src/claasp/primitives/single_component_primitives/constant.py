@@ -1,5 +1,6 @@
 """Single-component constant-function primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant as ConstantComponent
 from claasp.encoding import bits_from_int
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
@@ -43,3 +44,6 @@ class Constant(Primitive):
 
 
 __all__ = ["Constant"]
+
+
+__catalogue__ = (_entry("primitive", Constant),)

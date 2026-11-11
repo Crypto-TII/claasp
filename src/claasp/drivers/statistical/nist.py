@@ -29,6 +29,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.analysis.statistical_datasets import StatisticalDataset, SuppliedStatisticalDataset
 from claasp.analysis.statistical_results import NISTFinalReport, StatisticalTestRun
 from claasp.drivers.statistical.parsers import parse_nist_final_report
@@ -263,3 +264,15 @@ class NistStsDriver:
         resolved = str(Path(executable).resolve())
         match = re.search(r"sts-(\d+\.\d+\.\d+)", resolved)
         return f"NIST STS {match.group(1)}" if match else "unknown"
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        NistStsDriver,
+        name="nist_sts",
+        kind="external_tool",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

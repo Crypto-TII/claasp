@@ -1,5 +1,7 @@
 """Canonical PRINCE block primitive."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -287,3 +288,6 @@ class Prince(BitGraphPrimitive):
         final_xor = self.prince_core(pre_whitening, number_of_rounds)
         pos_whitening = self.pos_whitening(final_xor)
         self.add_primitive_output_component([pos_whitening.id], [list(range(64))], 64)
+
+
+__catalogue__ = (_entry("primitive", Prince),)

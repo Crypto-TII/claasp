@@ -31,6 +31,7 @@ Primitive Specifications:
   * Rounds 25-32: Rule B
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT
 
@@ -485,3 +486,6 @@ class Skipjack(BitGraphPrimitive):
             self.add_primitive_output_component(input_links, input_positions, 64)
         else:
             self.add_round_output_component(input_links, input_positions, 64)
+
+
+__catalogue__ = (_entry("primitive", Skipjack),)

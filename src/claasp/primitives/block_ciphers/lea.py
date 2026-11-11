@@ -1,5 +1,6 @@
 """LEA block primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._word_graph import add, byte_swap, concatenate, constant, rotate, select, word_type, xor
@@ -112,3 +113,6 @@ class LEA(Primitive):
             state = [byte_swap(self, value, 32) for value in state]
         self._builder.set_round_output(*state)
         self._builder.set_output(concatenate(self, *state))
+
+
+__catalogue__ = (_entry("primitive", LEA),)

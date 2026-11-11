@@ -1,6 +1,6 @@
 """Generated public primitive catalogue exports.
 
-Regenerate with ``tools/generate_primitive_exports.py``.
+Regenerate with ``tools/generate_catalogue_metadata.py``.
 """
 
 from importlib import import_module
@@ -8,6 +8,7 @@ from importlib import import_module
 CATEGORY_EXPORTS = {
     "block_ciphers": {
         "AES": "claasp.primitives.block_ciphers.aes",
+        "AES128": "claasp.primitives.block_ciphers.aes",
         "Aradi": "claasp.primitives.block_ciphers.aradi",
         "AradiSBox": "claasp.primitives.block_ciphers.aradi.sbox",
         "AradiSBoxCompactLinearMap": "claasp.primitives.block_ciphers.aradi.sbox_compact_linear_map",
@@ -19,6 +20,7 @@ CATEGORY_EXPORTS = {
         "CRAX": "claasp.primitives.block_ciphers.crax",
         "Cast": "claasp.primitives.block_ciphers.cast",
         "Craft": "claasp.primitives.block_ciphers.craft",
+        "CustomAES": "claasp.primitives.block_ciphers.aes.custom",
         "DES": "claasp.primitives.block_ciphers.des",
         "DESExactKeyLength": "claasp.primitives.block_ciphers.des.exact_key_length",
         "Gift": "claasp.primitives.block_ciphers.gift",
@@ -41,6 +43,7 @@ CATEGORY_EXPORTS = {
         "Noekeon": "claasp.primitives.block_ciphers.noekeon",
         "Piccolo": "claasp.primitives.block_ciphers.piccolo",
         "Present": "claasp.primitives.block_ciphers.present",
+        "Present80": "claasp.primitives.block_ciphers.present",
         "Pride": "claasp.primitives.block_ciphers.pride",
         "Prince": "claasp.primitives.block_ciphers.prince",
         "PrinceV2": "claasp.primitives.block_ciphers.prince_v2",
@@ -114,8 +117,10 @@ CATEGORY_EXPORTS = {
         "KeccakInvertible": "claasp.primitives.permutations.keccak.invertible",
         "KeccakSbox": "claasp.primitives.permutations.keccak.sbox",
         "Knot": "claasp.primitives.permutations.knot",
+        "MiMC": "claasp.primitives.permutations.mimc",
         "Norx": "claasp.primitives.permutations.norx",
         "Photon": "claasp.primitives.permutations.photon",
+        "Poseidon": "claasp.primitives.permutations.poseidon",
         "SalsaPermutation": "claasp.primitives.permutations.salsa",
         "Sparkle": "claasp.primitives.permutations.sparkle",
         "Speckey": "claasp.primitives.permutations.speckey",
@@ -159,6 +164,7 @@ CATEGORY_EXPORTS = {
         "ToyFeistel": "claasp.primitives.toy_primitives.toyfeistel",
         "ToySPN1": "claasp.primitives.toy_primitives.toyspn1",
         "ToySPN2": "claasp.primitives.toy_primitives.toyspn2",
+        "ToySpeck": "claasp.primitives.toy_primitives.speck",
     },
     "tweakable_block_ciphers": {
         "BipBip": "claasp.primitives.tweakable_block_ciphers.bipbip",

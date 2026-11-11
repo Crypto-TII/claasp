@@ -1,5 +1,7 @@
 """Legacy-regression S-box representation of Gimli."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, simplify_inputs
 from claasp.primitive_inputs import INPUT_PLAINTEXT, PERMUTATION
 
@@ -288,3 +289,6 @@ class GimliSbox(BitGraphPrimitive):
             states = self.round_constant(states, 0x9E377900 ^ round_number)
 
         return states
+
+
+__catalogue__ = (_entry("primitive", GimliSbox, labels=("noncanonical_legacy_regression",)),)

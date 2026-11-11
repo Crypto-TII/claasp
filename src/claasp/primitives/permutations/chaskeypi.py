@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from fractions import Fraction
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import (
     BitGraphPrimitive,
     BitState,
@@ -187,3 +187,6 @@ class ChaskeyPi(BitGraphPrimitive):
         v2 = self._rotate_word(v2, self.rotations[4])
 
         return [v0, v1, v2, v3]
+
+
+__catalogue__ = (_entry("primitive", ChaskeyPi),)

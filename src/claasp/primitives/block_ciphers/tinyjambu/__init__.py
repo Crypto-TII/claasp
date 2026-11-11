@@ -1,5 +1,6 @@
 """TinyJambu primitive family and retained realizations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.primitives._realizations import realization, register_realizations
 
 from .fsr_word import TinyJambuFSRWordBased
@@ -47,3 +48,6 @@ register_realizations(
 )
 
 __all__ = ["TinyJambu", "TinyJambuFSRWordBased", "TinyJambuWordBased"]
+
+
+__catalogue__ = (_entry("primitive", TinyJambu),)

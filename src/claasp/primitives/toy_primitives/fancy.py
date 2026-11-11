@@ -1,5 +1,6 @@
 """Fancy mixed-operation testing primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import LinearMap
 from claasp.graph import Primitive
 
@@ -106,3 +107,6 @@ class Fancy(Primitive):
                 state = concatenate(self, (add_left, xor_left, add_right, xor_right))
             self._builder.set_round_output(state)
         self._builder.set_output(state)
+
+
+__catalogue__ = (_entry("primitive", Fancy),)

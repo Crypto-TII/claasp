@@ -17,6 +17,7 @@
 
 """Grain v1 initialization-core permutation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, coerce_exact_int
 from claasp.primitive_inputs import INPUT_STATE, PERMUTATION
 
@@ -167,3 +168,6 @@ class GrainCore(BitGraphPrimitive):
             self.add_round_output_component([state_id], [state_positions], self.state_bit_size)
 
         self.add_primitive_output_component([state_id], [state_positions], self.state_bit_size)
+
+
+__catalogue__ = (_entry("primitive", GrainCore),)

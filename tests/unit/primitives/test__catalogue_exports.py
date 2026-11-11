@@ -5,8 +5,9 @@ from claasp.primitives._catalogue_exports import ALL_EXPORTS, CATEGORY_EXPORTS
 
 
 def test_all_catalogue_classes_are_public_at_top_level_and_by_category():
-    assert len(ALL_EXPORTS) == 152
-    assert sum(map(len, CATEGORY_EXPORTS.values())) == 152
+    category_names = [name for exports in CATEGORY_EXPORTS.values() for name in exports]
+    assert len(category_names) == len(set(category_names))
+    assert set(category_names) == set(ALL_EXPORTS)
     for category, exports in CATEGORY_EXPORTS.items():
         category_module = importlib.import_module(f"claasp.primitives.{category}")
         for name, module_name in exports.items():

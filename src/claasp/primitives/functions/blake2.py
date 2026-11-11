@@ -14,10 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
-
 from math import sqrt
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE, INPUT_STATE
 
@@ -391,3 +390,6 @@ class Blake2CompressionFunction(BitGraphPrimitive):
             j = (j - 2) % self.n
 
         return new_state_id
+
+
+__catalogue__ = (_entry("primitive", Blake2CompressionFunction),)

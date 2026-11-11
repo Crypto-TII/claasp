@@ -1,6 +1,6 @@
 {
   "counts_by_code": {
-    "arg-type": 100,
+    "arg-type": 99,
     "assignment": 69,
     "attr-defined": 141,
     "call-arg": 7,
@@ -15,15 +15,15 @@
     "return-value": 1,
     "type-var": 2,
     "union-attr": 66,
-    "var-annotated": 118
+    "var-annotated": 115
   },
   "counts_by_scope": {
     "docs/conf.py": 0,
     "src/claasp": 620,
     "tests": 131,
-    "tools": 31
+    "tools": 27
   },
-  "diagnostic_count": 782,
+  "diagnostic_count": 778,
   "diagnostics": [
     {
       "code": "operator",
@@ -105,7 +105,7 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 353,
+      "line": 354,
       "message": "Need type annotation for \"results\" (hint: \"results: list[<type>] = ...\")",
       "path": "src/claasp/analysis/facade.py"
     },
@@ -210,105 +210,105 @@
     {
       "code": "arg-type",
       "column": 17,
-      "line": 209,
+      "line": 210,
       "message": "Argument 6 to \"NativeCompilationResult\" has incompatible type \"bytes | str\"; expected \"str\"",
       "path": "src/claasp/drivers/native.py"
     },
     {
       "code": "arg-type",
       "column": 17,
-      "line": 210,
+      "line": 211,
       "message": "Argument 7 to \"NativeCompilationResult\" has incompatible type \"bytes | str\"; expected \"str\"",
       "path": "src/claasp/drivers/native.py"
     },
     {
       "code": "union-attr",
       "column": 57,
-      "line": 328,
+      "line": 329,
       "message": "Item \"None\" of \"Selection | None\" has no attribute \"array_type\"",
       "path": "src/claasp/drivers/native.py"
     },
     {
       "code": "arg-type",
       "column": 79,
-      "line": 76,
+      "line": 77,
       "message": "Argument 1 to \"is_satisfied\" of \"CNFFormula\" has incompatible type \"dict[str, int] | None\"; expected \"Mapping[str, int | bool]\"",
       "path": "src/claasp/drivers/solvers/minisat.py"
     },
     {
       "code": "misc",
       "column": 19,
-      "line": 74,
+      "line": 75,
       "message": "Value expression in dictionary comprehension has incompatible type \"object\"; expected type \"int\"",
       "path": "src/claasp/drivers/solvers/minizinc.py"
     },
     {
       "code": "var-annotated",
       "column": 22,
-      "line": 118,
+      "line": 119,
       "message": "Need type annotation for \"lines\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 21,
-      "line": 134,
+      "line": 135,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"__iter__\" (not iterable)",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 21,
-      "line": 139,
+      "line": 140,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"__iter__\" (not iterable)",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 9,
-      "line": 173,
+      "line": 174,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"write\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 9,
-      "line": 174,
+      "line": 175,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"flush\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "union-attr",
       "column": 13,
-      "line": 210,
+      "line": 211,
       "message": "Item \"None\" of \"IO[Any] | None\" has no attribute \"close\"",
       "path": "src/claasp/drivers/solvers/z3.py"
     },
     {
       "code": "arg-type",
       "column": 17,
-      "line": 157,
+      "line": 158,
       "message": "Argument 6 to \"SourceExecutionResult\" has incompatible type \"bytes | str\"; expected \"str\"",
       "path": "src/claasp/drivers/source.py"
     },
     {
       "code": "arg-type",
       "column": 17,
-      "line": 158,
+      "line": 159,
       "message": "Argument 7 to \"SourceExecutionResult\" has incompatible type \"bytes | str\"; expected \"str\"",
       "path": "src/claasp/drivers/source.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 220,
+      "line": 221,
       "message": "Incompatible types in assignment (expression has type \"list[Any]\", target has type \"int\")",
       "path": "src/claasp/drivers/source.py"
     },
     {
       "code": "assignment",
       "column": 13,
-      "line": 39,
+      "line": 40,
       "message": "Incompatible types in assignment (expression has type \"None\", variable has type Module)",
       "path": "src/claasp/drivers/statistical/nist.py"
     },
@@ -672,23 +672,16 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 34,
+      "line": 35,
       "message": "Need type annotation for \"subkeys\" (hint: \"subkeys: list[<type>] = ...\")",
       "path": "src/claasp/primitives/block_ciphers/idea.py"
     },
     {
       "code": "assignment",
       "column": 29,
-      "line": 44,
+      "line": 45,
       "message": "Incompatible types in assignment (expression has type \"UnitArray\", variable has type \"Selection\")",
       "path": "src/claasp/primitives/block_ciphers/idea.py"
-    },
-    {
-      "code": "index",
-      "column": 35,
-      "line": 129,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "index",
@@ -707,7 +700,7 @@
     {
       "code": "index",
       "column": 35,
-      "line": 135,
+      "line": 132,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
@@ -733,16 +726,9 @@
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
-      "code": "operator",
-      "column": 14,
-      "line": 144,
-      "message": "Unsupported operand types for - (\"object\" and \"int\")",
-      "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
-    },
-    {
       "code": "index",
-      "column": 27,
-      "line": 144,
+      "column": 35,
+      "line": 139,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
@@ -785,48 +771,62 @@
       "code": "index",
       "column": 27,
       "line": 147,
+      "message": "Value of type \"object\" is not indexable",
+      "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
+    },
+    {
+      "code": "operator",
+      "column": 14,
+      "line": 148,
+      "message": "Unsupported operand types for - (\"object\" and \"int\")",
+      "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
+    },
+    {
+      "code": "index",
+      "column": 27,
+      "line": 148,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 35,
-      "line": 162,
+      "line": 163,
       "message": "No overload variant of \"range\" matches argument types \"object\", \"Any\"",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 73,
-      "line": 162,
+      "line": 163,
       "message": "No overload variant of \"range\" matches argument type \"object\"",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 33,
-      "line": 166,
+      "line": 167,
       "message": "No overload variant of \"range\" matches argument types \"object\", \"Any\"",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 71,
-      "line": 166,
+      "line": 167,
       "message": "No overload variant of \"range\" matches argument type \"object\"",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 201,
+      "line": 202,
       "message": "Unsupported operand types for < (\"int\" and \"object\")",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
     {
       "code": "union-attr",
       "column": 46,
-      "line": 216,
+      "line": 217,
       "message": "Item \"None\" of \"Any | None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/block_ciphers/katan/fsr.py"
     },
@@ -945,13 +945,6 @@
     {
       "code": "index",
       "column": 35,
-      "line": 102,
-      "message": "Value of type \"object\" is not indexable",
-      "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
-    },
-    {
-      "code": "index",
-      "column": 35,
       "line": 103,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
@@ -966,7 +959,7 @@
     {
       "code": "index",
       "column": 35,
-      "line": 108,
+      "line": 105,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
@@ -992,16 +985,9 @@
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
-      "code": "operator",
-      "column": 14,
-      "line": 115,
-      "message": "Unsupported operand types for - (\"object\" and \"int\")",
-      "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
-    },
-    {
       "code": "index",
-      "column": 27,
-      "line": 115,
+      "column": 35,
+      "line": 112,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
@@ -1044,48 +1030,62 @@
       "code": "index",
       "column": 27,
       "line": 118,
+      "message": "Value of type \"object\" is not indexable",
+      "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
+    },
+    {
+      "code": "operator",
+      "column": 14,
+      "line": 119,
+      "message": "Unsupported operand types for - (\"object\" and \"int\")",
+      "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
+    },
+    {
+      "code": "index",
+      "column": 27,
+      "line": 119,
       "message": "Value of type \"object\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 35,
-      "line": 133,
+      "line": 134,
       "message": "No overload variant of \"range\" matches argument types \"object\", \"Any\"",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 73,
-      "line": 133,
+      "line": 134,
       "message": "No overload variant of \"range\" matches argument type \"object\"",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 33,
-      "line": 134,
+      "line": 135,
       "message": "No overload variant of \"range\" matches argument types \"object\", \"Any\"",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "code": "call-overload",
       "column": 71,
-      "line": 134,
+      "line": 135,
       "message": "No overload variant of \"range\" matches argument type \"object\"",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "code": "operator",
       "column": 16,
-      "line": 149,
+      "line": 150,
       "message": "Unsupported operand types for < (\"int\" and \"object\")",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
     {
       "code": "union-attr",
       "column": 46,
-      "line": 167,
+      "line": 168,
       "message": "Item \"None\" of \"Any | None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/block_ciphers/ktantan/fsr.py"
     },
@@ -1379,7 +1379,7 @@
     {
       "code": "index",
       "column": 58,
-      "line": 90,
+      "line": 91,
       "message": "Value of type \"Any | None\" is not indexable",
       "path": "src/claasp/primitives/block_ciphers/saecham.py"
     },
@@ -1470,7 +1470,7 @@
     {
       "code": "assignment",
       "column": 22,
-      "line": 98,
+      "line": 99,
       "message": "Incompatible types in assignment (expression has type \"tuple[Any, BitState]\", variable has type \"list[BitState]\")",
       "path": "src/claasp/primitives/block_ciphers/splight.py"
     },
@@ -1638,49 +1638,49 @@
     {
       "code": "operator",
       "column": 26,
-      "line": 94,
+      "line": 95,
       "message": "Unsupported operand types for + (\"int\" and \"object\")",
       "path": "src/claasp/primitives/block_functions/a5_1.py"
     },
     {
       "code": "operator",
       "column": 22,
-      "line": 96,
+      "line": 97,
       "message": "Unsupported operand types for + (\"int\" and \"object\")",
       "path": "src/claasp/primitives/block_functions/a5_1.py"
     },
     {
       "code": "operator",
       "column": 41,
-      "line": 136,
+      "line": 137,
       "message": "Unsupported operand types for - (\"object\" and \"int\")",
       "path": "src/claasp/primitives/block_functions/a5_1.py"
     },
     {
       "code": "operator",
       "column": 73,
-      "line": 138,
+      "line": 139,
       "message": "Unsupported operand types for - (\"object\" and \"int\")",
       "path": "src/claasp/primitives/block_functions/a5_1.py"
     },
     {
       "code": "misc",
       "column": 25,
-      "line": 97,
+      "line": 98,
       "message": "Generator has incompatible item type \"object\"; expected \"bool\"",
       "path": "src/claasp/primitives/block_functions/a5_2.py"
     },
     {
       "code": "operator",
       "column": 41,
-      "line": 144,
+      "line": 145,
       "message": "Unsupported operand types for - (\"object\" and \"int\")",
       "path": "src/claasp/primitives/block_functions/a5_2.py"
     },
     {
       "code": "operator",
       "column": 73,
-      "line": 146,
+      "line": 147,
       "message": "Unsupported operand types for - (\"object\" and \"int\")",
       "path": "src/claasp/primitives/block_functions/a5_2.py"
     },
@@ -1694,288 +1694,281 @@
     {
       "code": "arg-type",
       "column": 29,
-      "line": 81,
+      "line": 82,
       "message": "Argument 1 to \"append\" of \"list\" has incompatible type \"UnitArray\"; expected \"Selection\"",
       "path": "src/claasp/primitives/block_functions/chacha.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 126,
+      "line": 128,
       "message": "Need type annotation for \"keystream\" (hint: \"keystream: list[<type>] = ...\")",
       "path": "src/claasp/primitives/block_functions/snow3g.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 164,
+      "line": 166,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
       "path": "src/claasp/primitives/block_functions/snow3g.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 167,
+      "line": 169,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
       "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 13,
-      "line": 170,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[Any]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 13,
-      "line": 171,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 177,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 180,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 192,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 195,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 207,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 210,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 218,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 221,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 229,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 232,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 13,
-      "line": 236,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[Any]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 13,
-      "line": 237,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 245,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 248,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "operator",
-      "column": 34,
-      "line": 401,
-      "message": "Unsupported left operand type for + (\"None\")",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 403,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 406,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "operator",
-      "column": 23,
-      "line": 415,
-      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "operator",
-      "column": 23,
-      "line": 420,
-      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 429,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 430,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "operator",
-      "column": 17,
-      "line": 436,
-      "message": "Unsupported left operand type for + (\"None\")",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "index",
-      "column": 19,
-      "line": 437,
-      "message": "Value of type \"None\" is not indexable",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "operator",
-      "column": 18,
-      "line": 442,
-      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "index",
-      "column": 36,
-      "line": 443,
-      "message": "Value of type \"None\" is not indexable",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "index",
-      "column": 13,
-      "line": 451,
-      "message": "Value of type \"None\" is not indexable",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "index",
-      "column": 13,
-      "line": 464,
-      "message": "Value of type \"None\" is not indexable",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "operator",
-      "column": 33,
-      "line": 498,
-      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
-      "path": "src/claasp/primitives/block_functions/snow3g.py"
-    },
-    {
-      "code": "assignment",
-      "column": 13,
-      "line": 162,
-      "message": "Incompatible types in assignment (expression has type \"list[Selection]\", variable has type \"list[UnitArray | Selection]\")",
-      "path": "src/claasp/primitives/block_functions/trivium.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 141,
-      "message": "Need type annotation for \"key_st\" (hint: \"key_st: list[<type>] = ...\")",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 13,
-      "line": 158,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 13,
-      "line": 159,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
       "code": "call-overload",
       "column": 13,
       "line": 172,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[Any]\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
     },
     {
       "code": "call-overload",
       "column": 13,
       "line": 173,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 179,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 182,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 194,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 197,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 209,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 212,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 220,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 223,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 231,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 234,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 13,
+      "line": 238,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[Any]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 13,
+      "line": 239,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 247,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 250,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
     },
     {
       "code": "operator",
-      "column": 13,
-      "line": 186,
+      "column": 34,
+      "line": 403,
       "message": "Unsupported left operand type for + (\"None\")",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 405,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 408,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "operator",
+      "column": 23,
+      "line": 417,
+      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "operator",
+      "column": 23,
+      "line": 422,
+      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 431,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 432,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "operator",
+      "column": 17,
+      "line": 438,
+      "message": "Unsupported left operand type for + (\"None\")",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "index",
+      "column": 19,
+      "line": 439,
+      "message": "Value of type \"None\" is not indexable",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "operator",
+      "column": 18,
+      "line": 444,
+      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "index",
+      "column": 36,
+      "line": 445,
+      "message": "Value of type \"None\" is not indexable",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "index",
+      "column": 13,
+      "line": 453,
+      "message": "Value of type \"None\" is not indexable",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "index",
+      "column": 13,
+      "line": 466,
+      "message": "Value of type \"None\" is not indexable",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "operator",
+      "column": 33,
+      "line": 500,
+      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
+      "path": "src/claasp/primitives/block_functions/snow3g.py"
+    },
+    {
+      "code": "assignment",
+      "column": 13,
+      "line": 163,
+      "message": "Incompatible types in assignment (expression has type \"list[Selection]\", variable has type \"list[UnitArray | Selection]\")",
+      "path": "src/claasp/primitives/block_functions/trivium.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 142,
+      "message": "Need type annotation for \"key_st\" (hint: \"key_st: list[<type>] = ...\")",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 13,
+      "line": 159,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 13,
+      "line": 160,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 13,
+      "line": 173,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[Any]\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 13,
+      "line": 174,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
       "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
@@ -1986,79 +1979,86 @@
       "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
-      "code": "call-overload",
-      "column": 9,
-      "line": 191,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "code": "operator",
+      "column": 13,
+      "line": 188,
+      "message": "Unsupported left operand type for + (\"None\")",
       "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
       "code": "call-overload",
       "column": 9,
       "line": 192,
-      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
-    },
-    {
-      "code": "operator",
-      "column": 15,
-      "line": 210,
-      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
-    },
-    {
-      "code": "operator",
-      "column": 18,
-      "line": 212,
-      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
-      "path": "src/claasp/primitives/block_functions/zuc.py"
-    },
-    {
-      "code": "call-overload",
-      "column": 9,
-      "line": 219,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
       "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
       "code": "call-overload",
       "column": 9,
+      "line": 193,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "operator",
+      "column": 15,
+      "line": 211,
+      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "operator",
+      "column": 18,
+      "line": 213,
+      "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
       "line": 220,
+      "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[str]\"",
+      "path": "src/claasp/primitives/block_functions/zuc.py"
+    },
+    {
+      "code": "call-overload",
+      "column": 9,
+      "line": 221,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"list[list[int]]\"",
       "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
       "code": "operator",
       "column": 13,
-      "line": 233,
+      "line": 234,
       "message": "No overload variant of \"__add__\" of \"list\" matches argument type \"None\"",
       "path": "src/claasp/primitives/block_functions/zuc.py"
     },
     {
       "code": "index",
       "column": 16,
-      "line": 417,
+      "line": 416,
       "message": "Value of type \"list[Any] | None\" is not indexable",
       "path": "src/claasp/primitives/functions/blake.py"
     },
     {
       "code": "index",
       "column": 87,
-      "line": 424,
+      "line": 423,
       "message": "Value of type \"list[Any] | None\" is not indexable",
       "path": "src/claasp/primitives/functions/blake.py"
     },
     {
       "code": "index",
       "column": 36,
-      "line": 426,
+      "line": 425,
       "message": "Value of type \"list[Any] | None\" is not indexable",
       "path": "src/claasp/primitives/functions/blake.py"
     },
     {
       "code": "index",
       "column": 39,
-      "line": 427,
+      "line": 426,
       "message": "Value of type \"list[Any] | None\" is not indexable",
       "path": "src/claasp/primitives/functions/blake.py"
     },
@@ -2072,21 +2072,14 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 93,
+      "line": 94,
       "message": "Need type annotation for \"swap_little_big_positions\" (hint: \"swap_little_big_positions: list[<type>] = ...\")",
       "path": "src/claasp/primitives/functions/md5.py"
     },
     {
       "code": "arg-type",
       "column": 17,
-      "line": 99,
-      "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
-      "path": "src/claasp/primitives/functions/md5.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 22,
-      "line": 105,
+      "line": 100,
       "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
       "path": "src/claasp/primitives/functions/md5.py"
     },
@@ -2100,14 +2093,21 @@
     {
       "code": "arg-type",
       "column": 22,
-      "line": 71,
+      "line": 107,
+      "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
+      "path": "src/claasp/primitives/functions/md5.py"
+    },
+    {
+      "code": "arg-type",
+      "column": 22,
+      "line": 72,
       "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
       "path": "src/claasp/primitives/functions/sha1.py"
     },
     {
       "code": "arg-type",
       "column": 22,
-      "line": 158,
+      "line": 159,
       "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
       "path": "src/claasp/primitives/functions/sha2.py"
     },
@@ -2128,14 +2128,14 @@
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 203,
+      "line": 204,
       "message": "Need type annotation for \"output_ids\" (hint: \"output_ids: list[<type>] = ...\")",
       "path": "src/claasp/primitives/permutations/gaston/sbox.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
-      "line": 155,
+      "line": 156,
       "message": "Need type annotation for \"output_ids\" (hint: \"output_ids: list[<type>] = ...\")",
       "path": "src/claasp/primitives/permutations/gaston/sbox_theta.py"
     },
@@ -2331,217 +2331,217 @@
     {
       "code": "var-annotated",
       "column": 18,
-      "line": 90,
+      "line": 91,
       "message": "Need type annotation for \"states\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 17,
-      "line": 93,
+      "line": 94,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 13,
-      "line": 109,
-      "message": "Need type annotation for \"inputs_id\" (hint: \"inputs_id: list[<type>] = ...\")",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "var-annotated",
       "column": 13,
       "line": 110,
+      "message": "Need type annotation for \"inputs_id\" (hint: \"inputs_id: list[<type>] = ...\")",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 13,
+      "line": 111,
       "message": "Need type annotation for \"inputs_pos\" (hint: \"inputs_pos: list[<type>] = ...\")",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "var-annotated",
       "column": 13,
-      "line": 124,
+      "line": 125,
       "message": "Need type annotation for \"b\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 17,
-      "line": 133,
+      "line": 134,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 136,
+      "line": 137,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "var-annotated",
       "column": 21,
-      "line": 141,
+      "line": 142,
       "message": "Need type annotation for \"sp_states\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 146,
-      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 17,
       "line": 147,
+      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 148,
       "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 25,
-      "line": 154,
-      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 26,
       "line": 155,
-      "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 160,
-      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 17,
-      "line": 162,
-      "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 169,
-      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 17,
-      "line": 171,
-      "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "attr-defined",
-      "column": 25,
-      "line": 180,
       "message": "\"dict[Any, Any]\" has no attribute \"id\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 26,
-      "line": 184,
+      "line": 156,
+      "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 25,
+      "line": 161,
+      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 163,
+      "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 25,
+      "line": 170,
+      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 17,
+      "line": 172,
+      "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 25,
+      "line": 181,
+      "message": "\"dict[Any, Any]\" has no attribute \"id\"",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "attr-defined",
+      "column": 26,
+      "line": 185,
       "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "var-annotated",
       "column": 29,
-      "line": 196,
+      "line": 197,
       "message": "Need type annotation for \"lane_after_sb\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 17,
-      "line": 198,
+      "line": 199,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 203,
+      "line": 204,
       "message": "\"dict[Any, Any]\" has no attribute \"id\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 38,
-      "line": 203,
+      "line": 204,
       "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 213,
+      "line": 214,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 219,
+      "line": 220,
       "message": "\"dict[Any, Any]\" has no attribute \"id\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 38,
-      "line": 219,
+      "line": 220,
       "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 228,
+      "line": 229,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 234,
+      "line": 235,
       "message": "\"dict[Any, Any]\" has no attribute \"id\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "attr-defined",
       "column": 38,
-      "line": 234,
+      "line": 235,
       "message": "\"dict[Any, Any]\" has no attribute \"input_bit_positions\"",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "call-overload",
       "column": 13,
-      "line": 244,
+      "line": 245,
       "message": "No overload variant of \"__setitem__\" of \"list\" matches argument types \"int\", \"BitState\"",
-      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 9,
-      "line": 269,
-      "message": "Need type annotation for \"inputs_id\" (hint: \"inputs_id: list[<type>] = ...\")",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
     {
       "code": "var-annotated",
       "column": 9,
       "line": 270,
+      "message": "Need type annotation for \"inputs_id\" (hint: \"inputs_id: list[<type>] = ...\")",
+      "path": "src/claasp/primitives/permutations/gimli/sbox.py"
+    },
+    {
+      "code": "var-annotated",
+      "column": 9,
+      "line": 271,
       "message": "Need type annotation for \"inputs_pos\" (hint: \"inputs_pos: list[<type>] = ...\")",
       "path": "src/claasp/primitives/permutations/gimli/sbox.py"
     },
@@ -2786,49 +2786,49 @@
     {
       "code": "arg-type",
       "column": 38,
-      "line": 165,
+      "line": 166,
       "message": "Argument 1 to \"BitState\" has incompatible type \"str\"; expected \"list[str]\"",
       "path": "src/claasp/primitives/permutations/xoodoo/sbox.py"
     },
     {
       "code": "arg-type",
       "column": 55,
-      "line": 165,
+      "line": 166,
       "message": "Argument 2 to \"BitState\" has incompatible type \"list[int]\"; expected \"list[list[int]]\"",
       "path": "src/claasp/primitives/permutations/xoodoo/sbox.py"
     },
     {
       "code": "arg-type",
       "column": 66,
-      "line": 39,
+      "line": 40,
       "message": "Argument 1 to \"BitwiseAnd\" has incompatible type \"Sequence[UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/bitwise_and.py"
     },
     {
       "code": "arg-type",
       "column": 64,
-      "line": 47,
+      "line": 48,
       "message": "Argument 1 to \"Multiply\" has incompatible type \"Sequence[UnitArray]\"; expected \"Iterable[Selection]\"",
       "path": "src/claasp/primitives/single_component_primitives/multiply.py"
     },
     {
       "code": "assignment",
       "column": 25,
-      "line": 77,
+      "line": 78,
       "message": "Incompatible types in assignment (expression has type \"UnitArray\", variable has type \"Selection\")",
       "path": "src/claasp/primitives/toy_primitives/fancy.py"
     },
     {
       "code": "assignment",
       "column": 23,
-      "line": 117,
+      "line": 118,
       "message": "Incompatible types in assignment (expression has type \"list[UnitArray]\", variable has type \"tuple[UnitArray, ...]\")",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
     {
       "code": "attr-defined",
       "column": 17,
-      "line": 119,
+      "line": 120,
       "message": "\"tuple[UnitArray, ...]\" has no attribute \"append\"",
       "path": "src/claasp/primitives/toy_primitives/toyaes.py"
     },
@@ -2842,63 +2842,63 @@
     {
       "code": "attr-defined",
       "column": 18,
-      "line": 333,
+      "line": 334,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 344,
+      "line": 345,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 360,
+      "line": 361,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 18,
-      "line": 369,
+      "line": 370,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 18,
-      "line": 382,
+      "line": 383,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 419,
+      "line": 420,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 22,
-      "line": 435,
+      "line": 436,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 18,
-      "line": 447,
+      "line": 448,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
     {
       "code": "attr-defined",
       "column": 14,
-      "line": 455,
+      "line": 456,
       "message": "\"None\" has no attribute \"id\"",
       "path": "src/claasp/primitives/tweakable_block_ciphers/qarmav2/mixcolumn.py"
     },
@@ -4669,21 +4669,21 @@
     {
       "code": "misc",
       "column": 9,
-      "line": 16,
+      "line": 18,
       "message": "Property \"name\" defined in \"PrimitiveRecord\" is read-only",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
     {
       "code": "index",
       "column": 9,
-      "line": 172,
+      "line": 174,
       "message": "Unsupported target for indexed assignment (\"Mapping[str, object]\")",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
     {
       "code": "operator",
       "column": 12,
-      "line": 215,
+      "line": 217,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/catalogue/test_catalogue.py"
     },
@@ -4893,14 +4893,14 @@
     {
       "code": "operator",
       "column": 16,
-      "line": 225,
+      "line": 218,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/primitives/single_component_primitives/test_package.py"
     },
     {
       "code": "operator",
       "column": 20,
-      "line": 236,
+      "line": 229,
       "message": "Unsupported right operand type for in (\"str | None\")",
       "path": "tests/unit/primitives/single_component_primitives/test_package.py"
     },
@@ -5400,34 +5400,6 @@
       "line": 52,
       "message": "Item \"None\" of \"WordwiseImpossibleBoundaryResult | None\" has no attribute \"contradictory_positions\"",
       "path": "tools/benchmark_milp_wordwise_impossible.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 19,
-      "line": 319,
-      "message": "Need type annotation for \"REPRESENTATIONS\"",
-      "path": "tools/generate_catalogue_metadata.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 12,
-      "line": 525,
-      "message": "Need type annotation for \"ANALYSES\"",
-      "path": "tools/generate_catalogue_metadata.py"
-    },
-    {
-      "code": "var-annotated",
-      "column": 5,
-      "line": 733,
-      "message": "Need type annotation for \"test_evidence\" (hint: \"test_evidence: dict[<type>, <type>] = ...\")",
-      "path": "tools/generate_catalogue_metadata.py"
-    },
-    {
-      "code": "arg-type",
-      "column": 41,
-      "line": 800,
-      "message": "Argument 1 to \"list\" has incompatible type \"Any | object\"; expected \"Iterable[Any]\"",
-      "path": "tools/generate_catalogue_metadata.py"
     },
     {
       "code": "attr-defined",

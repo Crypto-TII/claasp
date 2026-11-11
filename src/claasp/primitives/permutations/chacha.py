@@ -1,5 +1,6 @@
 """Reference ChaCha implementation following the designers' pseudocode."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import ModularAdd, Rotate, Xor
 from claasp.graph import Primitive, PrimitiveKind, Selection, UnitArray, UnitArrayType
 from claasp.primitives.permutations._arx_rounds import stage_configuration
@@ -126,3 +127,6 @@ class ChaChaPermutation(Primitive):
 
 
 __all__ = ["ChaChaPermutation"]
+
+
+__catalogue__ = (_entry("primitive", ChaChaPermutation),)

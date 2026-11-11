@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 import sys
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -401,3 +401,6 @@ class UblockSingleLinearLayer(BitGraphPrimitive):
             )
 
         return key_2, key_3, key_1, key_0, round_key
+
+
+__catalogue__ = (_entry("primitive", UblockSingleLinearLayer, labels=("equivalent_realization",)),)

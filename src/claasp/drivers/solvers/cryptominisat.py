@@ -7,6 +7,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.representations.constraints.sat.exporters import (
     CryptoMiniSatDimacsExporter,
@@ -168,3 +169,15 @@ class CryptoMiniSatSolver:
         return SatStatus.SATISFIABLE, {
             name: assignment_by_index[index] for index, name in enumerate(variables, 1)
         }
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        CryptoMiniSatSolver,
+        name="cryptominisat",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

@@ -1,5 +1,7 @@
 """Feedback-register realization of KTANTAN."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 from claasp.primitives.block_ciphers.katan.primitive import (
@@ -208,3 +209,6 @@ class KtantanFSR(BitGraphPrimitive):
             kb.append(a4 if t[3] == 0 and t[2] == 1 else self._mux4(x4g, 1 - t[0], 1 - t[1]))
 
         return ka, kb
+
+
+__catalogue__ = (_entry("primitive", KtantanFSR, labels=("equivalent_realization",)),)

@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from typing import ClassVar
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_number_of_rounds_from
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -696,3 +696,6 @@ class MSX(BitGraphPrimitive):
         )
         W3 = BitState([self.get_current_component_id()], [list(range(self.word_size))])
         return W0, W1, W2, W3
+
+
+__catalogue__ = (_entry("primitive", MSX),)

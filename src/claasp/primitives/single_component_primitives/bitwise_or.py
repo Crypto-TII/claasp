@@ -1,5 +1,6 @@
 """Primitive consisting of one bitwise OR."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BitwiseOr as BitwiseOrComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -39,3 +40,6 @@ class BitwiseOr(Primitive):
 
 
 __all__ = ["BitwiseOr"]
+
+
+__catalogue__ = (_entry("primitive", BitwiseOr),)

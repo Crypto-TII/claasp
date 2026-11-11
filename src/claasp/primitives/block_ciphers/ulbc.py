@@ -6,6 +6,7 @@ The final round has substitution and key addition only. This is the published
 18/22-round family, not the later C++ variants in the authors' repository.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, LinearMap, Permutation, SBox, Xor
 from claasp.graph import Primitive
 
@@ -241,3 +242,8 @@ class ULBC(Primitive):
 
 
 __all__ = ["ULBC"]
+
+
+__catalogue__ = (
+    _entry("primitive", ULBC, evidence=("tests/unit/primitives/block_ciphers/test_ulbc.py",)),
+)

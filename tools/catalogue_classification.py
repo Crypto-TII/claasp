@@ -43,6 +43,7 @@ REVIEWED_RETAINED_INPUT_OBLIGATIONS = {
     "ToyFeistel": True,
     "ToySPN1": True,
     "ToySPN2": True,
+    "ToySpeck": True,
     "VariableRotate": True,
     "VariableShift": False,
     "Xor": True,

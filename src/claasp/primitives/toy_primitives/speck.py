@@ -1,5 +1,6 @@
 """Nonstandard Speck8/16 fixture, distinct from the official catalogue."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -54,3 +55,8 @@ class ToySpeck(Primitive):
                 constant = self._builder.add_component(Constant(word_type, (round_number,)))
                 schedule[index], round_key = round_function(schedule[index], round_key, constant)
         self._builder.set_output((x, y))
+
+
+__catalogue__ = (
+    _entry("primitive", ToySpeck, evidence=("tests/unit/primitives/toy_primitives/test_speck.py",)),
+)

@@ -1,5 +1,6 @@
 """One-component data-dependent rotation function."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import VariableRotate as VariableRotateComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -61,3 +62,6 @@ class VariableRotate(Primitive):
 
 
 __all__ = ["VariableRotate"]
+
+
+__catalogue__ = (_entry("primitive", VariableRotate),)

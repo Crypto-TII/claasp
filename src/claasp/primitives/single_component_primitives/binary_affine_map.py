@@ -1,5 +1,6 @@
 """Primitive consisting of one binary affine map."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BinaryAffineMap as BinaryAffineMapComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import BinaryExtensionField, Bit
@@ -63,3 +64,6 @@ class BinaryAffineMap(Primitive):
 
 
 __all__ = ["BinaryAffineMap"]
+
+
+__catalogue__ = (_entry("primitive", BinaryAffineMap),)

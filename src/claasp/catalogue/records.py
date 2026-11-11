@@ -151,7 +151,7 @@ class ComponentRecord:
 
     name: str
     module: str
-    primitive_wrapper: str
+    primitive_wrapper: str | None
 
 
 @dataclass(frozen=True, slots=True)

@@ -1,5 +1,6 @@
 """DES primitive family and boundary realizations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.primitives._realizations import realization, register_realizations
 
 from .exact_key_length import DESExactKeyLength
@@ -23,3 +24,6 @@ register_realizations(
 )
 
 __all__ = ["DES", "DESExactKeyLength"]
+
+
+__catalogue__ = (_entry("primitive", DES),)

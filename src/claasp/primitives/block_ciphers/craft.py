@@ -5,6 +5,7 @@ Reduced windows keep the absolute round numbers; a window ending at round 31
 therefore includes the special final round without PN and SB.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, Permutation, SBox, Xor
 from claasp.graph import Primitive, UnitArrayType
 from claasp.unit_types import Word
@@ -101,3 +102,8 @@ class Craft(Primitive):
 
 
 __all__ = ["Craft"]
+
+
+__catalogue__ = (
+    _entry("primitive", Craft, evidence=("tests/unit/primitives/block_ciphers/test_craft.py",)),
+)

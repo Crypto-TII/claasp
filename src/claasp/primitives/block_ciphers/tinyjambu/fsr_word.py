@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from copy import deepcopy
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
 
@@ -113,3 +113,6 @@ class TinyJambuFSRWordBased(BitGraphPrimitive):
         state[-1] = deepcopy(round_output)
 
         return state
+
+
+__catalogue__ = (_entry("primitive", TinyJambuFSRWordBased, labels=("equivalent_realization",)),)
