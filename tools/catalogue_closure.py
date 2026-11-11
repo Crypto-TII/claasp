@@ -13,7 +13,6 @@ ROOT = Path(__file__).parents[1]
 CATALOGUE = ROOT / "src/claasp/catalogue/data/catalogue.json"
 INVENTORY = ROOT / "tools/data/legacy_inventory.json"
 REALIZATIONS = ROOT / "tools/data/realization_catalogue.json"
-SINGLE_COMPONENTS = ROOT / "tools/data/single_component_catalogue.json"
 
 
 def check() -> tuple[int, int, int, int, int]:
@@ -23,24 +22,26 @@ def check() -> tuple[int, int, int, int, int]:
         (ROOT / "tools/data/legacy_inventory_delta.json").read_text(encoding="utf-8")
     )["records"]
     realization_audit = json.loads(REALIZATIONS.read_text(encoding="utf-8"))
-    single_components = json.loads(SINGLE_COMPONENTS.read_text(encoding="utf-8"))
+    from catalogue_discovery import component_records, discover, validate_payload
+
+    entries = discover()
+    validate_payload(catalogue, entries)
     from claasp.primitives._catalogue_exports import ALL_EXPORTS
 
     primitives = catalogue["primitives"]
     by_name = {item["name"]: item for item in primitives}
     assert catalogue["schema_version"] == 2
-    assert len(by_name) == len(primitives) == len(ALL_EXPORTS) == 152
+    assert len(by_name) == len(primitives) == len(ALL_EXPORTS)
     assert {name: item["module"] for name, item in by_name.items()} == ALL_EXPORTS
-    assert {item["name"]: item["module"] for item in catalogue["components"]} == single_components
-    assert len(catalogue["components"]) == 23
-    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"]) == 28
+    assert catalogue["components"] == component_records(entries)
+    assert len({item["name"] for item in catalogue["drivers"]}) == len(catalogue["drivers"])
     representations = catalogue["representations"]
     analyses = catalogue["analyses"]
     representation_names = {item["name"] for item in representations}
     driver_names = {item["name"] for item in catalogue["drivers"]}
     component_names = {item["name"] for item in catalogue["components"]}
-    assert len(representation_names) == len(representations) == 21
-    assert len({item["name"] for item in analyses}) == len(analyses) == 13
+    assert len(representation_names) == len(representations)
+    assert len({item["name"] for item in analyses}) == len(analyses)
     for item in representations:
         assert set(item["components"]) <= component_names
         assert set(item["drivers"]) <= driver_names

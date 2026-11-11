@@ -1,5 +1,6 @@
 """Versioned, dependency-free CLAASP serialization."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.serialization.errors import (
     SerializationDiagnostic,
     SerializationError,
@@ -41,3 +42,51 @@ __all__ = [
     "serialize_execution_trace",
     "serialize_primitive",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        serialize_primitive,
+        name="primitive_serialization",
+        kind="serialization",
+        components=(
+            "Add",
+            "BinaryAffineMap",
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "Constant",
+            "FeedbackRegister",
+            "IDEAMultiply",
+            "Identity",
+            "LinearMap",
+            "ModularAdd",
+            "ModularMultiply",
+            "ModularSubtract",
+            "Multiply",
+            "Permutation",
+            "Power",
+            "Rotate",
+            "SBox",
+            "Shift",
+            "VariableRotate",
+            "VariableShift",
+            "Xor",
+        ),
+        domains=("BinaryExtensionField", "Bit", "PrimeField", "Word"),
+        drivers=(),
+        scope="generic_graph",
+    ),
+    _entry(
+        "representation",
+        serialize_artifact,
+        name="execution_artifact_serialization",
+        kind="serialization",
+        components=(),
+        domains=("BinaryExtensionField", "Bit", "PrimeField", "Word"),
+        drivers=(),
+        scope="result",
+    ),
+)

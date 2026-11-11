@@ -1,5 +1,6 @@
 """One-component data-dependent shift function."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import VariableShift as VariableShiftComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -59,3 +60,6 @@ class VariableShift(Primitive):
 
 
 __all__ = ["VariableShift"]
+
+
+__catalogue__ = (_entry("primitive", VariableShift),)

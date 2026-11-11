@@ -33,6 +33,7 @@ state, key unit ``m`` is loaded at ``s(80 - m)`` and IV unit ``m`` at
 ``s(173 - m)``; output unit ``m`` is the keystream bit ``z(m + 1)``.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BitwiseAnd, Constant, Xor
 from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
 from claasp.unit_types import Word
@@ -218,3 +219,6 @@ class TriviumKeystreamFunction(Primitive):
         for source, start, stop in _TARGETS:
             updated[start - 1 : stop] = [feedback[source]] + state[start - 1 : stop - 1]
         return updated, keystream_bit
+
+
+__catalogue__ = (_entry("primitive", TriviumKeystreamFunction),)

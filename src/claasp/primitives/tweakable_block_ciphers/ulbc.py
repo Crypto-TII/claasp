@@ -1,5 +1,6 @@
 """Published thirty-round uLBC-384t with an explicit key/tweak split."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
 from claasp.primitives.block_ciphers._word_graph import word_type
 from claasp.primitives.block_ciphers.ulbc import _build_ulbc
@@ -53,3 +54,12 @@ class ULBCTweakable(Primitive):
 
 
 __all__ = ["ULBCTweakable"]
+
+
+__catalogue__ = (
+    _entry(
+        "primitive",
+        ULBCTweakable,
+        evidence=("tests/unit/primitives/tweakable_block_ciphers/test_ulbc.py",),
+    ),
+)

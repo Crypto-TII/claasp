@@ -1,5 +1,6 @@
 """CHAM lightweight ARX family."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._word_graph import add, concatenate, constant, rotate, select, word_type, xor
@@ -59,3 +60,6 @@ class CHAM(Primitive):
             self._builder.set_round_output(boundary)
             state = [boundary[index] for index in range(4)]
         self._builder.set_output(concatenate(self, *state))
+
+
+__catalogue__ = (_entry("primitive", CHAM),)

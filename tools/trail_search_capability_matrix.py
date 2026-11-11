@@ -34,7 +34,19 @@ _CONFIGURATION_OVERRIDES = {
 def _primitive(name):
     primitive_type = load_export(name)
     parameters = inspect.signature(primitive_type).parameters
-    options = dict(_CONFIGURATION_OVERRIDES.get(name, {}))
+    options: dict[str, object] = dict(_CONFIGURATION_OVERRIDES.get(name, {}))
+    required = {
+        parameter.name
+        for parameter in parameters.values()
+        if parameter.default is inspect.Parameter.empty
+        and parameter.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+    }
+    if required - options.keys():
+        from claasp.catalogue import catalogue
+
+        # Reuse the same explicit teaching configuration as discovery instead
+        # of inventing another parameter list or reporting a constructor gap.
+        options.update(catalogue.parameter_sets(primitive=name)[0].values)
     if name not in _CONFIGURATION_OVERRIDES and "number_of_rounds" in parameters:
         options["number_of_rounds"] = 1
     if name not in _CONFIGURATION_OVERRIDES and "number_of_initialization_clocks" in parameters:

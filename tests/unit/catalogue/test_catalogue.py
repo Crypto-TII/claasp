@@ -8,7 +8,9 @@ from claasp.catalogue import Catalogue, PrimitiveRecord, RepresentationRecord, c
 
 def test_catalogue_returns_sorted_immutable_records():
     records = catalogue.primitives()
-    assert len(records) == 152
+    from claasp.primitives._catalogue_exports import ALL_EXPORTS
+
+    assert {record.name for record in records} == set(ALL_EXPORTS)
     assert isinstance(records, tuple)
     assert records == tuple(sorted(records, key=lambda item: (item.category, item.name)))
     assert isinstance(records[0], PrimitiveRecord)
@@ -88,7 +90,7 @@ def test_component_records_are_one_to_one_with_teaching_wrappers():
 def test_representation_component_queries_are_bidirectional():
     representations = catalogue.representations(component="Power")
     assert all(isinstance(item, RepresentationRecord) for item in representations)
-    assert tuple(item.name for item in representations) == (
+    assert set(item.name for item in representations) == {
         "concrete_execution",
         "primitive_serialization",
         "python_generated_source",
@@ -96,7 +98,7 @@ def test_representation_component_queries_are_bidirectional():
         "prime_field_polynomial",
         "primitive_diagram",
         "singular_program",
-    )
+    }
     assert {item.name for item in catalogue.components(representation="boolean_cnf")} == {
         "Add",
         "BitVectorSBox",
@@ -113,14 +115,14 @@ def test_representation_component_queries_are_bidirectional():
 
 
 def test_representation_driver_queries_are_bidirectional():
-    assert tuple(item.name for item in catalogue.drivers(representation="boolean_cnf")) == (
+    assert {item.name for item in catalogue.drivers(representation="boolean_cnf")} == {
         "minizinc",
         "kissat",
         "cryptominisat",
         "minisat",
         "z3",
         "glpk",
-    )
+    }
     assert catalogue.driver("z3").representations == frozenset(
         {
             "boolean_cnf",
@@ -206,10 +208,10 @@ def test_minizinc_solver_probe_checks_the_requested_solver(monkeypatch):
 def test_catalogue_exposes_presentation_capabilities_separately():
     representations = catalogue.representations(driver="text_presentation")
     assert [item.name for item in representations] == ["report_presentation"]
-    assert [item.name for item in catalogue.drivers(representation="report_presentation")] == [
+    assert {item.name for item in catalogue.drivers(representation="report_presentation")} == {
         "text_presentation",
         "matplotlib_presentation",
-    ]
+    }
     presentation = next(item for item in catalogue.analyses() if item.name == "present")
     assert presentation.kind == "result_presentation"
     assert "never executes" in presentation.restriction

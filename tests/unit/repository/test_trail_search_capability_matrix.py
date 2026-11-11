@@ -43,3 +43,11 @@ def test_construction_evidence_does_not_claim_a_solver_run():
                 assert not evidence["formula_materialized"]
                 assert not evidence["solver_executed"]
                 assert not evidence["witness_independently_checked"]
+
+
+def test_parameterized_teaching_graphs_are_constructed_before_reporting_semantic_limits():
+    rows = {row["primitive"]: row for row in json.loads(OUTPUT.read_text())["rows"]}
+    for name in ("MiMC", "Poseidon"):
+        assert rows[name]["configuration"]["modulus"] == 17
+        for kind in ("xor_differential", "xor_linear"):
+            assert rows[name][f"{kind}_limitation"] == "exact_semantics"

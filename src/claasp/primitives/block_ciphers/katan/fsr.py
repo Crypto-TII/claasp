@@ -1,5 +1,7 @@
 """Feedback-register realization of KATAN."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -222,3 +223,6 @@ class KatanFSR(BitGraphPrimitive):
             [bit.id[0] for bit in bits], [bit.input_bit_positions[0] for bit in bits], 1
         ).id
         return BitState([component_id], [[0]])
+
+
+__catalogue__ = (_entry("primitive", KatanFSR, labels=("equivalent_realization",)),)

@@ -1,5 +1,6 @@
 """Dependency-free contracts and adapters for result presentation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.presentation.adapters import (
     AdaptationResult,
     adapt_result,
@@ -99,3 +100,32 @@ __all__ = [
     "trail_section",
     "write_report",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "driver", render_report, name="text_presentation", kind="renderer", availability="builtin"
+    ),
+    _entry(
+        "representation",
+        ReportData,
+        name="report_presentation",
+        kind="presentation",
+        components=(),
+        domains=(),
+        drivers=("matplotlib_presentation", "text_presentation"),
+        scope="result",
+    ),
+    _entry(
+        "analysis",
+        present,
+        name="present",
+        kind="result_presentation",
+        evidence="qualified",
+        representations=("report_presentation",),
+        drivers=("matplotlib_presentation", "text_presentation"),
+        required_components=(),
+        primitives=(),
+        restriction="consumes already-produced typed results and never executes an analysis",
+    ),
+)

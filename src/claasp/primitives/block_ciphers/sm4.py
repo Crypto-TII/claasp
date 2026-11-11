@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -290,3 +292,6 @@ class SM4(BitGraphPrimitive):
             ],
             self.PRIMITIVE_BLOCK_SIZE,
         )
+
+
+__catalogue__ = (_entry("primitive", SM4),)

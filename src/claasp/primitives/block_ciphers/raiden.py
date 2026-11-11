@@ -1,5 +1,6 @@
 """Raiden word-oriented block primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._word_graph import add, concatenate, select, shift, subtract, variable_shift, word_type, xor
@@ -51,3 +52,6 @@ class Raiden(Primitive):
                 )
             self._builder.set_round_output(*block)
         self._builder.set_output(concatenate(self, *block))
+
+
+__catalogue__ = (_entry("primitive", Raiden),)

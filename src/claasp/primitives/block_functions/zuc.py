@@ -1,3 +1,4 @@
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import INPUT_INITIALIZATION_VECTOR, INPUT_KEY, STREAM_CIPHER
 
@@ -333,3 +334,6 @@ class ZucKeystreamFunction(BitGraphPrimitive):
         )
         rot_component = BitState([self.get_current_component_id()], [list(range(WORD_SIZE))])
         return rot_component
+
+
+__catalogue__ = (_entry("primitive", ZucKeystreamFunction),)

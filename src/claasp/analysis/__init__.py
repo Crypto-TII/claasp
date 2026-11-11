@@ -1,5 +1,6 @@
 """Backend-independent analysis problems, constraints, and results."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.analysis._circle_coordinates import CircleCoordinateGraph, circle_coordinate_graph
 from claasp.analysis.advanced_trails import (
     CPCharacteristicResult,
@@ -409,3 +410,31 @@ __all__ = [
     "xor_differential_component_dataset",
     "xor_differential_dataset",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        analyze_component_property,
+        name="component_properties",
+        kind="analysis",
+        components=(
+            "BinaryAffineMap",
+            "BitVectorSBox",
+            "BitwiseAnd",
+            "BitwiseNot",
+            "BitwiseOr",
+            "FeedbackRegister",
+            "LinearMap",
+            "ModularAdd",
+            "Permutation",
+            "Rotate",
+            "SBox",
+            "Shift",
+            "Xor",
+        ),
+        domains=("BinaryExtensionField", "Bit", "PrimeField", "Word"),
+        drivers=("component_bounded", "component_minizinc"),
+        scope="component",
+    ),
+)

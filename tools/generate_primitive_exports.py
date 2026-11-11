@@ -1,4 +1,4 @@
-"""Generate the lazy public primitive export map from the machine inventory."""
+"""Generate the lazy public primitive export map from implementation-owned declarations."""
 
 from __future__ import annotations
 
@@ -6,48 +6,20 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-INVENTORY = ROOT / "tools/data/legacy_inventory.json"
-SINGLE_COMPONENT_CATALOGUE = ROOT / "tools/data/single_component_catalogue.json"
 DESTINATION = ROOT / "src/claasp/primitives/_catalogue_exports.py"
-NATIVE_EXPORTS = (
-    ("block_ciphers", "Noekeon", "claasp.primitives.block_ciphers.noekeon"),
-    ("block_ciphers", "Pride", "claasp.primitives.block_ciphers.pride"),
-    ("block_ciphers", "ULBC", "claasp.primitives.block_ciphers.ulbc"),
-    ("tweakable_block_ciphers", "ULBCTweakable", "claasp.primitives.tweakable_block_ciphers.ulbc"),
-    ("block_ciphers", "Craft", "claasp.primitives.block_ciphers.craft"),
-    ("block_functions", "SalsaBlockFunction", "claasp.primitives.block_functions.salsa"),
-)
 
 
-def render_exports() -> tuple[str, int]:
-    """Return the deterministic generated module and exported-class count."""
+def render_exports(entries=None) -> tuple[str, int]:
+    """Return deterministic exports discovered from implementation owners."""
+    from catalogue_discovery import primitive_exports
 
-    payload = json.loads(INVENTORY.read_text(encoding="utf-8"))
-    payload["records"] += json.loads(
-        (ROOT / "tools/data/legacy_inventory_delta.json").read_text(encoding="utf-8")
-    )["records"]
-    rows = sorted(
-        (
-            item["primitive"]["primitive_category"],
-            item["primitive"]["proposed_class"],
-            item["primitive"]["proposed_module"],
-        )
-        for item in payload["records"]
-        if "primitive" in item and item["primitive"]["primitive_category"] != "outside_scope"
-    )
-    rows = [row for row in rows if row[0] != "single_component_primitives"]
-    rows.extend(NATIVE_EXPORTS)
-    component_catalogue = json.loads(SINGLE_COMPONENT_CATALOGUE.read_text(encoding="utf-8"))
-    rows.extend(
-        ("single_component_primitives", name, module)
-        for name, module in component_catalogue.items()
-    )
+    rows = list(primitive_exports(entries))
     rows.sort()
     categories = sorted({category for category, _, _ in rows})
     lines = [
         '"""Generated public primitive catalogue exports.',
         "",
-        "Regenerate with ``tools/generate_primitive_exports.py``.",
+        "Regenerate with ``tools/generate_catalogue_metadata.py``.",
         '"""',
         "",
         "from importlib import import_module",

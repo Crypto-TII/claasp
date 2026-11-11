@@ -1,5 +1,6 @@
 """Bit-oriented PRESENT block primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Add, BitVectorSBox, Constant, Permutation
 from claasp.graph import Primitive, Selection, UnitArray, UnitArrayType
 from claasp.unit_types import Bit
@@ -140,3 +141,14 @@ class Present80(Present):
 
     def __init__(self, number_of_rounds: int = 31) -> None:
         super().__init__(key_bit_size=80, number_of_rounds=number_of_rounds)
+
+
+__catalogue__ = (
+    _entry("primitive", Present),
+    _entry(
+        "primitive",
+        Present80,
+        instances_from=Present,
+        evidence=("tests/unit/primitives/block_ciphers/test_present.py",),
+    ),
+)

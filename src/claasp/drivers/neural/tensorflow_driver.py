@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from claasp._catalogue_metadata import _entry
 from claasp.analysis.neural import NeuralDataset, NeuralExperiment, NeuralExperimentResult
 from claasp.analysis.neural_experiments import deterministic_partition
 
@@ -260,3 +261,15 @@ def _tensorflow():
 def _positive(name, value):
     if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
         raise ValueError(f"{name} must be a positive integer")
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        TensorFlowDistinguisherDriver,
+        name="tensorflow_distinguisher",
+        kind="external_tool",
+        availability="python_module",
+        target="tensorflow",
+    ),
+)

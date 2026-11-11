@@ -19,6 +19,7 @@ swappable alternative driver behind the same protocol; nothing in
 
 from __future__ import annotations
 
+from claasp._catalogue_metadata import _entry
 from claasp.analysis.neural import NeuralDataset, NeuralExperiment, NeuralExperimentResult
 from claasp.analysis.neural_experiments import deterministic_partition
 
@@ -118,3 +119,15 @@ class SklearnMLPDriver:
             int(value)
             for value in self._model.predict(np.asarray(dataset.features, dtype=np.float64))
         )
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        SklearnMLPDriver,
+        name="sklearn_mlp",
+        kind="external_tool",
+        availability="python_module",
+        target="sklearn",
+    ),
+)

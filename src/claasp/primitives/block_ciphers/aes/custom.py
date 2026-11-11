@@ -2,6 +2,7 @@
 
 from collections.abc import Iterable
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Add
 from claasp.composites.aes import AES_FIELD, AES_SBOX, AESKeySchedule, AESRound
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
@@ -86,3 +87,13 @@ class CustomAES(Primitive):
             )
             state = round_function.output()
         self._builder.set_output(state)
+
+
+__catalogue__ = (
+    _entry(
+        "primitive",
+        CustomAES,
+        instances_from=False,
+        evidence=("tests/unit/primitives/block_ciphers/aes/test_package.py",),
+    ),
+)

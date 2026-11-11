@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from typing import Any, NamedTuple
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
 
@@ -441,3 +441,6 @@ class Chilow(BitGraphPrimitive):
     def tweak_rev_range(self, s: int, e: int) -> tuple[int, int]:
         """Build the tweak rev range stage in this primitive's typed operation graph."""
         return self.rev_range(s, e, self.tweak_bit_size)
+
+
+__catalogue__ = (_entry("primitive", Chilow),)

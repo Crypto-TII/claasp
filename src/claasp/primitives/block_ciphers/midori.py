@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -14,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
-
 from claasp.graph.bit_builder import BitGraphPrimitive, extract_inputs, wordlist_to_int
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -369,3 +369,6 @@ class Midori(BitGraphPrimitive):
                 ).id
 
         return new_data_id_list, [list(range(self.word_size))] * 16
+
+
+__catalogue__ = (_entry("primitive", Midori),)

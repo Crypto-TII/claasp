@@ -1,5 +1,6 @@
 """The fixed-length ChaCha keystream block function."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.encoding import bits_from_int
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
@@ -130,3 +131,6 @@ class ChaChaBlockFunction(Primitive):
 
 
 __all__ = ["PARAMETERS_CONFIGURATION_LIST", "ChaChaBlockFunction"]
+
+
+__catalogue__ = (_entry("primitive", ChaChaBlockFunction),)

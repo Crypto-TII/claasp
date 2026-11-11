@@ -1,5 +1,6 @@
 """Small configurable Feistel teaching primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BitVectorSBox
 from claasp.graph import Primitive
 
@@ -56,3 +57,6 @@ class ToyFeistel(Primitive):
         output = concatenate(self, (state[right_positions], state[left_positions]))
         self._builder.set_round_output(output)
         self._builder.set_output(output)
+
+
+__catalogue__ = (_entry("primitive", ToyFeistel),)

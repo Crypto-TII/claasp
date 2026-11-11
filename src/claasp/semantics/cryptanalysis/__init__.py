@@ -1,5 +1,6 @@
 """Cryptanalytic propagation meanings, transitions, and trails."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.semantics.cryptanalysis.activity import (
     AESTwoRoundXorDifferentialEvidence,
     WordwiseActiveSBoxEvidence,
@@ -164,3 +165,17 @@ __all__ = [
     "truncated_modular_add",
     "truncated_modular_subtract",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "representation",
+        SBoxTransitionSemantics,
+        name="sbox_transition_table",
+        kind="analysis",
+        components=("BitVectorSBox",),
+        domains=("Bit",),
+        drivers=(),
+        scope="component",
+    ),
+)

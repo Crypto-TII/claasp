@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 from threading import Thread
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.drivers.solvers.progress import MILPProgressLog
@@ -231,3 +232,15 @@ class GLPKSolver:
         if not names:
             raise RuntimeError("GLPK did not emit a column-name map")
         return names
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        GLPKSolver,
+        name="glpk",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

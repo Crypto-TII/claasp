@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2026 Technology Innovation Institute
 #
@@ -14,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import (
     BitGraphPrimitive,
     BitState,
@@ -140,3 +141,6 @@ class Speckey(BitGraphPrimitive):
         y = self._xor_words(y, x)
 
         return [x, y]
+
+
+__catalogue__ = (_entry("primitive", Speckey),)

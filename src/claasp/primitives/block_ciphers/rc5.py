@@ -3,6 +3,7 @@
 from decimal import Decimal, localcontext
 from math import ceil, log10
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive, UnitArrayType
 from claasp.unit_types import Bit, Word
 
@@ -129,3 +130,6 @@ class RC5(Primitive):
         final = concatenate(self, byte_swap(self, a, word_size), byte_swap(self, b, word_size))
         self._builder.set_round_output(final)
         self._builder.set_output(final)
+
+
+__catalogue__ = (_entry("primitive", RC5),)

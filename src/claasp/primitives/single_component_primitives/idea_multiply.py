@@ -1,5 +1,6 @@
 """One-component IDEA zero-encoded multiplication primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import BitwiseAnd, BitwiseNot
 from claasp.components import IDEAMultiply as IDEAMultiplyComponent
 from claasp.components import ModularMultiply as ModularMultiplyComponent
@@ -73,3 +74,6 @@ class IDEAMultiply(Primitive):
 
 
 __all__ = ["IDEAMultiply"]
+
+
+__catalogue__ = (_entry("primitive", IDEAMultiply),)

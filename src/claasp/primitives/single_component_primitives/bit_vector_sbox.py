@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import (
     BitVectorSBox as BitVectorSBoxComponent,
 )
@@ -63,3 +64,6 @@ class BitVectorSBox(Primitive):
 
 
 __all__ = ["BitVectorSBox"]
+
+
+__catalogue__ = (_entry("primitive", BitVectorSBox),)

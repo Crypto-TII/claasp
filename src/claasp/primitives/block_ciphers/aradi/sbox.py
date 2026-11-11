@@ -1,5 +1,7 @@
 """Legacy-derived S-box realization of Aradi."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -196,3 +197,6 @@ class AradiSBox(BitGraphPrimitive):
             [wl, wr, xl, xr, yl, yr, zl, zr], [list(range(16)) for _ in range(8)], 128
         )
         return state.id
+
+
+__catalogue__ = (_entry("primitive", AradiSBox, labels=("equivalent_realization",)),)

@@ -1,5 +1,6 @@
 """Single-component modular-multiplication primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import ModularMultiply as ModularMultiplyComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -48,3 +49,6 @@ class ModularMultiply(Primitive):
 
 
 __all__ = ["ModularMultiply"]
+
+
+__catalogue__ = (_entry("primitive", ModularMultiply),)

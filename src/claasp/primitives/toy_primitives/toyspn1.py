@@ -1,5 +1,6 @@
 """Configurable small substitution-permutation teaching primitive."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._bit_graph import bit_type, rotate_bits, sbox_layer, xor_bits
@@ -46,3 +47,6 @@ class ToySPN1(Primitive):
             )
             self._builder.set_round_output(state)
         self._builder.set_output(state)
+
+
+__catalogue__ = (_entry("primitive", ToySPN1),)

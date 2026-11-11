@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -14,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -248,3 +248,6 @@ class Speedy(BitGraphPrimitive):
 
         self.add_round_key_output_component([key.id], [list(range(6 * self.l))], 6 * self.l)
         self.add_primitive_output_component([block.id], [list(range(6 * self.l))], 6 * self.l)
+
+
+__catalogue__ = (_entry("primitive", Speedy),)

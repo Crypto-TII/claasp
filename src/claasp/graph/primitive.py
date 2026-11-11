@@ -885,8 +885,21 @@ class Primitive:
                 catalogue_record = catalogue.primitive(primitive_class.__name__)
             except KeyError:
                 continue
+            seen = {catalogue_record.name}
+            while (
+                catalogue_record.official_instances_from is not None
+                and catalogue_record.official_instances_from != catalogue_record.name
+            ):
+                family_name = catalogue_record.official_instances_from
+                if family_name in seen:
+                    raise ValueError("cyclic official instance family in catalogue")
+                seen.add(family_name)
+                catalogue_record = catalogue.primitive(family_name)
             primitive_name = catalogue_record.name
-            if catalogue_record.authenticity == "canonical":
+            if (
+                catalogue_record.authenticity == "canonical"
+                and catalogue_record.official_instances_from is not None
+            ):
                 records = catalogue_record.parameter_sets
             break
         return _OfficialInstances(primitive_name, records)

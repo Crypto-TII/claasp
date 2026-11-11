@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.representations.constraints.sat.cnf import CNFFormula
 from claasp.representations.constraints.sat.exporters import DimacsExporter
@@ -162,3 +163,15 @@ class KissatSolver:
         # Kissat normalizes Linux's KiB-valued ru_maxrss to bytes. Darwin
         # already reports bytes, but Kissat applies the same multiplication.
         return reported // 1024 if platform == "darwin" else reported
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        KissatSolver,
+        name="kissat",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

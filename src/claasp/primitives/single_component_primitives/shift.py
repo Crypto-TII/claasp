@@ -1,5 +1,6 @@
 """Single-component fixed-shift primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Shift as ShiftComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -50,3 +51,6 @@ class Shift(Primitive):
 
 
 __all__ = ["Shift"]
+
+
+__catalogue__ = (_entry("primitive", Shift),)

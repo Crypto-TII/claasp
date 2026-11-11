@@ -16,9 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from copy import deepcopy
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import (
     BitGraphPrimitive,
     BitState,
@@ -254,3 +254,6 @@ class GiftSbox(BitGraphPrimitive):
         state[3] = BitState([self.get_current_component_id()], [list(range(self.state_word_size))])
 
         return state
+
+
+__catalogue__ = (_entry("primitive", GiftSbox, labels=("equivalent_realization",)),)

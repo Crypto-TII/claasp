@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.analysis.statistical_datasets import StatisticalDataset
 from claasp.analysis.statistical_results import DieharderReport, StatisticalTestRun
 from claasp.drivers.statistical.parsers import parse_dieharder_report
@@ -90,3 +91,15 @@ class DieharderDriver:
         )
         output = completed.stdout.strip() or completed.stderr.strip()
         return output.splitlines()[0].strip() if output else "unknown"
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        DieharderDriver,
+        name="dieharder",
+        kind="external_tool",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

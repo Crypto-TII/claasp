@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from enum import Enum
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState, get_inputs_parameter
 from claasp.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT, PERMUTATION
 
@@ -167,3 +167,6 @@ class Subterranean(BitGraphPrimitive):
             self.state_bit_size,
         )
         return BitState([self.get_current_component_id()], [list(range(self.state_bit_size))])
+
+
+__catalogue__ = (_entry("primitive", Subterranean),)

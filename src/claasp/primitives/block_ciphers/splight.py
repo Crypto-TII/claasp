@@ -1,3 +1,4 @@
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -179,3 +180,6 @@ class Splight(BitGraphPrimitive):
         round_key = BitState([self.get_current_component_id()], [list(range(self.half_size))])
 
         return round_key, keys[2], keys[3], keys[0]
+
+
+__catalogue__ = (_entry("primitive", Splight),)

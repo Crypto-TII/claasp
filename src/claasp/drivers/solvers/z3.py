@@ -10,6 +10,7 @@ from tempfile import TemporaryDirectory
 from threading import Thread
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers import SatResult, SatStatus
 from claasp.representations.constraints.sat import CNFFormula
 from claasp.representations.constraints.smt.exporter import SMTLibExporter
@@ -208,3 +209,15 @@ class _IncrementalZ3:
         self.error_reader.join(timeout=1)
         for stream in (self.process.stdin, self.process.stdout, self.process.stderr):
             stream.close()
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        Z3Solver,
+        name="z3",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

@@ -1,5 +1,6 @@
 """Primitive consisting of one feedback-register component."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import (
     FeedbackRegister as FeedbackRegisterComponent,
 )
@@ -57,3 +58,6 @@ class FeedbackRegister(Primitive):
 
 
 __all__ = ["FeedbackRegister"]
+
+
+__catalogue__ = (_entry("primitive", FeedbackRegister),)

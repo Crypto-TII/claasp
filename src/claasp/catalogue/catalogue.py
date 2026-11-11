@@ -123,6 +123,7 @@ def _primitive_record(item: dict) -> PrimitiveRecord:
         classification_basis=item["classification_basis"],
         fixed_evidence=tuple(item["fixed_evidence"]),
         parameter_sets=parameter_sets,
+        official_instances_from=item.get("official_instances_from", name),
         realizations=realizations,
     )
 
@@ -142,8 +143,18 @@ class Catalogue:
         >>> aes = catalogue.primitive("AES")
         >>> (aes.name, aes.category, aes.kind)
         ('AES', 'block_ciphers', 'block_cipher')
-        >>> len(catalogue.primitives())
-        152
+        >>> "AES" in {item.name for item in catalogue.primitives()}
+        True
+        >>> # Parameterized designs expose an explicit teaching configuration.
+        >>> catalogue.parameter_sets(primitive="MiMC")[0].name
+        'teaching-example'
+        >>> # Listing a public method does not certify backend applicability.
+        >>> entry = next(item for item in catalogue.analyses()
+        ...              if item.name == "search_impossible_differentials")
+        >>> entry.evidence
+        'unspecified'
+        >>> bool(entry.restriction)
+        True
 
         >>> # Category, design, and component filters compose.
         >>> [item.name for item in catalogue.primitives(
@@ -157,13 +168,13 @@ class Catalogue:
         >>> catalogue.parameter_sets(primitive="AES")[0].values["key_bit_size"]
         128
         >>> [item.name for item in catalogue.drivers(kind="execution_engine")]
-        ['python_scalar', 'python_batch', 'python_transposed_batch', 'python_generated_source', 'native_generated_c']
+        ['native_generated_c', 'python_batch', 'python_generated_source', 'python_scalar', 'python_transposed_batch']
 
         >>> # Capability edges are queryable in both directions.
         >>> [item.name for item in catalogue.representations(component="BitVectorSBox")]
-        ['boolean_cnf', 'boolean_smt', 'concrete_execution', 'primitive_serialization', 'python_generated_source', 'c_generated_source', 'primitive_diagram', 'sbox_transition_table', 'component_properties']
+        ['boolean_cnf', 'boolean_smt', 'c_generated_source', 'component_properties', 'concrete_execution', 'primitive_diagram', 'primitive_serialization', 'python_generated_source', 'sbox_transition_table']
         >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-        ['minizinc', 'kissat', 'cryptominisat', 'minisat', 'z3', 'glpk']
+        ['cryptominisat', 'glpk', 'kissat', 'minisat', 'minizinc', 'z3']
     """
 
     def __init__(self) -> None:
@@ -286,7 +297,7 @@ class Catalogue:
 
             >>> from claasp.catalogue import catalogue
             >>> [item.name for item in catalogue.representations(component="Power")]
-            ['concrete_execution', 'primitive_serialization', 'python_generated_source', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'singular_program']
+            ['concrete_execution', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'primitive_serialization', 'python_generated_source', 'singular_program']
             >>> [item.name for item in catalogue.components(representation="boolean_cnf")][:3]
             ['Add', 'BitVectorSBox', 'BitwiseAnd']
         """
@@ -330,7 +341,10 @@ class Catalogue:
         """Return analyses whose declared requirements match a primitive.
 
         Parameter-restricted analyses remain visible, with the restriction
-        carried explicitly by their immutable record.
+        carried explicitly by their immutable record. Without a primitive filter,
+        all public analysis methods are discoverable. Entries whose compatibility
+        is not classified have ``evidence="unspecified"`` and are omitted from
+        primitive-filtered results rather than implying universal support.
 
         EXAMPLES::
 
@@ -356,6 +370,9 @@ class Catalogue:
             if kind is not None and kind != record.kind:
                 continue
             if primitive_record is not None:
+                # An unclassified API entry establishes discoverability, not applicability.
+                if record.evidence == "unspecified":
+                    continue
                 if record.primitives and primitive_record.name not in record.primitives:
                     continue
                 if not record.required_components <= primitive_record.components:

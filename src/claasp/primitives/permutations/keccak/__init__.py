@@ -1,5 +1,6 @@
 """Keccak permutation family and retained realizations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.primitives._realizations import realization, register_realizations
 
 from .invertible import KeccakInvertible
@@ -35,3 +36,6 @@ register_realizations(
 )
 
 __all__ = ["Keccak", "KeccakInvertible", "KeccakSbox"]
+
+
+__catalogue__ = (_entry("primitive", Keccak),)

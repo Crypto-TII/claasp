@@ -5,6 +5,7 @@ The four-bit gamma lookup is indexed a3,a2,a1,a0 as in specification Table 1.
 Reference: https://gro.noekeon.org/Noekeon-spec.pdf.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import SBox
 from claasp.graph import Primitive
 
@@ -105,3 +106,8 @@ class Noekeon(Primitive):
 
 
 __all__ = ["Noekeon"]
+
+
+__catalogue__ = (
+    _entry("primitive", Noekeon, evidence=("tests/unit/primitives/block_ciphers/test_noekeon.py",)),
+)

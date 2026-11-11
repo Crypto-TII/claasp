@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -14,8 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
-
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import INPUT_KEY, INPUT_PLAINTEXT
 
@@ -191,3 +191,6 @@ class Gost(BitGraphPrimitive):
             return BitState(key.id[r % 8], [key.input_bit_positions[r % 8]])
 
         return BitState(key.id[7 - (r % 8)], [key.input_bit_positions[7 - (r % 8)]])
+
+
+__catalogue__ = (_entry("primitive", Gost),)

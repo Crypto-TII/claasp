@@ -995,7 +995,7 @@ def catalogue_section(records: tuple[object, ...] | list[object]) -> ReportSecti
             kind, name, capability, restriction = (
                 "component",
                 record.name,
-                record.primitive_wrapper,
+                record.primitive_wrapper or "—",
                 "—",
             )
         elif isinstance(record, RepresentationRecord):

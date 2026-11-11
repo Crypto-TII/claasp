@@ -1,5 +1,6 @@
 """Reference Speck implementation following the designers' pseudocode."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -122,3 +123,6 @@ class Speck(Primitive):
                 self._builder.add_key_schedule_state(schedule[index], round_key)
 
         self._builder.set_output((x, y))
+
+
+__catalogue__ = (_entry("primitive", Speck),)

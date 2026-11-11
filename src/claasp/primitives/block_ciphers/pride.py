@@ -7,6 +7,7 @@ The numeric diffusion matrices are also independently transcribed in pypride
 (Felix C. Stegerman, LGPLv3+, https://github.com/obfusk/pypride).
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, LinearMap, ModularAdd, SBox, Xor
 from claasp.graph import Primitive, Selection, UnitArray
 
@@ -165,3 +166,8 @@ class Pride(Primitive):
 
 
 __all__ = ["Pride"]
+
+
+__catalogue__ = (
+    _entry("primitive", Pride, evidence=("tests/unit/primitives/block_ciphers/test_pride.py",)),
+)

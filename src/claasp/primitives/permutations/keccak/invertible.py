@@ -1,5 +1,6 @@
 """Keccak realization with explicit invertible round operations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.primitives.permutations.keccak.sbox import KeccakSbox
 
 
@@ -17,3 +18,6 @@ class KeccakInvertible(KeccakSbox):
 
 
 __all__ = ["KeccakInvertible"]
+
+
+__catalogue__ = (_entry("primitive", KeccakInvertible, labels=("exact_alias",)),)

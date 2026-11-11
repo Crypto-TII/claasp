@@ -1,5 +1,7 @@
 """Feedback-register realization of Spongent-pi."""
 
+from claasp._catalogue_metadata import _entry
+
 from .primitive import SpongentPi
 
 
@@ -17,3 +19,6 @@ class SpongentPiFSR(SpongentPi):
 
 
 __all__ = ["SpongentPiFSR"]
+
+
+__catalogue__ = (_entry("primitive", SpongentPiFSR, labels=("exact_alias",)),)

@@ -1,5 +1,6 @@
 """Single-component fixed-rotation primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Rotate as RotateComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Word
@@ -50,3 +51,6 @@ class Rotate(Primitive):
 
 
 __all__ = ["Rotate"]
+
+
+__catalogue__ = (_entry("primitive", Rotate),)

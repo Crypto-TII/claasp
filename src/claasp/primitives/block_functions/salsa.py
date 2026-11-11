@@ -1,5 +1,6 @@
 """The fixed-length Salsa20 block function."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant, ModularAdd, Rotate, Xor
 from claasp.graph import Primitive, PrimitiveKind, Selection, UnitArray, UnitArrayType, as_selection
 from claasp.graph.metadata import public_input, secret_input
@@ -133,3 +134,12 @@ class SalsaBlockFunction(Primitive):
 
 
 __all__ = ["PARAMETERS_CONFIGURATION_LIST", "SalsaBlockFunction"]
+
+
+__catalogue__ = (
+    _entry(
+        "primitive",
+        SalsaBlockFunction,
+        evidence=("tests/unit/primitives/block_functions/test_salsa.py",),
+    ),
+)

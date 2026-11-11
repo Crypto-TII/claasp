@@ -1,5 +1,7 @@
 """DES realization with an exact-length key boundary."""
 
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -16,7 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from claasp.graph.bit_builder import BitGraphPrimitive
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -455,3 +456,6 @@ class DESExactKeyLength(BitGraphPrimitive):
                     [state.id], [list(range(self.primitive_block_size))], self.primitive_block_size
                 )
                 self._builder.add_round()
+
+
+__catalogue__ = (_entry("primitive", DESExactKeyLength),)

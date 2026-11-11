@@ -1,5 +1,6 @@
 """International Data Encryption Algorithm (IDEA)."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Permutation
 from claasp.graph import Primitive, UnitArrayType
 from claasp.unit_types import Bit
@@ -72,3 +73,6 @@ class IDEA(Primitive):
         final_output = concatenate(self, *state)
         self._builder.set_round_output(final_output)
         self._builder.set_output(final_output)
+
+
+__catalogue__ = (_entry("primitive", IDEA),)

@@ -1,3 +1,5 @@
+from claasp._catalogue_metadata import _entry
+
 # ****************************************************************************
 # Copyright 2023 Technology Innovation Institute
 #
@@ -674,3 +676,6 @@ class Kalyna(BitGraphPrimitive):
             ],
             self.PRIMITIVE_BLOCK_SIZE,
         )
+
+
+__catalogue__ = (_entry("primitive", Kalyna),)

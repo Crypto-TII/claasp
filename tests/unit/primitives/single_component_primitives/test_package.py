@@ -1,6 +1,4 @@
 import inspect
-import json
-from pathlib import Path
 
 from claasp.components import (
     Add as AddComponent,
@@ -166,17 +164,12 @@ def test_catalogue_is_one_to_one_with_public_base_components():
 
 
 def test_machine_catalogue_matches_generated_exports():
-    path = (
-        next(
-            parent
-            for parent in Path(__file__).resolve().parents
-            if (parent / "pyproject.toml").is_file()
-        )
-        / "tools"
-        / "data"
-        / "single_component_catalogue.json"
-    )
-    assert json.loads(path.read_text()) == CATEGORY_EXPORTS["single_component_primitives"]
+    import claasp.components as operations
+    from claasp.graph import Component
+
+    for name in CATEGORY_EXPORTS["single_component_primitives"]:
+        operation = getattr(operations, name)
+        assert issubclass(operation, Component)
 
 
 def test_fixed_semantic_examples():

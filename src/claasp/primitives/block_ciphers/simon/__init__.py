@@ -1,5 +1,6 @@
 """Simon primitive family and retained realizations."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import RealizationMaturity
 from claasp.primitives._realizations import realization, register_realizations
 
@@ -36,3 +37,6 @@ register_realizations(
 )
 
 __all__ = ["Simon", "SimonSbox"]
+
+
+__catalogue__ = (_entry("primitive", Simon),)

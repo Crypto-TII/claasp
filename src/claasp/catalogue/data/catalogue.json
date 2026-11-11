@@ -1,6 +1,65 @@
 {
   "analyses": [
     {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.algebraic_degree",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "algebraic_degree",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.anf",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "anf",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.autond",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "autond",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [
+        "python_scalar"
+      ],
+      "entry_point": "Primitive.analysis.avalanche",
+      "evidence": "empirical",
+      "kind": "statistical",
+      "name": "avalanche",
+      "primitives": [],
+      "representations": [
+        "concrete_execution"
+      ],
+      "required_components": [],
+      "restriction": null
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.circle_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "circle_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
       "drivers": [
         "python_scalar"
       ],
@@ -14,6 +73,61 @@
       ],
       "required_components": [],
       "restriction": "binary character bases; exact bounded endpoints or seeded estimates; subgroup search has explicit applicability"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.circle_linear_trail_model",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "circle_linear_trail_model",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component_analysis",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component_analysis",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component_groups",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component_groups",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.component_properties",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "component_properties",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [
@@ -32,19 +146,48 @@
       "restriction": "applicability and evidence strength are reported per semantic component and unit_type"
     },
     {
-      "drivers": [
-        "python_scalar"
-      ],
-      "entry_point": "Primitive.analysis.avalanche",
-      "evidence": "empirical",
-      "kind": "statistical",
-      "name": "avalanche",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.continuous_differential_evaluate",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "continuous_differential_evaluate",
       "primitives": [],
-      "representations": [
-        "concrete_execution"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": null
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.continuous_diffusion",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "continuous_diffusion",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.continuous_evaluate",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "continuous_evaluate",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.division_property",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "division_property",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [
@@ -97,6 +240,223 @@
       "restriction": null
     },
     {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_all_xor_differential_trails_with_weight_at_most",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_all_xor_differential_trails_with_weight_at_most",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_all_xor_linear_trails_with_weight_at_most",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_all_xor_linear_trails_with_weight_at_most",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_good_neural_input_difference",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_good_neural_input_difference",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_highest_correlation_continuous_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_highest_correlation_continuous_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_impossible_xor_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_impossible_xor_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_number_of_active_sboxes",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_number_of_active_sboxes",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_boomerang_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_boomerang_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_circle_differential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_circle_differential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_circle_linear_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_circle_linear_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [
+        "minisat"
+      ],
+      "entry_point": "Primitive.analysis.find_lowest_weight_xor_differential_trail",
+      "evidence": "exact",
+      "kind": "xor_differential",
+      "name": "find_lowest_weight_xor_differential_trail",
+      "primitives": [],
+      "representations": [
+        "word_differential_sat"
+      ],
+      "required_components": [],
+      "restriction": "capability-based graph support plus specialized PRESENT/Speck slices"
+    },
+    {
+      "drivers": [
+        "minisat"
+      ],
+      "entry_point": "Primitive.analysis.find_lowest_weight_xor_linear_trail",
+      "evidence": "exact",
+      "kind": "xor_linear",
+      "name": "find_lowest_weight_xor_linear_trail",
+      "primitives": [],
+      "representations": [
+        "word_linear_sat"
+      ],
+      "required_components": [],
+      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_lowest_weight_xor_quasidifferential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_lowest_weight_xor_quasidifferential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_minimax_xor_differential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_minimax_xor_differential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_boomerang_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_boomerang_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_continuous_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_continuous_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_differential_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_differential_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_differential_trail_with_fixed_weight",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_differential_trail_with_fixed_weight",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_linear_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_linear_trail",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_one_xor_linear_trail_with_fixed_weight",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_one_xor_linear_trail_with_fixed_weight",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
       "drivers": [
         "minisat"
       ],
@@ -113,34 +473,37 @@
       "restriction": "capability-based graph support; specialized dependency-free PRESENT/Speck slices"
     },
     {
-      "drivers": [
-        "minisat"
-      ],
-      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_differential\")",
-      "evidence": "exact",
-      "kind": "xor_differential",
-      "name": "find_lowest_weight_xor_differential_trail",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_optimal_xor_differential_linear_trail",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_optimal_xor_differential_linear_trail",
       "primitives": [],
-      "representations": [
-        "word_differential_sat"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": "capability-based graph support plus specialized PRESENT/Speck slices"
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
-      "drivers": [
-        "minisat"
-      ],
-      "entry_point": "Primitive.analysis.find_optimal_trail(kind=\"xor_linear\")",
-      "evidence": "exact",
-      "kind": "xor_linear",
-      "name": "find_lowest_weight_xor_linear_trail",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_probabilistic_truncated_xor_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_probabilistic_truncated_xor_differential",
       "primitives": [],
-      "representations": [
-        "word_linear_sat"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": "capability-based Word graph support plus specialized PRESENT/Speck slices"
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.find_sbox_boomerang_transition",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "find_sbox_boomerang_transition",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [],
@@ -156,6 +519,77 @@
         "BitVectorSBox"
       ],
       "restriction": null
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.neural_blackbox",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "neural_blackbox",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.neural_differential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "neural_differential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.polynomial_system",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "polynomial_system",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [
+        "matplotlib_presentation",
+        "text_presentation"
+      ],
+      "entry_point": "claasp.presentation.present",
+      "evidence": "qualified",
+      "kind": "result_presentation",
+      "name": "present",
+      "primitives": [],
+      "representations": [
+        "report_presentation"
+      ],
+      "required_components": [],
+      "restriction": "consumes already-produced typed results and never executes an analysis"
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.propagate_truncated_xor_difference",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "propagate_truncated_xor_difference",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.quasidifferential",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "quasidifferential",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     },
     {
       "drivers": [
@@ -178,6 +612,39 @@
       "restriction": null
     },
     {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.run_autond",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "run_autond",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.run_statistical_tests",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "run_statistical_tests",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.search_impossible_differentials",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "search_impossible_differentials",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
       "drivers": [
         "cryptominisat",
         "glpk",
@@ -198,135 +665,152 @@
       "restriction": null
     },
     {
-      "drivers": [
-        "matplotlib_presentation",
-        "text_presentation"
-      ],
-      "entry_point": "claasp.presentation.present",
-      "evidence": "qualified",
-      "kind": "result_presentation",
-      "name": "present",
+      "drivers": [],
+      "entry_point": "Primitive.analysis.superpoly",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "superpoly",
       "primitives": [],
-      "representations": [
-        "report_presentation"
-      ],
+      "representations": [],
       "required_components": [],
-      "restriction": "consumes already-produced typed results and never executes an analysis"
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.train_staged_neural_distinguisher",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "train_staged_neural_distinguisher",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
+    },
+    {
+      "drivers": [],
+      "entry_point": "Primitive.analysis.two_subset_division_property",
+      "evidence": "unspecified",
+      "kind": "analysis",
+      "name": "two_subset_division_property",
+      "primitives": [],
+      "representations": [],
+      "required_components": [],
+      "restriction": "See the method documentation for parameter and backend applicability; catalogue compatibility is not declared."
     }
   ],
   "components": [
     {
-      "module": "claasp.primitives.single_component_primitives.add",
+      "module": "claasp.components.algebraic.add",
       "name": "Add",
       "primitive_wrapper": "Add"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.binary_affine_map",
+      "module": "claasp.components.algebraic.binary_affine_map",
       "name": "BinaryAffineMap",
       "primitive_wrapper": "BinaryAffineMap"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bit_vector_sbox",
+      "module": "claasp.components.substitution.bit_vector_sbox",
       "name": "BitVectorSBox",
       "primitive_wrapper": "BitVectorSBox"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bitwise_and",
+      "module": "claasp.components.word.bitwise_and",
       "name": "BitwiseAnd",
       "primitive_wrapper": "BitwiseAnd"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bitwise_not",
+      "module": "claasp.components.word.bitwise_not",
       "name": "BitwiseNot",
       "primitive_wrapper": "BitwiseNot"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.bitwise_or",
+      "module": "claasp.components.word.bitwise_or",
       "name": "BitwiseOr",
       "primitive_wrapper": "BitwiseOr"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.constant",
+      "module": "claasp.components.structural.constant",
       "name": "Constant",
       "primitive_wrapper": "Constant"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.feedback_register",
+      "module": "claasp.components.feedback.feedback_register",
       "name": "FeedbackRegister",
       "primitive_wrapper": "FeedbackRegister"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.idea_multiply",
+      "module": "claasp.components.word.idea_multiply",
       "name": "IDEAMultiply",
       "primitive_wrapper": "IDEAMultiply"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.identity",
+      "module": "claasp.components.structural.identity",
       "name": "Identity",
       "primitive_wrapper": "Identity"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.linear_map",
+      "module": "claasp.components.algebraic.linear_map",
       "name": "LinearMap",
       "primitive_wrapper": "LinearMap"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.modular_add",
+      "module": "claasp.components.word.modular_add",
       "name": "ModularAdd",
       "primitive_wrapper": "ModularAdd"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.modular_multiply",
+      "module": "claasp.components.word.modular_multiply",
       "name": "ModularMultiply",
       "primitive_wrapper": "ModularMultiply"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.modular_subtract",
+      "module": "claasp.components.word.modular_subtract",
       "name": "ModularSubtract",
       "primitive_wrapper": "ModularSubtract"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.multiply",
+      "module": "claasp.components.algebraic.multiply",
       "name": "Multiply",
       "primitive_wrapper": "Multiply"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.permutation",
+      "module": "claasp.components.structural.permutation",
       "name": "Permutation",
       "primitive_wrapper": "Permutation"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.power",
+      "module": "claasp.components.algebraic.power",
       "name": "Power",
       "primitive_wrapper": "Power"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.rotate",
+      "module": "claasp.components.word.rotate",
       "name": "Rotate",
       "primitive_wrapper": "Rotate"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.sbox",
+      "module": "claasp.components.substitution.sbox",
       "name": "SBox",
       "primitive_wrapper": "SBox"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.shift",
+      "module": "claasp.components.word.shift",
       "name": "Shift",
       "primitive_wrapper": "Shift"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.variable_rotate",
+      "module": "claasp.components.word.variable_rotate",
       "name": "VariableRotate",
       "primitive_wrapper": "VariableRotate"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.variable_shift",
+      "module": "claasp.components.word.variable_shift",
       "name": "VariableShift",
       "primitive_wrapper": "VariableShift"
     },
     {
-      "module": "claasp.primitives.single_component_primitives.xor",
+      "module": "claasp.components.word.xor",
       "name": "Xor",
       "primitive_wrapper": "Xor"
     }
@@ -334,179 +818,23 @@
   "drivers": [
     {
       "availability": "builtin",
-      "implementation": "claasp.representations.execution:ScalarExecutionDriver",
-      "kind": "execution_engine",
-      "name": "python_scalar",
-      "representations": [
-        "concrete_execution"
-      ],
-      "target": null
-    },
-    {
-      "availability": "builtin",
-      "implementation": "claasp.representations.execution:BatchExecutionDriver",
-      "kind": "execution_engine",
-      "name": "python_batch",
-      "representations": [
-        "concrete_execution"
-      ],
-      "target": null
-    },
-    {
-      "availability": "builtin",
-      "implementation": "claasp.representations.execution:TransposedBatchExecutionDriver",
-      "kind": "execution_engine",
-      "name": "python_transposed_batch",
-      "representations": [
-        "concrete_execution"
-      ],
-      "target": null
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
-      "kind": "solver",
-      "name": "minizinc",
-      "representations": [
-        "boolean_cnf"
-      ],
-      "target": "minizinc"
-    },
-    {
-      "availability": "minizinc_solver",
-      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
-      "kind": "solver",
-      "name": "minizinc_chuffed",
-      "representations": [],
-      "target": "minizinc:chuffed"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.kissat:KissatSolver",
-      "kind": "solver",
-      "name": "kissat",
-      "representations": [
-        "boolean_cnf"
-      ],
-      "target": "kissat"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
-      "kind": "solver",
-      "name": "cryptominisat",
-      "representations": [
-        "boolean_cnf"
-      ],
-      "target": "cryptominisat5"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.minisat:MinisatSolver",
-      "kind": "solver",
-      "name": "minisat",
-      "representations": [
-        "boolean_cnf",
-        "word_differential_sat",
-        "word_linear_sat"
-      ],
-      "target": "minisat"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.z3:Z3Solver",
-      "kind": "solver",
-      "name": "z3",
-      "representations": [
-        "boolean_cnf",
-        "boolean_smt",
-        "word_differential_smt",
-        "word_linear_smt"
-      ],
-      "target": "z3"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.solvers.glpk:GLPKSolver",
-      "kind": "solver",
-      "name": "glpk",
-      "representations": [
-        "boolean_cnf",
-        "boolean_monomial_milp"
-      ],
-      "target": "glpsol"
-    },
-    {
-      "availability": "python_module",
-      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
-      "kind": "solver",
-      "name": "highs",
-      "representations": [
-        "boolean_monomial_milp"
-      ],
-      "target": "scipy"
-    },
-    {
-      "availability": "python_module",
-      "implementation": "claasp.drivers.solvers.gurobi:GurobiSolver",
-      "kind": "solver",
-      "name": "gurobi",
-      "representations": [],
-      "target": "gurobipy"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.algebra.singular:SingularDriver",
-      "kind": "solver",
-      "name": "singular",
-      "representations": [
-        "singular_program"
-      ],
-      "target": "Singular"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.algebra.msolve:MsolveDriver",
-      "kind": "solver",
-      "name": "msolve",
-      "representations": [
-        "msolve_input"
-      ],
-      "target": "msolve"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.statistical.dieharder:DieharderDriver",
-      "kind": "external_tool",
-      "name": "dieharder",
-      "representations": [],
-      "target": "dieharder"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.statistical.nist:NistStsDriver",
-      "kind": "external_tool",
-      "name": "nist_sts",
-      "representations": [],
-      "target": "niststs"
-    },
-    {
-      "availability": "executable",
-      "implementation": "claasp.drivers.renderers.latex:LaTeXDriver",
+      "implementation": "claasp.representations.diagrams:ASCIIArtSerializer",
       "kind": "renderer",
-      "name": "latex",
+      "name": "ascii_diagram",
       "representations": [
         "primitive_diagram"
       ],
-      "target": "pdflatex"
+      "target": null
     },
     {
-      "availability": "python_module",
-      "implementation": "claasp.drivers.neural.sklearn_driver:SklearnMLPDriver",
-      "kind": "external_tool",
-      "name": "sklearn_mlp",
-      "representations": [],
-      "target": "sklearn"
+      "availability": "builtin",
+      "implementation": "claasp.representations.source:compile_c_source",
+      "kind": "compiler",
+      "name": "c_source_compiler",
+      "representations": [
+        "c_generated_source"
+      ],
+      "target": null
     },
     {
       "availability": "builtin",
@@ -529,14 +857,71 @@
       "target": "minizinc"
     },
     {
-      "availability": "builtin",
-      "implementation": "claasp.presentation:render_report",
-      "kind": "renderer",
-      "name": "text_presentation",
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.cryptominisat:CryptoMiniSatSolver",
+      "kind": "solver",
+      "name": "cryptominisat",
       "representations": [
-        "report_presentation"
+        "boolean_cnf"
       ],
-      "target": null
+      "target": "cryptominisat5"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.statistical.dieharder:DieharderDriver",
+      "kind": "external_tool",
+      "name": "dieharder",
+      "representations": [],
+      "target": "dieharder"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.glpk:GLPKSolver",
+      "kind": "solver",
+      "name": "glpk",
+      "representations": [
+        "boolean_cnf",
+        "boolean_monomial_milp"
+      ],
+      "target": "glpsol"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.gurobi:GurobiSolver",
+      "kind": "solver",
+      "name": "gurobi",
+      "representations": [],
+      "target": "gurobipy"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.solvers.highs:HighsSolver",
+      "kind": "solver",
+      "name": "highs",
+      "representations": [
+        "boolean_monomial_milp"
+      ],
+      "target": "scipy"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.kissat:KissatSolver",
+      "kind": "solver",
+      "name": "kissat",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "kissat"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.renderers.latex:LaTeXDriver",
+      "kind": "renderer",
+      "name": "latex",
+      "representations": [
+        "primitive_diagram"
+      ],
+      "target": "pdflatex"
     },
     {
       "availability": "python_module",
@@ -549,32 +934,70 @@
       "target": "matplotlib"
     },
     {
-      "availability": "builtin",
-      "implementation": "claasp.representations.diagrams:ASCIIArtSerializer",
-      "kind": "renderer",
-      "name": "ascii_diagram",
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.minisat:MinisatSolver",
+      "kind": "solver",
+      "name": "minisat",
       "representations": [
-        "primitive_diagram"
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
-      "target": null
+      "target": "minisat"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
+      "kind": "solver",
+      "name": "minizinc",
+      "representations": [
+        "boolean_cnf"
+      ],
+      "target": "minizinc"
+    },
+    {
+      "availability": "minizinc_solver",
+      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
+      "kind": "solver",
+      "name": "minizinc_chuffed",
+      "representations": [],
+      "target": "minizinc:chuffed"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.algebra.msolve:MsolveDriver",
+      "kind": "solver",
+      "name": "msolve",
+      "representations": [
+        "msolve_input"
+      ],
+      "target": "msolve"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.native:compile_native",
+      "kind": "execution_engine",
+      "name": "native_generated_c",
+      "representations": [
+        "c_generated_source"
+      ],
+      "target": "cc"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.statistical.nist:NistStsDriver",
+      "kind": "external_tool",
+      "name": "nist_sts",
+      "representations": [],
+      "target": "niststs"
     },
     {
       "availability": "builtin",
-      "implementation": "claasp.representations.diagrams:TikZSerializer",
-      "kind": "renderer",
-      "name": "tikz_diagram",
+      "implementation": "claasp.representations.execution:BatchExecutionDriver",
+      "kind": "execution_engine",
+      "name": "python_batch",
       "representations": [
-        "primitive_diagram"
-      ],
-      "target": null
-    },
-    {
-      "availability": "builtin",
-      "implementation": "claasp.representations.source:compile_python_source",
-      "kind": "compiler",
-      "name": "python_source_compiler",
-      "representations": [
-        "python_generated_source"
+        "concrete_execution"
       ],
       "target": null
     },
@@ -590,23 +1013,92 @@
     },
     {
       "availability": "builtin",
-      "implementation": "claasp.representations.source:compile_c_source",
-      "kind": "compiler",
-      "name": "c_source_compiler",
+      "implementation": "claasp.representations.execution:ScalarExecutionDriver",
+      "kind": "execution_engine",
+      "name": "python_scalar",
       "representations": [
-        "c_generated_source"
+        "concrete_execution"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.representations.source:compile_python_source",
+      "kind": "compiler",
+      "name": "python_source_compiler",
+      "representations": [
+        "python_generated_source"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.representations.execution:TransposedBatchExecutionDriver",
+      "kind": "execution_engine",
+      "name": "python_transposed_batch",
+      "representations": [
+        "concrete_execution"
       ],
       "target": null
     },
     {
       "availability": "executable",
-      "implementation": "claasp.drivers.native:compile_native",
-      "kind": "execution_engine",
-      "name": "native_generated_c",
+      "implementation": "claasp.drivers.algebra.singular:SingularDriver",
+      "kind": "solver",
+      "name": "singular",
       "representations": [
-        "c_generated_source"
+        "singular_program"
       ],
-      "target": "cc"
+      "target": "Singular"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.neural.sklearn_driver:SklearnMLPDriver",
+      "kind": "external_tool",
+      "name": "sklearn_mlp",
+      "representations": [],
+      "target": "sklearn"
+    },
+    {
+      "availability": "python_module",
+      "implementation": "claasp.drivers.neural.tensorflow_driver:TensorFlowDistinguisherDriver",
+      "kind": "external_tool",
+      "name": "tensorflow_distinguisher",
+      "representations": [],
+      "target": "tensorflow"
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.presentation:render_report",
+      "kind": "renderer",
+      "name": "text_presentation",
+      "representations": [
+        "report_presentation"
+      ],
+      "target": null
+    },
+    {
+      "availability": "builtin",
+      "implementation": "claasp.representations.diagrams:TikZSerializer",
+      "kind": "renderer",
+      "name": "tikz_diagram",
+      "representations": [
+        "primitive_diagram"
+      ],
+      "target": null
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.z3:Z3Solver",
+      "kind": "solver",
+      "name": "z3",
+      "representations": [
+        "boolean_cnf",
+        "boolean_smt",
+        "word_differential_smt",
+        "word_linear_smt"
+      ],
+      "target": "z3"
     }
   ],
   "milestone": "M10.15g",
@@ -654,6 +1146,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/aes_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.aes",
       "name": "AES",
+      "official_instances_from": "AES",
       "official_name": "AES",
       "parameter_sets": [
         {
@@ -675,6 +1168,99 @@
           "values": {
             "key_bit_size": 256,
             "number_of_rounds": 14
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "sbox_semantics",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "lookup",
+          "priority": 0,
+          "provenance": [
+            "FIPS 197 substitution table"
+          ],
+          "structure": [
+            "lookup_sbox",
+            "matrix_linear_layer"
+          ]
+        },
+        {
+          "capabilities": [
+            "algebraic_semantics",
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "algebraic",
+          "priority": 10,
+          "provenance": [
+            "FIPS 197 section 5.1.1"
+          ],
+          "structure": [
+            "binary_affine_map",
+            "field_inverse",
+            "matrix_linear_layer"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "Constant",
+        "LinearMap",
+        "Permutation",
+        "SBox"
+      ],
+      "domains": [
+        "BinaryExtensionField"
+      ],
+      "family": "aes",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/aes/test_package.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.aes",
+      "name": "AES128",
+      "official_instances_from": "AES",
+      "official_name": "AES128",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "number_of_rounds": 10,
+            "realization": "lookup"
           }
         }
       ],
@@ -763,6 +1349,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/aradi_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.aradi",
       "name": "Aradi",
+      "official_instances_from": "Aradi",
       "official_name": "Aradi",
       "parameter_sets": [
         {
@@ -875,6 +1462,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox.py",
       "module": "claasp.primitives.block_ciphers.aradi.sbox",
       "name": "AradiSBox",
+      "official_instances_from": "AradiSBox",
       "official_name": "AradiSBox",
       "parameter_sets": [
         {
@@ -950,6 +1538,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/aradi_block_cipher_sbox_and_compact_linear_map.py",
       "module": "claasp.primitives.block_ciphers.aradi.sbox_compact_linear_map",
       "name": "AradiSBoxCompactLinearMap",
+      "official_instances_from": "AradiSBoxCompactLinearMap",
       "official_name": "AradiSBoxCompactLinearMap",
       "parameter_sets": [
         {
@@ -1022,6 +1611,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/bea1_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.bea1",
       "name": "BEA1",
+      "official_instances_from": "BEA1",
       "official_name": "BEA1",
       "parameter_sets": [
         {
@@ -1095,6 +1685,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/baksheesh_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.baksheesh",
       "name": "Baksheesh",
+      "official_instances_from": "Baksheesh",
       "official_name": "Baksheesh",
       "parameter_sets": [
         {
@@ -1169,6 +1760,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/ballet_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.ballet",
       "name": "Ballet",
+      "official_instances_from": "Ballet",
       "official_name": "Ballet",
       "parameter_sets": [
         {
@@ -1252,6 +1844,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/blowfish_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.blowfish",
       "name": "Blowfish",
+      "official_instances_from": "Blowfish",
       "official_name": "Blowfish",
       "parameter_sets": [
         {
@@ -1326,6 +1919,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/cham_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.cham",
       "name": "CHAM",
+      "official_instances_from": "CHAM",
       "official_name": "CHAM",
       "parameter_sets": [
         {
@@ -1399,6 +1993,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/crax_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.crax",
       "name": "CRAX",
+      "official_instances_from": "CRAX",
       "official_name": "CRAX",
       "parameter_sets": [
         {
@@ -1474,6 +2069,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/cast_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.cast",
       "name": "Cast",
+      "official_instances_from": "Cast",
       "official_name": "Cast",
       "parameter_sets": [
         {
@@ -1565,6 +2161,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.block_ciphers.craft",
       "name": "Craft",
+      "official_instances_from": "Craft",
       "official_name": "Craft",
       "parameter_sets": [
         {
@@ -1572,6 +2169,338 @@
           "values": {
             "number_of_rounds": 32,
             "round_offset": 0
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "Constant",
+        "LinearMap",
+        "Permutation",
+        "SBox"
+      ],
+      "domains": [
+        "BinaryExtensionField"
+      ],
+      "family": "custom_aes",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/aes/test_package.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.aes.custom",
+      "name": "CustomAES",
+      "official_instances_from": null,
+      "official_name": "CustomAES",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "include_mix_columns": true,
+            "key_bit_size": 128,
+            "number_of_rounds": null,
+            "sbox_table": [
+              99,
+              124,
+              119,
+              123,
+              242,
+              107,
+              111,
+              197,
+              48,
+              1,
+              103,
+              43,
+              254,
+              215,
+              171,
+              118,
+              202,
+              130,
+              201,
+              125,
+              250,
+              89,
+              71,
+              240,
+              173,
+              212,
+              162,
+              175,
+              156,
+              164,
+              114,
+              192,
+              183,
+              253,
+              147,
+              38,
+              54,
+              63,
+              247,
+              204,
+              52,
+              165,
+              229,
+              241,
+              113,
+              216,
+              49,
+              21,
+              4,
+              199,
+              35,
+              195,
+              24,
+              150,
+              5,
+              154,
+              7,
+              18,
+              128,
+              226,
+              235,
+              39,
+              178,
+              117,
+              9,
+              131,
+              44,
+              26,
+              27,
+              110,
+              90,
+              160,
+              82,
+              59,
+              214,
+              179,
+              41,
+              227,
+              47,
+              132,
+              83,
+              209,
+              0,
+              237,
+              32,
+              252,
+              177,
+              91,
+              106,
+              203,
+              190,
+              57,
+              74,
+              76,
+              88,
+              207,
+              208,
+              239,
+              170,
+              251,
+              67,
+              77,
+              51,
+              133,
+              69,
+              249,
+              2,
+              127,
+              80,
+              60,
+              159,
+              168,
+              81,
+              163,
+              64,
+              143,
+              146,
+              157,
+              56,
+              245,
+              188,
+              182,
+              218,
+              33,
+              16,
+              255,
+              243,
+              210,
+              205,
+              12,
+              19,
+              236,
+              95,
+              151,
+              68,
+              23,
+              196,
+              167,
+              126,
+              61,
+              100,
+              93,
+              25,
+              115,
+              96,
+              129,
+              79,
+              220,
+              34,
+              42,
+              144,
+              136,
+              70,
+              238,
+              184,
+              20,
+              222,
+              94,
+              11,
+              219,
+              224,
+              50,
+              58,
+              10,
+              73,
+              6,
+              36,
+              92,
+              194,
+              211,
+              172,
+              98,
+              145,
+              149,
+              228,
+              121,
+              231,
+              200,
+              55,
+              109,
+              141,
+              213,
+              78,
+              169,
+              108,
+              86,
+              244,
+              234,
+              101,
+              122,
+              174,
+              8,
+              186,
+              120,
+              37,
+              46,
+              28,
+              166,
+              180,
+              198,
+              232,
+              221,
+              116,
+              31,
+              75,
+              189,
+              139,
+              138,
+              112,
+              62,
+              181,
+              102,
+              72,
+              3,
+              246,
+              14,
+              97,
+              53,
+              87,
+              185,
+              134,
+              193,
+              29,
+              158,
+              225,
+              248,
+              152,
+              17,
+              105,
+              217,
+              142,
+              148,
+              155,
+              30,
+              135,
+              233,
+              206,
+              85,
+              40,
+              223,
+              140,
+              161,
+              137,
+              13,
+              191,
+              230,
+              66,
+              104,
+              65,
+              153,
+              45,
+              15,
+              176,
+              84,
+              187,
+              22
+            ]
           }
         }
       ],
@@ -1640,6 +2569,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/des_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.des",
       "name": "DES",
+      "official_instances_from": "DES",
       "official_name": "DES",
       "parameter_sets": [
         {
@@ -1715,6 +2645,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/des_exact_key_length_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.des.exact_key_length",
       "name": "DESExactKeyLength",
+      "official_instances_from": "DESExactKeyLength",
       "official_name": "DESExactKeyLength",
       "parameter_sets": [
         {
@@ -1792,6 +2723,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/gift_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.gift",
       "name": "Gift",
+      "official_instances_from": "Gift",
       "official_name": "Gift",
       "parameter_sets": [
         {
@@ -1887,6 +2819,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/gift_sbox_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.gift.sbox",
       "name": "GiftSbox",
+      "official_instances_from": "GiftSbox",
       "official_name": "GiftSbox",
       "parameter_sets": [
         {
@@ -1967,6 +2900,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/gost_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.gost",
       "name": "Gost",
+      "official_instances_from": "Gost",
       "official_name": "Gost",
       "parameter_sets": [
         {
@@ -2041,6 +2975,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/hight_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.hight",
       "name": "HIGHT",
+      "official_instances_from": "HIGHT",
       "official_name": "HIGHT",
       "parameter_sets": [
         {
@@ -2118,6 +3053,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/idea_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.idea",
       "name": "IDEA",
+      "official_instances_from": "IDEA",
       "official_name": "IDEA",
       "parameter_sets": [
         {
@@ -2191,6 +3127,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/kalyna_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.kalyna",
       "name": "Kalyna",
+      "official_instances_from": "Kalyna",
       "official_name": "Kalyna",
       "parameter_sets": [
         {
@@ -2265,6 +3202,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/kasumi_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.kasumi",
       "name": "Kasumi",
+      "official_instances_from": "Kasumi",
       "official_name": "Kasumi",
       "parameter_sets": [
         {
@@ -2340,6 +3278,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/katan_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.katan",
       "name": "Katan",
+      "official_instances_from": "Katan",
       "official_name": "Katan",
       "parameter_sets": [
         {
@@ -2434,6 +3373,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/katan_fsr_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.katan.fsr",
       "name": "KatanFSR",
+      "official_instances_from": "KatanFSR",
       "official_name": "KatanFSR",
       "parameter_sets": [
         {
@@ -2524,6 +3464,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/ktantan_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.ktantan",
       "name": "Ktantan",
+      "official_instances_from": "Ktantan",
       "official_name": "Ktantan",
       "parameter_sets": [
         {
@@ -2618,6 +3559,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/ktantan_fsr_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.ktantan.fsr",
       "name": "KtantanFSR",
+      "official_instances_from": "KtantanFSR",
       "official_name": "KtantanFSR",
       "parameter_sets": [
         {
@@ -2707,6 +3649,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/lblock_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.lblock",
       "name": "LBlock",
+      "official_instances_from": "LBlock",
       "official_name": "LBlock",
       "parameter_sets": [
         {
@@ -2781,6 +3724,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/lea_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.lea",
       "name": "LEA",
+      "official_instances_from": "LEA",
       "official_name": "LEA",
       "parameter_sets": [
         {
@@ -2856,6 +3800,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/led_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.led",
       "name": "Led",
+      "official_instances_from": "Led",
       "official_name": "Led",
       "parameter_sets": [
         {
@@ -2936,6 +3881,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/lowmc_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.lowmc",
       "name": "LowMC",
+      "official_instances_from": "LowMC",
       "official_name": "LowMC",
       "parameter_sets": [
         {
@@ -3012,6 +3958,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/msx_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.msx",
       "name": "MSX",
+      "official_instances_from": "MSX",
       "official_name": "MSX",
       "parameter_sets": [
         {
@@ -3102,6 +4049,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/midori_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.midori",
       "name": "Midori",
+      "official_instances_from": "Midori",
       "official_name": "Midori",
       "parameter_sets": [
         {
@@ -3182,6 +4130,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.block_ciphers.noekeon",
       "name": "Noekeon",
+      "official_instances_from": "Noekeon",
       "official_name": "Noekeon",
       "parameter_sets": [
         {
@@ -3263,6 +4212,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/piccolo_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.piccolo",
       "name": "Piccolo",
+      "official_instances_from": "Piccolo",
       "official_name": "Piccolo",
       "parameter_sets": [
         {
@@ -3342,12 +4292,84 @@
       "legacy_source": "claasp/ciphers/block_ciphers/present_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.present",
       "name": "Present",
+      "official_instances_from": "Present",
       "official_name": "Present",
       "parameter_sets": [
         {
           "name": "default",
           "values": {
             "key_bit_size": 80,
+            "number_of_rounds": 31
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "block_ciphers",
+        "sbox_based"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "block_ciphers",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
+        "Add",
+        "BitVectorSBox",
+        "Constant",
+        "Permutation"
+      ],
+      "domains": [
+        "Bit"
+      ],
+      "family": "present",
+      "fixed_evidence": [
+        "tests/unit/primitives/block_ciphers/test_present.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.block_ciphers.present",
+      "name": "Present80",
+      "official_instances_from": "Present",
+      "official_name": "Present80",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
             "number_of_rounds": 31
           }
         }
@@ -3415,6 +4437,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.block_ciphers.pride",
       "name": "Pride",
+      "official_instances_from": "Pride",
       "official_name": "Pride",
       "parameter_sets": [
         {
@@ -3491,6 +4514,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/prince_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.prince",
       "name": "Prince",
+      "official_instances_from": "Prince",
       "official_name": "Prince",
       "parameter_sets": [
         {
@@ -3563,6 +4587,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/prince_v2_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.prince_v2",
       "name": "PrinceV2",
+      "official_instances_from": "PrinceV2",
       "official_name": "PrinceV2",
       "parameter_sets": [
         {
@@ -3638,6 +4663,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/rc5_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.rc5",
       "name": "RC5",
+      "official_instances_from": "RC5",
       "official_name": "RC5",
       "parameter_sets": [
         {
@@ -3712,6 +4738,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/rc6_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.rc6",
       "name": "RC6",
+      "official_instances_from": "RC6",
       "official_name": "RC6",
       "parameter_sets": [
         {
@@ -3802,6 +4829,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/raiden_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.raiden",
       "name": "Raiden",
+      "official_instances_from": "Raiden",
       "official_name": "Raiden",
       "parameter_sets": [
         {
@@ -3877,6 +4905,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/rectangle_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.rectangle",
       "name": "Rectangle",
+      "official_instances_from": "Rectangle",
       "official_name": "Rectangle",
       "parameter_sets": [
         {
@@ -3958,6 +4987,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/rijndael_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.rijndael",
       "name": "Rijndael",
+      "official_instances_from": "Rijndael",
       "official_name": "Rijndael",
       "parameter_sets": [
         {
@@ -4224,6 +5254,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/sm4_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.sm4",
       "name": "SM4",
+      "official_instances_from": "SM4",
       "official_name": "SM4",
       "parameter_sets": [
         {
@@ -4298,6 +5329,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/sparx_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.sparx",
       "name": "SPARX",
+      "official_instances_from": "SPARX",
       "official_name": "SPARX",
       "parameter_sets": [
         {
@@ -4373,6 +5405,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/saecham_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.saecham",
       "name": "Saecham",
+      "official_instances_from": "Saecham",
       "official_name": "Saecham",
       "parameter_sets": [
         {
@@ -4446,6 +5479,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/serpent_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.serpent",
       "name": "Serpent",
+      "official_instances_from": "Serpent",
       "official_name": "Serpent",
       "parameter_sets": [
         {
@@ -4535,6 +5569,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/simeck_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.simeck",
       "name": "Simeck",
+      "official_instances_from": "Simeck",
       "official_name": "Simeck",
       "parameter_sets": [
         {
@@ -4633,6 +5668,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/simeck_sbox_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.simeck.sbox",
       "name": "SimeckSbox",
+      "official_instances_from": null,
       "official_name": "SimeckSbox",
       "parameter_sets": [
         {
@@ -4725,6 +5761,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/simon_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.simon",
       "name": "Simon",
+      "official_instances_from": "Simon",
       "official_name": "Simon",
       "parameter_sets": [
         {
@@ -4824,6 +5861,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/simon_sbox_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.simon.sbox",
       "name": "SimonSbox",
+      "official_instances_from": null,
       "official_name": "SimonSbox",
       "parameter_sets": [
         {
@@ -4969,6 +6007,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/skinny_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.skinny",
       "name": "Skinny",
+      "official_instances_from": "Skinny",
       "official_name": "Skinny",
       "parameter_sets": [
         {
@@ -5082,6 +6121,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/skipjack_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.skipjack",
       "name": "Skipjack",
+      "official_instances_from": "Skipjack",
       "official_name": "Skipjack",
       "parameter_sets": [
         {
@@ -5154,6 +6194,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/speck_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.speck",
       "name": "Speck",
+      "official_instances_from": "Speck",
       "official_name": "Speck",
       "parameter_sets": [
         {
@@ -5300,6 +6341,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/speedy_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.speedy",
       "name": "Speedy",
+      "official_instances_from": "Speedy",
       "official_name": "Speedy",
       "parameter_sets": [
         {
@@ -5375,6 +6417,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/splight_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.splight",
       "name": "Splight",
+      "official_instances_from": "Splight",
       "official_name": "Splight",
       "parameter_sets": [
         {
@@ -5450,6 +6493,7 @@
       "legacy_source": "claasp/ciphers/permutations/subterranean_permutation.py",
       "module": "claasp.primitives.block_ciphers.subterranean",
       "name": "Subterranean",
+      "official_instances_from": "Subterranean",
       "official_name": "Subterranean",
       "parameter_sets": [
         {
@@ -5521,6 +6565,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/tea_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.tea",
       "name": "TEA",
+      "official_instances_from": "TEA",
       "official_name": "TEA",
       "parameter_sets": [
         {
@@ -5597,6 +6642,7 @@
       "legacy_source": "claasp/ciphers/permutations/tinyjambu_permutation.py",
       "module": "claasp.primitives.block_ciphers.tinyjambu",
       "name": "TinyJambu",
+      "official_instances_from": "TinyJambu",
       "official_name": "TinyJambu",
       "parameter_sets": [
         {
@@ -5709,6 +6755,7 @@
       "legacy_source": "claasp/ciphers/permutations/tinyjambu_fsr_32bits_word_permutation.py",
       "module": "claasp.primitives.block_ciphers.tinyjambu.fsr_word",
       "name": "TinyJambuFSRWordBased",
+      "official_instances_from": "TinyJambuFSRWordBased",
       "official_name": "TinyJambuFSRWordBased",
       "parameter_sets": [
         {
@@ -5783,6 +6830,7 @@
       "legacy_source": "claasp/ciphers/permutations/tinyjambu_32bits_word_permutation.py",
       "module": "claasp.primitives.block_ciphers.tinyjambu.word",
       "name": "TinyJambuWordBased",
+      "official_instances_from": "TinyJambuWordBased",
       "official_name": "TinyJambuWordBased",
       "parameter_sets": [
         {
@@ -5854,6 +6902,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/twine_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.twine",
       "name": "Twine",
+      "official_instances_from": "Twine",
       "official_name": "Twine",
       "parameter_sets": [
         {
@@ -5938,6 +6987,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/twofish_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.twofish",
       "name": "Twofish",
+      "official_instances_from": "Twofish",
       "official_name": "Twofish",
       "parameter_sets": [
         {
@@ -6011,6 +7061,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/uknit_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.uknit",
       "name": "UKNIT",
+      "official_instances_from": "UKNIT",
       "official_name": "UKNIT",
       "parameter_sets": [
         {
@@ -6081,6 +7132,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.block_ciphers.ulbc",
       "name": "ULBC",
+      "official_instances_from": "ULBC",
       "official_name": "ULBC",
       "parameter_sets": [
         {
@@ -6164,6 +7216,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/ublock_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.ublock",
       "name": "Ublock",
+      "official_instances_from": "Ublock",
       "official_name": "Ublock",
       "parameter_sets": [
         {
@@ -6264,6 +7317,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/ublock_single_linear_layer_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.ublock.single_linear_layer",
       "name": "UblockSingleLinearLayer",
+      "official_instances_from": "UblockSingleLinearLayer",
       "official_name": "UblockSingleLinearLayer",
       "parameter_sets": [
         {
@@ -6354,6 +7408,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/warp_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.warp",
       "name": "Warp",
+      "official_instances_from": "Warp",
       "official_name": "Warp",
       "parameter_sets": [
         {
@@ -6426,6 +7481,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/xtea_block_cipher.py",
       "module": "claasp.primitives.block_ciphers.xtea",
       "name": "XTEA",
+      "official_instances_from": "XTEA",
       "official_name": "XTEA",
       "parameter_sets": [
         {
@@ -6500,6 +7556,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/a5_1_stream_cipher.py",
       "module": "claasp.primitives.block_functions.a5_1",
       "name": "A51KeystreamFunction",
+      "official_instances_from": "A51KeystreamFunction",
       "official_name": "A51KeystreamFunction",
       "parameter_sets": [
         {
@@ -6576,6 +7633,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/a5_2_stream_cipher.py",
       "module": "claasp.primitives.block_functions.a5_2",
       "name": "A52KeystreamFunction",
+      "official_instances_from": "A52KeystreamFunction",
       "official_name": "A52KeystreamFunction",
       "parameter_sets": [
         {
@@ -6650,6 +7708,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/bivium_stream_cipher.py",
       "module": "claasp.primitives.block_functions.bivium",
       "name": "BiviumKeystreamFunction",
+      "official_instances_from": "BiviumKeystreamFunction",
       "official_name": "BiviumKeystreamFunction",
       "parameter_sets": [
         {
@@ -6732,6 +7791,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/chacha_stream_cipher.py",
       "module": "claasp.primitives.block_functions.chacha",
       "name": "ChaChaBlockFunction",
+      "official_instances_from": "ChaChaBlockFunction",
       "official_name": "ChaChaBlockFunction",
       "parameter_sets": [
         {
@@ -6810,6 +7870,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.block_functions.salsa",
       "name": "SalsaBlockFunction",
+      "official_instances_from": "SalsaBlockFunction",
       "official_name": "SalsaBlockFunction",
       "parameter_sets": [
         {
@@ -6882,6 +7943,7 @@
       "legacy_source": "claasp/ciphers/mac/siphash_mac.py",
       "module": "claasp.primitives.block_functions.siphash",
       "name": "SiphashMAC",
+      "official_instances_from": "SiphashMAC",
       "official_name": "SiphashMAC",
       "parameter_sets": [
         {
@@ -6959,6 +8021,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/snow3g_stream_cipher.py",
       "module": "claasp.primitives.block_functions.snow3g",
       "name": "Snow3GKeystreamFunction",
+      "official_instances_from": "Snow3GKeystreamFunction",
       "official_name": "Snow3GKeystreamFunction",
       "parameter_sets": [
         {
@@ -7033,6 +8096,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/trivium_stream_cipher.py",
       "module": "claasp.primitives.block_functions.trivium",
       "name": "TriviumKeystreamFunction",
+      "official_instances_from": "TriviumKeystreamFunction",
       "official_name": "TriviumKeystreamFunction",
       "parameter_sets": [
         {
@@ -7107,6 +8171,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/zuc_stream_cipher.py",
       "module": "claasp.primitives.block_functions.zuc",
       "name": "ZucKeystreamFunction",
+      "official_instances_from": "ZucKeystreamFunction",
       "official_name": "ZucKeystreamFunction",
       "parameter_sets": [
         {
@@ -7181,6 +8246,7 @@
       "legacy_source": "claasp/ciphers/hash_functions/blake2_hash_function.py",
       "module": "claasp.primitives.functions.blake2",
       "name": "Blake2CompressionFunction",
+      "official_instances_from": "Blake2CompressionFunction",
       "official_name": "Blake2CompressionFunction",
       "parameter_sets": [
         {
@@ -7256,6 +8322,7 @@
       "legacy_source": "claasp/ciphers/hash_functions/blake_hash_function.py",
       "module": "claasp.primitives.functions.blake",
       "name": "BlakeCompressionFunction",
+      "official_instances_from": "BlakeCompressionFunction",
       "official_name": "BlakeCompressionFunction",
       "parameter_sets": [
         {
@@ -7332,6 +8399,7 @@
       "legacy_source": "claasp/ciphers/stream_ciphers/bluetooth_stream_cipher_e0.py",
       "module": "claasp.primitives.functions.bluetooth_e0",
       "name": "BluetoothE0KeystreamFunction",
+      "official_instances_from": "BluetoothE0KeystreamFunction",
       "official_name": "BluetoothE0KeystreamFunction",
       "parameter_sets": [
         {
@@ -7404,6 +8472,7 @@
       "legacy_source": "claasp/ciphers/hash_functions/md5_hash_function.py",
       "module": "claasp.primitives.functions.md5",
       "name": "MD5SingleBlockFunction",
+      "official_instances_from": "MD5SingleBlockFunction",
       "official_name": "MD5SingleBlockFunction",
       "parameter_sets": [
         {
@@ -7473,6 +8542,7 @@
       "legacy_source": "claasp/ciphers/hash_functions/sha1_hash_function.py",
       "module": "claasp.primitives.functions.sha1",
       "name": "SHA1SingleBlockFunction",
+      "official_instances_from": "SHA1SingleBlockFunction",
       "official_name": "SHA1SingleBlockFunction",
       "parameter_sets": [
         {
@@ -7542,6 +8612,7 @@
       "legacy_source": "claasp/ciphers/hash_functions/sha2_hash_function.py",
       "module": "claasp.primitives.functions.sha2",
       "name": "SHA2SingleBlockFunction",
+      "official_instances_from": "SHA2SingleBlockFunction",
       "official_name": "SHA2SingleBlockFunction",
       "parameter_sets": [
         {
@@ -7630,6 +8701,7 @@
       "legacy_source": "claasp/ciphers/hash_functions/whirlpool_hash_function.py",
       "module": "claasp.primitives.functions.whirlpool",
       "name": "WhirlpoolSingleBlockFunction",
+      "official_instances_from": "WhirlpoolSingleBlockFunction",
       "official_name": "WhirlpoolSingleBlockFunction",
       "parameter_sets": [
         {
@@ -7697,6 +8769,7 @@
       "legacy_source": "claasp/ciphers/permutations/alzette_permutation.py",
       "module": "claasp.primitives.permutations.alzette",
       "name": "Alzette",
+      "official_instances_from": "Alzette",
       "official_name": "Alzette",
       "parameter_sets": [
         {
@@ -7766,6 +8839,7 @@
       "legacy_source": "claasp/ciphers/permutations/ascon_permutation.py",
       "module": "claasp.primitives.permutations.ascon",
       "name": "Ascon",
+      "official_instances_from": "Ascon",
       "official_name": "Ascon",
       "parameter_sets": [
         {
@@ -7875,6 +8949,7 @@
       "legacy_source": "claasp/ciphers/permutations/ascon_sbox_sigma_permutation.py",
       "module": "claasp.primitives.permutations.ascon.sbox_sigma",
       "name": "AsconSboxSigma",
+      "official_instances_from": "AsconSboxSigma",
       "official_name": "AsconSboxSigma",
       "parameter_sets": [
         {
@@ -7943,6 +9018,7 @@
       "legacy_source": "claasp/ciphers/permutations/ascon_sbox_sigma_no_matrix_permutation.py",
       "module": "claasp.primitives.permutations.ascon.sbox_sigma_no_matrix",
       "name": "AsconSboxSigmaNoMatrix",
+      "official_instances_from": "AsconSboxSigmaNoMatrix",
       "official_name": "AsconSboxSigmaNoMatrix",
       "parameter_sets": [
         {
@@ -8004,6 +9080,7 @@
       "legacy_source": "claasp/ciphers/permutations/chacha_permutation.py",
       "module": "claasp.primitives.permutations.chacha",
       "name": "ChaChaPermutation",
+      "official_instances_from": "ChaChaPermutation",
       "official_name": "ChaChaPermutation",
       "parameter_sets": [
         {
@@ -8082,6 +9159,7 @@
       "legacy_source": "claasp/ciphers/permutations/chaskeypi_permutation.py",
       "module": "claasp.primitives.permutations.chaskeypi",
       "name": "ChaskeyPi",
+      "official_instances_from": "ChaskeyPi",
       "official_name": "ChaskeyPi",
       "parameter_sets": [
         {
@@ -8149,6 +9227,7 @@
       "legacy_source": "claasp/ciphers/permutations/forro_permutation.py",
       "module": "claasp.primitives.permutations.forro",
       "name": "Forro",
+      "official_instances_from": "Forro",
       "official_name": "Forro",
       "parameter_sets": [
         {
@@ -8225,6 +9304,7 @@
       "legacy_source": "claasp/ciphers/permutations/gaston_permutation.py",
       "module": "claasp.primitives.permutations.gaston",
       "name": "Gaston",
+      "official_instances_from": "Gaston",
       "official_name": "Gaston",
       "parameter_sets": [
         {
@@ -8334,6 +9414,7 @@
       "legacy_source": "claasp/ciphers/permutations/gaston_sbox_permutation.py",
       "module": "claasp.primitives.permutations.gaston.sbox",
       "name": "GastonSbox",
+      "official_instances_from": "GastonSbox",
       "official_name": "GastonSbox",
       "parameter_sets": [
         {
@@ -8403,6 +9484,7 @@
       "legacy_source": "claasp/ciphers/permutations/gaston_sbox_theta_permutation.py",
       "module": "claasp.primitives.permutations.gaston.sbox_theta",
       "name": "GastonSboxTheta",
+      "official_instances_from": "GastonSboxTheta",
       "official_name": "GastonSboxTheta",
       "parameter_sets": [
         {
@@ -8473,6 +9555,7 @@
       "legacy_source": "claasp/ciphers/permutations/gimli_permutation.py",
       "module": "claasp.primitives.permutations.gimli",
       "name": "Gimli",
+      "official_instances_from": "Gimli",
       "official_name": "Gimli",
       "parameter_sets": [
         {
@@ -8561,6 +9644,7 @@
       "legacy_source": "claasp/ciphers/permutations/gimli_sbox_permutation.py",
       "module": "claasp.primitives.permutations.gimli.sbox",
       "name": "GimliSbox",
+      "official_instances_from": null,
       "official_name": "GimliSbox",
       "parameter_sets": [
         {
@@ -8624,6 +9708,7 @@
       "legacy_source": "claasp/ciphers/permutations/grain_core_permutation.py",
       "module": "claasp.primitives.permutations.grain_core",
       "name": "GrainCore",
+      "official_instances_from": "GrainCore",
       "official_name": "GrainCore",
       "parameter_sets": [
         {
@@ -8693,6 +9778,7 @@
       "legacy_source": "claasp/ciphers/permutations/keccak_permutation.py",
       "module": "claasp.primitives.permutations.keccak",
       "name": "Keccak",
+      "official_instances_from": "Keccak",
       "official_name": "Keccak",
       "parameter_sets": [
         {
@@ -8783,6 +9869,7 @@
       "legacy_source": "claasp/ciphers/permutations/keccak_invertible_permutation.py",
       "module": "claasp.primitives.permutations.keccak.invertible",
       "name": "KeccakInvertible",
+      "official_instances_from": "KeccakInvertible",
       "official_name": "KeccakInvertible",
       "parameter_sets": [
         {
@@ -8852,6 +9939,7 @@
       "legacy_source": "claasp/ciphers/permutations/keccak_sbox_permutation.py",
       "module": "claasp.primitives.permutations.keccak.sbox",
       "name": "KeccakSbox",
+      "official_instances_from": "KeccakSbox",
       "official_name": "KeccakSbox",
       "parameter_sets": [
         {
@@ -8933,6 +10021,7 @@
       "legacy_source": "claasp/ciphers/permutations/knot_permutation.py",
       "module": "claasp.primitives.permutations.knot",
       "name": "Knot",
+      "official_instances_from": "Knot",
       "official_name": "Knot",
       "parameter_sets": [
         {
@@ -8985,6 +10074,75 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
+        "Add",
+        "Constant",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "family": "mimc",
+      "fixed_evidence": [
+        "tests/unit/primitives/permutations/test_mimc.py"
+      ],
+      "input_roles": [
+        "state"
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "role": "state",
+          "visibility": "public"
+        }
+      ],
+      "kind": "permutation",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.permutations.mimc",
+      "name": "MiMC",
+      "official_instances_from": null,
+      "official_name": "MiMC",
+      "parameter_sets": [
+        {
+          "name": "teaching-example",
+          "values": {
+            "exponent": 3,
+            "modulus": 17,
+            "round_constants": [
+              1,
+              2,
+              4
+            ]
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "permutations"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "permutations",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
         "BitwiseAnd",
         "Rotate",
         "Shift",
@@ -9014,6 +10172,7 @@
       "legacy_source": "claasp/ciphers/permutations/norx_permutation.py",
       "module": "claasp.primitives.permutations.norx",
       "name": "Norx",
+      "official_instances_from": "Norx",
       "official_name": "Norx",
       "parameter_sets": [
         {
@@ -9087,6 +10246,7 @@
       "legacy_source": "claasp/ciphers/permutations/photon_permutation.py",
       "module": "claasp.primitives.permutations.photon",
       "name": "Photon",
+      "official_instances_from": "Photon",
       "official_name": "Photon",
       "parameter_sets": [
         {
@@ -9124,6 +10284,97 @@
       "category": "permutations",
       "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
       "components": [
+        "Add",
+        "Constant",
+        "LinearMap",
+        "Power"
+      ],
+      "domains": [
+        "PrimeField"
+      ],
+      "family": "poseidon",
+      "fixed_evidence": [
+        "tests/unit/primitives/permutations/poseidon/test_package.py"
+      ],
+      "input_roles": [
+        "state"
+      ],
+      "inputs": [
+        {
+          "name": "state",
+          "role": "state",
+          "visibility": "public"
+        }
+      ],
+      "kind": "permutation",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.permutations.poseidon",
+      "name": "Poseidon",
+      "official_instances_from": null,
+      "official_name": "Poseidon",
+      "parameter_sets": [
+        {
+          "name": "teaching-example",
+          "values": {
+            "exponent": 3,
+            "full_rounds": 2,
+            "linear_layer": [
+              [
+                1,
+                1
+              ],
+              [
+                1,
+                2
+              ]
+            ],
+            "modulus": 17,
+            "partial_rounds": 1,
+            "round_constants": [
+              [
+                1,
+                2
+              ],
+              [
+                3,
+                4
+              ],
+              [
+                5,
+                6
+              ]
+            ]
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "permutations"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "permutations",
+      "classification_basis": "reviewed fixed-length interface classification (M10.9b)",
+      "components": [
         "ModularAdd",
         "Rotate",
         "Xor"
@@ -9148,6 +10399,7 @@
       "legacy_source": "claasp/ciphers/permutations/salsa_permutation.py",
       "module": "claasp.primitives.permutations.salsa",
       "name": "SalsaPermutation",
+      "official_instances_from": "SalsaPermutation",
       "official_name": "SalsaPermutation",
       "parameter_sets": [
         {
@@ -9227,6 +10479,7 @@
       "legacy_source": "claasp/ciphers/permutations/sparkle_permutation.py",
       "module": "claasp.primitives.permutations.sparkle",
       "name": "Sparkle",
+      "official_instances_from": "Sparkle",
       "official_name": "Sparkle",
       "parameter_sets": [
         {
@@ -9328,6 +10581,7 @@
       "legacy_source": "claasp/ciphers/permutations/speckey_permutation.py",
       "module": "claasp.primitives.permutations.speckey",
       "name": "Speckey",
+      "official_instances_from": "Speckey",
       "official_name": "Speckey",
       "parameter_sets": [
         {
@@ -9397,6 +10651,7 @@
       "legacy_source": "claasp/ciphers/permutations/spongent_pi_permutation.py",
       "module": "claasp.primitives.permutations.spongent_pi",
       "name": "SpongentPi",
+      "official_instances_from": "SpongentPi",
       "official_name": "SpongentPi",
       "parameter_sets": [
         {
@@ -9488,6 +10743,7 @@
       "legacy_source": "claasp/ciphers/permutations/spongent_pi_fsr_permutation.py",
       "module": "claasp.primitives.permutations.spongent_pi.fsr",
       "name": "SpongentPiFSR",
+      "official_instances_from": "SpongentPiFSR",
       "official_name": "SpongentPiFSR",
       "parameter_sets": [
         {
@@ -9579,6 +10835,7 @@
       "legacy_source": "claasp/ciphers/permutations/spongent_pi_precomputation_permutation.py",
       "module": "claasp.primitives.permutations.spongent_pi.precomputation",
       "name": "SpongentPiPrecomputation",
+      "official_instances_from": "SpongentPiPrecomputation",
       "official_name": "SpongentPiPrecomputation",
       "parameter_sets": [
         {
@@ -9656,6 +10913,7 @@
       "legacy_source": "claasp/ciphers/permutations/xoodoo_permutation.py",
       "module": "claasp.primitives.permutations.xoodoo",
       "name": "Xoodoo",
+      "official_instances_from": "Xoodoo",
       "official_name": "Xoodoo",
       "parameter_sets": [
         {
@@ -9745,6 +11003,7 @@
       "legacy_source": "claasp/ciphers/permutations/xoodoo_invertible_permutation.py",
       "module": "claasp.primitives.permutations.xoodoo.invertible",
       "name": "XoodooInvertible",
+      "official_instances_from": "XoodooInvertible",
       "official_name": "XoodooInvertible",
       "parameter_sets": [
         {
@@ -9813,6 +11072,7 @@
       "legacy_source": "claasp/ciphers/permutations/xoodoo_sbox_permutation.py",
       "module": "claasp.primitives.permutations.xoodoo.sbox",
       "name": "XoodooSbox",
+      "official_instances_from": "XoodooSbox",
       "official_name": "XoodooSbox",
       "parameter_sets": [
         {
@@ -9880,6 +11140,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.single_component_primitives.add",
       "name": "Add",
+      "official_instances_from": "Add",
       "official_name": "Add",
       "parameter_sets": [
         {
@@ -9942,6 +11203,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.single_component_primitives.binary_affine_map",
       "name": "BinaryAffineMap",
+      "official_instances_from": "BinaryAffineMap",
       "official_name": "BinaryAffineMap",
       "parameter_sets": [
         {
@@ -10006,6 +11268,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/sbox_cipher.py",
       "module": "claasp.primitives.single_component_primitives.bit_vector_sbox",
       "name": "BitVectorSBox",
+      "official_instances_from": "BitVectorSBox",
       "official_name": "BitVectorSBox",
       "parameter_sets": [
         {
@@ -10073,6 +11336,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/and_cipher.py",
       "module": "claasp.primitives.single_component_primitives.bitwise_and",
       "name": "BitwiseAnd",
+      "official_instances_from": "BitwiseAnd",
       "official_name": "BitwiseAnd",
       "parameter_sets": [
         {
@@ -10135,6 +11399,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/not_cipher.py",
       "module": "claasp.primitives.single_component_primitives.bitwise_not",
       "name": "BitwiseNot",
+      "official_instances_from": "BitwiseNot",
       "official_name": "BitwiseNot",
       "parameter_sets": [
         {
@@ -10199,6 +11464,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/or_cipher.py",
       "module": "claasp.primitives.single_component_primitives.bitwise_or",
       "name": "BitwiseOr",
+      "official_instances_from": "BitwiseOr",
       "official_name": "BitwiseOr",
       "parameter_sets": [
         {
@@ -10253,6 +11519,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/constant_cipher.py",
       "module": "claasp.primitives.single_component_primitives.constant",
       "name": "Constant",
+      "official_instances_from": "Constant",
       "official_name": "Constant",
       "parameter_sets": [
         {
@@ -10315,6 +11582,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/fsr_cipher.py",
       "module": "claasp.primitives.single_component_primitives.feedback_register",
       "name": "FeedbackRegister",
+      "official_instances_from": "FeedbackRegister",
       "official_name": "FeedbackRegister",
       "parameter_sets": [
         {
@@ -10380,6 +11648,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/idea_modmul_cipher.py",
       "module": "claasp.primitives.single_component_primitives.idea_multiply",
       "name": "IDEAMultiply",
+      "official_instances_from": "IDEAMultiply",
       "official_name": "IDEAMultiply",
       "parameter_sets": [
         {
@@ -10443,6 +11712,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/identity_cipher.py",
       "module": "claasp.primitives.single_component_primitives.identity",
       "name": "Identity",
+      "official_instances_from": "Identity",
       "official_name": "Identity",
       "parameter_sets": [
         {
@@ -10504,6 +11774,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/theta_xoodoo_cipher.py",
       "module": "claasp.primitives.single_component_primitives.linear_map",
       "name": "LinearMap",
+      "official_instances_from": "LinearMap",
       "official_name": "LinearMap",
       "parameter_sets": [
         {
@@ -10569,6 +11840,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/modadd_cipher.py",
       "module": "claasp.primitives.single_component_primitives.modular_add",
       "name": "ModularAdd",
+      "official_instances_from": "ModularAdd",
       "official_name": "ModularAdd",
       "parameter_sets": [
         {
@@ -10635,6 +11907,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/modmul_cipher.py",
       "module": "claasp.primitives.single_component_primitives.modular_multiply",
       "name": "ModularMultiply",
+      "official_instances_from": "ModularMultiply",
       "official_name": "ModularMultiply",
       "parameter_sets": [
         {
@@ -10701,6 +11974,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/modsub_cipher.py",
       "module": "claasp.primitives.single_component_primitives.modular_subtract",
       "name": "ModularSubtract",
+      "official_instances_from": "ModularSubtract",
       "official_name": "ModularSubtract",
       "parameter_sets": [
         {
@@ -10769,6 +12043,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.single_component_primitives.multiply",
       "name": "Multiply",
+      "official_instances_from": "Multiply",
       "official_name": "Multiply",
       "parameter_sets": [
         {
@@ -10832,6 +12107,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/word_permutation_cipher.py",
       "module": "claasp.primitives.single_component_primitives.permutation",
       "name": "Permutation",
+      "official_instances_from": "Permutation",
       "official_name": "Permutation",
       "parameter_sets": [
         {
@@ -10893,6 +12169,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.single_component_primitives.power",
       "name": "Power",
+      "official_instances_from": "Power",
       "official_name": "Power",
       "parameter_sets": [
         {
@@ -10956,6 +12233,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/rotate_cipher.py",
       "module": "claasp.primitives.single_component_primitives.rotate",
       "name": "Rotate",
+      "official_instances_from": "Rotate",
       "official_name": "Rotate",
       "parameter_sets": [
         {
@@ -11018,6 +12296,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.single_component_primitives.sbox",
       "name": "SBox",
+      "official_instances_from": "SBox",
       "official_name": "SBox",
       "parameter_sets": [
         {
@@ -11082,6 +12361,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/shift_cipher.py",
       "module": "claasp.primitives.single_component_primitives.shift",
       "name": "Shift",
+      "official_instances_from": "Shift",
       "official_name": "Shift",
       "parameter_sets": [
         {
@@ -11151,6 +12431,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/variable_rotate_cipher.py",
       "module": "claasp.primitives.single_component_primitives.variable_rotate",
       "name": "VariableRotate",
+      "official_instances_from": "VariableRotate",
       "official_name": "VariableRotate",
       "parameter_sets": [
         {
@@ -11220,6 +12501,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/variable_shift_cipher.py",
       "module": "claasp.primitives.single_component_primitives.variable_shift",
       "name": "VariableShift",
+      "official_instances_from": "VariableShift",
       "official_name": "VariableShift",
       "parameter_sets": [
         {
@@ -11286,6 +12568,7 @@
       "legacy_source": "claasp/ciphers/single_component_ciphers/xor_cipher.py",
       "module": "claasp.primitives.single_component_primitives.xor",
       "name": "Xor",
+      "official_instances_from": "Xor",
       "official_name": "Xor",
       "parameter_sets": [
         {
@@ -11357,6 +12640,7 @@
       "legacy_source": "claasp/ciphers/toys/cipherfour_block_cipher.py",
       "module": "claasp.primitives.toy_primitives.cipherfour",
       "name": "CipherFour",
+      "official_instances_from": "CipherFour",
       "official_name": "CipherFour",
       "parameter_sets": [
         {
@@ -11438,6 +12722,7 @@
       "legacy_source": "claasp/ciphers/toys/fancy_block_cipher.py",
       "module": "claasp.primitives.toy_primitives.fancy",
       "name": "Fancy",
+      "official_instances_from": "Fancy",
       "official_name": "Fancy",
       "parameter_sets": [
         {
@@ -11511,6 +12796,7 @@
       "legacy_source": "claasp/ciphers/toys/heys_block_cipher.py",
       "module": "claasp.primitives.toy_primitives.heys",
       "name": "Heys",
+      "official_instances_from": "Heys",
       "official_name": "Heys",
       "parameter_sets": [
         {
@@ -11585,6 +12871,7 @@
       "legacy_source": "claasp/ciphers/toys/toyaes_block_cipher.py",
       "module": "claasp.primitives.toy_primitives.toyaes",
       "name": "ToyAES",
+      "official_instances_from": "ToyAES",
       "official_name": "ToyAES",
       "parameter_sets": [
         {
@@ -11659,6 +12946,7 @@
       "legacy_source": "claasp/ciphers/toys/toyfeistel.py",
       "module": "claasp.primitives.toy_primitives.toyfeistel",
       "name": "ToyFeistel",
+      "official_instances_from": "ToyFeistel",
       "official_name": "ToyFeistel",
       "parameter_sets": [
         {
@@ -11750,6 +13038,7 @@
       "legacy_source": "claasp/ciphers/toys/toyspn1.py",
       "module": "claasp.primitives.toy_primitives.toyspn1",
       "name": "ToySPN1",
+      "official_instances_from": "ToySPN1",
       "official_name": "ToySPN1",
       "parameter_sets": [
         {
@@ -11834,6 +13123,7 @@
       "legacy_source": "claasp/ciphers/toys/toyspn2.py",
       "module": "claasp.primitives.toy_primitives.toyspn2",
       "name": "ToySPN2",
+      "official_instances_from": "ToySPN2",
       "official_name": "ToySPN2",
       "parameter_sets": [
         {
@@ -11876,6 +13166,77 @@
       ],
       "tags": [
         "sbox_based",
+        "toy_primitives"
+      ]
+    },
+    {
+      "authenticity": "canonical",
+      "bijectivity_obligation": true,
+      "category": "toy_primitives",
+      "classification_basis": "reviewed retained-input bijectivity classification (M10.10h7)",
+      "components": [
+        "Constant",
+        "ModularAdd",
+        "Rotate",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "family": "toy_speck",
+      "fixed_evidence": [
+        "tests/unit/primitives/toy_primitives/test_speck.py"
+      ],
+      "input_roles": [
+        "plaintext",
+        "key"
+      ],
+      "inputs": [
+        {
+          "name": "plaintext",
+          "role": "plaintext",
+          "visibility": "public"
+        },
+        {
+          "name": "key",
+          "role": "key",
+          "visibility": "secret"
+        }
+      ],
+      "kind": "block_cipher",
+      "labels": [],
+      "legacy_source": null,
+      "module": "claasp.primitives.toy_primitives.speck",
+      "name": "ToySpeck",
+      "official_instances_from": null,
+      "official_name": "ToySpeck",
+      "parameter_sets": [
+        {
+          "name": "default",
+          "values": {
+            "number_of_rounds": 4
+          }
+        }
+      ],
+      "realizations": [
+        {
+          "capabilities": [
+            "batch_evaluation",
+            "scalar_evaluation"
+          ],
+          "maturity": "stable",
+          "name": "default",
+          "priority": 0,
+          "provenance": [
+            "native CLAASP v5 source"
+          ],
+          "structure": [
+            "typed_graph"
+          ]
+        }
+      ],
+      "tags": [
+        "arx",
         "toy_primitives"
       ]
     },
@@ -11928,6 +13289,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/bipbip_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.bipbip",
       "name": "BipBip",
+      "official_instances_from": "BipBip",
       "official_name": "BipBip",
       "parameter_sets": [
         {
@@ -12009,6 +13371,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/blink_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.blink",
       "name": "Blink",
+      "official_instances_from": "Blink",
       "official_name": "Blink",
       "parameter_sets": [
         {
@@ -12142,6 +13505,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/chilow_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.chilow",
       "name": "Chilow",
+      "official_instances_from": "Chilow",
       "official_name": "Chilow",
       "parameter_sets": [
         {
@@ -12224,6 +13588,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/mantis_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.mantis",
       "name": "Mantis",
+      "official_instances_from": "Mantis",
       "official_name": "Mantis",
       "parameter_sets": [
         {
@@ -12306,6 +13671,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/qarmav2_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.qarmav2",
       "name": "QARMAv2",
+      "official_instances_from": "QARMAv2",
       "official_name": "QARMAv2",
       "parameter_sets": [
         {
@@ -12416,6 +13782,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/qarmav2_with_mixcolumn_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.qarmav2.mixcolumn",
       "name": "QARMAv2MixColumn",
+      "official_instances_from": "QARMAv2MixColumn",
       "official_name": "QARMAv2MixColumn",
       "parameter_sets": [
         {
@@ -12500,6 +13867,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/scarf_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.scarf",
       "name": "SCARF",
+      "official_instances_from": "SCARF",
       "official_name": "SCARF",
       "parameter_sets": [
         {
@@ -12579,6 +13947,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/threefish_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.threefish",
       "name": "Threefish",
+      "official_instances_from": "Threefish",
       "official_name": "Threefish",
       "parameter_sets": [
         {
@@ -12662,6 +14031,7 @@
       "legacy_source": "claasp/ciphers/block_ciphers/trax_block_cipher.py",
       "module": "claasp.primitives.tweakable_block_ciphers.trax",
       "name": "Trax",
+      "official_instances_from": "Trax",
       "official_name": "Trax",
       "parameter_sets": [
         {
@@ -12740,6 +14110,7 @@
       "legacy_source": null,
       "module": "claasp.primitives.tweakable_block_ciphers.ulbc",
       "name": "ULBCTweakable",
+      "official_instances_from": "ULBCTweakable",
       "official_name": "ULBCTweakable",
       "parameter_sets": [
         {
@@ -12904,6 +14275,67 @@
     },
     {
       "components": [
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "Bit",
+        "Word"
+      ],
+      "drivers": [
+        "c_source_compiler",
+        "native_generated_c"
+      ],
+      "implementation": "claasp.representations.source:compile_c_source",
+      "kind": "source",
+      "name": "c_generated_source",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "FeedbackRegister",
+        "LinearMap",
+        "ModularAdd",
+        "Permutation",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "component_bounded",
+        "component_minizinc"
+      ],
+      "implementation": "claasp.analysis:analyze_component_property",
+      "kind": "analysis",
+      "name": "component_properties",
+      "scope": "component"
+    },
+    {
+      "components": [
         "Add",
         "BinaryAffineMap",
         "BitVectorSBox",
@@ -12945,44 +14377,6 @@
       "scope": "generic_graph"
     },
     {
-      "components": [
-        "Add",
-        "BinaryAffineMap",
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "FeedbackRegister",
-        "IDEAMultiply",
-        "Identity",
-        "LinearMap",
-        "ModularAdd",
-        "ModularMultiply",
-        "ModularSubtract",
-        "Multiply",
-        "Permutation",
-        "Power",
-        "Rotate",
-        "SBox",
-        "Shift",
-        "VariableRotate",
-        "VariableShift",
-        "Xor"
-      ],
-      "domains": [
-        "BinaryExtensionField",
-        "Bit",
-        "PrimeField",
-        "Word"
-      ],
-      "drivers": [],
-      "implementation": "claasp.serialization:serialize_primitive",
-      "kind": "serialization",
-      "name": "primitive_serialization",
-      "scope": "generic_graph"
-    },
-    {
       "components": [],
       "domains": [
         "BinaryExtensionField",
@@ -12995,77 +14389,6 @@
       "kind": "serialization",
       "name": "execution_artifact_serialization",
       "scope": "result"
-    },
-    {
-      "components": [
-        "Add",
-        "BinaryAffineMap",
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "FeedbackRegister",
-        "IDEAMultiply",
-        "Identity",
-        "LinearMap",
-        "ModularAdd",
-        "ModularMultiply",
-        "ModularSubtract",
-        "Multiply",
-        "Permutation",
-        "Power",
-        "Rotate",
-        "SBox",
-        "Shift",
-        "VariableRotate",
-        "VariableShift",
-        "Xor"
-      ],
-      "domains": [
-        "BinaryExtensionField",
-        "Bit",
-        "PrimeField",
-        "Word"
-      ],
-      "drivers": [
-        "python_generated_source",
-        "python_source_compiler"
-      ],
-      "implementation": "claasp.representations.source:compile_python_source",
-      "kind": "source",
-      "name": "python_generated_source",
-      "scope": "generic_graph"
-    },
-    {
-      "components": [
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "Identity",
-        "ModularAdd",
-        "ModularSubtract",
-        "Permutation",
-        "Rotate",
-        "Shift",
-        "VariableRotate",
-        "VariableShift",
-        "Xor"
-      ],
-      "domains": [
-        "Bit",
-        "Word"
-      ],
-      "drivers": [
-        "c_source_compiler",
-        "native_generated_c"
-      ],
-      "implementation": "claasp.representations.source:compile_c_source",
-      "kind": "source",
-      "name": "c_generated_source",
-      "scope": "generic_graph"
     },
     {
       "components": [
@@ -13151,6 +14474,97 @@
     },
     {
       "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [],
+      "implementation": "claasp.serialization:serialize_primitive",
+      "kind": "serialization",
+      "name": "primitive_serialization",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "Add",
+        "BinaryAffineMap",
+        "BitVectorSBox",
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "FeedbackRegister",
+        "IDEAMultiply",
+        "Identity",
+        "LinearMap",
+        "ModularAdd",
+        "ModularMultiply",
+        "ModularSubtract",
+        "Multiply",
+        "Permutation",
+        "Power",
+        "Rotate",
+        "SBox",
+        "Shift",
+        "VariableRotate",
+        "VariableShift",
+        "Xor"
+      ],
+      "domains": [
+        "BinaryExtensionField",
+        "Bit",
+        "PrimeField",
+        "Word"
+      ],
+      "drivers": [
+        "python_generated_source",
+        "python_source_compiler"
+      ],
+      "implementation": "claasp.representations.source:compile_python_source",
+      "kind": "source",
+      "name": "python_generated_source",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [],
+      "domains": [],
+      "drivers": [
+        "matplotlib_presentation",
+        "text_presentation"
+      ],
+      "implementation": "claasp.presentation:ReportData",
+      "kind": "presentation",
+      "name": "report_presentation",
+      "scope": "result"
+    },
+    {
+      "components": [
         "BitVectorSBox"
       ],
       "domains": [
@@ -13226,6 +14640,31 @@
         "Word"
       ],
       "drivers": [
+        "z3"
+      ],
+      "implementation": "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
+      "kind": "constraint",
+      "name": "word_differential_smt",
+      "scope": "generic_graph"
+    },
+    {
+      "components": [
+        "BitwiseAnd",
+        "BitwiseNot",
+        "BitwiseOr",
+        "Constant",
+        "Identity",
+        "ModularAdd",
+        "ModularSubtract",
+        "Permutation",
+        "Rotate",
+        "Shift",
+        "Xor"
+      ],
+      "domains": [
+        "Word"
+      ],
+      "drivers": [
         "minisat"
       ],
       "implementation": "claasp.representations.constraints.sat:WordXorLinearSATModel",
@@ -13253,84 +14692,17 @@
       "drivers": [
         "z3"
       ],
-      "implementation": "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
-      "kind": "constraint",
-      "name": "word_differential_smt",
-      "scope": "generic_graph"
-    },
-    {
-      "components": [
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "Constant",
-        "Identity",
-        "ModularAdd",
-        "ModularSubtract",
-        "Permutation",
-        "Rotate",
-        "Shift",
-        "Xor"
-      ],
-      "domains": [
-        "Word"
-      ],
-      "drivers": [
-        "z3"
-      ],
       "implementation": "claasp.representations.constraints.smt:WordXorLinearSMTModel",
       "kind": "constraint",
       "name": "word_linear_smt",
       "scope": "generic_graph"
-    },
-    {
-      "components": [
-        "BinaryAffineMap",
-        "BitVectorSBox",
-        "BitwiseAnd",
-        "BitwiseNot",
-        "BitwiseOr",
-        "FeedbackRegister",
-        "LinearMap",
-        "ModularAdd",
-        "Permutation",
-        "Rotate",
-        "SBox",
-        "Shift",
-        "Xor"
-      ],
-      "domains": [
-        "BinaryExtensionField",
-        "Bit",
-        "PrimeField",
-        "Word"
-      ],
-      "drivers": [
-        "component_bounded",
-        "component_minizinc"
-      ],
-      "implementation": "claasp.analysis:analyze_component_property",
-      "kind": "analysis",
-      "name": "component_properties",
-      "scope": "component"
-    },
-    {
-      "components": [],
-      "domains": [],
-      "drivers": [
-        "matplotlib_presentation",
-        "text_presentation"
-      ],
-      "implementation": "claasp.presentation:ReportData",
-      "kind": "presentation",
-      "name": "report_presentation",
-      "scope": "result"
     }
   ],
   "schema_version": 2,
   "sources": {
     "classification": "tools/data/legacy_inventory.json",
-    "components": "tools/data/single_component_catalogue.json",
+    "components": "claasp.components public Component types",
+    "membership": "implementation-owned __catalogue__ declarations",
     "realizations": "tools/data/realization_catalogue.json"
   }
 }

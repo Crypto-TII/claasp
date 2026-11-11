@@ -7,6 +7,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
+
 
 @dataclass(frozen=True, slots=True)
 class PDFResult:
@@ -74,3 +76,15 @@ class LaTeXDriver:
                 )
             pdf = pdf_path.read_bytes()
         return PDFResult(pdf, elapsed, completed.stdout, completed.stderr)
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        LaTeXDriver,
+        name="latex",
+        kind="renderer",
+        availability="executable",
+        target_parameter="executable",
+    ),
+)

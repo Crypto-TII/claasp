@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from decimal import Decimal, localcontext
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import BLOCK_CIPHER, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -219,3 +219,6 @@ class RC6(BitGraphPrimitive):
                 ids += word.id
                 positions.append(list(range(w - 8 * (m + 1), w - 8 * m)))
         return BitState(ids, positions)
+
+
+__catalogue__ = (_entry("primitive", RC6),)

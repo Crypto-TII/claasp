@@ -2,6 +2,7 @@
 
 from collections.abc import Sequence
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import LookupTable
 from claasp.components import SBox as SBoxComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
@@ -59,3 +60,6 @@ class SBox(Primitive):
 
 
 __all__ = ["SBox"]
+
+
+__catalogue__ = (_entry("primitive", SBox),)

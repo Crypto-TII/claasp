@@ -1,5 +1,6 @@
 """Single-component bitwise-XOR primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Xor as XorComponent
 from claasp.graph import Primitive, PrimitiveKind
 
@@ -39,3 +40,6 @@ class Xor(Primitive):
 
 
 __all__ = ["Xor"]
+
+
+__catalogue__ = (_entry("primitive", Xor),)

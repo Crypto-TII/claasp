@@ -25,6 +25,7 @@ The input is named *key* because the hash function SHA-1 can be seen like a
 symmetric primitive whose plaintext is the initial state and key is the input.
 """
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph.bit_builder import BitGraphPrimitive, BitState
 from claasp.primitive_inputs import HASH_FUNCTION, INPUT_MESSAGE
 
@@ -242,3 +243,6 @@ class SHA1SingleBlockFunction(BitGraphPrimitive):
         Wt = self.add_rotate_component_in_sha1(Wt_temp, -1)
 
         return BitState(Wt.id, [list(range(self.word_size))])
+
+
+__catalogue__ = (_entry("primitive", SHA1SingleBlockFunction),)

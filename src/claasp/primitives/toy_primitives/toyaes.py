@@ -1,5 +1,6 @@
 """Generalized small AES teaching family."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Add, Constant, LinearMap, Permutation, SBox
 from claasp.composites.aes import AES_SBOX
 from claasp.graph import Primitive, UnitArrayType
@@ -121,3 +122,6 @@ class ToyAES(Primitive):
             state = self._builder.add_component(Add((state, round_key)))
             self._builder.set_round_output(state)
         self._builder.set_output(state)
+
+
+__catalogue__ = (_entry("primitive", ToyAES),)

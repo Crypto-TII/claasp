@@ -1,5 +1,6 @@
 """Single-component modular-subtraction primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Constant
 from claasp.components import ModularAdd as ModularAddComponent
 from claasp.components import ModularSubtract as ModularSubtractComponent
@@ -89,3 +90,6 @@ class ModularSubtract(Primitive):
 
 
 __all__ = ["ModularSubtract"]
+
+
+__catalogue__ = (_entry("primitive", ModularSubtract),)

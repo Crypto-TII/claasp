@@ -11,6 +11,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from time import monotonic
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 from claasp.provenance import DriverIdentity, DriverKind, ResultProvenance
 from claasp.representations.source import SourceArtifact, SourceLanguage
@@ -267,3 +268,14 @@ __all__ = [
     "run_python_source",
     "write_source",
 ]
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        run_python_source,
+        name="python_generated_source",
+        kind="execution_engine",
+        availability="builtin",
+    ),
+)

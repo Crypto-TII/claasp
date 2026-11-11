@@ -102,7 +102,9 @@ class PrimitiveRecord:
 
     ``bijectivity_obligation`` applies to the designated data/state input of
     each named parameter set while every auxiliary input is retained. It is
-    separate from the whole-arity ``kind`` classification.
+    separate from the whole-arity ``kind`` classification. ``official_instances_from``
+    names the canonical constructor owning specification-approved configurations;
+    ``None`` distinguishes study/teaching parameters from official instances.
 
     EXAMPLES::
 
@@ -110,6 +112,10 @@ class PrimitiveRecord:
         >>> record = catalogue.primitive("AES")
         >>> (record.qualified_name, record.kind)
         ('claasp.primitives.block_ciphers.aes.AES', 'block_cipher')
+        >>> catalogue.primitive("AES128").official_instances_from
+        'AES'
+        >>> catalogue.primitive("MiMC").official_instances_from is None
+        True
     """
 
     name: str
@@ -131,6 +137,7 @@ class PrimitiveRecord:
     fixed_evidence: tuple[str, ...]
     parameter_sets: tuple[ParameterSetRecord, ...]
     realizations: tuple[RealizationRecord, ...]
+    official_instances_from: str | None = None
 
     @property
     def qualified_name(self) -> str:
@@ -151,7 +158,7 @@ class ComponentRecord:
 
     name: str
     module: str
-    primitive_wrapper: str
+    primitive_wrapper: str | None
 
 
 @dataclass(frozen=True, slots=True)

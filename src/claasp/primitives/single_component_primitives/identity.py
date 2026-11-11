@@ -1,5 +1,6 @@
 """Single-component identity-permutation primitive implementation."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.components import Identity as IdentityComponent
 from claasp.graph import Primitive, PrimitiveKind, UnitArrayType
 from claasp.unit_types import Bit
@@ -40,3 +41,6 @@ class Identity(Primitive):
 
 
 __all__ = ["Identity"]
+
+
+__catalogue__ = (_entry("primitive", Identity),)

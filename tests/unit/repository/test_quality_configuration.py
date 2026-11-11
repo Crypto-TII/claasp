@@ -56,11 +56,14 @@ def test_mypy_version_scope_and_regression_policy_are_pinned():
     assert mypy["no_implicit_optional"] is True
 
 
-def test_generated_primitive_exports_are_not_stale():
+def test_generated_primitive_exports_are_not_stale(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "tools"))
     generator = _load_tool("generate_primitive_exports")
 
     source, count = generator.render_exports()
-    assert count == 152
+    from claasp.primitives._catalogue_exports import ALL_EXPORTS
+
+    assert count == len(ALL_EXPORTS)
     assert source == generator.DESTINATION.read_text(encoding="utf-8")
 
 

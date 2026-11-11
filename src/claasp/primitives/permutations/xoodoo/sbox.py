@@ -16,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
-
 from copy import deepcopy
+
+from claasp._catalogue_metadata import _entry
 
 # Sage construction replaced by dependency-free v5 constants
 # Sage construction replaced by dependency-free v5 constants
@@ -223,3 +224,6 @@ class XoodooSbox(BitGraphPrimitive):
                 [[k + j * LANE_SIZE for k in range(LANE_SIZE)] for j in range(LANE_NUM)],
             )
             planes[i] = plane
+
+
+__catalogue__ = (_entry("primitive", XoodooSbox, labels=("equivalent_realization",)),)

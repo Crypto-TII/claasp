@@ -1,5 +1,6 @@
 """SPARX family of ARX block primitives."""
 
+from claasp._catalogue_metadata import _entry
 from claasp.graph import Primitive
 
 from ._word_graph import (
@@ -118,3 +119,6 @@ class SPARX(Primitive):
         output = concatenate(self, *state)
         self._builder.set_round_output(output)
         self._builder.set_output(output)
+
+
+__catalogue__ = (_entry("primitive", SPARX),)

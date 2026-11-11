@@ -14,6 +14,7 @@ from tempfile import TemporaryDirectory
 from time import monotonic
 from typing import overload
 
+from claasp._catalogue_metadata import _entry
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.representations.constraints._execution import _checked_assignment
 from claasp.representations.constraints.cp import MiniZincModel
@@ -303,3 +304,23 @@ def _parse_all_output(
     if "=====UNSATISFIABLE=====" in statuses:
         return CPStatus.UNSATISFIABLE, (), True, "exhausted_unsat"
     raise RuntimeError("MiniZinc returned no status or solution")
+
+
+__catalogue__ = (
+    _entry(
+        "driver",
+        MiniZincSolver,
+        name="minizinc",
+        kind="solver",
+        availability="executable",
+        target_parameter="executable",
+    ),
+    _entry(
+        "driver",
+        MiniZincSolver,
+        name="minizinc_chuffed",
+        kind="solver",
+        availability="minizinc_solver",
+        target="chuffed",
+    ),
+)
