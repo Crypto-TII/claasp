@@ -82,7 +82,6 @@ def evaluate_vectorized(
     intermediate_output=False,
     verbosity=False,
     evaluate_api=False,
-    component_outputs=False,
 ):
     python_code_string = (
         code_generator.generate_byte_based_vectorized_python_code_string(
@@ -90,7 +89,6 @@ def evaluate_vectorized(
             store_intermediate_outputs=intermediate_output,
             verbosity=verbosity,
             integers_inputs_and_outputs=evaluate_api,
-            store_component_outputs=component_outputs,
         )
     )
     f_module = ModuleType("evaluate")

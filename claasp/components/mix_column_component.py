@@ -50,13 +50,6 @@ def _field_from_int(field, value):
     return field(value)
 
 
-def _field_to_int(element):
-    """Convert a field element to an integer across Sage versions."""
-    if hasattr(element, "to_integer"):
-        return element.to_integer()
-    return element.integer_representation()
-
-
 def add_xor_components(word_size, output_id_link_1, output_id_link_2, output_size, list_of_xor_components):
     for i in range(output_size // word_size):
         input_id_link = [output_id_link_1, output_id_link_2, f"output_xor_{output_id_link_1}_{output_id_link_2}"]
@@ -666,7 +659,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            _field_to_int(_field_from_int(F, i) * _field_from_int(F, element))
+                            (_field_from_int(F, i) * _field_from_int(F, element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             params_mix_column = [
@@ -712,7 +705,7 @@ class MixColumn(LinearLayer):
                 for element in row:
                     if element not in mul_tables:
                         mul_tables[element] = [
-                            _field_to_int(_field_from_int(F, i) * _field_from_int(F, element))
+                            (_field_from_int(F, i) * _field_from_int(F, element)).integer_representation()
                             for i in range(2**input_size)
                         ]
             return [f"  {self.id}=byte_vector_mix_column({params} , {matrix}, {mul_tables}, {input_size})"]

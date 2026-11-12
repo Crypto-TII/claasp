@@ -146,7 +146,7 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
     output = [0 for _ in range(number_of_inputs)]
     for i in range(number_of_inputs):
         pos = 0
-        number_of_output_bits = sum(len(x) for x in real_bits[i])
+        number_of_output_bits = np.sum([len(x) for x in real_bits[i]])
         idx = real_inputs[i][0] if len(real_inputs[i]) == 1 else None
         expected_rows = (
             get_number_of_bytes_needed_for_bit_size(actual_inputs_bits[idx])

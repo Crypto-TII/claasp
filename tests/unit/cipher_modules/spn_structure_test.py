@@ -4,13 +4,14 @@ from types import ModuleType
 
 import numpy as np
 import pytest
+from sage.matrix.constructor import matrix
+from sage.matrix.special import identity_matrix
 from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules import code_generator
-from claasp.cipher_modules.spn_structure import (Sbox, SpnStructure, SubstitutionLayer, UnsupportedCipherError,
-                                                 _linearize_cipher)
+from claasp.cipher_modules.spn_structure import Sbox, SpnStructure, SubstitutionLayer, UnsupportedCipherError
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
@@ -261,33 +262,6 @@ def test_last_linear_layer_goes_to_the_output():
     assert not _is_permutation_matrix(middle) and _is_permutation_matrix(last)
 
 
-def _snapshot(cipher):
-    return [(c.id, c.type, copy.deepcopy(c.description), list(c.input_id_links),
-             [list(p) for p in c.input_bit_positions], c.output_bit_size) for c in cipher.all_components()]
-
-
-@pytest.mark.parametrize("build", [lambda: MidoriBlockCipher(number_of_rounds=3), lambda: KeccakPermutation(3, 4)])
-def test_linearize_cipher_does_not_modify_original(build):
-    cipher = build()
-    before = _snapshot(cipher)
-    linear_cipher = _linearize_cipher(cipher)
-    assert _snapshot(cipher) == before
-    assert _snapshot(linear_cipher) != before
-    assert all(c.description == list(range(2 ** c.input_bit_size))
-               for c in linear_cipher.all_components() if c.type == "sbox")
-
-
-def test_linearized_keccak_is_linear():
-    cipher = KeccakPermutation(2, 4)
-    linear_cipher = _linearize_cipher(cipher)
-    evaluate = _compiled_evaluation(linear_cipher)
-    rng = random.Random(1)
-    zero = evaluate([0])[0]
-    for _ in range(10):
-        a, b = rng.getrandbits(100), rng.getrandbits(100)
-        assert evaluate([a ^ b])[0] ^ zero == evaluate([a])[0] ^ evaluate([b])[0]
-
-
 PRESENT_SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
 
 
@@ -321,6 +295,16 @@ def test_bypassing_the_last_substitution_layer_raises():
     xor = cipher.add_xor_component([sbox, "plaintext"], [[0, 1, 2, 3], [0, 1, 2, 3]], 4).id
     cipher.add_cipher_output_component([xor], [[0, 1, 2, 3]], 4)
     with pytest.raises(UnsupportedCipherError, match="the cipher output depends on the state"):
+        SpnStructure(cipher)
+
+
+def test_reading_a_missing_bit_raises():
+    # a malformed definition: the S-box reads bit 4 of a 4-bit input
+    cipher = Cipher("toy", "permutation", ["plaintext"], [4], 4)
+    cipher.add_round()
+    sbox = cipher.add_sbox_component(["plaintext"], [[1, 2, 3, 4]], 4, PRESENT_SBOX).id
+    cipher.add_cipher_output_component([sbox], [[0, 1, 2, 3]], 4)
+    with pytest.raises(UnsupportedCipherError, match="reads bit 4 of plaintext, which has 4 bits"):
         SpnStructure(cipher)
 
 
@@ -364,22 +348,20 @@ def test_changes_to_the_cipher_after_construction_are_not_seen():
     assert structure.linear_layers == SpnStructure(MidoriBlockCipher(number_of_rounds=4)).linear_layers
 
 
-def test_singular_map_to_the_first_layer_raises():
-    # the first S-box reads state bit 0 twice: the linear layer between the two S-boxes is the identity, but the state
-    # does not reach the first substitution layer bijectively, so the linear layers cannot be measured
+def test_state_reading_a_bit_twice():
+    # the first S-box reads state bit 0 twice: the state does not reach the first layer bijectively, but the linear
+    # layers only depend on what lies between the layers
     cipher = Cipher("toy", "permutation", ["plaintext"], [4], 4)
     cipher.add_round()
     a = cipher.add_sbox_component(["plaintext"], [[0, 0, 2, 3]], 4, PRESENT_SBOX).id
     cipher.add_round()
     b = cipher.add_sbox_component([a], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
     cipher.add_cipher_output_component([b], [[0, 1, 2, 3]], 4)
-    assert len(SpnStructure(cipher).substitution_layers) == 2
-    with pytest.raises(UnsupportedCipherError, match="round 0 is not invertible"):
-        SpnStructure(cipher).linear_layers
+    assert SpnStructure(cipher).linear_layers == (identity_matrix(F, 4), identity_matrix(F, 4))
 
 
-def test_singular_map_to_the_last_layer_raises():
-    # between the two layers bit 0 is copied onto bit 1: the last layer does not see the state bijectively
+def test_singular_linear_layer():
+    # between the two layers bit 0 is copied onto bit 1: the linear layer is not invertible, and is returned as is
     cipher = Cipher("toy", "permutation", ["plaintext"], [4], 4)
     cipher.add_round()
     a = cipher.add_sbox_component(["plaintext"], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
@@ -387,5 +369,20 @@ def test_singular_map_to_the_last_layer_raises():
     cipher.add_round()
     b = cipher.add_sbox_component([mid], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
     cipher.add_cipher_output_component([b], [[0, 1, 2, 3]], 4)
-    with pytest.raises(UnsupportedCipherError, match="round 1 is not invertible"):
-        SpnStructure(cipher).linear_layers
+    assert SpnStructure(cipher).linear_layers[0] == matrix(F, [[1, 0, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+
+
+def test_layer_inputs_prepared_after_some_of_its_sboxes():
+    # S-box B's input is prepared after S-box A of the same layer: the components are in a valid order, and the layer
+    # inputs must be read once the whole walk is done
+    cipher = Cipher("toy", "permutation", ["plaintext"], [8], 8)
+    cipher.add_round()
+    first = cipher.add_sbox_component(["plaintext"], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
+    second = cipher.add_sbox_component(["plaintext"], [[4, 5, 6, 7]], 4, PRESENT_SBOX).id
+    cipher.add_round()
+    a = cipher.add_sbox_component([first], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
+    prepared = cipher.add_xor_component([second, cipher.add_constant_component(4, 5).id],
+                                        [[0, 1, 2, 3], [0, 1, 2, 3]], 4).id
+    b = cipher.add_sbox_component([prepared], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
+    cipher.add_cipher_output_component([a, b], [[0, 1, 2, 3], [0, 1, 2, 3]], 8)
+    assert SpnStructure(cipher).linear_layers == (identity_matrix(F, 8), identity_matrix(F, 8))

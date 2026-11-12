@@ -23,9 +23,8 @@ operations only. The S-boxes are S-box components, or the rows of a chi-like lay
 at most 16 bits. Other ciphers raise :class:`UnsupportedCipherError`, including SPNs whose nonlinear layer does not
 split into such S-boxes.
 
-The linear layers are computed on first use, by evaluating the cipher with the S-boxes replaced by the identity and
-the AND outputs set to 0. They do not include the key and constant additions, so they exist whatever the key
-schedule.
+The linear layers are computed on first use, by composing the components between two substitution layers. They do
+not include the key and constant additions, so they exist whatever the key schedule.
 """
 import copy
 from dataclasses import dataclass
@@ -34,10 +33,9 @@ from typing import NamedTuple
 
 import numpy as np
 from sage.matrix.constructor import matrix
-from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
-from claasp.cipher_modules.evaluator import evaluate_vectorized
+from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.editor import get_key_schedule_component_ids
 from claasp.name_mappings import (CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN,
                                   PERMUTATION_COMPONENT, SBOX, WORD_OPERATION)
@@ -52,8 +50,7 @@ _MAX_CHI_SBOX_SIZE = 16
 
 class UnsupportedCipherError(ValueError):
     """
-    Raised when :class:`SpnStructure` does not recognize a cipher as an SPN, or when the linear layers (or affine
-    parts) of a recognized one cannot be computed.
+    Raised when :class:`SpnStructure` does not recognize a cipher as an SPN.
     """
 
 
@@ -142,6 +139,17 @@ def _operands(component):
     bits = [(link, bit) for link, bits in zip(component.input_id_links, component.input_bit_positions) for bit in bits]
     size = component.output_bit_size
     return [bits[i * size:(i + 1) * size] for i in range(len(bits) // size)]
+
+
+def _check_wiring(cipher):
+    """Raise when a component reads a bit that its source does not have (a malformed cipher definition)."""
+    sizes = dict(zip(cipher.inputs, cipher.inputs_bit_size))
+    sizes.update((component.id, component.output_bit_size) for component in cipher.all_components())
+    for component in cipher.all_components():
+        for link, bits in zip(component.input_id_links, component.input_bit_positions):
+            if bits and max(bits) >= sizes.get(link, max(bits) + 1):
+                raise UnsupportedCipherError(f"{component.id}: reads bit {max(bits)} of {link}, which has "
+                                             f"{sizes[link]} bits")
 
 
 def _check_supported_components(components):
@@ -301,6 +309,17 @@ def _cipher_output(cipher):
     return [component for component in cipher.all_components() if component.type == CIPHER_OUTPUT][-1]
 
 
+def _reached(by_id, start, stop):
+    """Every link reached walking back from ``start`` through the components, not going past ``stop``."""
+    stack, seen = list(start), set(stop)
+    while stack:
+        link = stack.pop()
+        yield link
+        if link in by_id and link not in seen:  # cipher inputs and constants' empty link have no inputs
+            seen.add(link)
+            stack.extend(by_id[link].input_id_links)
+
+
 def _check_layer_boundaries(cipher, found, state_input):
     """
     Raise unless every substitution layer is a parallel layer reading the state only through the previous one, and
@@ -315,101 +334,103 @@ def _check_layer_boundaries(cipher, found, state_input):
     by_id = {component.id: component for component in cipher.all_components()}
     boundaries = found + [(None, _cipher_output(cipher).input_id_links, ())]  # the output, checked like a layer
     for previous, (layer, reads, outputs) in zip([None] + found, boundaries):
-        stack, seen = list(reads), set(previous[2] if previous else ())  # stop at the previous layer's outputs
-        while stack:
-            link = stack.pop()
-            if link in by_id and link not in seen:  # cipher inputs and constants' empty link have no inputs
-                seen.add(link)
-                stack.extend(by_id[link].input_id_links)
-            if link in outputs:
-                raise UnsupportedCipherError(f"round {layer.round_number}: an input of the substitution layer "
-                                             f"depends on one of its outputs (components not applied in parallel)")
-            if previous and link == state_input:
-                target = f"round {layer.round_number}: the substitution layer" if layer else "the cipher output"
-                raise UnsupportedCipherError(f"{target} depends on the state through a path avoiding the "
-                                             f"substitution layer of round {previous[0].round_number}")
+        reached = set(_reached(by_id, reads, previous[2] if previous else ()))  # stop at the previous outputs
+        if reached.intersection(outputs):
+            raise UnsupportedCipherError(f"round {layer.round_number}: an input of the substitution layer "
+                                         f"depends on one of its outputs (components not applied in parallel)")
+        if previous and state_input in reached:
+            target = f"round {layer.round_number}: the substitution layer" if layer else "the cipher output"
+            raise UnsupportedCipherError(f"{target} depends on the state through a path avoiding the "
+                                         f"substitution layer of round {previous[0].round_number}")
 
 
-def _linearize_cipher(cipher):
+def _component_matrix(component):
+    """The matrix `M` with `y = M x` of a rotation, shift, MixColumn, linear layer or permutation component."""
+    binary = binary_matrix_of_linear_component(component)
+    if component.type == LINEAR_LAYER:  # stored for row vectors (y = x M), unlike the other types
+        binary = binary.transpose()
+    return np.array(binary.rows(), dtype=np.uint8)
+
+
+def _is_ignored(component, key_schedule_ids, linear_only):
     """
-    A copy of ``cipher`` with every S-box replaced by the identity and every AND component `AND(x, y, ...)`
-    turned into `AND(x, 0, ...)`, so that a chi-like XOR `s_i + AND(...)` becomes the identity on `s_i`. The
-    second operand is rewired to a 0 constant, since the vectorized AND ignores the description.
+    Whether the forms of ``component`` are zero: an AND outside the key schedule only feeds chi XORs (checked at
+    construction), whose outputs are fresh variables; the key schedule does not depend on the state, so it is not
+    needed when ``linear_only``.
     """
-    from claasp.components.constant_component import Constant
-
-    linear_cipher = copy.deepcopy(cipher)
-    for round_number in range(linear_cipher.number_of_rounds):
-        components = linear_cipher.rounds.components_in_round(round_number)
-        for component in list(components):
-            if component.type == SBOX:
-                component.description = list(range(2 ** component.input_bit_size))
-            elif _operation(component) == "AND":
-                size = component.output_bit_size
-                zero = Constant(round_number, len(components), size, 0)  # a fresh index gives a fresh id
-                components.insert(components.index(component), zero)
-                operands = _operands(component)
-                bits = operands[0] + [(zero.id, bit) for bit in range(size)] + sum(operands[2:], [])
-                links, positions = simplify_inputs([link for link, _ in bits], [[bit] for _, bit in bits])
-                component.input_id_links, component.input_bit_positions = links, positions
-    return linear_cipher
+    in_key_schedule = component.id in key_schedule_ids
+    return (in_key_schedule and linear_only) or (not in_key_schedule and _operation(component) == "AND")
 
 
-def _layer_maps(cipher, layers, input_indices):
-    """
-    For every layer, then for the cipher output, ``(A, b)`` with `s = A x + b` in the linearized cipher, where `s`
-    is the bits entering the layer (or the output) and `x` the inputs ``input_indices`` concatenated, the other
-    inputs being 0. The bits are read at the layer's output, which equals its input once the S-boxes are the identity
-    and the AND outputs are 0.
-    """
-    sizes = cipher.inputs_bit_size
-    unit_vectors = [(index, 1 << (sizes[index] - 1 - bit)) for index in input_indices for bit in range(sizes[index])]
-    # one sample at 0, then one per unit vector; the value of x on sample i + 1 is e_i
-    inputs = [[0] + [value if index == i else 0 for index, value in unit_vectors] for i in range(len(sizes))]
-    linear_cipher = _linearize_cipher(cipher)
-    values = evaluate_vectorized(linear_cipher, inputs, evaluate_api=True, component_outputs=True)
-    output = _cipher_output(cipher)
-    targets = [layer.output_bits for layer in layers] + [[(output.id, bit) for bit in range(output.output_bit_size)]]
-    output_sizes = {component.id: component.output_bit_size for component in linear_cipher.all_components()}
-    # values[id]: big-endian bytes of the output, right-aligned, one column per sample
-    bits = {link: np.unpackbits(values[link], axis=0)[-output_sizes[link]:]
-            for link in {link for target in targets for link, _ in target}}
-    F = GF(2)
-    maps = []
-    for target in targets:
-        target_bits = np.array([bits[link][position] for link, position in target], dtype=np.uint8)
-        offset = target_bits[:, 0]
-        linear = matrix(F, len(target), len(unit_vectors), (target_bits[:, 1:] ^ offset[:, None]).tolist())
-        maps.append((linear, vector(F, offset.tolist())))
-    return maps
+def _component_forms(component, forms, width, matrices):
+    """The forms of the output bits of an affine or constant ``component``, from the forms of its input bits."""
+    operation, size = _operation(component), component.output_bit_size
+    if operation == CONSTANT:
+        out = np.zeros((size, width), dtype=np.uint8)
+        value = int(component.description[0], 0)  # stored in hexadecimal or binary
+        out[:, -1] = [(value >> (size - 1 - bit)) & 1 for bit in range(size)]
+        return out
+    if operation not in _AFFINE_OPERATIONS:
+        raise UnsupportedCipherError(f"{component.id}: {operation} cannot be composed")
+    x = np.concatenate([forms[link][list(bits)]
+                        for link, bits in zip(component.input_id_links, component.input_bit_positions)])
+    if operation == "XOR":
+        return np.bitwise_xor.reduce(x.reshape(-1, size, width), axis=0)
+    if operation == "NOT":
+        x[:, -1] ^= 1
+        return x
+    if operation in (INTERMEDIATE_OUTPUT, CIPHER_OUTPUT):
+        return x
+    key = (component.type, repr(component.description), component.input_bit_size, size)
+    if key not in matrices:  # rounds repeat the same rotations and mix columns
+        matrices[key] = _component_matrix(component)
+    return ((matrices[key].astype(np.int32) @ x) & 1).astype(np.uint8)
 
 
-def _between_layers(state_input, layers, maps):
+def _affine_forms(cipher, layers, state_index, key_schedule_ids, key_indices=None):
     """
-    `\\Lambda_{r+1} \\Lambda_r^{-1}` for consecutive layers, then for the last layer and the output, where `\\Lambda_r`
-    maps the state input to the input of layer `r`; raises if some `\\Lambda_r` is not invertible.
+    The affine forms of the bits entering every layer after the first, then of the cipher output.
+
+    A form is a row of coefficients over `[output bits of the previous layer | bits of the inputs key_indices |
+    constant 1]`. With ``key_indices=None`` only the first block is wanted, and the key schedule is skipped. One walk
+    over the components, in CLAASP's evaluation order: the output bits of every layer get fresh variables, the other
+    components compose the forms of their inputs. The state input has the zero form; it only reaches the forms
+    through the layers (checked by :func:`_check_layer_boundaries`).
     """
-    for layer, linear in zip(layers, maps):
-        if not linear.is_invertible():
-            raise UnsupportedCipherError(f"the map from {state_input} to the substitution layer of round "
-                                         f"{layer.round_number} is not invertible")
-    result = []
-    for current, following in zip(maps, maps[1:]):
-        linear = following * current.inverse()
-        linear.set_immutable()
-        result.append(linear)
-    return result
+    n, sizes = layers[0].size, cipher.inputs_bit_size
+    keys = key_indices or []
+    width = n + sum(sizes[i] for i in keys) + 1
+    forms = {name: np.zeros((sizes[i], width), dtype=np.uint8) for i, name in enumerate(cipher.inputs)}
+    column = n
+    for i in keys:
+        forms[cipher.inputs[i]][np.arange(sizes[i]), column + np.arange(sizes[i])] = 1
+        column += sizes[i]
+    position = {bit: j for layer in layers for j, bit in enumerate(layer.output_bits)}
+    layer_outputs = {link for link, _ in position}
+    matrices = {}
+    for component in cipher.all_components():
+        size = component.output_bit_size
+        if component.id in layer_outputs:  # an S-box or a chi XOR: its bits become the layer's variables
+            forms[component.id] = np.zeros((size, width), dtype=np.uint8)
+            forms[component.id][np.arange(size), [position[(component.id, bit)] for bit in range(size)]] = 1
+        elif _is_ignored(component, key_schedule_ids, key_indices is None):
+            forms[component.id] = np.zeros((size, width), dtype=np.uint8)
+        else:
+            forms[component.id] = _component_forms(component, forms, width, matrices)
+    # read once every form is known: a layer's inputs may be computed after some of its S-boxes
+    targets = [np.stack([forms[link][bit] for link, bit in layer.input_bits]) for layer in layers[1:]]
+    return targets + [forms[_cipher_output(cipher).id]]
 
 
 class SpnStructure:
     """
-    The SPN structure of ``cipher``: checks that every round is a substitution layer followed by affine operations
-    or affine operations only,
-    and gives the substitution layers and the linear layer following each of them.
+    The SPN structure of ``cipher``: checks that every round is a substitution layer followed by affine operations,
+    or affine operations only, and gives the substitution layers and the linear layer following each of them.
 
     Building the object only reads the component graph, leaving out the key schedule, and raises
     :class:`UnsupportedCipherError` unless:
 
+    - every component reads only bits that its sources have;
     - every component outside the key schedule is an S-box, a NOT / AND / XOR / rotation / shift, a linear
       layer, a mix column, a permutation, a constant or an output, and every AND belongs to a chi-like layer;
     - every round has at most one substitution layer (S-boxes, or chi-like with rows of at most 16 bits, not
@@ -420,7 +441,7 @@ class SpnStructure:
       only through the last one (no bypass).
 
     The cipher is copied when the object is built, so later changes to ``cipher`` are not seen. The linear layers
-    are computed on first access to :attr:`linear_layers` (one vectorized evaluation).
+    are computed on first access to :attr:`linear_layers`.
 
     INPUT:
 
@@ -460,6 +481,7 @@ class SpnStructure:
 
     def __init__(self, cipher):
         cipher = copy.deepcopy(cipher)  # later changes to the caller's cipher must not affect the structure
+        _check_wiring(cipher)
         key_schedule_ids = set(get_key_schedule_component_ids(cipher))
         state_index = _state_input(cipher, key_schedule_ids)
         data_path = [component for component in cipher.all_components() if component.id not in key_schedule_ids]
@@ -474,6 +496,7 @@ class SpnStructure:
         self._state_size = _check_layer_sizes(cipher, layers, state_index)
         _check_layer_boundaries(cipher, found, cipher.inputs[state_index])
         self._cipher = cipher
+        self._key_schedule_ids = key_schedule_ids
         self._state_index = state_index
         self._layers = tuple(layers)
 
@@ -521,9 +544,8 @@ class SpnStructure:
         differences or masks propagate through the S-boxes. The last round of a cipher often differs from the others
         (no MixColumns in AES, only a key addition in PRESENT), and so does its linear layer.
 
-        Computed on first access, from one vectorized evaluation of the cipher with the S-boxes replaced by the
-        identity and the AND outputs set to 0, on 0 and on every unit vector of the state input. Raises
-        :class:`UnsupportedCipherError` if the state input does not reach some substitution layer bijectively.
+        Computed on first access, by composing the matrices of the components between two substitution layers
+        (rotations, shifts, MixColumns, linear layers, permutations, XORs).
 
         EXAMPLES:
 
@@ -540,5 +562,9 @@ class SpnStructure:
             ....:         if j in sbox.positions})
             [0, 1, 2, 3]
         """
-        maps = [linear for linear, _ in _layer_maps(self._cipher, self._layers, [self._state_index])]
-        return tuple(_between_layers(self.state_input, self._layers, maps))
+        result = []
+        for target in _affine_forms(self._cipher, self._layers, self._state_index, self._key_schedule_ids):
+            linear = matrix(GF(2), target[:, :self._state_size].tolist())
+            linear.set_immutable()
+            result.append(linear)
+        return tuple(result)

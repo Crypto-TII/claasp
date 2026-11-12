@@ -1,7 +1,4 @@
 import os
-from types import ModuleType
-
-import numpy as np
 
 from claasp.cipher_modules.code_generator import (
     TII_C_LIB_PATH,
@@ -9,7 +6,6 @@ from claasp.cipher_modules.code_generator import (
     delete_generated_evaluate_c_shared_library,
     evaluate_c_name,
     generate_bit_based_vectorized_python_code_string,
-    generate_byte_based_vectorized_python_code_string,
     generate_evaluate_c_code_shared_library,
     generic_c_functions_o_name,
     get_padding_component_bit_based_c_code,
@@ -21,24 +17,6 @@ from claasp.ciphers.single_component_ciphers.variable_rotate_cipher import Varia
 from claasp.ciphers.single_component_ciphers.variable_shift_cipher import VariableShiftCipher
 from claasp.ciphers.single_component_ciphers.xor_cipher import XorCipher
 from claasp.ciphers.toys.fancy_block_cipher import FancyBlockCipher
-
-
-def test_generate_byte_based_vectorized_python_code_string_with_component_outputs():
-    speck = SpeckBlockCipher(number_of_rounds=3)
-    module = ModuleType("evaluate_with_component_outputs")
-    exec(generate_byte_based_vectorized_python_code_string(speck, store_component_outputs=True), module.__dict__)
-    rng = np.random.default_rng(0)
-    inputs = [rng.integers(0, 256, (size // 8, 5), dtype=np.uint8) for size in speck.inputs_bit_size]
-
-    outputs = module.evaluate(inputs, False)
-
-    assert set(outputs) == set(speck.inputs) | set(speck.all_components_ids())
-    # components inside round 1 and the cipher output, compared with the scalar evaluation of every sample
-    for sample in range(5):
-        _, _, components_io = speck.evaluate([int.from_bytes(bytes(x[:, sample]), "big") for x in inputs],
-                                             intermediate_output=True)
-        for component_id in ("modadd_1_7", "xor_1_10", "cipher_output_2_12"):
-            assert int.from_bytes(bytes(outputs[component_id][:, sample]), "big") == components_io[component_id][1]
 
 
 def test_generate_bit_based_vectorized_python_code_string():

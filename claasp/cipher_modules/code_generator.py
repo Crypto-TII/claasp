@@ -318,8 +318,7 @@ def prepare_input_bit_based_vectorized_python_code_string(component):
     return params
 
 
-def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs = False,
-                                                      store_component_outputs=False):
+def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate_outputs=False, verbosity=False, integers_inputs_and_outputs = False):
     r"""
     Return string python code needed to evaluate a cipher using a vectorized implementation byte based oriented.
 
@@ -330,8 +329,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
       with each round output
     - ``verbosity`` -- **boolean** (default: `False`); set to True to make the Python code print the input/output of
       each component
-    - ``store_component_outputs`` -- **boolean** (default: `False`); set this flag to True in order to return a
-      dictionary with the value of every cipher input and of every component, indexed by id
 
     EXAMPLES::
 
@@ -356,7 +353,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
     cipher_descriptions = []
     for component in cipher.all_components():
         cipher_descriptions.append(component.description)
-    evaluated_names = list(cipher.inputs)
     for component in cipher.all_components():
         formatted_component_inputs = prepare_input_byte_based_vectorized_python_code_string(output_bit_sizes, component)
         output_bit_sizes[component.id] = component.output_bit_size
@@ -367,7 +363,6 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
             code.extend(component.get_byte_based_vectorized_python_code(formatted_component_inputs))
-            evaluated_names.append(component.id)
 
         name = component.id
 
@@ -375,26 +370,20 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
             code.append(f'  byte_vector_print_as_hex_values("{name}_input", {formatted_component_inputs})')
             code.append(f'  byte_vector_print_as_hex_values("{name}_output", {name})')
 
-    code.extend(_byte_based_vectorized_return_lines(cipher, cipher_descriptions, evaluated_names,
-                                                    store_intermediate_outputs, store_component_outputs))
+    if store_intermediate_outputs:
+        code.append('  return intermediateOutputs')
+    elif CIPHER_INVERSE_SUFFIX in cipher.id:
+        # full inversion
+        if ['plaintext'] in cipher_descriptions:
+            code.append('  return intermediateOutputs["plaintext"]')
+        # in partial inversion
+        else:
+            code.append('  last_inter_output = [output for output in list(intermediateOutputs.keys()) if \'intermediate_output\' in output][0]')
+            code.append('  return intermediateOutputs[last_inter_output]')
+    else:
+        code.append('  return intermediateOutputs["cipher_output"]')
 
     return '\n'.join(code)
-
-
-def _byte_based_vectorized_return_lines(cipher, cipher_descriptions, evaluated_names, store_intermediate_outputs,
-                                        store_component_outputs):
-    if store_component_outputs:
-        return ['  return {' + ', '.join(f"'{name}': {name}" for name in evaluated_names) + '}']
-    if store_intermediate_outputs:
-        return ['  return intermediateOutputs']
-    if CIPHER_INVERSE_SUFFIX not in cipher.id:
-        return ['  return intermediateOutputs["cipher_output"]']
-    # full inversion
-    if ['plaintext'] in cipher_descriptions:
-        return ['  return intermediateOutputs["plaintext"]']
-    # partial inversion
-    return ['  last_inter_output = [output for output in list(intermediateOutputs.keys()) if \'intermediate_output\' in output][0]',
-            '  return intermediateOutputs[last_inter_output]']
 
 
 def prepare_input_byte_based_vectorized_python_code_string(bit_sizes, component):
