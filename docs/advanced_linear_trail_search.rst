@@ -73,6 +73,10 @@ their product, that is, the correlation of the trail truncated at that round.
 this number of rounds. ``Total weight`` is :math:`-\log_2` of the absolute correlation of the
 trail, so a weight of 1 matches the correlation :math:`1/2` above.
 
+The ``External input patterns`` table gives the mask on each input of the cipher. The
+``plaintext`` mask is the same as the ``input`` row of the ``Round trail`` table. The ``key``
+mask is zero because the trail does not involve the key.
+
 For the search evidence and the trail component by component, request the detailed
 report:
 
@@ -96,6 +100,41 @@ model of each nonlinear component, such as modular addition; linear components a
 directly as Boolean clauses and show ``N/A``. The ``Citations`` section lists the full
 verified references.
 
+Mask format
+~~~~~~~~~~~
+
+The ``value_format`` parameter sets how masks are written in every table of the report,
+including the detailed one. It accepts three values:
+
+- ``"hex"``: hexadecimal, padded with leading zeros to the width of the mask (default);
+- ``"binary"``: binary with the ``0b`` prefix, keeping all leading zeros;
+- ``"underscore_one"``: binary without prefix, with each 0 written as ``_`` and each 1 as ``1``, so that active bits stand out.
+
+In every format the most significant bit is on the left. For example:
+
+.. code-block:: python
+
+   trail.to_terminal(value_format="underscore_one")
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source: false
+
+   from io import StringIO
+   from pathlib import Path
+
+   output = StringIO()
+   trail.to_terminal(file=output, value_format="underscore_one")
+   Path("_build").mkdir(exist_ok=True)
+   Path("_build/advanced_linear_trail_basic_terminal_underscore_one.txt").write_text(output.getvalue(), encoding="utf-8")
+
+.. literalinclude:: _build/advanced_linear_trail_basic_terminal_underscore_one.txt
+   :language: text
+
+Weight plot
+-----------
+
 .. plot::
    :context: close-figs
    :include-source:
@@ -107,6 +146,9 @@ instead of probability. Round ``0`` is the input of the cipher. The ``Relative w
 weight added by each round, and the ``Cumulative weight`` line is the sum of the weights so far.
 The last point of the cumulative line equals the ``Total weight`` of the report. A round with
 weight 0 is deterministic, and a steep segment shows the round that costs the most.
+
+To save the plot or create it without displaying it, use the ``save_to`` and ``show``
+parameters, as described in :doc:`basic_linear_trail_search`.
 
 Trail enumeration
 -----------------
