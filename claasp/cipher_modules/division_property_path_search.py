@@ -407,7 +407,7 @@ def _detect_structure(cipher, bijective_function):
 
 
 def _spn_parameters(cipher):
-    layers = SpnStructure(cipher).layers  # raises UnsupportedCipherError, a ValueError
+    layers = SpnStructure(cipher).substitution_layers  # raises UnsupportedCipherError, a ValueError
     if len(layers) != cipher.number_of_rounds:
         raise ValueError("every round must have a nonlinear layer")
     sboxes = [sbox for layer in layers for sbox in layer.sboxes]

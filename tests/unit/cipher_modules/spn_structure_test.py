@@ -4,10 +4,13 @@ from types import ModuleType
 
 import numpy as np
 import pytest
+from sage.modules.free_module_element import vector
+from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules import code_generator
-from claasp.cipher_modules.spn_structure import NonlinearLayer, SpnStructure, UnsupportedCipherError
+from claasp.cipher_modules.spn_structure import (SpnStructure, SubstitutionLayer, UnsupportedCipherError,
+                                                 _linearize_cipher)
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
@@ -19,6 +22,7 @@ from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
 from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 from claasp.ciphers.permutations.keccak_sbox_permutation import SBOX, KeccakSboxPermutation
 
+F = GF(2)
 CIPHERS = {
     "midori": lambda: MidoriBlockCipher(64, 128),
     "skinny": lambda: SkinnyBlockCipher(64, 64, 32),
@@ -52,7 +56,7 @@ def _bits(value, size):
 
 
 def _layer_input(cipher, layer, components_io, inputs):
-    """Bits entering the nonlinear layer in the real cipher."""
+    """Bits entering the substitution layer in the real cipher."""
     values = []
     for link, position in layer.sources:
         if link in cipher.inputs:
@@ -74,10 +78,10 @@ def _covers_the_state(layer):
 @pytest.mark.parametrize("keccak, kind", [(KeccakSboxPermutation, "sbox"), (KeccakPermutation, "chi")])
 @pytest.mark.parametrize("word_size", [4, 8])
 def test_keccak_layers_are_the_chi_rows_in_both_forms(keccak, kind, word_size):
-    layers = SpnStructure(keccak(3, word_size)).layers
+    layers = SpnStructure(keccak(3, word_size)).substitution_layers
     assert [layer.round_number for layer in layers] == [0, 1, 2]
     for layer in layers:
-        assert isinstance(layer, NonlinearLayer)
+        assert isinstance(layer, SubstitutionLayer)
         assert layer.kind == kind
         assert layer.size == 25 * word_size
         assert len(layer.sboxes) == 5 * word_size
@@ -87,7 +91,7 @@ def test_keccak_layers_are_the_chi_rows_in_both_forms(keccak, kind, word_size):
 
 def test_chi_sources_are_the_linear_operands_of_the_chi_xors():
     cipher = KeccakPermutation(2, 4)
-    layer = SpnStructure(cipher).layers[0]
+    layer = SpnStructure(cipher).substitution_layers[0]
     round_0 = {c.id: c for c in cipher.rounds.components_in_round(0)}
     source_types = {round_0[link].description[0] for link, _ in layer.sources}
     assert source_types == {"ROTATE"}  # the lanes B[x, y] after rho and pi, never AND / NOT outputs
@@ -95,7 +99,7 @@ def test_chi_sources_are_the_linear_operands_of_the_chi_xors():
 
 
 def test_midori_layers():
-    layers = SpnStructure(MidoriBlockCipher()).layers
+    layers = SpnStructure(MidoriBlockCipher()).substitution_layers
     assert len(layers) == 16
     assert all(layer.kind == "sbox" and layer.size == 64 and len(layer.sboxes) == 16 for layer in layers)
     assert layers[0].sboxes[0][0] == (0, 1, 2, 3)
@@ -118,10 +122,14 @@ def test_structure_sizes(structures, name):
     state_size, key_size, number_of_layers = EXPECTED_SIZES[name]
     assert structure.state_size == state_size
     assert structure.key_size == key_size
-    assert len(structure.layers) == number_of_layers
-    for layer in structure.layers:
+    assert len(structure.substitution_layers) == number_of_layers
+    for layer in structure.substitution_layers:
         assert layer.size == state_size
         assert sorted(p for positions, _ in layer.sboxes for p in positions) == list(range(state_size))
+    assert len(structure.linear_layers) == number_of_layers - 1
+    for linear in structure.linear_layers:
+        assert linear.dimensions() == (state_size, state_size)
+        assert linear.is_immutable() and linear.is_invertible()
 
 
 def _compiled_evaluation(cipher):
@@ -164,21 +172,51 @@ def _apply_sbox_layer(points, sboxes):
 def test_sbox_tables_match_real_cipher(structures, name):
     cipher, structure = structures(name)
     for inputs, components_io in _random_inputs_and_components(cipher, 5):
-        for layer in structure.layers:
+        for layer in structure.substitution_layers:
             s_r = _layer_input(cipher, layer, components_io, inputs)
             image = _apply_sbox_layer(np.array([s_r]), layer.sboxes)[0].tolist()
             assert image == _real_sbox_layer_output(cipher, layer, components_io)
+
+
+@pytest.mark.parametrize("build", [
+    lambda: MidoriBlockCipher(number_of_rounds=4),
+    lambda: KeccakPermutation(4, 4),
+    lambda: AESBlockCipher(number_of_rounds=3),
+    lambda: PresentBlockCipher(number_of_rounds=4),
+], ids=["midori", "keccak_circuit", "aes", "present"])
+def test_linear_layers_on_real_cipher(build):
+    # two inputs differing only in the state: the key and constant additions cancel in the difference, so L_r must
+    # map the difference of the S-box outputs to the difference of the next layer's inputs, whatever the key schedule
+    cipher = build()
+    structure = SpnStructure(cipher)
+    layers = structure.substitution_layers
+    evaluate = _compiled_evaluation(cipher)
+    state_index = cipher.inputs.index(structure.state_input)
+    rng = random.Random(3)
+    for _ in range(10):
+        inputs = [rng.getrandbits(size) for size in cipher.inputs_bit_size]
+        other = list(inputs)
+        other[state_index] = rng.getrandbits(structure.state_size)
+        states = []
+        for values in (inputs, other):
+            components_io = evaluate(values)[2]
+            states.append([_layer_input(cipher, layer, components_io, values) for layer in layers])
+        for r, linear in enumerate(structure.linear_layers):
+            images = [_apply_sbox_layer(np.array([state[r]]), layers[r].sboxes)[0].tolist() for state in states]
+            difference = vector(F, images[0]) + vector(F, images[1])
+            assert linear * difference == vector(F, states[0][r + 1]) + vector(F, states[1][r + 1])
 
 
 @pytest.mark.parametrize("word_size", [4, 8])
 def test_keccak_sbox_and_circuit_forms_agree(word_size):
     sbox_form = SpnStructure(KeccakSboxPermutation(4, word_size))
     circuit_form = SpnStructure(KeccakPermutation(4, word_size))
+    assert sbox_form.linear_layers[0].charpoly() == circuit_form.linear_layers[0].charpoly()
     for structure, kind in ((sbox_form, "sbox"), (circuit_form, "chi")):
-        assert all(layer.kind == kind for layer in structure.layers)
-        tables = {table for layer in structure.layers for _, table in layer.sboxes}
+        assert all(layer.kind == kind for layer in structure.substitution_layers)
+        tables = {table for layer in structure.substitution_layers for _, table in layer.sboxes}
         assert tables == {tuple(SBOX)}
-        assert all(len(layer.sboxes) == 5 * word_size for layer in structure.layers)
+        assert all(len(layer.sboxes) == 5 * word_size for layer in structure.substitution_layers)
 
 
 @pytest.mark.parametrize("build, sbox_bit_size, number_of_sboxes", [
@@ -191,11 +229,45 @@ def test_key_schedule_sboxes_are_not_part_of_the_layers(build, sbox_bit_size, nu
     cipher = build()  # AES and Serpent take the key as their first input
     structure = SpnStructure(cipher)
     assert structure.state_input == "plaintext"
-    assert len(structure.layers) == cipher.number_of_rounds
-    for layer in structure.layers:
+    assert len(structure.substitution_layers) == cipher.number_of_rounds
+    for layer in structure.substitution_layers:
         assert {len(positions) for positions, _ in layer.sboxes} == {sbox_bit_size}
         assert len(layer.sboxes) == number_of_sboxes
         assert _covers_the_state(layer)
+
+
+def test_linear_layers_need_two_substitution_layers():
+    structure = SpnStructure(KeccakPermutation(1, 4))
+    assert len(structure.substitution_layers) == 1
+    with pytest.raises(UnsupportedCipherError, match="at least two rounds"):
+        structure.linear_layers
+
+
+def _snapshot(cipher):
+    return [(c.id, c.type, copy.deepcopy(c.description), list(c.input_id_links),
+             [list(p) for p in c.input_bit_positions], c.output_bit_size) for c in cipher.all_components()]
+
+
+@pytest.mark.parametrize("build", [lambda: MidoriBlockCipher(number_of_rounds=3), lambda: KeccakPermutation(3, 4)])
+def test_linearize_cipher_does_not_modify_original(build):
+    cipher = build()
+    before = _snapshot(cipher)
+    linear_cipher = _linearize_cipher(cipher)
+    assert _snapshot(cipher) == before
+    assert _snapshot(linear_cipher) != before
+    assert all(c.description == list(range(2 ** c.input_bit_size))
+               for c in linear_cipher.all_components() if c.type == "sbox")
+
+
+def test_linearized_keccak_is_linear():
+    cipher = KeccakPermutation(2, 4)
+    linear_cipher = _linearize_cipher(cipher)
+    evaluate = _compiled_evaluation(linear_cipher)
+    rng = random.Random(1)
+    zero = evaluate([0])[0]
+    for _ in range(10):
+        a, b = rng.getrandbits(100), rng.getrandbits(100)
+        assert evaluate([a ^ b])[0] ^ zero == evaluate([a])[0] ^ evaluate([b])[0]
 
 
 PRESENT_SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
@@ -217,9 +289,9 @@ def _toy_cipher(bypass):
     return cipher
 
 
-def test_bypassing_a_nonlinear_layer_raises():
-    assert len(SpnStructure(_toy_cipher(bypass=False)).layers) == 3
-    with pytest.raises(UnsupportedCipherError, match="avoiding the nonlinear layer of round 0"):
+def test_bypassing_a_substitution_layer_raises():
+    assert len(SpnStructure(_toy_cipher(bypass=False)).substitution_layers) == 3
+    with pytest.raises(UnsupportedCipherError, match="avoiding the substitution layer of round 0"):
         SpnStructure(_toy_cipher(bypass=True))
 
 
@@ -253,3 +325,38 @@ def test_layer_input_not_depending_on_the_state_raises():
     cipher.add_cipher_output_component([state], [list(range(8))], 8)
     with pytest.raises(UnsupportedCipherError, match="cover 4 bits"):
         SpnStructure(cipher)
+
+
+def test_changes_to_the_cipher_after_construction_are_not_seen():
+    cipher = MidoriBlockCipher(number_of_rounds=4)
+    structure = SpnStructure(cipher)
+    sbox = next(c for c in cipher.all_components() if c.type == "sbox")
+    sbox.input_id_links, sbox.input_bit_positions = ["plaintext"], [[0, 1, 2, 3]]  # rewired after validation
+    assert structure.linear_layers == SpnStructure(MidoriBlockCipher(number_of_rounds=4)).linear_layers
+
+
+def test_singular_map_to_the_first_layer_raises():
+    # the first S-box reads state bit 0 twice: the linear layer between the two S-boxes is the identity, but the state
+    # does not reach the first substitution layer bijectively, so the linear layers cannot be measured
+    cipher = Cipher("toy", "permutation", ["plaintext"], [4], 4)
+    cipher.add_round()
+    a = cipher.add_sbox_component(["plaintext"], [[0, 0, 2, 3]], 4, PRESENT_SBOX).id
+    cipher.add_round()
+    b = cipher.add_sbox_component([a], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
+    cipher.add_cipher_output_component([b], [[0, 1, 2, 3]], 4)
+    assert len(SpnStructure(cipher).substitution_layers) == 2
+    with pytest.raises(UnsupportedCipherError, match="round 0 is not invertible"):
+        SpnStructure(cipher).linear_layers
+
+
+def test_singular_map_to_the_last_layer_raises():
+    # between the two layers bit 0 is copied onto bit 1: the last layer does not see the state bijectively
+    cipher = Cipher("toy", "permutation", ["plaintext"], [4], 4)
+    cipher.add_round()
+    a = cipher.add_sbox_component(["plaintext"], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
+    mid = cipher.add_xor_component([a, cipher.add_constant_component(4, 3).id], [[0, 0, 2, 3], [0, 1, 2, 3]], 4).id
+    cipher.add_round()
+    b = cipher.add_sbox_component([mid], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
+    cipher.add_cipher_output_component([b], [[0, 1, 2, 3]], 4)
+    with pytest.raises(UnsupportedCipherError, match="round 1 is not invertible"):
+        SpnStructure(cipher).linear_layers
