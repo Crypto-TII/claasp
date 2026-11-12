@@ -15,12 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 """
-Check that a cipher is an SPN and find its substitution layers and the linear layers between them.
+Check that a cipher is an SPN and find its substitution layers and the linear layer following each of them.
 
-Leaving out the key schedule, every round must be a substitution layer, made of S-boxes applied in parallel to the
-whole state, followed only by affine operations (linear layer, key and constant additions). The S-boxes are S-box
-components, or the rows of a chi-like layer of NOT / AND / XOR components, of at most 16 bits. Other ciphers raise
-:class:`UnsupportedCipherError`, including SPNs whose nonlinear layer does not split into such S-boxes.
+Leaving out the key schedule, every round must be either a substitution layer, made of S-boxes applied in parallel
+to the whole state, followed only by affine operations (linear layer, key and constant additions), or affine
+operations only. The S-boxes are S-box components, or the rows of a chi-like layer of NOT / AND / XOR components, of
+at most 16 bits. Other ciphers raise :class:`UnsupportedCipherError`, including SPNs whose nonlinear layer does not
+split into such S-boxes.
 
 The linear layers are computed on first use, by evaluating the cipher with the S-boxes replaced by the identity and
 the AND outputs set to 0. They do not include the key and constant additions, so they exist whatever the key
@@ -29,6 +30,7 @@ schedule.
 import copy
 from dataclasses import dataclass
 from functools import cached_property
+from typing import NamedTuple
 
 import numpy as np
 from sage.matrix.constructor import matrix
@@ -45,13 +47,54 @@ _AFFINE_OPERATIONS = (CONSTANT, LINEAR_LAYER, MIX_COLUMN, PERMUTATION_COMPONENT,
                       "XOR", "NOT", "ROTATE", "SHIFT")
 # S-boxes and AND (checked to form chi-like layers) are the only nonlinear operations
 _SUPPORTED_OPERATIONS = _AFFINE_OPERATIONS + (SBOX, "AND")
-_MAX_VIRTUAL_SBOX_SIZE = 16
+_MAX_CHI_SBOX_SIZE = 16
 
 
 class UnsupportedCipherError(ValueError):
     """
-    Raised when :class:`SpnStructure` does not recognize a cipher as an SPN.
+    Raised when :class:`SpnStructure` does not recognize a cipher as an SPN, or when the linear layers (or affine
+    parts) of a recognized one cannot be computed.
     """
+
+
+def _bits_text(links, positions):
+    """``xor_0_1[0..7]``-style text for CLAASP input links and bit positions."""
+    parts = []
+    for link, bits in zip(links, positions):
+        consecutive = len(bits) > 1 and list(bits) == list(range(bits[0], bits[-1] + 1))
+        parts.append(f"{link}[{bits[0]}..{bits[-1]}]" if consecutive else f"{link}{list(bits)}")
+    return ", ".join(parts)
+
+
+class Sbox(NamedTuple):
+    """
+    One S-box of a substitution layer.
+
+    - ``positions`` -- **tuple**; the state positions it reads and writes, most significant bit first
+    - ``table`` -- **tuple**; its lookup table
+    - ``input_id_link``, ``input_bit_positions`` -- **tuple**; the cipher bits it reads, in the format of a
+      component's inputs
+    - ``output_id_link``, ``output_bit_positions`` -- **tuple**; the cipher bits holding its output, in the same format
+    """
+    positions: tuple
+    table: tuple
+    input_id_link: tuple
+    input_bit_positions: tuple
+    output_id_link: tuple
+    output_bit_positions: tuple
+
+    def __repr__(self):
+        table = ", ".join(str(value) for value in self.table[:8]) + (", ..." if len(self.table) > 8 else "")
+        return (f"Sbox(positions={self.positions}, input={_bits_text(self.input_id_link, self.input_bit_positions)}, "
+                f"output={_bits_text(self.output_id_link, self.output_bit_positions)}, table=({table}))")
+
+
+def _sbox(positions, table, inputs, outputs):
+    """An :class:`Sbox` from its positions, table, and input / output bits as ``(component_id, bit)`` pairs."""
+    input_links, input_positions = simplify_inputs([link for link, _ in inputs], [[bit] for _, bit in inputs])
+    output_links, output_positions = simplify_inputs([link for link, _ in outputs], [[bit] for _, bit in outputs])
+    return Sbox(tuple(positions), tuple(table), tuple(input_links), tuple(tuple(bits) for bits in input_positions),
+                tuple(output_links), tuple(tuple(bits) for bits in output_positions))
 
 
 @dataclass(frozen=True)
@@ -61,26 +104,32 @@ class SubstitutionLayer:
 
     - ``round_number`` -- **integer**; the round of the cipher containing the layer
     - ``kind`` -- **string**; ``'sbox'`` (S-box components) or ``'chi'`` (NOT / AND / XOR components)
-    - ``sources`` -- **tuple**; the state bits entering the layer, as ``(component_id, bit)`` pairs (for an
-      S-box layer, the bits of its S-boxes; for a chi layer, the linear operands of the XOR components)
-    - ``sboxes`` -- **tuple**; ``(positions, table)`` pairs, ``positions`` indexing ``sources`` with the
-      most significant bit first
-    - ``input_ids`` -- **frozenset**; ids of the components (or cipher inputs) the layer reads
-    - ``output_ids`` -- **frozenset**; ids of the components holding the layer's output
+    - ``input_bits`` -- **tuple**; ``input_bits[j]`` is the cipher bit, as a ``(component_id, bit)`` pair, entering
+      the layer at state position ``j``
+    - ``output_bits`` -- **tuple**; ``output_bits[j]`` is the cipher bit leaving the layer at state position ``j``
+    - ``sboxes`` -- **tuple**; one :class:`Sbox` per S-box: its positions, its table, and the cipher bits it reads
+      and writes
 
-    ``size`` is the number of state bits the layer covers. Layers are obtained from
-    :attr:`SpnStructure.substitution_layers`.
+    State positions are the layer's own numbering of the state, not the bit numbering of the plaintext or of the
+    cipher's specification; ``positions`` of the S-boxes and the rows and columns of
+    :attr:`SpnStructure.linear_layers` use it. ``size`` is the number of state bits the layer covers. Layers are
+    obtained from :attr:`SpnStructure.substitution_layers`.
     """
     round_number: int
     kind: str
-    sources: tuple
+    input_bits: tuple
+    output_bits: tuple
     sboxes: tuple
-    input_ids: frozenset
-    output_ids: frozenset
 
     @property
     def size(self):
-        return len(self.sources)
+        return len(self.input_bits)
+
+    def __repr__(self):
+        sizes = "/".join(str(size) for size in sorted({len(sbox.positions) for sbox in self.sboxes}))
+        tables = len({sbox.table for sbox in self.sboxes})
+        return (f"SubstitutionLayer(round {self.round_number}, {self.kind}: {len(self.sboxes)} S-boxes of {sizes} bits "
+                f"on {self.size} bits, {tables} distinct table{'s' if tables > 1 else ''})")
 
 
 def _operation(component):
@@ -108,14 +157,15 @@ def _check_supported_components(components):
 
 
 def _sbox_layer(round_number, sboxes):
-    sources, groups = [], []
+    inputs, outputs, groups = [], [], []
     for sbox in sboxes:
         m = sbox.input_bit_size
-        groups.append((tuple(range(len(sources), len(sources) + m)), tuple(int(y) for y in sbox.description)))
-        sources += [(sbox.id, bit) for bit in range(m)]
-    return SubstitutionLayer(round_number, "sbox", tuple(sources), tuple(groups),
-                             frozenset(link for sbox in sboxes for link in sbox.input_id_links),
-                             frozenset(sbox.id for sbox in sboxes))
+        positions = range(len(inputs), len(inputs) + m)
+        inputs += _operands(sbox)[0]
+        outputs += [(sbox.id, bit) for bit in range(m)]
+        groups.append(_sbox(positions, (int(y) for y in sbox.description), inputs[-m:], outputs[-m:]))
+    return (SubstitutionLayer(round_number, "sbox", tuple(inputs), tuple(outputs), tuple(groups)),
+            frozenset(link for sbox in sboxes for link in sbox.input_id_links), frozenset(sbox.id for sbox in sboxes))
 
 
 def _split_chi_xor(component, ands):
@@ -130,24 +180,6 @@ def _split_chi_xor(component, ands):
     return linear[0], [operand for operand, is_and in zip(operands, from_and) if is_and]
 
 
-def _chi_outputs(round_number, components, ands):
-    """Sources (linear operands), AND bits of every output bit, and ids of the chi XORs of a round."""
-    sources, terms, chi_xors = [], [], set()
-    for component in components:
-        split = _split_chi_xor(component, ands) if _operation(component) == "XOR" else None
-        if split is None:
-            continue
-        linear, and_operands = split
-        chi_xors.add(component.id)
-        sources += linear
-        terms += [[operand[bit] for operand in and_operands] for bit in range(component.output_bit_size)]
-    if not sources:
-        raise UnsupportedCipherError(f"round {round_number}: AND components outside a chi-like layer")
-    if len(set(sources)) != len(sources):
-        raise UnsupportedCipherError(f"round {round_number}: a bit is the linear operand of two chi outputs")
-    return sources, terms, chi_xors
-
-
 def _literal(bit, nots, index, round_number):
     """``(source index, flip)`` of an AND input bit, ``flip = 1`` when it goes through a NOT."""
     link, position = bit
@@ -160,23 +192,8 @@ def _literal(bit, nots, index, round_number):
     return index[(link, position)], flip
 
 
-def _dependency_groups(formulas):
-    """Connected components of the output bits linked by the literals of their AND terms."""
-    from sage.graphs.graph import Graph
-
-    graph = Graph([range(len(formulas)), [(i, j) for i, formula in enumerate(formulas)
-                                          for term in formula for j, _ in term if j != i]], format="vertices_and_edges")
-    return sorted(sorted(component) for component in graph.connected_components())
-
-
-def _chi_output_bit(x, local, i, formulas):
-    value = x[local[i]]
-    for term in formulas[i]:
-        value ^= int(all(x[local[j]] ^ flip for j, flip in term))
-    return value
-
-
-def _virtual_sbox_table(positions, formulas):
+def _chi_sbox_table(positions, formulas):
+    """Table of the chi output bits ``positions``: bit `i` is `x_i` plus the AND terms of ``formulas[i]``."""
     m = len(positions)
     local = {i: k for k, i in enumerate(positions)}
     table = []
@@ -184,18 +201,27 @@ def _virtual_sbox_table(positions, formulas):
         x = [(word >> (m - 1 - k)) & 1 for k in range(m)]
         y = 0
         for i in positions:
-            y = (y << 1) | _chi_output_bit(x, local, i, formulas)
+            bit = x[local[i]]
+            for term in formulas[i]:
+                bit ^= int(all(x[local[j]] ^ flip for j, flip in term))
+            y = (y << 1) | bit
         table.append(y)
     return tuple(table)
 
 
-def _virtual_sboxes(formulas, round_number):
+def _chi_sboxes(formulas, round_number, sources, outputs):
+    """One S-box per group of output bits linked by their AND terms (connected components)."""
+    from sage.graphs.graph import Graph
+
+    graph = Graph([range(len(formulas)), [(i, j) for i, formula in enumerate(formulas)
+                                          for term in formula for j, _ in term if j != i]], format="vertices_and_edges")
     groups = []
-    for positions in _dependency_groups(formulas):
-        if len(positions) > _MAX_VIRTUAL_SBOX_SIZE:
-            raise UnsupportedCipherError(f"round {round_number}: virtual S-box of {len(positions)} bits "
-                                         f"(at most {_MAX_VIRTUAL_SBOX_SIZE} supported)")
-        groups.append((tuple(positions), _virtual_sbox_table(positions, formulas)))
+    for positions in sorted(sorted(component) for component in graph.connected_components()):
+        if len(positions) > _MAX_CHI_SBOX_SIZE:
+            raise UnsupportedCipherError(f"round {round_number}: a chi row of {len(positions)} bits "
+                                         f"(at most {_MAX_CHI_SBOX_SIZE} supported)")
+        groups.append(_sbox(positions, _chi_sbox_table(positions, formulas), [sources[p] for p in positions],
+                            [outputs[p] for p in positions]))
     return tuple(groups)
 
 
@@ -203,17 +229,34 @@ def _chi_layer(round_number, components):
     by_id = {c.id: c for c in components}
     ands = {c.id for c in components if _operation(c) == "AND"}
     nots = {c.id: c for c in components if _operation(c) == "NOT"}
-    sources, terms, chi_xors = _chi_outputs(round_number, components, ands)
+    # sources: linear operands of the chi XORs; outputs: the XOR output bit of each; terms: its AND bits
+    sources, outputs, terms, chi_xors = [], [], [], set()
+    for component in components:
+        split = _split_chi_xor(component, ands) if _operation(component) == "XOR" else None
+        if split is None:
+            continue
+        linear, and_operands = split
+        chi_xors.add(component.id)
+        sources += linear
+        outputs += [(component.id, bit) for bit in range(component.output_bit_size)]
+        terms += [[operand[bit] for operand in and_operands] for bit in range(component.output_bit_size)]
+    if not sources:
+        raise UnsupportedCipherError(f"round {round_number}: AND components outside a chi-like layer")
+    if len(set(sources)) != len(sources):
+        raise UnsupportedCipherError(f"round {round_number}: a bit is the linear operand of two chi outputs")
     index = {source: i for i, source in enumerate(sources)}
     # per output bit: AND terms, each a list of (source index, flip)
     formulas = [[[_literal(operand[position], nots, index, round_number) for operand in _operands(by_id[link])]
                  for link, position in bit_terms] for bit_terms in terms]
-    return SubstitutionLayer(round_number, "chi", tuple(sources), _virtual_sboxes(formulas, round_number),
-                             frozenset(link for link, _ in sources), frozenset(chi_xors))
+    return (SubstitutionLayer(round_number, "chi", tuple(sources), tuple(outputs),
+                              _chi_sboxes(formulas, round_number, sources, outputs)),
+            frozenset(link for link, _ in sources), frozenset(chi_xors))
 
 
 def _round_layer(round_number, components):
-    """The substitution layer of a round, ``None`` if it has none."""
+    """
+    The substitution layer of a round with the ids it reads and the ids holding its output, ``None`` if it has none.
+    """
     sboxes = [c for c in components if c.type == SBOX]
     has_and = any(_operation(c) == "AND" for c in components)
     if sboxes and has_and:
@@ -254,20 +297,15 @@ def _check_layer_sizes(cipher, layers, state_index):
     return state_size
 
 
-def _upstream(by_id, links, stop):
-    """Every link reached walking back from ``links`` through the components, not going past ``stop``."""
-    stack, seen = list(links), set(stop)
-    while stack:
-        link = stack.pop()
-        yield link
-        if link in by_id and link not in seen:  # cipher inputs and constants' empty link have no inputs
-            seen.add(link)
-            stack.extend(by_id[link].input_id_links)
+def _cipher_output(cipher):
+    return [component for component in cipher.all_components() if component.type == CIPHER_OUTPUT][-1]
 
 
-def _check_layer_boundaries(cipher, layers, state_input):
+def _check_layer_boundaries(cipher, found, state_input):
     """
-    Raise unless every substitution layer is a parallel layer reading the state only through the previous one.
+    Raise unless every substitution layer is a parallel layer reading the state only through the previous one, and
+    the cipher output reads it only through the last one. ``found`` lists ``(layer, ids it reads, ids holding its
+    output)`` in round order.
 
     Walking back from the inputs of a layer, down to the outputs of the previous layer: reaching one of
     the layer's own outputs means its components are applied one after the other (not in parallel);
@@ -275,41 +313,31 @@ def _check_layer_boundaries(cipher, layers, state_input):
     S-boxes applied to the whole state.
     """
     by_id = {component.id: component for component in cipher.all_components()}
-    for previous, layer in zip([None] + layers, layers):
-        for link in _upstream(by_id, layer.input_ids, previous.output_ids if previous else ()):
-            if link in layer.output_ids:
+    boundaries = found + [(None, _cipher_output(cipher).input_id_links, ())]  # the output, checked like a layer
+    for previous, (layer, reads, outputs) in zip([None] + found, boundaries):
+        stack, seen = list(reads), set(previous[2] if previous else ())  # stop at the previous layer's outputs
+        while stack:
+            link = stack.pop()
+            if link in by_id and link not in seen:  # cipher inputs and constants' empty link have no inputs
+                seen.add(link)
+                stack.extend(by_id[link].input_id_links)
+            if link in outputs:
                 raise UnsupportedCipherError(f"round {layer.round_number}: an input of the substitution layer "
                                              f"depends on one of its outputs (components not applied in parallel)")
             if previous and link == state_input:
-                raise UnsupportedCipherError(f"round {layer.round_number}: the substitution layer depends on the "
-                                             f"state through a path avoiding the substitution layer of round "
-                                             f"{previous.round_number}")
-
-
-def _check_two_layers(layers):
-    if len(layers) < 2:
-        raise UnsupportedCipherError(f"at least two rounds with a substitution layer are needed, found {len(layers)}")
-
-
-def _force_and_to_zero(components, component, round_number):
-    """AND(x, 0, ...) = 0 on every evaluation path (the vectorized AND ignores the description)."""
-    from claasp.components.constant_component import Constant
-
-    size = component.output_bit_size
-    zero = Constant(round_number, len(components), size, 0)  # a fresh index gives a fresh id
-    components.insert(components.index(component), zero)
-    operands = _operands(component)
-    bits = operands[0] + [(zero.id, bit) for bit in range(size)] + [bit for operand in operands[2:] for bit in operand]
-    links, positions = simplify_inputs([link for link, _ in bits], [[bit] for _, bit in bits])
-    component.input_id_links = links
-    component.input_bit_positions = positions
+                target = f"round {layer.round_number}: the substitution layer" if layer else "the cipher output"
+                raise UnsupportedCipherError(f"{target} depends on the state through a path avoiding the "
+                                             f"substitution layer of round {previous[0].round_number}")
 
 
 def _linearize_cipher(cipher):
     """
     A copy of ``cipher`` with every S-box replaced by the identity and every AND component `AND(x, y, ...)`
-    turned into `AND(x, 0, ...)`, so that a chi-like XOR `s_i + AND(...)` becomes the identity on `s_i`.
+    turned into `AND(x, 0, ...)`, so that a chi-like XOR `s_i + AND(...)` becomes the identity on `s_i`. The
+    second operand is rewired to a 0 constant, since the vectorized AND ignores the description.
     """
+    from claasp.components.constant_component import Constant
+
     linear_cipher = copy.deepcopy(cipher)
     for round_number in range(linear_cipher.number_of_rounds):
         components = linear_cipher.rounds.components_in_round(round_number)
@@ -317,59 +345,49 @@ def _linearize_cipher(cipher):
             if component.type == SBOX:
                 component.description = list(range(2 ** component.input_bit_size))
             elif _operation(component) == "AND":
-                _force_and_to_zero(components, component, round_number)
+                size = component.output_bit_size
+                zero = Constant(round_number, len(components), size, 0)  # a fresh index gives a fresh id
+                components.insert(components.index(component), zero)
+                operands = _operands(component)
+                bits = operands[0] + [(zero.id, bit) for bit in range(size)] + sum(operands[2:], [])
+                links, positions = simplify_inputs([link for link, _ in bits], [[bit] for _, bit in bits])
+                component.input_id_links, component.input_bit_positions = links, positions
     return linear_cipher
-
-
-def _unit_vector_samples(cipher, input_indices):
-    """0 (all inputs at 0), then every unit vector of the inputs ``input_indices`` (MSB first), as lists of integers."""
-    sizes = cipher.inputs_bit_size
-    samples = [[0] * len(sizes)]
-    for input_index in input_indices:
-        for bit in range(sizes[input_index]):
-            sample = [0] * len(sizes)
-            sample[input_index] = 1 << (sizes[input_index] - 1 - bit)
-            samples.append(sample)
-    return samples
-
-
-def _source_bits(cipher, samples, sources):
-    """Value of every source bit for every sample, from one vectorized evaluation of ``cipher``."""
-    inputs = [[sample[index] for sample in samples] for index in range(len(cipher.inputs))]
-    values = evaluate_vectorized(cipher, inputs, evaluate_api=True, component_outputs=True)
-    sizes = dict(zip(cipher.inputs, cipher.inputs_bit_size))
-    sizes.update((component.id, component.output_bit_size) for component in cipher.all_components())
-    bits = {}
-    for link, position in set(sources):
-        array = values[link]  # big-endian bytes of the value, right-aligned, one column per sample
-        shift = sizes[link] - 1 - position
-        row = (array[array.shape[0] - 1 - shift // 8] >> (shift % 8)) & 1
-        bits[(link, position)] = np.broadcast_to(row, (len(samples),))  # constants have a single column
-    return bits
 
 
 def _layer_maps(cipher, layers, input_indices):
     """
-    For every layer, ``(A, b)`` with `s = A x + b` in the linearized cipher, where `s` is the bits entering the
-    layer and `x` the inputs ``input_indices`` concatenated, the other inputs being 0.
+    For every layer, then for the cipher output, ``(A, b)`` with `s = A x + b` in the linearized cipher, where `s`
+    is the bits entering the layer (or the output) and `x` the inputs ``input_indices`` concatenated, the other
+    inputs being 0. The bits are read at the layer's output, which equals its input once the S-boxes are the identity
+    and the AND outputs are 0.
     """
-    samples = _unit_vector_samples(cipher, input_indices)
-    sources = [source for layer in layers for source in layer.sources]
-    bits = _source_bits(_linearize_cipher(cipher), samples, sources)
+    sizes = cipher.inputs_bit_size
+    unit_vectors = [(index, 1 << (sizes[index] - 1 - bit)) for index in input_indices for bit in range(sizes[index])]
+    # one sample at 0, then one per unit vector; the value of x on sample i + 1 is e_i
+    inputs = [[0] + [value if index == i else 0 for index, value in unit_vectors] for i in range(len(sizes))]
+    linear_cipher = _linearize_cipher(cipher)
+    values = evaluate_vectorized(linear_cipher, inputs, evaluate_api=True, component_outputs=True)
+    output = _cipher_output(cipher)
+    targets = [layer.output_bits for layer in layers] + [[(output.id, bit) for bit in range(output.output_bit_size)]]
+    output_sizes = {component.id: component.output_bit_size for component in linear_cipher.all_components()}
+    # values[id]: big-endian bytes of the output, right-aligned, one column per sample
+    bits = {link: np.unpackbits(values[link], axis=0)[-output_sizes[link]:]
+            for link in {link for target in targets for link, _ in target}}
     F = GF(2)
     maps = []
-    for layer in layers:
-        layer_bits = np.array([bits[source] for source in layer.sources], dtype=np.uint8)
-        offset = layer_bits[:, 0]
-        linear = matrix(F, layer.size, len(samples) - 1, (layer_bits[:, 1:] ^ offset[:, None]).tolist())
+    for target in targets:
+        target_bits = np.array([bits[link][position] for link, position in target], dtype=np.uint8)
+        offset = target_bits[:, 0]
+        linear = matrix(F, len(target), len(unit_vectors), (target_bits[:, 1:] ^ offset[:, None]).tolist())
         maps.append((linear, vector(F, offset.tolist())))
     return maps
 
 
 def _between_layers(state_input, layers, maps):
     """
-    `\\Lambda_{r+1} \\Lambda_r^{-1}` for consecutive layers, where `\\Lambda_r` maps the state input to the input of
-    layer `r`; raises if some `\\Lambda_r` is not invertible.
+    `\\Lambda_{r+1} \\Lambda_r^{-1}` for consecutive layers, then for the last layer and the output, where `\\Lambda_r`
+    maps the state input to the input of layer `r`; raises if some `\\Lambda_r` is not invertible.
     """
     for layer, linear in zip(layers, maps):
         if not linear.is_invertible():
@@ -385,8 +403,9 @@ def _between_layers(state_input, layers, maps):
 
 class SpnStructure:
     """
-    The SPN structure of ``cipher``: checks that every round is a substitution layer followed by affine operations,
-    and gives the substitution layers and the linear layers between them.
+    The SPN structure of ``cipher``: checks that every round is a substitution layer followed by affine operations
+    or affine operations only,
+    and gives the substitution layers and the linear layer following each of them.
 
     Building the object only reads the component graph, leaving out the key schedule, and raises
     :class:`UnsupportedCipherError` unless:
@@ -397,7 +416,8 @@ class SpnStructure:
       both), at least one round has one, and all of them cover the state input (the only input that is not a
       key or tweak input);
     - the components of every substitution layer are applied in parallel (none depends on another one's
-      output), and every substitution layer sees the state only through the previous one (no bypass).
+      output), every substitution layer sees the state only through the previous one, and the cipher output
+      only through the last one (no bypass).
 
     The cipher is copied when the object is built, so later changes to ``cipher`` are not seen. The linear layers
     are computed on first access to :attr:`linear_layers` (one vectorized evaluation).
@@ -414,20 +434,28 @@ class SpnStructure:
         sage: from claasp.ciphers.permutations.keccak_sbox_permutation import SBOX
         sage: from claasp.cipher_modules.spn_structure import SpnStructure
         sage: structure = SpnStructure(KeccakPermutation(number_of_rounds=2, word_size=4))
-        sage: [(layer.kind, len(layer.sboxes)) for layer in structure.substitution_layers]
-        [('chi', 20), ('chi', 20)]
-        sage: all(table == tuple(SBOX) for _, table in structure.substitution_layers[0].sboxes)
+        sage: structure.substitution_layers[0]
+        SubstitutionLayer(round 0, chi: 20 S-boxes of 5 bits on 100 bits, 1 distinct table)
+        sage: all(sbox.table == tuple(SBOX) for sbox in structure.substitution_layers[0].sboxes)
         True
 
-    AES: the key is the first input and the S-boxes of the key schedule are left out; the linear layer between the
-    two substitution layers (ShiftRows, then MixColumns) is an invertible `128 \\times 128` matrix::
+    AES: the key is the first input and the S-boxes of the key schedule are left out. The linear layer of the first
+    round is ShiftRows then MixColumns; the last round has no MixColumns, so its linear layer is ShiftRows alone, a
+    permutation matrix (one 1 per row)::
 
         sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+        sage: from claasp.cipher_modules.spn_structure import SpnStructure
         sage: structure = SpnStructure(AESBlockCipher(number_of_rounds=2))
-        sage: structure.state_input, structure.key_size, [len(layer.sboxes) for layer in structure.substitution_layers]
-        ('plaintext', 128, [16, 16])
-        sage: [(linear.dimensions(), linear.is_invertible()) for linear in structure.linear_layers]
-        [((128, 128), True)]
+        sage: structure
+        SpnStructure(aes_block_cipher_k128_p128_o128_r2, 2 layers of 16 8-bit S-boxes, state plaintext, key 128 bits)
+        sage: structure.substitution_layers[0]
+        SubstitutionLayer(round 0, sbox: 16 S-boxes of 8 bits on 128 bits, 1 distinct table)
+        sage: sbox = structure.substitution_layers[0].sboxes[0]
+        sage: sbox.input_id_link, sbox.input_bit_positions, sbox.output_id_link
+        (('xor_0_24',), ((0, 1, 2, 3, 4, 5, 6, 7),), ('sbox_0_25',))
+        sage: [(layer.round_number, L.dimensions(), L.is_invertible(), len(L.nonzero_positions()))
+        ....:  for layer, L in zip(structure.substitution_layers, structure.linear_layers)]
+        [(0, (128, 128), True, 736), (1, (128, 128), True, 128)]
     """
 
     def __init__(self, cipher):
@@ -436,17 +464,28 @@ class SpnStructure:
         state_index = _state_input(cipher, key_schedule_ids)
         data_path = [component for component in cipher.all_components() if component.id not in key_schedule_ids]
         _check_supported_components(data_path)
-        layers = [_round_layer(round_number, [c for c in cipher.rounds.components_in_round(round_number)
-                                              if c.id not in key_schedule_ids])
-                  for round_number in range(cipher.number_of_rounds)]
-        layers = [layer for layer in layers if layer is not None]
-        _check_and_outputs_feed_chi_xors(data_path, {i for layer in layers if layer.kind == "chi"
-                                                     for i in layer.output_ids})
+        found = [_round_layer(round_number, [c for c in cipher.rounds.components_in_round(round_number)
+                                             if c.id not in key_schedule_ids])
+                 for round_number in range(cipher.number_of_rounds)]
+        found = [triple for triple in found if triple is not None]
+        layers = [layer for layer, _, _ in found]
+        _check_and_outputs_feed_chi_xors(data_path, {i for layer, _, outputs in found if layer.kind == "chi"
+                                                     for i in outputs})
         self._state_size = _check_layer_sizes(cipher, layers, state_index)
-        _check_layer_boundaries(cipher, layers, cipher.inputs[state_index])
+        _check_layer_boundaries(cipher, found, cipher.inputs[state_index])
         self._cipher = cipher
         self._state_index = state_index
         self._layers = tuple(layers)
+
+    def __repr__(self):
+        layers = self._layers
+        counts = "/".join(str(count) for count in sorted({len(layer.sboxes) for layer in layers}))
+        sizes = "/".join(str(size)
+                         for size in sorted({len(sbox.positions) for layer in layers for sbox in layer.sboxes}))
+        inputs = zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+        others = ", ".join(f"{name} {size} bits" for i, (name, size) in enumerate(inputs) if i != self._state_index)
+        return (f"SpnStructure({self._cipher.id}, {len(layers)} layer{'s' if len(layers) > 1 else ''} of {counts} "
+                f"{sizes}-bit S-boxes, state {self.state_input}, {others or 'no key'})")
 
     @property
     def substitution_layers(self):
@@ -465,22 +504,41 @@ class SpnStructure:
 
     @property
     def key_size(self):
-        """The total size of the other inputs (key, tweak, ...), `0` for a permutation."""
+        """The total size of the other inputs (key and tweak together), `0` for a permutation."""
         return sum(size for i, size in enumerate(self._cipher.inputs_bit_size) if i != self._state_index)
 
     @cached_property
     def linear_layers(self):
         """
-        The linear layers between consecutive substitution layers: ``linear_layers[i]`` is the `n \\times n` matrix
-        `L_i` over `GF(2)` taking the output of ``substitution_layers[i]`` to the input of
-        ``substitution_layers[i + 1]``, without the key and constant additions. What comes before the first or after
-        the last substitution layer is not included.
+        The linear layer following each substitution layer: ``linear_layers[r]`` is the matrix `L_r` over `GF(2)`
+        taking the output of ``substitution_layers[r]`` to the input of ``substitution_layers[r + 1]``, or to the
+        cipher output for the last one, without the key and constant additions. It is `n \\times n`, except for the
+        last one when the output is not `n` bits. What comes before the first substitution layer is not included.
+
+        Vectors are columns: ``L[j, i] == 1`` means that output bit ``i`` of ``substitution_layers[r]`` is added to
+        input bit ``j`` of ``substitution_layers[r + 1]``, both in the layers' state positions (for the last one,
+        ``j`` is the bit of the cipher output). ``L`` describes the values of the bits (an XOR-linear map), not how
+        differences or masks propagate through the S-boxes. The last round of a cipher often differs from the others
+        (no MixColumns in AES, only a key addition in PRESENT), and so does its linear layer.
 
         Computed on first access, from one vectorized evaluation of the cipher with the S-boxes replaced by the
         identity and the AND outputs set to 0, on 0 and on every unit vector of the state input. Raises
-        :class:`UnsupportedCipherError` if there are fewer than two substitution layers or if the state input does
-        not reach some substitution layer bijectively.
+        :class:`UnsupportedCipherError` if the state input does not reach some substitution layer bijectively.
+
+        EXAMPLES:
+
+        In AES, the first output bit of the first S-box reaches 11 input bits of the next substitution layer, in its
+        first four S-boxes (one column of MixColumns)::
+
+            sage: from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
+            sage: from claasp.cipher_modules.spn_structure import SpnStructure
+            sage: structure = SpnStructure(AESBlockCipher(number_of_rounds=2))
+            sage: layers, L = structure.substitution_layers, structure.linear_layers[0]
+            sage: L.nonzero_positions_in_column(0)
+            [3, 4, 6, 7, 8, 16, 24, 27, 28, 30, 31]
+            sage: sorted({i for j in L.nonzero_positions_in_column(0) for i, sbox in enumerate(layers[1].sboxes)
+            ....:         if j in sbox.positions})
+            [0, 1, 2, 3]
         """
-        _check_two_layers(self._layers)
         maps = [linear for linear, _ in _layer_maps(self._cipher, self._layers, [self._state_index])]
         return tuple(_between_layers(self.state_input, self._layers, maps))

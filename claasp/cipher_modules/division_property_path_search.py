@@ -411,11 +411,11 @@ def _spn_parameters(cipher):
     if len(layers) != cipher.number_of_rounds:
         raise ValueError("every round must have a nonlinear layer")
     sboxes = [sbox for layer in layers for sbox in layer.sboxes]
-    sbox_sizes = {len(positions) for positions, _ in sboxes}
+    sbox_sizes = {len(sbox.positions) for sbox in sboxes}
     if len(sbox_sizes) != 1:
         raise ValueError("all S-boxes must map l bits to l bits")
     sbox_bit_size = sbox_sizes.pop()
-    tables = {table for _, table in sboxes}
+    tables = {sbox.table for sbox in sboxes}
     if not all(SBox(table).is_permutation() for table in tables):
         raise ValueError("the S-boxes must be bijective")
     number_of_sboxes = len(layers[0].sboxes)
