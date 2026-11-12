@@ -68,11 +68,17 @@ RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-716.tar.gz 
 ENV SOPLEX_HOME="/opt/soplex-release-716/build"
 
 # Installing HiGHS
+# Under emulation (BUILDPLATFORM != TARGETPLATFORM, e.g. amd64 on Apple Silicon), gcc's parallel LTO link fails
+# ("write jobserver: Bad file descriptor"), so LTO is turned off there. Native builds are unchanged.
+ARG BUILDPLATFORM
+ARG TARGETPLATFORM
 RUN wget https://github.com/ERGO-Code/HiGHS/releases/download/v1.15.1/source-archive.tar.gz \
     && tar -xf source-archive.tar.gz \
     && rm source-archive.tar.gz \
     && cd HiGHS \
-    && cmake -B build -S . \
+    && LTO="" \
+    && if [ "$BUILDPLATFORM" != "$TARGETPLATFORM" ]; then LTO="-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF"; fi \
+    && cmake -B build -S . $LTO \
     && cmake --build build -- -j4
 
 ENV PATH="/opt/HiGHS/build/bin:${PATH}"
