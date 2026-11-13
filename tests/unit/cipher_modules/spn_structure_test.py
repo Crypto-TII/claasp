@@ -122,13 +122,15 @@ def test_summaries():
 
 
 def test_unsupported_components_raise():
+    cipher = SpeckBlockCipher(number_of_rounds=2)
     with pytest.raises(UnsupportedCipherError, match="MODADD"):
-        SpnStructure(SpeckBlockCipher(number_of_rounds=2))
+        SpnStructure(cipher)
 
 
 def test_and_outside_a_chi_layer_raises():
+    cipher = SimonBlockCipher(number_of_rounds=3)
     with pytest.raises(UnsupportedCipherError):
-        SpnStructure(SimonBlockCipher(number_of_rounds=3))
+        SpnStructure(cipher)
 
 
 @pytest.mark.parametrize("name", list(CIPHERS))
@@ -144,7 +146,8 @@ def test_structure_sizes(structures, name):
     assert len(structure.linear_layers) == number_of_layers
     for linear in structure.linear_layers:
         assert linear.dimensions() == (state_size, state_size)
-        assert linear.is_immutable() and linear.is_invertible()
+        assert linear.is_immutable()
+        assert linear.is_invertible()
 
 
 def _compiled_evaluation(cipher):
@@ -259,7 +262,8 @@ def test_last_linear_layer_goes_to_the_output():
     assert _is_permutation_matrix(structure.linear_layers[0])
     # the last round of AES has no MixColumns: its linear layer is ShiftRows alone
     middle, last = SpnStructure(AESBlockCipher(number_of_rounds=3)).linear_layers[1:]
-    assert not _is_permutation_matrix(middle) and _is_permutation_matrix(last)
+    assert not _is_permutation_matrix(middle)
+    assert _is_permutation_matrix(last)
 
 
 PRESENT_SBOX = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
@@ -283,8 +287,9 @@ def _toy_cipher(bypass):
 
 def test_bypassing_a_substitution_layer_raises():
     assert len(SpnStructure(_toy_cipher(bypass=False)).substitution_layers) == 3
+    cipher = _toy_cipher(bypass=True)
     with pytest.raises(UnsupportedCipherError, match="avoiding the substitution layer of round 0"):
-        SpnStructure(_toy_cipher(bypass=True))
+        SpnStructure(cipher)
 
 
 def test_bypassing_the_last_substitution_layer_raises():

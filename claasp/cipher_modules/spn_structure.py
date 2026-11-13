@@ -387,7 +387,7 @@ def _component_forms(component, forms, width, matrices):
     return ((matrices[key].astype(np.int32) @ x) & 1).astype(np.uint8)
 
 
-def _affine_forms(cipher, layers, state_index, key_schedule_ids, key_indices=None):
+def _affine_forms(cipher, layers, key_schedule_ids, key_indices=None):
     """
     The affine forms of the bits entering every layer after the first, then of the cipher output.
 
@@ -406,7 +406,7 @@ def _affine_forms(cipher, layers, state_index, key_schedule_ids, key_indices=Non
         forms[cipher.inputs[i]][np.arange(sizes[i]), column + np.arange(sizes[i])] = 1
         column += sizes[i]
     position = {bit: j for layer in layers for j, bit in enumerate(layer.output_bits)}
-    layer_outputs = {link for link, _ in position}
+    layer_outputs = {link for layer in layers for link, _ in layer.output_bits}
     matrices = {}
     for component in cipher.all_components():
         size = component.output_bit_size
@@ -563,7 +563,7 @@ class SpnStructure:
             [0, 1, 2, 3]
         """
         result = []
-        for target in _affine_forms(self._cipher, self._layers, self._state_index, self._key_schedule_ids):
+        for target in _affine_forms(self._cipher, self._layers, self._key_schedule_ids):
             linear = matrix(GF(2), target[:, :self._state_size].tolist())
             linear.set_immutable()
             result.append(linear)
