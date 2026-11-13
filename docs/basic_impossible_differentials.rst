@@ -45,89 +45,12 @@ Print the outcome:
 .. literalinclude:: _build/impossible_differentials_basic_terminal.txt
    :language: text
 
-The search splits the cipher at each internal round boundary in turn, starting after round 1, and stops at the first boundary where it finds a contradiction.
-The table shows the round after which that contradiction occurs. The search stops there because it returns one candidate by default, so ``result.found`` is ``True`` but ``result.complete`` is ``False``: a single candidate says nothing about whether other differentials exist.
+From the result above it is possible to see that with the 6-round version of Speck there is an impossible differential happening in the second middle round. The contradiction happens because ``0b??????????100000??????????1000??`` and ``0b????????????????????????100?????`` differ for at least one bit in the 26-th position.
 
-The candidate holds the pair of difference patterns that cannot be connected. Patterns are written most significant bit first with the symbols ``0``, ``1`` and ``?``, where ``?`` is a bit that may take either value. A SPECK32/64 block is two 16-bit words, so the code below prints each pattern as two halves:
-
-.. code-block:: python
-
-   trail = result.candidates[0].trail
-   input_pattern = str(dict(trail.forward.input_patterns)["plaintext"])
-   output_pattern = str(dict(trail.backward.input_patterns)["output"])
-
-   print("input :", input_pattern[:16], input_pattern[16:])
-   print("output:", output_pattern[:16], output_pattern[16:])
-
-.. plot::
-   :context:
-   :nofigs:
-   :include-source: false
-
-   trail = result.candidates[0].trail
-   input_pattern = str(dict(trail.forward.input_patterns)["plaintext"])
-   output_pattern = str(dict(trail.backward.input_patterns)["output"])
-
-   output = StringIO()
-   print("input :", input_pattern[:16], input_pattern[16:], file=output)
-   print("output:", output_pattern[:16], output_pattern[16:], file=output)
-   Path("_build/impossible_differentials_basic_patterns.txt").write_text(output.getvalue(), encoding="utf-8")
-
-.. literalinclude:: _build/impossible_differentials_basic_patterns.txt
-   :language: text
-
-No pair of plaintexts whose difference matches the input pattern can encrypt, under the same key, to a pair of ciphertexts whose difference matches the output pattern. The key difference is fixed to zero and the plaintext difference is the one the search chooses.
-
-To see why, look at where the two patterns meet:
-
-.. code-block:: python
-
-   boundary = trail.boundary
-   print("forward :", boundary.forward)
-   print("backward:", boundary.backward)
-   print("contradiction at position(s):", boundary.contradictory_positions)
-
-.. plot::
-   :context:
-   :nofigs:
-   :include-source: false
-
-   boundary = trail.boundary
-
-   output = StringIO()
-   print("forward :", boundary.forward, file=output)
-   print("backward:", boundary.backward, file=output)
-   print("contradiction at position(s):", boundary.contradictory_positions, file=output)
-   Path("_build/impossible_differentials_basic_boundary.txt").write_text(output.getvalue(), encoding="utf-8")
-
-.. literalinclude:: _build/impossible_differentials_basic_boundary.txt
-   :language: text
-
-The forward pattern is what the input difference is guaranteed to look like at the split after propagating through the first rounds. The backward pattern is what the output difference is guaranteed to look like at the same place after propagating back through the remaining rounds. Bits shown as ``0`` or ``1`` are certain; ``?`` bits are unknown. At each listed position, counted from the left of the pattern starting at 0, one side requires a ``1`` and the other a ``0``. Both cannot hold at once, so the differential is impossible.
-
-The same process can be used to show that, increasing the number of rounds, an impossible differential cannot be found through this method.
+It is also possible to plot the result in order to see the same information visually.
 
 .. plot::
    :context: close-figs
-   :nofigs:
    :include-source:
 
-   primitive = Speck(number_of_rounds=7)
-   result = primitive.analysis.search_impossible_differentials()
-   result.to_terminal()
-
-.. plot::
-   :context:
-   :nofigs:
-   :include-source: false
-
-   output = StringIO()
-   result.to_terminal(file=output)
-   Path("_build/impossible_differentials_basic_seven_rounds.txt").write_text(output.getvalue(), encoding="utf-8")
-
-.. literalinclude:: _build/impossible_differentials_basic_seven_rounds.txt
-   :language: text
-
-This time the search tried every internal round boundary and the solver proved that none of them can produce a contradiction, so ``result.found`` is ``False`` and ``result.complete`` is ``True``. The termination message ``exhausted UNSAT`` distinguishes this proof from the ``candidate limit`` stop above.
-
-The proof applies to the model the search uses: the plaintext is active, the key difference is zero, and differences are bitwise ``0``, ``1`` and ``?`` patterns. It shows that this search finds no 7-round impossible differential, not that no other method could find one.
+   result.plot()
