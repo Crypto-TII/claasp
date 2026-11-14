@@ -199,7 +199,7 @@ def _notes(result):
     return tuple(notes)
 
 
-def _to_terminal(result, *, details=False, value_format="hex", file=None):
+def _to_terminal(result, *, details=False, value_format="binary", file=None):
     from claasp.presentation import Table, TableColumn, TableRow, render_terminal_table
 
     _validate_value_format(value_format)

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from claasp._result_presentation import PlotMixin, TerminalMixin
+from claasp._result_presentation import ImpossibleTerminalMixin, PlotMixin, TerminalMixin
 from claasp.analysis.advanced_trails import CPCharacteristicResult, TruncatedPropagationResult
 from claasp.analysis.boomerang_search import BoomerangSearchResult, BoomerangSearchStatus
 from claasp.analysis.composed_search import (
@@ -223,7 +223,9 @@ def test_all_search_result_families_render_retained_evidence(name, tmp_path):
     result = _fixtures()[name]
     assert issubclass(type(result), PlotMixin)
     assert type(result).plot is PlotMixin.plot
-    if isinstance(result, TerminalMixin):
+    if isinstance(result, ImpossibleTerminalMixin):
+        assert type(result).to_terminal is ImpossibleTerminalMixin.to_terminal
+    elif isinstance(result, TerminalMixin):
         assert type(result).to_terminal is TerminalMixin.to_terminal
     else:
         assert "to_terminal" in type(result).__dict__
