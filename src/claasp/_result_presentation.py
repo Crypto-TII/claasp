@@ -68,3 +68,39 @@ class TerminalMixin:
         from claasp.presentation._search_results import _to_terminal
 
         _to_terminal(self, details=details, value_format=value_format, file=file)
+
+
+class ImpossibleTerminalMixin(TerminalMixin):
+    """Share a binary terminal default across impossible-differential evidence."""
+
+    __slots__ = ()
+    __public_api_methods__ = ("to_terminal",)
+
+    def to_terminal(self, *, details=False, value_format="binary", file=None):
+        """Print impossible evidence as MSB-first binary patterns by default.
+
+        Both exact and partial patterns preserve their bit widths. ``?`` and
+        abstract nonzero words ``*`` retain their meanings. ``details=True``
+        includes component states in the same notation. Explicit ``hex`` and
+        ``underscore_one`` formats remain available.
+
+        EXAMPLES::
+
+            >>> from io import StringIO
+            >>> from claasp.semantics.cryptanalysis import (
+            ...     ImpossiblePropagationBoundary, TruncatedXorDifference)
+            >>> boundary = ImpossiblePropagationBoundary(
+            ...     TruncatedXorDifference.parse('0010'),
+            ...     TruncatedXorDifference.parse('00?1'))
+            >>> output = StringIO()
+            >>> boundary.to_terminal(file=output)
+            >>> '0b0010' in output.getvalue(), '0b00?1' in output.getvalue()
+            (True, True)
+            >>> '0x' in output.getvalue()
+            False
+            >>> output = StringIO()
+            >>> boundary.to_terminal(value_format='hex', file=output)
+            >>> '0x2' in output.getvalue()
+            True
+        """
+        return super().to_terminal(details=details, value_format=value_format, file=file)
