@@ -111,12 +111,11 @@
     },
     {
       "evidence": [
-        "tests/unit/representations/constraints/sat/test__matsui_bounds.py",
-        "tests/integration/test_matsui_trail_search.py",
-        "tests/unit/analysis/test__search_progress.py"
+        "tests/unit/representations/constraints/sat/test_quasidifferential.py",
+        "tests/integration/test_quasidifferential_search.py"
       ],
       "path": "claasp/cipher_modules/models/smt/utils/utils.py",
-      "replacement_contract": "Portable Matsui SAT optimization and solver-query progress logs replace legacy string APIs. Exact native optimization retains a proof rather than accepting an unproved resume weight.",
+      "replacement_contract": "Already handled by exact rational v5 QDT tables: selected differential feasibility, impossible blocks and non-power-of-two coefficients remain distinct and supported without floating-point weight truncation.",
       "sha256": "3cc81af3d996933776d8b65476edfa44b771a1f720404446ae4ad9e5032872a4"
     },
     {
