@@ -23,12 +23,12 @@ exists. Solver errors are raised as exceptions and never returned as ``None``.
 
 
 Find an optimal linear trail
----------------------------------------
+----------------------------
 
-As a first example, let's see how to find an optimal linear trail. 
-The default solver is ``Kissat``, but other solvers can be selected using the ``solver`` parameter. 
-To know more about specifing solvers see :ref:`linear-trail-other-solvers`.  
-First, instantiate the class representing the analyzed primitive:
+The first example finds an optimal linear trail. The default solver is Kissat; you can
+select another one with the ``solver`` parameter, as described in
+:ref:`linear-trail-other-solvers`. Instantiate the class of the primitive to analyze and call
+the search method on its ``analysis`` attribute:
 
 .. plot::
    :context: reset
@@ -41,7 +41,7 @@ First, instantiate the class representing the analyzed primitive:
    trail = speck.analysis.find_lowest_weight_xor_linear_trail()
 
 Terminal report
----------------------
+---------------
 
 .. code-block:: python
 
@@ -108,7 +108,8 @@ including the detailed one. It accepts three values:
 
 - ``"hex"``: hexadecimal, padded with leading zeros to the width of the mask (default);
 - ``"binary"``: binary with the ``0b`` prefix, keeping all leading zeros;
-- ``"underscore_one"``: binary without prefix, with each 0 written as ``_`` and each 1 as ``1``, so that active bits stand out.
+- ``"underscore_one"``: binary without prefix, with each 0 written as ``_`` and each 1 as
+  ``1``, so that active bits stand out.
 
 In every format the most significant bit is on the left. For example:
 
@@ -141,8 +142,8 @@ Weight plot
 
    trail.plot()
 
-The plot shows the same trail as the table, measured as weight (:math:`-\log_2` of the probability)
-instead of probability. Round ``0`` is the input of the cipher. The ``Relative weight`` line is the
+The plot shows the same trail as the table, measured as weight (:math:`-\log_2` of the absolute correlation)
+instead of correlation. Round ``0`` is the input of the cipher. The ``Relative weight`` line is the
 weight added by each round, and the ``Cumulative weight`` line is the sum of the weights so far.
 The last point of the cumulative line equals the ``Total weight`` of the report. A round with
 weight 0 is deterministic, and a steep segment shows the round that costs the most.
@@ -153,7 +154,7 @@ parameters, as described in :doc:`basic_linear_trail_search`.
 Trail enumeration
 -----------------
 
-We have found a trail of weight 1. Now let's enumerate all the trails of weight 1.
+The trail found above has weight 1. The following example enumerates all the trails of weight 1.
 
 .. plot::
    :context: reset
@@ -205,6 +206,9 @@ the modular additions, the only nonlinear components of Speck, with their input 
 masks, the weight that each one adds and the sign of its correlation. In this example, every
 trail gets its whole weight from a single modular addition, while the others have weight 0.
 
+By default, the enumeration stops after 1000 trails. If more trails exist, the search stops
+there and the ``complete`` flag is set to false.
+
 Trail of a given weight
 -----------------------
 CLAASP can also find a trail of a given weight, if it exists.
@@ -224,7 +228,7 @@ Imposing constraints
 
 To restrict the search, build a ``Constraints`` object and pass it to the ``constraints``
 parameter of any XOR-linear trail search method. A constraint can target an input of the
-cipher (for example ``"plaintext"`` or ``"key"``), a component ID, or ``"output"``. Each of them returns the collection itself, so they can be chained.
+cipher (for example ``"plaintext"`` or ``"key"``), a component ID, or ``"output"``.
 
 The following example requires both the plaintext mask and the key mask to be nonzero:
 
@@ -268,7 +272,7 @@ The following example requires both the plaintext mask and the key mask to be no
 Both constraints hold: unlike the trail found in the first section, whose ``key`` mask is
 zero, the ``key`` mask of this trail is nonzero, and the trail now involves key bits. The
 price is a higher weight: the trail is ``Proved optimal`` with a total weight of 2 instead
-of 1, so no trail with nonzero plaintext and key masks has weight 1 for 3 rounds of Speck.
+of 1, so no trail with nonzero plaintext and key masks has weight below 2 for 3 rounds of Speck.
 
 Two details are worth knowing:
 
@@ -321,10 +325,10 @@ Positions are **zero-based, most-significant bit first**:
 .. _linear-trail-other-solvers:
 
 Other solvers
-----------------
+-------------
 
 By default, ``find_lowest_weight_xor_linear_trail`` builds a SAT model and solves it with
-Kissat. You can select another solver with the ``solver`` parameter. 
+Kissat. You can select another solver with the ``solver`` parameter.
 
 The catalogue lists every solver that CLAASP can drive.
 
@@ -332,10 +336,10 @@ The catalogue lists every solver that CLAASP can drive.
    :context:
    :nofigs:
    :include-source:
-    
+
    from claasp.catalogue import catalogue
 
-   supported = catalogue.solvers()  # existing driver records; no local probes
+   supported = catalogue.solvers()
    supported.to_terminal()
 
 .. plot::
@@ -347,7 +351,7 @@ The catalogue lists every solver that CLAASP can drive.
    from pathlib import Path
 
    output = StringIO()
-   print(supported, file=output)
+   supported.to_terminal(file=output)
    Path("_build").mkdir(exist_ok=True)
    Path("_build/advanced_linear_trail_solvers.txt").write_text(output.getvalue(), encoding="utf-8")
 
@@ -356,15 +360,15 @@ The catalogue lists every solver that CLAASP can drive.
 
 Being listed in the catalogue does not mean that a solver is installed. CLAASP does not
 include these solvers: depending on the solver, it relies on an executable on your ``PATH``
-or on an installed Python package. ``catalogue.driver_availability`` checks this without
-importing the solver. The following command keeps only the MILP solvers that are available
-on your machine:
+or on an installed Python package. The ``view`` parameter controls the availability check:
+``"both"``, as in the example below, compares the solvers supported by CLAASP with those
+installed on your machine, and ``"available"`` shows only the solvers installed on your machine.
 
 .. plot::
    :context:
    :nofigs:
    :include-source:
-    
+
    catalogue.solvers(view="both").to_terminal()
 
 .. plot::
@@ -376,15 +380,12 @@ on your machine:
    from pathlib import Path
 
    output = StringIO()
-   catalogue.solvers(view="both").to_terminal(file=output)   
+   catalogue.solvers(view="both").to_terminal(file=output)
    Path("_build").mkdir(exist_ok=True)
    Path("_build/advanced_linear_trail_available_solvers.txt").write_text(output.getvalue(), encoding="utf-8")
 
 .. literalinclude:: _build/advanced_linear_trail_available_solvers.txt
    :language: text
-
-The ``view`` parameter is used to specify the details of the query. Use ``"both"``, as in the example above, to compare the availability between claasp and user machine.
-Use ``"available"`` to show just the solvers available on the user machine.
 
 The ``implementation`` field of each solver gives the module and the class that implement its
 driver. This tells you what to import:
@@ -393,9 +394,9 @@ driver. This tells you what to import:
    :context:
    :nofigs:
    :include-source:
-    
-   [entry.implementation 
-      for entry in catalogue.solvers().entries 
+
+   [entry.implementation
+      for entry in catalogue.solvers().entries
       if entry.name == "cryptominisat"]
 
 .. plot::
@@ -418,7 +419,7 @@ Import the solver class and pass an instance of it as the ``solver`` parameter. 
 the following command finds the lowest-weight trail with CryptoMiniSat:
 
 .. plot::
-   :context: 
+   :context:
    :nofigs:
    :include-source:
 
