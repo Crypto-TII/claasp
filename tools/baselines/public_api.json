@@ -997,6 +997,12 @@
       "qualified_name": "claasp.analysis.SpeckHybridXorDifferentialProblem"
     },
     {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure",
+      "defined_in": "claasp.analysis.spn_structure",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SpnStructure"
+    },
+    {
       "canonical_name": "claasp.analysis.statistical_results.StatisticalAssessment",
       "defined_in": "claasp.analysis.statistical_results",
       "kind": "enum",
@@ -1043,6 +1049,18 @@
       "defined_in": "claasp.analysis.statistical_results",
       "kind": "dataclass",
       "qualified_name": "claasp.analysis.StatisticalTestRun"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionBox",
+      "defined_in": "claasp.analysis.spn_structure",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SubstitutionBox"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "defined_in": "claasp.analysis.spn_structure",
+      "kind": "dataclass",
+      "qualified_name": "claasp.analysis.SubstitutionLayer"
     },
     {
       "canonical_name": "claasp.analysis.monomial_workflows.SuperpolyAnalysisResult",
@@ -4828,6 +4846,12 @@
       "qualified_name": "claasp.analysis.facade.Analysis.solve"
     },
     {
+      "canonical_name": "claasp.analysis.facade.Analysis.spn_structure",
+      "defined_in": "claasp.analysis.facade",
+      "kind": "method",
+      "qualified_name": "claasp.analysis.facade.Analysis.spn_structure"
+    },
+    {
       "canonical_name": "claasp.analysis.facade.Analysis.superpoly",
       "defined_in": "claasp.analysis.facade",
       "kind": "method",
@@ -6963,6 +6987,132 @@
       "defined_in": "claasp.analysis.composed",
       "kind": "function",
       "qualified_name": "claasp.analysis.speck32_xor_differential_linear_legacy_fixture"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure.__init__",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure._graph",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure._graph"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure._live",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure._live"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure.key_size",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure.key_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure.state_input",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure.state_input"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure.state_size",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure.state_size"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SpnStructure.substitution_layers",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SpnStructure",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SpnStructure.substitution_layers"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionBox.__init__",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionBox",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionBox.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionBox.input_bits",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionBox",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionBox.input_bits"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionBox.output_bits",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionBox",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionBox.output_bits"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionBox.positions",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionBox",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionBox.positions"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionBox.table",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionBox",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionBox.table"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer.__init__",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "kind": "constructor",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionLayer.__init__"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer.input_bits",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionLayer.input_bits"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer.kind",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionLayer.kind"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer.output_bits",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionLayer.output_bits"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer.round_number",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionLayer.round_number"
+    },
+    {
+      "canonical_name": "claasp.analysis.spn_structure.SubstitutionLayer.sboxes",
+      "defined_in": "claasp.analysis.spn_structure",
+      "documented_by": "claasp.analysis.spn_structure.SubstitutionLayer",
+      "kind": "dataclass_field",
+      "qualified_name": "claasp.analysis.spn_structure.SubstitutionLayer.sboxes"
     },
     {
       "canonical_name": "claasp.analysis.statistical.StatisticalCampaignResult.__init__",
