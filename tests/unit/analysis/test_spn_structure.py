@@ -136,3 +136,30 @@ def test_repeated_source_bits_and_singular_maps_are_retained(repeat_first, repea
     if repeat_between:
         expected = (expected[0], expected[0], expected[2], expected[3])
     assert structure.linear_layers[0] == expected
+
+
+@pytest.mark.parametrize("state_units", [1, 2])
+def test_vector_sbox_distinguishes_state_units_from_key_units(state_units):
+    from claasp.components import SBox
+    from claasp.unit_types import Word
+
+    primitive = Primitive(
+        "mixed_sbox",
+        {
+            "plaintext": UnitArrayType(Word(2), (state_units,)),
+            "key": UnitArrayType(Word(2), (1,)),
+        },
+    )
+    primitive._builder.add_round()
+    joined = primitive._builder.join(
+        primitive.graph.input("plaintext")[0], primitive.graph.input("key")
+    )
+    output = primitive._builder.add_component(SBox(joined, (0, 1, 3, 2)))
+    primitive._builder.set_output(output[0])
+    if state_units == 2:
+        with pytest.raises(ValueError, match="complete state"):
+            SpnStructure(primitive)
+    else:
+        structure = SpnStructure(primitive)
+        assert len(structure.substitution_layers[0].sboxes) == 1
+        assert structure.linear_layers == (((1, 0), (0, 1)),)

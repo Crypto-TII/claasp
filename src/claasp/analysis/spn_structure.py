@@ -6,7 +6,7 @@ without evaluating the primitive or probing key-dependent round functions.
 
 from dataclasses import dataclass
 from functools import cached_property, reduce
-from operator import xor
+from operator import or_, xor
 
 from claasp.components import (
     Add,
@@ -205,7 +205,7 @@ def _chi_layer(graph, round_number, components):
     )
 
 
-def _explicit_layer(graph, number, components):
+def _explicit_layer(graph, number, components, dependencies):
     inputs: list[tuple[str, int]] = []
     outputs: list[tuple[str, int]] = []
     boxes = []
@@ -227,6 +227,8 @@ def _explicit_layer(graph, number, components):
         if width != output_width:
             raise ValueError("SPN substitution boxes must be square")
         for start in range(0, len(source), width):
+            if not any(dependencies[name][bit] for name, bit in source[start : start + width]):
+                continue
             positions = range(len(inputs), len(inputs) + width)
             boxes.append(
                 _sbox(
@@ -249,16 +251,47 @@ def _bit_size(array_type):
 
 
 def _data_path(graph, state):
-    dependencies = {name: name == state for name in graph.input_arrays}
+    dependencies = {
+        name: (int(name == state),) * _bit_size(array.array_type)
+        for name, array in graph.input_arrays.items()
+    }
     selected = set()
+    affine = (
+        Constant,
+        Identity,
+        BitwiseNot,
+        Xor,
+        Add,
+        Rotate,
+        Shift,
+        Permutation,
+        LinearMap,
+        BinaryAffineMap,
+    )
     for component in graph.components:
-        live = any(
-            dependencies[name] for operand in _operands(graph, component) for name, _ in operand
+        operands = tuple(
+            tuple(dependencies[name][bit] for name, bit in operand)
+            for operand in _operands(graph, component)
         )
-        dependencies[component.component_id] = live
-        if live:
+        size = _bit_size(component.output_type)
+        if isinstance(component, SBox):
+            width = component.output_type.unit_type.encoded_bit_size
+            assert width is not None
+            flags = tuple(
+                int(any(operands[0][start : start + width])) for start in range(0, size, width)
+            )
+            output = tuple(flag for flag in flags for _ in range(width))
+        elif isinstance(component, affine) and not (
+            isinstance(component, LinearMap)
+            and not isinstance(component.output_type.unit_type, (Bit, BinaryExtensionField))
+        ):
+            output = _affine(component, operands, combine=or_)
+        else:
+            output = (int(any(bit for operand in operands for bit in operand)),) * size
+        dependencies[component.component_id] = output
+        if any(output):
             selected.add(component.component_id)
-    return selected
+    return selected, dependencies
 
 
 def _check_boundaries(graph, layers, state):
@@ -285,7 +318,7 @@ def _check_boundaries(graph, layers, state):
         prior = own
 
 
-def _affine(component, operands):
+def _affine(component, operands, *, combine=xor):
     """Compose integer bitsets representing GF(2) row vectors, without probes."""
     width = component.output_type.unit_type.encoded_bit_size
     size = component.output_type.encoded_bit_size
@@ -295,7 +328,7 @@ def _affine(component, operands):
     if isinstance(component, (Identity, BitwiseNot)):
         return flat
     if isinstance(component, (Xor, Add)):
-        return tuple(reduce(xor, column, 0) for column in zip(*operands))
+        return tuple(reduce(combine, column, 0) for column in zip(*operands))
     if isinstance(component, (Rotate, Shift)):
         result = []
         for start in range(0, size, width):
@@ -325,7 +358,7 @@ def _affine(component, operands):
             else (flat,)
         )
         return tuple(
-            reduce(xor, (value for value, coefficient in zip(group, row) if coefficient), 0)
+            reduce(combine, (value for value, coefficient in zip(group, row) if coefficient), 0)
             for group in groups
             for row in matrix
         )
@@ -388,7 +421,7 @@ class SpnStructure:
         ):
             raise ValueError("SPN state must use binary units")
         state_size = _bit_size(graph.input_arrays[state].array_type)
-        live = _data_path(graph, state)
+        live, dependencies = _data_path(graph, state)
         allowed = (
             BitVectorSBox,
             SBox,
@@ -424,7 +457,7 @@ class SpnStructure:
             if boxes and ands:
                 raise ValueError("a round cannot mix explicit S-boxes and chi AND operations")
             if boxes:
-                layers.append(_explicit_layer(graph, round_.number, boxes))
+                layers.append(_explicit_layer(graph, round_.number, boxes, dependencies))
             elif ands:
                 layer, _, outputs = _chi_layer(graph, round_.number, components)
                 layers.append(layer)
@@ -492,7 +525,10 @@ class SpnStructure:
             name = component.component_id
             assert name is not None
             if name in output_ids:
-                forms[name] = tuple(1 << positions[name, bit] for bit in range(size))
+                forms[name] = tuple(
+                    1 << positions[name, bit] if (name, bit) in positions else 0
+                    for bit in range(size)
+                )
             elif name not in self._live or isinstance(component, BitwiseAnd):
                 forms[name] = (0,) * size
             else:
