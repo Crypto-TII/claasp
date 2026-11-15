@@ -230,6 +230,8 @@ def optimize_word_characteristic(
     backend="sat",
     solver=None,
     constraints=None,
+    matsui_bounds=None,
+    log_file=None,
     nonzero_input=None,
     fixed_input_differences=None,
     fixed_input_masks=None,
@@ -247,8 +249,16 @@ def optimize_word_characteristic(
         configuration required
     """
 
+    from claasp.analysis._search_progress import _SearchLog
     from claasp.analysis.constraints import _trail_constraints
+    from claasp.representations.constraints.sat._matsui_bounds import (
+        _bounded_formula,
+        _round_weights,
+        _validated_bounds,
+    )
 
+    bounds = _validated_bounds(matsui_bounds, len(primitive.graph.rounds))
+    log = _SearchLog(log_file, primitive.family_name, kind.value)
     constraints = _trail_constraints(constraints, primitive)
     targeted_inputs = {item.target for item in constraints._items}
     _require_exact_trail_capability(primitive, kind, backend=backend)
@@ -300,6 +310,9 @@ def optimize_word_characteristic(
 
     initial_model = build(None)
     initial_formula = initial_model.cnf_formula()
+    if bounds is not None and initial_model._shared._probability_bits:
+        raise NotImplementedError("Matsui SAT bounds require integral transition weights")
+    weights = _round_weights(initial_model) if bounds is not None else ()
     if initial_model._shared._probability_bits:
         return _optimize_probability_characteristic(
             primitive,
@@ -310,13 +323,23 @@ def optimize_word_characteristic(
             initial_model,
             initial_formula,
             started,
+            log,
         )
 
     def solve(bound):
         nonlocal peak_memory, runtime
-        model = initial_model if bound is None else build(bound)
-        formula = initial_formula if bound is None else model.cnf_formula()
+        model = initial_model
+        formula = (
+            initial_formula
+            if bound is None
+            else _bounded_formula(
+                initial_formula, initial_model._shared._weight_names, weights, bound, bounds
+            )
+        )
         result = selected_solver.solve(formula)
+        log.record(bound, result)
+        if _status(result) is SatStatus.SATISFIABLE and not formula.is_satisfied(result.assignment):
+            raise RuntimeError("solver returned an invalid bounded trail witness")
         runtime += result.runtime_seconds
         result_peak_memory = getattr(result, "peak_memory_bytes", None)
         if result_peak_memory is not None:
@@ -388,6 +411,7 @@ def _optimize_probability_characteristic(
     model,
     formula,
     started,
+    log,
 ):
     """Maximize an exact dyadic numerator, proving strict improvement UNSAT."""
     bits = model._shared._probability_bits
@@ -405,6 +429,7 @@ def _optimize_probability_characteristic(
             provenance=formula.provenance + ("exact_probability_bound",) * len(extra),
         )
         solved = solver.solve(bounded)
+        log.record(minimum, solved, objective="probability_numerator_at_least")
         runtime += solved.runtime_seconds
         measured = getattr(solved, "peak_memory_bytes", None)
         if measured is not None:
