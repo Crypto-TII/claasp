@@ -66,8 +66,8 @@ blanket semantic or legacy string-API equivalence.
 
 | Develop PR | V5 disposition | Evidence |
 | --- | --- | --- |
-| #546 search logging | Shared JSON query logs for exact differential, linear and differential-linear optimizers, proved bounds and separately labelled empirical runtime estimates. V5 retains its exact optimum proof rather than treating an unproved resume weight as an optimum. | `test_search_progress.py`, `test_matsui_trail_search.py` |
-| #704, #706 SAT Matsui | Caller-certified consecutive-window bounds for integral differential and linear SAT weights, including key-schedule contributions. Propagation is reused across queries. | `test_matsui_bounds.py`, `test_matsui_trail_search.py` |
+| #546 search logging | Shared JSON query logs for exact differential, linear and differential-linear optimizers, proved bounds and separately labelled empirical runtime estimates. V5 retains its exact optimum proof rather than treating an unproved resume weight as an optimum. | `test__search_progress.py`, `test_matsui_trail_search.py` |
+| #704, #706 SAT Matsui | Caller-certified consecutive-window bounds for integral differential and linear SAT weights, including key-schedule contributions. Propagation is reused across queries. | `test__matsui_bounds.py`, `test_matsui_trail_search.py` |
 | #710 QDT feasibility | Already supported by exact rational tables; the new GIFT regression covers impossible, power-of-two and 3/8 blocks independently. | `test_quasidifferential.py` |
 | #725 emulated HiGHS build | Not applicable: v5 obtains HiGHS through its pinned SciPy package and does not compile native HiGHS. Its existing amd64/arm64 release checks exercise that installation. | `test_develop_sync_review.py`, `docker/v5/Dockerfile` |
 | #726 SPN structure | Typed full-state S-box/chi extraction and structural GF(2) matrix composition, integrated with division-property detection. V5 AES reduced rounds retain MixColumns as prefixes of standard AES; the standard final round omits it. | `test_spn_structure.py`, `test_division_property.py` |
