@@ -102,3 +102,11 @@ def test_model_decoding_retains_widths_even_for_all_zero_values(kind):
     output = StringIO()
     trail.to_terminal(value_format="binary", file=output)
     assert output.getvalue().count("0b00000000") == 2
+
+
+def test_exact_trails_keep_their_existing_hexadecimal_default():
+    trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 8), XorDifference(2, 8), ())
+    output = StringIO()
+    trail.to_terminal(file=output)
+    assert "0x01" in output.getvalue() and "0x02" in output.getvalue()
+    assert "0b" not in output.getvalue()

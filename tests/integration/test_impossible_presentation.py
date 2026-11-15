@@ -44,6 +44,11 @@ def test_public_search_retains_original_round_labels_and_meeting_patterns(primit
         )
         output = dict(trail.backward.input_differences)["output"]
     assert trail.backward_rounds[-1][1] == output
+    for details in (False, True):
+        default = StringIO()
+        result.to_terminal(details=details, file=default)
+        assert "0x" not in default.getvalue()
+        assert default.getvalue().count("meeting state") == 2
     stream = StringIO()
     result.to_terminal(value_format="underscore_one", file=stream)
     assert stream.getvalue().count("meeting state") == 2

@@ -3,8 +3,8 @@
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
+from claasp._result_presentation import ImpossibleTerminalMixin as _ImpossibleTerminalMixin
 from claasp._result_presentation import PlotMixin as _PlotMixin
-from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.drivers.solvers import KissatSolver, SatStatus
 
 
@@ -24,7 +24,7 @@ class ImpossibleCandidate:
 
 
 @dataclass(frozen=True, slots=True)
-class ImpossibleSearchResult(_TerminalMixin, _PlotMixin):
+class ImpossibleSearchResult(_ImpossibleTerminalMixin, _PlotMixin):
     """Candidates and explicit exhaustion status for the selected split search.
 
     EXAMPLES::
@@ -38,9 +38,10 @@ class ImpossibleSearchResult(_TerminalMixin, _PlotMixin):
     Print the full retained forward/backward round trail in a single difference
     column. The middle boundary appears twice, once per direction; ``!`` marks
     contradictory bit/word positions in both rows. ``details=True`` adds component
-    evidence. ``value_format="binary"`` uses MSB-first ``0b`` patterns;
-    ``"underscore_one"`` prints zero as ``_``. Unknown ``?`` and abstract nonzero
-    words ``*`` remain distinct from exact values. Graph boundary labels match
+    evidence. The default ``value_format="binary"`` uses MSB-first ``0b``
+    patterns for both exact and partial values. Explicit ``"hex"`` formats known
+    values in hexadecimal; ``"underscore_one"`` prints zero as ``_``. Unknown
+    ``?`` and abstract nonzero words ``*`` remain distinct from exact values. Graph boundary labels match
     ``middle_round`` (for AES these include the initial key/round graph offset).
 
     Requires Kissat for this runnable end-to-end example::

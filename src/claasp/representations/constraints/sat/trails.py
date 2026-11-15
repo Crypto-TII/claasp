@@ -8,6 +8,7 @@ from hashlib import sha256
 from itertools import combinations, product
 from typing import Any
 
+from claasp._result_presentation import ImpossibleTerminalMixin as _ImpossibleTerminalMixin
 from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp._result_presentation import TerminalMixin as _TerminalMixin
 from claasp.components import (
@@ -1828,7 +1829,7 @@ class WordDeterministicTruncatedNativeXorSATModel(WordDeterministicTruncatedSATM
 
 
 @dataclass(frozen=True, slots=True)
-class WordImpossibleSATTrail(_TerminalMixin, _PlotMixin):
+class WordImpossibleSATTrail(_ImpossibleTerminalMixin, _PlotMixin):
     """One independently checked impossible-differential Word-graph witness.
 
     EXAMPLES::
@@ -1892,7 +1893,7 @@ SpeckImpossibleSATTrail = WordImpossibleSATTrail
 
 
 @dataclass(frozen=True, slots=True)
-class AutomaticWordImpossibleSATResult(_TerminalMixin, _PlotMixin):
+class AutomaticWordImpossibleSATResult(_ImpossibleTerminalMixin, _PlotMixin):
     """Outcome of deterministic split-round enumeration.
 
     EXAMPLES::
@@ -2249,7 +2250,7 @@ class WordwiseImpossibleMiddle:
 
 
 @dataclass(frozen=True, slots=True)
-class WordwiseImpossibleSATTrail(_TerminalMixin, _PlotMixin):
+class WordwiseImpossibleSATTrail(_ImpossibleTerminalMixin, _PlotMixin):
     """Two independently checked wordwise graphs joined by a contradiction.
 
     EXAMPLES::
