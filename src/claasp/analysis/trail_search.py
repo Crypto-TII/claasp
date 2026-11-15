@@ -259,6 +259,8 @@ def optimize_word_characteristic(
 
     bounds = _validated_bounds(matsui_bounds, len(primitive.graph.rounds))
     log = _SearchLog(log_file, primitive.family_name, kind.value)
+    if bounds is not None:
+        log.context["matsui_bounds"] = bounds[1:]
     constraints = _trail_constraints(constraints, primitive)
     targeted_inputs = {item.target for item in constraints._items}
     _require_exact_trail_capability(primitive, kind, backend=backend)
@@ -385,7 +387,8 @@ def optimize_word_characteristic(
     technique_backend = "sat" if backend == "auto" else backend
     metadata = TrailSearchMetadata(
         f"exact {technique_backend.upper()} optimization by binary search; "
-        "immediate lower bound proved UNSAT",
+        "immediate lower bound proved UNSAT"
+        + (f"; caller-certified Matsui window bounds {bounds[1:]!r}" if bounds is not None else ""),
         "Kissat" if isinstance(selected_solver, KissatSolver) else type(selected_solver).__name__,
         version() if callable(version) else None,
         max(runtime, perf_counter() - started),
