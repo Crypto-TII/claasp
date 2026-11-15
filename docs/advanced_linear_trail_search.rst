@@ -27,7 +27,7 @@ Find an optimal linear trail
 
 As a first example, let's see how to find an optimal linear trail. 
 The default solver is ``Kissat``, but other solvers can be selected using the ``solver`` parameter. 
-To know more about specifing solvers see :ref:`linear-trail-external-solvers`.  
+To know more about specifing solvers see :ref:`linear-trail-other-solvers`.  
 First, instantiate the class representing the analyzed primitive:
 
 .. plot::
@@ -219,28 +219,35 @@ CLAASP can also find a trail of a given weight, if it exists.
 You can display the result with the ``to_terminal()`` method and the ``details`` option, as in the
 previous examples.
 
-.. _linear-trail-external-solvers:
+Imposing constraints
+--------------------
 
-Other solvers
-----------------
+To restrict the search, build a ``Constraints`` object and pass it to the ``constraints``
+parameter of any XOR-linear trail search method. A constraint can target an input of the
+cipher (for example ``"plaintext"`` or ``"key"``), a component ID, or ``"output"``. Each of them returns the collection itself, so they can be chained.
 
-By default, ``find_lowest_weight_xor_linear_trail`` builds a SAT model and solves it with
-Kissat. You can select another solver with the ``solver`` parameter. The solver also sets the
-formalism: if you pass a MILP solver, the same search is solved as a MILP problem, and the
-trail it returns has the same optimal weight.
-
-The catalogue lists every solver that CLAASP can drive. Each solver records the model
-representations it accepts, and the names of MILP representations end with ``_milp``. The
-following command lists the solvers that accept a MILP model:
+The following example requires both the plaintext mask and the key mask to be nonzero:
 
 .. plot::
    :context:
    :nofigs:
    :include-source:
-    
-   from claasp.catalogue import catalogue
-   milp_solvers = [r for r in catalogue.drivers(kind="solver") if any(rep.endswith("_milp") for rep in r.representations)]
-   [solver.name for solver in milp_solvers]
+
+   from claasp.analysis import Constraints
+
+   active_key_and_plaintext = (
+       Constraints()
+       .nonzero("key")
+       .nonzero("plaintext")
+   )
+
+   trail = speck.analysis.find_lowest_weight_xor_linear_trail(
+       constraints=active_key_and_plaintext,
+   )
+
+.. code-block:: python
+
+   trail.to_terminal()
 
 .. plot::
    :context:
@@ -251,11 +258,100 @@ following command lists the solvers that accept a MILP model:
    from pathlib import Path
 
    output = StringIO()
-   print([solver.name for solver in milp_solvers], file=output)
+   trail.to_terminal(file=output)
    Path("_build").mkdir(exist_ok=True)
-   Path("_build/advanced_linear_trail_milp_solvers.txt").write_text(output.getvalue(), encoding="utf-8")
+   Path("_build/advanced_linear_trail_constraints.txt").write_text(output.getvalue(), encoding="utf-8")
 
-.. literalinclude:: _build/advanced_linear_trail_milp_solvers.txt
+.. literalinclude:: _build/advanced_linear_trail_constraints.txt
+   :language: text
+
+Both constraints hold: unlike the trail found in the first section, whose ``key`` mask is
+zero, the ``key`` mask of this trail is nonzero, and the trail now involves key bits. The
+price is a higher weight: the trail is ``Proved optimal`` with a total weight of 2 instead
+of 1, so no trail with nonzero plaintext and key masks has weight 1 for 3 rounds of Speck.
+
+Two details are worth knowing:
+
+- A constraint on a mask does not fix the value of the key. To fix concrete key values, use
+  the ``fixed_inputs`` parameter.
+- The default ``nonzero_input`` requirement on the plaintext mask still applies. To allow a
+  zero plaintext mask together with a nonzero key mask, pass ``nonzero_input="key"``.
+
+Other constraints
+~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 35 45
+
+   * - Method
+     - Meaning
+     - Example
+   * - ``zero``
+     - All selected bits are zero
+     - ``.zero("key")``
+   * - ``nonzero``
+     - At least one selected bit is one
+     - ``.nonzero("plaintext")``
+   * - ``equal``
+     - Equal a packed integer value
+     - ``.equal("plaintext", 0x80)``
+   * - ``not_equal``
+     - Differ from a packed integer value
+     - ``.not_equal("output", 0x01)``
+   * - ``hamming_weight``
+     - Exact number of set bits
+     - ``.hamming_weight("key", exactly=2)``
+   * - ``hamming_weight``
+     - Inclusive bounds on set bits
+     - ``.hamming_weight("output", minimum=1, maximum=4)``
+
+Every method also accepts ``bit_positions`` to constrain only selected bits.
+Positions are **zero-based, most-significant bit first**:
+
+.. code-block:: python
+
+   constraints = (
+       Constraints()
+       .nonzero("plaintext")
+       .hamming_weight("key", exactly=2)
+       .zero("plaintext", bit_positions=(0, 1, 2))
+   )
+
+.. _linear-trail-other-solvers:
+
+Other solvers
+----------------
+
+By default, ``find_lowest_weight_xor_linear_trail`` builds a SAT model and solves it with
+Kissat. You can select another solver with the ``solver`` parameter. 
+
+The catalogue lists every solver that CLAASP can drive.
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source:
+    
+   from claasp.catalogue import catalogue
+
+   supported = catalogue.solvers()  # existing driver records; no local probes
+   supported.to_terminal()
+
+.. plot::
+   :context:
+   :nofigs:
+   :include-source: false
+
+   from io import StringIO
+   from pathlib import Path
+
+   output = StringIO()
+   print(supported, file=output)
+   Path("_build").mkdir(exist_ok=True)
+   Path("_build/advanced_linear_trail_solvers.txt").write_text(output.getvalue(), encoding="utf-8")
+
+.. literalinclude:: _build/advanced_linear_trail_solvers.txt
    :language: text
 
 Being listed in the catalogue does not mean that a solver is installed. CLAASP does not
@@ -269,7 +365,7 @@ on your machine:
    :nofigs:
    :include-source:
     
-   [solver.name for solver in milp_solvers if catalogue.driver_availability(solver).available]
+   catalogue.solvers(view="both").to_terminal()
 
 .. plot::
    :context:
@@ -280,12 +376,15 @@ on your machine:
    from pathlib import Path
 
    output = StringIO()
-   print([solver.name for solver in milp_solvers if catalogue.driver_availability(solver).available], file=output)
+   catalogue.solvers(view="both").to_terminal(file=output)   
    Path("_build").mkdir(exist_ok=True)
-   Path("_build/advanced_linear_trail_milp_available_solvers.txt").write_text(output.getvalue(), encoding="utf-8")
+   Path("_build/advanced_linear_trail_available_solvers.txt").write_text(output.getvalue(), encoding="utf-8")
 
-.. literalinclude:: _build/advanced_linear_trail_milp_available_solvers.txt
+.. literalinclude:: _build/advanced_linear_trail_available_solvers.txt
    :language: text
+
+The ``view`` parameter is used to specify the details of the query. Use ``"both"``, as in the example above, to compare the availability between claasp and user machine.
+Use ``"available"`` to show just the solvers available on the user machine.
 
 The ``implementation`` field of each solver gives the module and the class that implement its
 driver. This tells you what to import:
@@ -295,7 +394,9 @@ driver. This tells you what to import:
    :nofigs:
    :include-source:
     
-   [solver.implementation for solver in milp_solvers]
+   [entry.implementation 
+      for entry in catalogue.solvers().entries 
+      if entry.name == "cryptominisat"]
 
 .. plot::
    :context:
@@ -306,21 +407,21 @@ driver. This tells you what to import:
    from pathlib import Path
 
    output = StringIO()
-   print([solver.implementation for solver in milp_solvers], file=output)
+   print([entry.implementation for entry in catalogue.solvers().entries if entry.name == "cryptominisat"], file=output)
    Path("_build").mkdir(exist_ok=True)
-   Path("_build/advanced_linear_trail_milp_solvers_import.txt").write_text(output.getvalue(), encoding="utf-8")
+   Path("_build/advanced_linear_trail_solvers_import.txt").write_text(output.getvalue(), encoding="utf-8")
 
-.. literalinclude:: _build/advanced_linear_trail_milp_solvers_import.txt
+.. literalinclude:: _build/advanced_linear_trail_solvers_import.txt
    :language: text
 
 Import the solver class and pass an instance of it as the ``solver`` parameter. For example,
-the following command finds the lowest-weight trail with HiGHS, an open-source MILP solver:
+the following command finds the lowest-weight trail with CryptoMiniSat:
 
 .. plot::
    :context: 
    :nofigs:
    :include-source:
 
-   from claasp.drivers.solvers import HighsSolver
+   from claasp.drivers.solvers import CryptoMiniSatSolver
 
-   trail = speck.analysis.find_lowest_weight_xor_linear_trail(solver=HighsSolver())
+   trail = speck.analysis.find_lowest_weight_xor_linear_trail(solver=CryptoMiniSatSolver())
