@@ -105,6 +105,44 @@ def test_find_lowest_weight_xor_linear_trail_with_log(tmp_path, monkeypatch):
     assert f"'total_weight': {trail['total_weight']!r}" in log_lines[-1]
 
 
+def test_find_lowest_weight_xor_linear_trail_from_above():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    sat = SatXorLinearModel(speck)
+    trail = sat.find_lowest_weight_xor_linear_trail(search_from="above")
+
+    assert trail["status"] == SATISFIABLE
+    assert trail["total_weight"] == 3.0
+    assert trail["test_name"] == "find_lowest_weight_xor_linear_trail"
+    # start_weight is an upper bound for the lowest weight
+    trail = sat.find_lowest_weight_xor_linear_trail(search_from="above", start_weight=6)
+    assert trail["total_weight"] == 3.0
+    trail = sat.find_lowest_weight_xor_linear_trail(search_from="above", start_weight=2)
+    assert trail["status"] == "UNSATISFIABLE"
+    with pytest.raises(ValueError, match="search_from"):
+        sat.find_lowest_weight_xor_linear_trail(search_from="middle")
+
+
+def test_find_lowest_weight_xor_linear_trail_from_above_with_log(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    sat = SatXorLinearModel(speck)
+    lowest_weight = 3
+    log_file_name = f"{speck.id}__sat_find_lowest_weight_xor_linear_trail_from_above__{CRYPTOMINISAT_EXT}solver.log"
+    try:
+        trail = sat.find_lowest_weight_xor_linear_trail(search_from="above", log=True)
+        with open(log_file_name) as f:
+            log_content = f.read()
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+    assert trail["total_weight"] == lowest_weight
+    lower_bound_lines = [line for line in log_content.splitlines() if " has no " in line]
+    assert len(lower_bound_lines) == 1
+    assert lower_bound_lines[0].endswith(f" {speck.id} has no xor_linear trail of weight <= {lowest_weight - 1}")
+    assert f"'components_values': {trail['components_values']!r}" in log_content
+
+
 def test_search_xor_linear_trail_down_to_weight():
     speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
     sat = SatXorLinearModel(speck)

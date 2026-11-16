@@ -223,6 +223,71 @@ def test_search_xor_differential_linear_trail_down_to_weight_6_rounds_speck():
     assert trail["total_weight"] is None
 
 
+def test_lowest_differential_linear_trail_from_above_6_rounds_speck():
+    _, sat_heterogeneous_model, fixed_values = _speck_6_rounds_differential_linear_model()
+    lowest_weight = 10
+
+    trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
+        fixed_values=fixed_values, solver_name=CADICAL_EXT, num_unknown_vars=2, search_from="above"
+    )
+    assert trail["status"] == SATISFIABLE
+    assert trail["total_weight"] == lowest_weight
+    assert trail["test_name"] == "find_lowest_weight_differential_linear_trail"
+
+    # start_weight is an upper bound for the lowest weight
+    trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
+        fixed_values=fixed_values,
+        solver_name=CADICAL_EXT,
+        num_unknown_vars=2,
+        start_weight=lowest_weight + 2,
+        search_from="above",
+    )
+    assert trail["total_weight"] == lowest_weight
+    trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
+        fixed_values=fixed_values,
+        solver_name=CADICAL_EXT,
+        num_unknown_vars=2,
+        start_weight=lowest_weight - 1,
+        search_from="above",
+    )
+    assert trail["status"] == "UNSATISFIABLE"
+    assert trail["total_weight"] is None
+
+
+def test_lowest_differential_linear_trail_from_above_with_log_6_rounds_speck(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck, sat_heterogeneous_model, fixed_values = _speck_6_rounds_differential_linear_model()
+    lowest_weight = 10
+    log_file_name = (
+        f"{speck.id}__sat_find_lowest_weight_xor_differential_linear_trail_from_above__{CADICAL_EXT}solver.log"
+    )
+    try:
+        trail = sat_heterogeneous_model.find_lowest_weight_xor_differential_linear_trail(
+            fixed_values=fixed_values, solver_name=CADICAL_EXT, num_unknown_vars=2, log=True, search_from="above"
+        )
+        with open(log_file_name) as f:
+            log_content = f.read()
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+    assert trail["total_weight"] == lowest_weight
+    log_lines = log_content.splitlines()
+    status_lines = [line for line in log_lines if " (status: " in line]
+    assert f" {CADICAL_EXT} terminated the search with no weight bound in " in status_lines[0]
+    lower_bound_lines = [line for line in log_lines if " has no " in line]
+    assert len(lower_bound_lines) == 1
+    assert lower_bound_lines[0].endswith(
+        f" {speck.id} has no XOR_DIFFERENTIAL_LINEAR_MODEL trail of weight <= {lowest_weight - 1}"
+    )
+    trail_lines = [line for line in log_lines if " has a " in line]
+    assert len(trail_lines) == len(status_lines) - 1
+    weights = [float(line.split("trail of weight ")[1]) for line in trail_lines]
+    assert weights == sorted(weights, reverse=True)
+    assert weights[-1] == trail["total_weight"]
+    assert f"'components_values': {trail['components_values']!r}" in log_content
+
+
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():
     """Test for finding a differential-linear trail with fixed weight for 3 rounds of ChaCha permutation."""
     chacha = ChachaPermutation(number_of_rounds=6, round_mode=ROUND_MODE_HALF)
