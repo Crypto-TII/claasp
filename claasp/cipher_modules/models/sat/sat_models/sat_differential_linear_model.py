@@ -562,6 +562,112 @@ class SatDifferentialLinearModel(SatModel):
 
         return solution
 
+    def _differential_linear_model_builder(self, fixed_values, num_unknown_vars):
+        """Return a function building the differential-linear model, with ``fixed_values``, for a given weight."""
+        constraints = self.fix_variables_value_constraints(
+            fixed_values, self.regular_components, self.truncated_components, self.linear_components
+        )
+
+        def build_model(weight):
+            self.build_xor_differential_linear_model(weight, num_unknown_vars)
+            self.model_constraints.extend(constraints)
+
+        return build_model
+
+    def search_xor_differential_linear_trail_down_to_weight(
+        self,
+        end_weight,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        num_unknown_vars=1,
+        options=None,
+        start_weight=None,
+        log=False,
+    ):
+        """
+        Return the lowest weight differential-linear trail found by a search from above, stopping at ``end_weight``.
+
+        First, a trail of weight at most ``start_weight`` is searched (any trail, if ``start_weight`` is `None`).
+        Then, as long as the last trail found weighs more than ``end_weight``, a trail of weight at most the weight of
+        the last trail minus 1 is searched. Therefore, the returned solution is:
+
+        * a trail of weight at most ``end_weight``, if it exists (not necessarily the lowest weight one)
+        * the lowest weight trail, otherwise
+        * the UNSATISFIABLE solution (``total_weight`` is `None`), if no trail of weight at most ``start_weight``
+          exists
+
+        With ``end_weight=0`` the search finds the lowest weight trail.
+
+        INPUT:
+
+        - ``end_weight`` -- **int**; the search stops as soon as a trail of weight at most ``end_weight`` is found
+        - ``fixed_values`` -- **list** (default: `[]`); specifies a list of variables that should be fixed to specific
+          values. Each entry in the list should be a dictionary representing constraints for specific components,
+          written in the CLAASP constraining syntax.
+        - ``solver_name`` -- **str** (default: ``solvers.SOLVER_DEFAULT``); The SAT solver to use.
+        - ``num_unknown_vars`` -- **int** (default: 1); number of unknown variables in the output of the middle round
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **int** (default: `None`); an upper bound for the weight of the first trail. If `None`,
+          the first trail is searched without any weight bound
+        - ``log`` -- **bool** (default: False); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_search_xor_differential_linear_trail_down_to_weight_<end_weight>__<solver_name>solver``
+          ``[_<options>].log`` the result of the search and the trail found, if any (see
+          :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
+
+        RETURN:
+
+        - **dict**; Solution with the trail and metadata (weight, time, memory usage).
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_differential_linear_model import SatDifferentialLinearModel
+            sage: from claasp.cipher_modules.models.utils import set_fixed_variables
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=6)
+            sage: component_model_list = {
+            ....:     'middle_part_components': [component.id for component in speck.components_in_round(2)],
+            ....:     'bottom_part_components': [
+            ....:         component.id
+            ....:         for round_number in range(3, 6)
+            ....:         for component in speck.components_in_round(round_number)
+            ....:     ]
+            ....: }
+            sage: plaintext = set_fixed_variables('plaintext', 'not_equal', range(32), (0,) * 32)
+            sage: key = set_fixed_variables('key', 'equal', range(64), (0,) * 64)
+            sage: ciphertext_difference = set_fixed_variables('cipher_output_5_12', 'not_equal', range(32), (0,) * 32)
+            sage: sat = SatDifferentialLinearModel(speck, component_model_list)
+            sage: fixed_values = [key, plaintext, ciphertext_difference]
+            sage: trail = sat.search_xor_differential_linear_trail_down_to_weight(
+            ....:     0, fixed_values=fixed_values, solver_name="CADICAL_EXT", num_unknown_vars=2
+            ....: )
+            sage: trail['total_weight']
+            10.0
+
+            # no trail of weight at most 9 exists
+            sage: trail = sat.search_xor_differential_linear_trail_down_to_weight(
+            ....:     0, fixed_values=fixed_values, solver_name="CADICAL_EXT", num_unknown_vars=2, start_weight=9
+            ....: )
+            sage: trail['status'], trail['total_weight']
+            ('UNSATISFIABLE', None)
+        """
+        log_file_name = (
+            f"{self._cipher}__sat_search_xor_differential_linear_trail_down_to_weight_{end_weight}"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        solution = self._search_trail_down_to_weight(
+            self._differential_linear_model_builder(fixed_values, num_unknown_vars),
+            "XOR_DIFFERENTIAL_LINEAR_MODEL",
+            end_weight,
+            start_weight,
+            log_file_name,
+            solver_name,
+            options,
+            log,
+        )
+        solution["test_name"] = "search_xor_differential_linear_trail_down_to_weight"
+
+        return solution
+
     @property
     def cipher(self):
         """
