@@ -39,6 +39,7 @@ from claasp.cipher_modules.models.utils import (
     linear_checker_permutation,
     print_components_values,
     save_trail_lower_bounds_and_time_estimates,
+    save_trail_upper_bounds_and_times,
     set_component_solution,
     set_component_value_weight_sign,
     set_fixed_variables,
@@ -882,3 +883,49 @@ def test_save_trail_lower_bounds_and_time_estimates(tmp_path):
     assert "has a xor_differential trail of weight 3.0\n" in content
     assert "terminated the search for weight 3 in 0:00:09 (status: SATISFIABLE)\n" in content
     assert content.count("expected to terminate") == 1
+
+
+def test_save_trail_upper_bounds_and_times(tmp_path):
+    file_name = str(tmp_path / "search_from_above.log")
+    sat_solution = {
+        "cipher": "speck_p32_k64_o32_r5",
+        "model_type": "xor_differential",
+        "solver_name": "CRYPTOMINISAT_EXT",
+        "status": "SATISFIABLE",
+        "total_weight": 12.0,
+        "solving_time_seconds": 2.0,
+    }
+    lighter_solution = dict(sat_solution, total_weight=9.0, solving_time_seconds=4.0)
+    unsat_solution = dict(sat_solution, status="UNSATISFIABLE", total_weight=None, solving_time_seconds=30.0)
+    try:
+        save_trail_upper_bounds_and_times(file_name, sat_solution, None, 2.0, 2.0)
+        save_trail_upper_bounds_and_times(file_name, lighter_solution, 11, 4.0, 6.0)
+        save_trail_upper_bounds_and_times(file_name, unsat_solution, 8, 30.0, 36.0)
+        with open(file_name) as f:
+            content = f.read()
+    finally:
+        if os.path.exists(file_name):
+            os.remove(file_name)
+
+    lines = content.splitlines()
+    assert lines[0].endswith(" speck_p32_k64_o32_r5 has a xor_differential trail of weight 12.0")
+    assert lines[1].endswith(
+        " CRYPTOMINISAT_EXT terminated the search with no weight bound in 0:00:02 "
+        "(status: SATISFIABLE, total solving time: 0:00:02)"
+    )
+    assert "'total_weight': 12.0" in lines[2]
+    assert lines[3].endswith(" speck_p32_k64_o32_r5 has a xor_differential trail of weight 9.0")
+    assert lines[4].endswith(
+        " CRYPTOMINISAT_EXT terminated the search for weight <= 11 in 0:00:04 "
+        "(status: SATISFIABLE, total solving time: 0:00:06)"
+    )
+    # the logged trail reports the solving time from the start of the search
+    assert "'total_weight': 9.0" in lines[5]
+    assert "'solving_time_seconds': 6.0" in lines[5]
+    assert lighter_solution["solving_time_seconds"] == 4.0
+    assert lines[6].endswith(" speck_p32_k64_o32_r5 has no xor_differential trail of weight <= 8")
+    assert lines[7].endswith(
+        " CRYPTOMINISAT_EXT terminated the search for weight <= 8 in 0:00:30 "
+        "(status: UNSATISFIABLE, total solving time: 0:00:36)"
+    )
+    assert len(lines) == 8

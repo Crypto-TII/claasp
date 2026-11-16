@@ -519,6 +519,60 @@ def save_trail_lower_bounds_and_time_estimates(file_name, solution, searched_wei
         f.write(message)
 
 
+def save_trail_upper_bounds_and_times(file_name, solution, searched_weight, search_time, total_time):
+    """
+    Append to ``file_name`` the result of the last step of a decreasing (from above) trail search.
+
+    The search looks for a trail of weight at most ``searched_weight``, each time lowering ``searched_weight`` below
+    the weight of the last trail found. If the last step is SATISFIABLE, the weight of the found trail is an upper
+    bound for the lowest weight, and the full solution is written; its ``solving_time_seconds`` is replaced by
+    ``total_time``, so that each logged trail reports the time needed to find it from the start of the search. If
+    the last step is UNSATISFIABLE, ``searched_weight`` is a lower bound (strict) for the weight of the trails.
+
+    INPUT:
+
+    - ``file_name`` -- **string**; the path of the log file; the content is appended
+    - ``solution`` -- **dictionary**; the solution of the last step, as returned by the ``solve`` method of the model
+    - ``searched_weight`` -- **integer**; the weight bound of the last step, or `None` if the weight was not bounded
+    - ``search_time`` -- **float**; the elapsed wall-clock time (in seconds) of the last step
+    - ``total_time`` -- **float**; the solving time (in seconds) of all the steps so far
+
+    EXAMPLES::
+
+        sage: import os
+        sage: from sage.misc.temporary_file import tmp_filename
+        sage: from claasp.cipher_modules.models.utils import save_trail_upper_bounds_and_times
+        sage: file_name = tmp_filename(ext='.log')
+        sage: solution = {'cipher': 'speck_p32_k64_o32_r5', 'model_type': 'xor_differential',
+        ....:             'solver_name': 'CADICAL_EXT', 'status': 'UNSATISFIABLE', 'total_weight': None}
+        sage: save_trail_upper_bounds_and_times(file_name, solution, 8, 1.0, 3.0)
+        sage: with open(file_name) as f:
+        ....:     'has no xor_differential trail of weight <= 8' in f.read()
+        True
+        sage: os.remove(file_name)
+    """
+    timestamp = str(datetime.datetime.now().replace(microsecond=0))
+    bound = "with no weight bound" if searched_weight is None else f"for weight <= {int(searched_weight)}"
+    message = ""
+    if solution["status"] == UNSATISFIABLE:
+        weight_text = "" if searched_weight is None else f" of weight <= {int(searched_weight)}"
+        message += f"{timestamp} {solution['cipher']} has no {solution['model_type']} trail{weight_text}\n"
+    elif solution["status"] == SATISFIABLE:
+        message += (
+            f"{timestamp} {solution['cipher']} has a {solution['model_type']} trail of weight "
+            f"{solution['total_weight']}\n"
+        )
+    message += (
+        f"{timestamp} {solution['solver_name']} terminated the search {bound} in "
+        f"{datetime.timedelta(seconds=round(float(search_time)))} (status: {solution['status']}, total solving "
+        f"time: {datetime.timedelta(seconds=round(float(total_time)))})\n"
+    )
+    if solution["status"] == SATISFIABLE:
+        message += f"{dict(solution, solving_time_seconds=total_time)}\n"
+    with open(file_name, "a") as f:
+        f.write(message)
+
+
 def write_model_to_file(model_to_write, file_name):
     """
     Write the solver model into a file inside the current directory.
