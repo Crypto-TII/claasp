@@ -349,6 +349,88 @@ class SatXorLinearModel(SatModel):
 
         return solution
 
+    def _xor_linear_model_builder(self, fixed_values):
+        """Return a function building the model, with ``fixed_values``, for a given weight."""
+
+        def build_model(weight):
+            self.build_xor_linear_trail_model(weight=weight, fixed_variables=fixed_values)
+
+        return build_model
+
+    def search_xor_linear_trail_down_to_weight(
+        self,
+        end_weight,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        options=None,
+        start_weight=None,
+        log=False,
+    ):
+        """
+        Return the lowest weight XOR linear trail found by a search from above, stopping at ``end_weight``.
+
+        First, a trail of weight at most ``start_weight`` is searched (any trail, if ``start_weight`` is `None`).
+        Then, as long as the last trail found weighs more than ``end_weight``, a trail of weight at most the weight of
+        the last trail minus 1 is searched. Therefore, the returned solution is:
+
+        * a trail of weight at most ``end_weight``, if it exists (not necessarily the lowest weight one)
+        * the lowest weight trail, otherwise
+        * the UNSATISFIABLE solution (``total_weight`` is `None`), if no trail of weight at most ``start_weight``
+          exists
+
+        With ``end_weight=0`` the search finds the lowest weight trail.
+        By default, the search removes the key schedule, if any.
+
+        INPUT:
+
+        - ``end_weight`` -- **integer**; the search stops as soon as a trail of weight at most ``end_weight`` is found
+        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **integer** (default: `None`); an upper bound for the weight of the first trail. If
+          `None`, the first trail is searched without any weight bound
+        - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
+          ``<cipher_id>__sat_search_xor_linear_trail_down_to_weight_<end_weight>__<solver_name>solver[_<options>].log``
+          the result of the search and the trail found, if any (see
+          :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_linear_model import SatXorLinearModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=4)
+            sage: sat = SatXorLinearModel(speck)
+            sage: trail = sat.search_xor_linear_trail_down_to_weight(0)
+            sage: trail['total_weight']
+            3.0
+
+            # no trail of weight at most 2 exists
+            sage: trail = sat.search_xor_linear_trail_down_to_weight(0, start_weight=2)
+            sage: trail['status'], trail['total_weight']
+            ('UNSATISFIABLE', None)
+        """
+        log_file_name = (
+            f"{self._cipher}__sat_search_xor_linear_trail_down_to_weight_{end_weight}"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        solution = self._search_trail_down_to_weight(
+            self._xor_linear_model_builder(fixed_values),
+            XOR_LINEAR,
+            end_weight,
+            start_weight,
+            log_file_name,
+            solver_name,
+            options,
+            log,
+        )
+        solution["test_name"] = "search_xor_linear_trail_down_to_weight"
+
+        return solution
+
     def find_lowest_weight_xor_linear_trail_with_matsui_bounds(
         self,
         matsui_bounds,

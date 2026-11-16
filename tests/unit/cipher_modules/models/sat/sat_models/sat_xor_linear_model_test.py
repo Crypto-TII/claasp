@@ -105,6 +105,22 @@ def test_find_lowest_weight_xor_linear_trail_with_log(tmp_path, monkeypatch):
     assert f"'total_weight': {trail['total_weight']!r}" in log_lines[-1]
 
 
+def test_search_xor_linear_trail_down_to_weight():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    sat = SatXorLinearModel(speck)
+
+    trail = sat.search_xor_linear_trail_down_to_weight(0)
+    assert trail["total_weight"] == 3.0
+    assert trail["test_name"] == "search_xor_linear_trail_down_to_weight"
+
+    trail = sat.search_xor_linear_trail_down_to_weight(6)
+    assert 3 <= trail["total_weight"] <= 6
+
+    trail = sat.search_xor_linear_trail_down_to_weight(0, start_weight=2)
+    assert trail["status"] == "UNSATISFIABLE"
+    assert trail["total_weight"] is None
+
+
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
     sat = SatXorLinearModel(speck)
