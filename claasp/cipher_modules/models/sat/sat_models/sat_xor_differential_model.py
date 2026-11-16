@@ -26,7 +26,6 @@ from claasp.cipher_modules.models.utils import (
     get_single_key_scenario_format_for_fixed_values,
     hex_to_bitlist,
     join_and_sanitize_strings,
-    save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
     set_fixed_variables,
 )
@@ -612,31 +611,10 @@ class SatXorDifferentialModel(SatModel):
             solution = self._search_trail_down_to_weight(
                 build_model, XOR_DIFFERENTIAL, 0, start_weight, log_file_name, solver_name, options, log
             )
-            solution["test_name"] = "find_lowest_weight_xor_differential_trail"
-            return solution
-
-        searched_weights, search_times = [], []
-        current_weight = 0 if start_weight is None else start_weight
-        total_time = 0
-        max_memory = 0
-        while True:
-            start_building_time = time.time()
-            self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
-            end_building_time = time.time()
-            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-            end_solving_time = time.time()
-            solution["building_time_seconds"] = end_building_time - start_building_time
-            total_time += solution["solving_time_seconds"]
-            max_memory = max((max_memory, solution["memory_megabytes"]))
-            if log:
-                searched_weights.append(current_weight)
-                search_times.append(end_solving_time - end_building_time)
-                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
-            if solution["total_weight"] is not None:
-                break
-            current_weight += 1
-        solution["solving_time_seconds"] = total_time
-        solution["memory_megabytes"] = max_memory
+        else:
+            solution = self._search_trail_up_from_weight(
+                build_model, XOR_DIFFERENTIAL, start_weight, log_file_name, solver_name, options, log
+            )
         solution["test_name"] = "find_lowest_weight_xor_differential_trail"
 
         return solution

@@ -182,6 +182,42 @@ class SatModel:
 
         return solution
 
+    def _search_trail_up_from_weight(
+        self, build_model, model_type, start_weight, log_file_name, solver_name, options, log
+    ):
+        """
+        Return the lowest weight trail found by a search from below, starting from ``start_weight``.
+
+        It is the common part of the searches from below of the models (see e.g.
+        :py:meth:`~claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_lowest_weight_xor_differential_trail`):
+        ``build_model`` is a function building the model for a given weight bound. The weights are tried in
+        increasing order, starting from ``start_weight`` (`0` if `None`), until a trail is found.
+        """
+        searched_weights, search_times = [], []
+        current_weight = 0 if start_weight is None else start_weight
+        total_time = 0
+        max_memory = 0
+        while True:
+            start_building_time = time.time()
+            build_model(current_weight)
+            end_building_time = time.time()
+            solution = self.solve(model_type, solver_name=solver_name, options=options)
+            end_solving_time = time.time()
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max(max_memory, solution["memory_megabytes"])
+            if log:
+                searched_weights.append(current_weight)
+                search_times.append(end_solving_time - end_building_time)
+                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
+            if solution["total_weight"] is not None:
+                break
+            current_weight += 1
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
+
+        return solution
+
     def _search_trail_down_to_weight(
         self, build_model, model_type, end_weight, start_weight, log_file_name, solver_name, options, log
     ):

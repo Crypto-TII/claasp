@@ -36,7 +36,6 @@ from claasp.cipher_modules.models.sat.utils.utils import (
 from claasp.cipher_modules.models.utils import (
     get_bit_bindings,
     join_and_sanitize_strings,
-    save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
 )
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, INPUT_TWEAK
@@ -593,36 +592,10 @@ class SatDifferentialLinearModel(SatModel):
             solution = self._search_trail_down_to_weight(
                 build_model, "XOR_DIFFERENTIAL_LINEAR_MODEL", 0, start_weight, log_file_name, solver_name, options, log
             )
-            solution["test_name"] = "find_lowest_weight_differential_linear_trail"
-            return solution
-
-        searched_weights, search_times = [], []
-        current_weight = 0 if start_weight is None else start_weight
-        total_time = 0
-        max_memory = 0
-        constraints = self.fix_variables_value_constraints(
-            fixed_values, self.regular_components, self.truncated_components, self.linear_components
-        )
-        while True:
-            start_building_time = time.time()
-            self.build_xor_differential_linear_model(current_weight, num_unknown_vars)
-            self.model_constraints.extend(constraints)
-            end_building_time = time.time()
-            solution = self.solve("XOR_DIFFERENTIAL_LINEAR_MODEL", solver_name=solver_name, options=options)
-            end_solving_time = time.time()
-            solution["building_time_seconds"] = end_building_time - start_building_time
-            total_time += solution["solving_time_seconds"]
-            max_memory = max(max_memory, solution["memory_megabytes"])
-            if log:
-                searched_weights.append(current_weight)
-                search_times.append(end_solving_time - end_building_time)
-                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
-            if solution["total_weight"] is not None:
-                break
-            current_weight += 1
-
-        solution["solving_time_seconds"] = total_time
-        solution["memory_megabytes"] = max_memory
+        else:
+            solution = self._search_trail_up_from_weight(
+                build_model, "XOR_DIFFERENTIAL_LINEAR_MODEL", start_weight, log_file_name, solver_name, options, log
+            )
         solution["test_name"] = "find_lowest_weight_differential_linear_trail"
 
         return solution
