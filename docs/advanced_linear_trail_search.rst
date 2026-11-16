@@ -25,9 +25,7 @@ exists. Solver errors are raised as exceptions and never returned as ``None``.
 Find an optimal linear trail
 ----------------------------
 
-The first example finds an optimal linear trail. The default solver is Kissat; you can
-select another one with the ``solver`` parameter, as described in
-:ref:`linear-trail-other-solvers`. Instantiate the class of the primitive to analyze and call
+Instantiate the class of the primitive to analyze and call
 the search method on its ``analysis`` attribute:
 
 .. plot::
@@ -39,6 +37,10 @@ the search method on its ``analysis`` attribute:
 
    speck = Speck(number_of_rounds=3)
    trail = speck.analysis.find_lowest_weight_xor_linear_trail()
+
+The first example finds an optimal linear trail. The default solver for the method ``find_lowest_weight_xor_linear_trail`` is Kissat; you can
+select another one with the ``solver`` parameter, as described in
+:ref:`linear-trail-other-solvers`. 
 
 Terminal report
 ---------------
