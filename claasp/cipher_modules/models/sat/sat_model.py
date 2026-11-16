@@ -67,6 +67,7 @@ from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_lower_bo
 from claasp.cipher_modules.models.utils import (
     convert_solver_solution_to_dictionary,
     save_trail_lower_bounds_and_time_estimates,
+    save_trail_upper_bounds_and_times,
     set_component_solution,
 )
 from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
@@ -180,6 +181,58 @@ class SatModel:
         solution["memory_megabytes"] = max_memory
 
         return solution
+
+    def _search_trail_down_to_weight(
+        self, build_model, model_type, end_weight, start_weight, log_file_name, solver_name, options, log
+    ):
+        """
+        Return the lowest weight trail found by a search from above, stopping at ``end_weight``.
+
+        It is the common part of the searches from above of the models (see e.g.
+        :py:meth:`~claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.search_xor_differential_trail_down_to_weight`):
+        ``build_model`` is a function building the model for a given weight bound (`-1` meaning no bound). First, a
+        trail of weight at most ``start_weight`` is searched (any trail, if ``start_weight`` is `None`). Then, as long
+        as the last trail found weighs more than ``end_weight``, a trail of weight at most the weight of the last trail
+        minus 1 is searched. The search stops when the solver finds no trail, returning the last trail found, or when
+        a trail of weight at most ``end_weight`` is found, returning it.
+
+        If no trail of weight at most ``start_weight`` exists, the UNSATISFIABLE solution is returned.
+        """
+        if end_weight < 0:
+            raise ValueError("end_weight must be non-negative")
+        if start_weight is not None and start_weight < end_weight:
+            raise ValueError("start_weight must be greater than or equal to end_weight")
+
+        total_time = 0
+        max_memory = 0
+
+        def search_weight_at_most(weight):
+            nonlocal total_time, max_memory
+            start_building_time = time.time()
+            build_model(-1 if weight is None else weight)
+            end_building_time = time.time()
+            solution = self.solve(model_type, solver_name=solver_name, options=options)
+            end_solving_time = time.time()
+            solution["building_time_seconds"] = end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max(max_memory, solution["memory_megabytes"])
+            if log:
+                save_trail_upper_bounds_and_times(
+                    log_file_name, solution, weight, end_solving_time - end_building_time, total_time
+                )
+            return solution
+
+        searched_weight = start_weight
+        best_solution = solution = search_weight_at_most(searched_weight)
+        while solution["total_weight"] is not None and solution["total_weight"] > end_weight and searched_weight != 0:
+            searched_weight = max(int(solution["total_weight"]) - 1, 0)
+            solution = search_weight_at_most(searched_weight)
+            if solution["total_weight"] is not None:
+                best_solution = solution
+        best_solution["solving_time_seconds"] = total_time
+        best_solution["memory_megabytes"] = max_memory
+
+        return best_solution
 
     def _get_cipher_inputs_components_solutions(self, out_suffix, variable2value):
         components_solutions = {}

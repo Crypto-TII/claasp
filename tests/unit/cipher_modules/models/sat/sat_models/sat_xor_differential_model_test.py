@@ -189,6 +189,54 @@ def test_find_lowest_weight_xor_differential_trail_with_start_weight(tmp_path, m
     assert "has a xor_differential trail of weight 5.0\n" in log_content
 
 
+def test_search_xor_differential_trail_down_to_weight():
+    speck = SpeckBlockCipher(number_of_rounds=5)
+    sat = SatXorDifferentialModel(speck)
+
+    trail = sat.search_xor_differential_trail_down_to_weight(0)
+    assert trail["total_weight"] == 9.0
+    assert trail["test_name"] == "search_xor_differential_trail_down_to_weight"
+
+    # the search stops as soon as a trail of weight at most end_weight is found
+    trail = sat.search_xor_differential_trail_down_to_weight(12)
+    assert trail["status"] == SATISFIABLE
+    assert 9 <= trail["total_weight"] <= 12
+
+    # the search starts from a trail of weight at most start_weight
+    trail = sat.search_xor_differential_trail_down_to_weight(0, start_weight=10)
+    assert trail["total_weight"] == 9.0
+    trail = sat.search_xor_differential_trail_down_to_weight(9, start_weight=9)
+    assert trail["total_weight"] == 9.0
+
+    # no trail of weight at most start_weight
+    trail = sat.search_xor_differential_trail_down_to_weight(0, start_weight=8)
+    assert trail["status"] == "UNSATISFIABLE"
+    assert trail["total_weight"] is None
+
+
+def test_search_xor_differential_trail_down_to_weight_with_wrong_weights():
+    sat = SatXorDifferentialModel(SpeckBlockCipher(number_of_rounds=2))
+    with pytest.raises(ValueError, match="end_weight"):
+        sat.search_xor_differential_trail_down_to_weight(-1)
+    with pytest.raises(ValueError, match="start_weight"):
+        sat.search_xor_differential_trail_down_to_weight(5, start_weight=4)
+
+
+def test_search_xor_differential_trail_down_to_weight_related_key():
+    speck = SpeckBlockCipher(number_of_rounds=5)
+    sat = SatXorDifferentialModel(speck)
+    key = set_fixed_variables(
+        component_id=INPUT_KEY, constraint_type="not_equal", bit_positions=range(64), bit_values=[0] * 64
+    )
+    plaintext = set_fixed_variables(
+        component_id=INPUT_PLAINTEXT, constraint_type="equal", bit_positions=range(32), bit_values=[0] * 32
+    )
+    trail = sat.search_xor_differential_trail_down_to_weight(0, fixed_values=[key, plaintext])
+    from_below = sat.find_lowest_weight_xor_differential_trail(fixed_values=[key, plaintext])
+
+    assert trail["total_weight"] == from_below["total_weight"]
+
+
 @requires_mallob
 def test_find_lowest_weight_xor_differential_trail_with_mallob():
     speck = speck_5rounds
