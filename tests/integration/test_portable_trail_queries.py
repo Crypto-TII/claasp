@@ -294,3 +294,50 @@ def test_repeated_base_witness_is_rejected_when_it_violates_a_block(driver, kind
                 )
             )
             model.enumerate_trails(replay, limit=2)
+
+
+@pytest.mark.parametrize("query", ["one", "fixed", "bounded", "enumerate"])
+def test_fixed_linear_output_mask_is_enforced_by_every_backend(driver, query):
+    from claasp.primitives import BitVectorSBox as SBoxPrimitive
+
+    p = SBoxPrimitive(3, tuple(range(8)))
+    for mask, possible in ((0b001, True), (0b010, False), (0, False)):
+        options = dict(solver=driver, fixed_input_masks={"input": 0b001}, output_mask=mask)
+        if query == "one":
+            result = p.analysis.find_one_xor_linear_trail(maximum_weight=0, **options)
+        elif query == "fixed":
+            result = p.analysis.find_one_xor_linear_trail_with_fixed_weight(0, **options)
+        else:
+            method = (
+                p.analysis.find_all_xor_linear_trails_with_weight_at_most
+                if query == "bounded"
+                else p.analysis.enumerate_xor_linear_trails
+            )
+            collection = method(maximum_weight=0, limit=8, **options).require_complete()
+            assert dict(collection.reproducibility)["output_mask"] == repr(mask)
+            result = collection.trails[0] if collection.trails else None
+        assert (result is not None) == possible
+        if result is not None:
+            assert dict(result.input_masks)["input"] == 0b001
+            assert result.output_mask == mask and result.total_weight == 0
+
+
+def test_fixed_linear_output_preserves_negative_nonzero_weight_transition(driver):
+    p = _and_primitive()
+    trail = p.analysis.find_one_xor_linear_trail_with_fixed_weight(
+        1, fixed_input_masks={"plaintext": 0b11}, output_mask=0b1, solver=driver
+    )
+    assert trail is not None
+    coefficient = sum((-1) ** ((x.bit_count() + ((x >> 1) & x & 1)) % 2) for x in range(4)) / 4
+    assert coefficient == -0.5
+    assert trail.output_mask == 1 and trail.total_weight == 1 and trail.sign == -1
+
+
+def test_fixed_output_mask_is_solved_before_enumeration_limit(driver):
+    from claasp.primitives import BitVectorSBox as SBoxPrimitive
+
+    result = SBoxPrimitive(3, tuple(range(8))).analysis.enumerate_xor_linear_trails(
+        maximum_weight=0, output_mask=0b111, limit=1, solver=driver
+    )
+    assert len(result.trails) == 1
+    assert result.trails[0].output_mask == 0b111

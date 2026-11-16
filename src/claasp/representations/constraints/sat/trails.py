@@ -3416,6 +3416,10 @@ class WordXorLinearSATModel:
     total-weight bound are represented explicitly. Decoding independently
     rechecks component transitions, correlation signs, and graph wiring.
 
+    ``output_mask`` fixes the packed MSB-first mask at the complete graph
+    output through the shared linear relation. None is unrestricted, and zero
+    explicitly fixes all output-mask bits to zero.
+
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
@@ -3444,6 +3448,7 @@ class WordXorLinearSATModel:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ) -> None:
         self._shared = WordXorLinearSMTModel(
@@ -3452,6 +3457,7 @@ class WordXorLinearSATModel:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         self.primitive = self._shared.primitive
@@ -3459,6 +3465,7 @@ class WordXorLinearSATModel:
         self.nonzero_input = self._shared.nonzero_input
         self.fixed_input_masks = self._shared.fixed_input_masks
         self.fixed_inputs = self._shared.fixed_inputs
+        self.output_mask = self._shared.output_mask
 
     def cnf_formula(self) -> CNFFormula:
         """Return the complete weighted linear trail formula."""
@@ -3491,7 +3498,10 @@ class WordXorLinearSATModel:
             self,
             formula,
             solver,
-            (("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),),
+            (
+                ("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),
+                ("output_mask", repr(self.output_mask)),
+            ),
         )
         return _enumerate(self, formula, solver, WordXorLinearEnumeration, metadata, limit)
 

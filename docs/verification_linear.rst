@@ -27,6 +27,46 @@ weight restrictions. The MILP and CP wrappers reuse this validation.
    >>> model.check_characteristic(replace(characteristic, output_mask=0))
    False
 
+Fixing both linear endpoints
+----------------------------
+
+Use ``fixed_input_masks`` together with ``output_mask`` to constrain a
+characteristic before solving or enumerating. Masks are ordinary packed
+integers in MSB-first order; ``output_mask`` covers the complete graph output,
+including selected outputs containing multiple units. ``None`` leaves the
+output unrestricted, while ``0`` explicitly fixes every output-mask bit to zero.
+
+The default query solver is Z3, which must be installed for this example.
+For the identity S-box, equal input and output masks are feasible; unequal
+masks are proved impossible:
+
+.. doctest::
+
+   >>> from claasp.primitives import BitVectorSBox
+   >>> p = BitVectorSBox(3, (0b000, 0b001, 0b010, 0b011,
+   ...                     0b100, 0b101, 0b110, 0b111))
+   >>> trail = p.analysis.find_one_xor_linear_trail(
+   ...     maximum_weight=0, fixed_input_masks={"input": 0b001},
+   ...     output_mask=0b001)
+   >>> trail.output_mask == 0b001
+   True
+   >>> p.analysis.find_one_xor_linear_trail(
+   ...     maximum_weight=0, fixed_input_masks={"input": 0b001},
+   ...     output_mask=0b010) is None
+   True
+
+The fixed-weight and bounded-enumeration query methods accept the same
+``output_mask`` keyword, as do the direct Word SAT/SMT/MILP/CP linear models.
+A finite enumeration limit can leave undiscovered characteristics; inspect
+``complete`` or call ``require_complete()``. Neither one-trail search nor
+enumeration alone measures the full linear hull. On keyed graphs, adding
+``output_mask`` preserves the query's existing concrete-key defaults;
+``fixed_inputs={"key": ...}`` still selects an explicit concrete key.
+
+The minimum-weight convenience interfaces currently expose neither the
+analogous differential output restriction nor this linear output restriction;
+adding endpoint options to both optimization interfaces is a separate follow-up.
+
 Distinguisher probability/correlation evaluation
 ------------------------------------------------
 
