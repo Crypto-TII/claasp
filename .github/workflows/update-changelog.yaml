@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -34,7 +34,6 @@ jobs:
           github_token: ${{ secrets.AUTHORIZATION_TOKEN }}
           message: 'Changelog version updated'
           tags: true
-          force: true
 
       - name: Create tags
         if: ${{ env.should_add_last_changes_to_master == 'true' }}
@@ -55,7 +54,7 @@ jobs:
           message: ${{ env.release_message }}
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v7
         with:
           python-version: '3.x'
 
@@ -64,15 +63,14 @@ jobs:
 
       - name: Create release
         if: ${{ env.should_add_last_changes_to_master == 'true' }}
-        uses: actions/create-release@v1
+        run: |
+          gh release create "${{ env.tag_name }}" \
+            --verify-tag \
+            --title "Release ${{ env.tag_name }}" \
+            --notes-file ./docs/release_notes.md
         env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.tag_name }}
-          release_name: Release ${{ env.tag_name }}
-          body_path: ./docs/release_notes.md
-          draft: false
-          prerelease: false
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
 
       - name: Update develop branch
         if: ${{ env.should_add_last_changes_to_master == 'true' }}

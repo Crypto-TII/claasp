@@ -47,6 +47,7 @@ class Sigma(LinearLayer):
         sage: print(component.input_bit_size)
         4
     """
+
     def __init__(
         self,
         current_round_number,

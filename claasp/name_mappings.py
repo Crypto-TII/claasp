@@ -41,7 +41,7 @@ SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_ONE_SOLUTION = "semi_deterministic
 SEMI_DETERMINISTIC_TRUNCATED_XOR_DIFFERENTIAL_OPTIMAL_SOLUTION = "semi_deterministic_truncated_xor_differential_optimal_solution"
 IMPOSSIBLE_XOR_DIFFERENTIAL = "impossible_xor_differential"
 BOOMERANG_XOR_DIFFERENTIAL = "boomerang_xor_differential"
-
+XOR_QUASIDIFFERENTIAL = "xor_quasidifferential"
 # cipher inverse
 CIPHER_INVERSE_SUFFIX = "_inverse"
 

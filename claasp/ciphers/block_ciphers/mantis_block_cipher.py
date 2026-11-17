@@ -50,8 +50,9 @@ class MantisBlockCipher(Cipher):
     """
     Return a cipher object of the MANTIS Block Cipher.
 
-    The MANTIS cipher is a lightweight tweakable block cipher designed for low-latency applications.
+    The MANTIS cipher is a lightweight tweakable block cipher designed for low-latency applications [BJKL+2016]_.
     It operates on 64-bit blocks with a 128-bit key and a 64-bit tweak.
+
     INPUT:
 
     - ``number_of_rounds`` -- **integer** (default: `6`);

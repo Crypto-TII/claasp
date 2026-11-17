@@ -878,10 +878,12 @@ def THETA_GASTON(input, rotation_amounts=(1, 18, 23, 25, 32, 52, 60, 63)):
     Perform the twin column parity mixer (mixing layer) of Gaston.
 
     INPUT:
+
     - ``input`` -- BitArray of length 320 or 640, interpreted as 5 rows of 64 bits.
     - ``rotation_amounts`` -- **tuple of 8 integers** (default: (1, 18, 23, 25, 32, 52, 60, 63)):
-        - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
-        - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
+
+      - First three values: `r`, `s`, `u` — rotation amounts for P, Q, and E.
+      - Remaining five values: `t0` through `t4` — row-specific rotation amounts used in computing Q.
 
     EXAMPLES::
 
@@ -1241,7 +1243,8 @@ def index_list_to_expression_str_word(index_list):
     Convert a word-level index-based expression list to a readable string.
 
     Each entry is [field_coefficient, [indices]].
-    For example:
+    For example::
+
         [[1, [0]], [1, [2]], [1, [11]]] -> 'x0 + x2 + x11'
     """
     term_strs = []

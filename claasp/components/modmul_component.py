@@ -58,6 +58,7 @@ class ModMul(Modular):
         sage: print(component3.description)  # 6 total bits / output_bit_size 2 = 3 operands
         ['MODMUL', 3, 4]
     """
+
     def __init__(
         self,
         current_round_number,
@@ -93,8 +94,9 @@ class ModMul(Modular):
         This overrides the model inherited from :class:`Modular`, whose carry pivot is valid for an
         addition but unsound for a product. The model accumulates the activity of the operands as a
         running OR from the least significant bit upwards. The constraints are:
-            - 0, for every output bit below the lowest active or unknown operand bit;
-            - ? (unknown), for every output bit from that position upwards;
+
+        - 0, for every output bit below the lowest active or unknown operand bit;
+        - ? (unknown), for every output bit from that position upwards;
 
         Note that encoding symbols for deterministic truncated XOR differential model
         requires two variables per each symbol.
@@ -148,9 +150,10 @@ class ModMul(Modular):
         ``0 = inactive``, ``1 = active`` and ``2 = unknown``. The activity of the operands is
         accumulated as a running OR from the least significant bit upwards, and every output bit is
         set to twice that accumulated flag. The constraints are:
-            - 0, for every output bit below the lowest active or unknown operand bit;
-            - 2 (unknown), for every output bit from that position upwards;
-            - no output bit is ever a determined 1.
+
+        - 0, for every output bit below the lowest active or unknown operand bit;
+        - 2 (unknown), for every output bit from that position upwards;
+        - no output bit is ever a determined 1.
 
         .. WARNING::
 

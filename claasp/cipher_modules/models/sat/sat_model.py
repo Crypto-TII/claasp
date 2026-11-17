@@ -63,7 +63,12 @@ from sage.sat.solvers.satsolver import SAT
 
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
-from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
+from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_lower_bound, matsui_weight_constraints
+from claasp.cipher_modules.models.utils import (
+    convert_solver_solution_to_dictionary,
+    save_trail_lower_bounds_and_time_estimates,
+    set_component_solution,
+)
 from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
@@ -119,6 +124,62 @@ class SatModel:
         """
         for clause in numerical_cnf:
             solver.add_clause([int(literal) for literal in clause.split()])
+
+    def _component_propagation_variables(self, component):
+        """
+        Return the variables of the propagation constraints of ``component`` in the model.
+
+        It must be overwritten by the models searching trails with Matsui's bounding conditions.
+        """
+        raise NotImplementedError("The propagation variables of the components are not defined for this model.")
+
+    def _find_lowest_weight_trail_with_matsui_bounds(
+        self, matsui_bounds, build_propagation_model, model_type, log_file_name, solver_name, options, start_weight, log
+    ):
+        """
+        Return the solution representing a trail with the lowest weight, using Matsui's bounding conditions.
+
+        It is the common part of the searches with Matsui's bounding conditions of the models (see e.g.
+        :py:meth:`~claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model.SatXorDifferentialModel.find_lowest_weight_xor_differential_trail_with_matsui_bounds`):
+        ``build_propagation_model`` is a function without arguments building the model without weight constraints,
+        which is built only once, since the propagation constraints do not depend on the weight. Then, the weights
+        are tried in increasing order, starting from the lower bound given by ``matsui_bounds`` (or from
+        ``start_weight`` if larger), each time replacing only the weight constraints.
+        """
+        number_of_rounds = self._cipher.number_of_rounds
+        start_building_time = time.time()
+        build_propagation_model()
+        hw_variables_by_round = self._hw_variables_by_round()
+        propagation_variables = self._variables_list
+        propagation_constraints = self._model_constraints
+        propagation_building_time = time.time() - start_building_time
+
+        searched_weights, search_times = [], []
+        current_weight = max(start_weight, matsui_lower_bound(matsui_bounds, number_of_rounds))
+        total_time = 0
+        max_memory = 0
+        while True:
+            start_building_time = time.time()
+            variables, constraints = matsui_weight_constraints(hw_variables_by_round, current_weight, matsui_bounds)
+            self._variables_list = propagation_variables + variables
+            self._model_constraints = propagation_constraints + constraints
+            end_building_time = time.time()
+            solution = self.solve(model_type, solver_name=solver_name, options=options)
+            end_solving_time = time.time()
+            solution["building_time_seconds"] = propagation_building_time + end_building_time - start_building_time
+            total_time += solution["solving_time_seconds"]
+            max_memory = max((max_memory, solution["memory_megabytes"]))
+            if log:
+                searched_weights.append(current_weight)
+                search_times.append(end_solving_time - end_building_time)
+                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
+            if solution["total_weight"] is not None:
+                break
+            current_weight += 1
+        solution["solving_time_seconds"] = total_time
+        solution["memory_megabytes"] = max_memory
+
+        return solution
 
     def _get_cipher_inputs_components_solutions(self, out_suffix, variable2value):
         components_solutions = {}
@@ -181,6 +242,29 @@ class SatModel:
         variable_to_value = {variable: 0 if values[i][0] == "-" else 1 for i, variable in enumerate(variables)}
 
         return variable_to_value
+
+    def _hw_variables_by_round(self):
+        """
+        Return the weight variables (those starting with ``hw_``) of the current model, grouped by round.
+
+        The round of a weight variable is the round of the component producing it: the propagation constraints of
+        each component are computed again to get its variables, so that the building methods are not modified.
+        """
+        hw_variables_by_round = []
+        found = set()
+        for round_number in range(self._cipher.number_of_rounds):
+            round_hw_variables = []
+            for component in self._cipher.rounds.round_at(round_number).components:
+                for variable in self._component_propagation_variables(component):
+                    if variable.startswith("hw_") and variable not in found:
+                        round_hw_variables.append(variable)
+                        found.add(variable)
+            hw_variables_by_round.append(round_hw_variables)
+        model_hw_variables = {variable for variable in self._variables_list if variable.startswith("hw_")}
+        if found != model_hw_variables:
+            raise ValueError("The weight variables of the model do not match the ones of its components.")
+
+        return hw_variables_by_round
 
     def _parallel_counter(self, hw_list, weight):
         """

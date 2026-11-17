@@ -28,6 +28,7 @@ from claasp.cipher_modules.models.utils import (
     differential_truncated_checker_permutation,
     differential_truncated_checker_permutation_input_and_output_truncated,
     differential_truncated_checker_single_key,
+    exponential_predict,
     find_sign_for_xor_linear_trails,
     get_related_key_scenario_format_for_fixed_values,
     get_single_key_scenario_format_for_fixed_values,
@@ -37,6 +38,7 @@ from claasp.cipher_modules.models.utils import (
     linear_checker_for_block_cipher_single_key,
     linear_checker_permutation,
     print_components_values,
+    save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
     set_component_value_weight_sign,
     set_fixed_variables,
@@ -815,3 +817,68 @@ def test_linear_checker_for_block_cipher_single_key_speck32_64_trails():
         assert abs(exact) == 1.0
         half = linear_checker_for_block_cipher_single_key(speck3, format(0x18000028, "032b"), format(0x02050204, "032b"), 1 << 14, 32, 64, key, seed=5)
         assert math.isclose(abs(half), 0.5, abs_tol=0.05)
+
+
+def test_exponential_predict():
+    x_obs = [1, 2, 3, 4, 5]
+    y_obs = [2.1, 3.9, 8.2, 15.8, 32.5]
+    predictions = exponential_predict(x_obs, y_obs, [6, 7, 8], seed=0)
+
+    assert [p["x"] for p in predictions] == [6.0, 7.0, 8.0]
+    for p in predictions:
+        assert all(math.isfinite(p[key]) for key in ("y_pred", "y_low", "y_high"))
+        assert p["y_low"] <= p["y_pred"] <= p["y_high"]
+    assert predictions[0]["y_pred"] < predictions[1]["y_pred"] < predictions[2]["y_pred"]
+    assert 50 < predictions[0]["y_pred"] < 80
+
+    exact = exponential_predict([1, 2, 3, 4], [2, 4, 8, 16], 5, seed=0)
+    assert len(exact) == 1
+    assert math.isclose(exact[0]["y_pred"], 32)
+
+
+def test_exponential_predict_invalid_inputs():
+    with pytest.raises(ValueError):
+        exponential_predict([1], [1.0], [2])
+    with pytest.raises(ValueError):
+        exponential_predict([1, 2], [1.0], [3])
+    with pytest.raises(ValueError):
+        exponential_predict([1, 2], [1.0, 0.0], [3])
+    with pytest.raises(ValueError):
+        exponential_predict([1, 2], [1.0, 2.0], [3], ci=100)
+    with pytest.raises(ValueError):
+        exponential_predict([1, 2], [1.0, 2.0], [3], prediction_quantile=1)
+
+
+def test_save_trail_lower_bounds_and_time_estimates(tmp_path):
+    file_name = str(tmp_path / "lowest_weight_search.log")
+    unsat_solution = {
+        "cipher": "speck_p32_k64_o32_r5",
+        "model_type": "xor_differential",
+        "solver_name": "CRYPTOMINISAT_EXT",
+        "status": "UNSATISFIABLE",
+        "total_weight": None,
+    }
+    sat_solution = dict(unsat_solution, status="SATISFIABLE", total_weight=3.0)
+    searched_weights = [0, 1, 2, 3]
+    search_times = [1.0, 2.0, 4.5, 9.0]
+    try:
+        save_trail_lower_bounds_and_time_estimates(file_name, unsat_solution, searched_weights[:1], search_times[:1])
+        with open(file_name) as f:
+            first_step = f.read()
+        save_trail_lower_bounds_and_time_estimates(file_name, unsat_solution, searched_weights[:3], search_times[:3])
+        save_trail_lower_bounds_and_time_estimates(file_name, sat_solution, searched_weights, search_times)
+        with open(file_name) as f:
+            content = f.read()
+    finally:
+        if os.path.exists(file_name):
+            os.remove(file_name)
+
+    assert "has no xor_differential trail of weight <= 0\n" in first_step
+    assert "expected to terminate" not in first_step
+    assert "has no xor_differential trail of weight <= 2\n" in content
+    assert "If UNSAT, the search for weight 3 is expected to terminate in" in content
+    assert "next_weights = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]\n" in content
+    assert "has no xor_differential trail of weight <= 3" not in content
+    assert "has a xor_differential trail of weight 3.0\n" in content
+    assert "terminated the search for weight 3 in 0:00:09 (status: SATISFIABLE)\n" in content
+    assert content.count("expected to terminate") == 1

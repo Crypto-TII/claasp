@@ -96,6 +96,7 @@ class TraxBlockCipher(Cipher):
         tmpy = ELL(y2 ^ y3);  x0 ^= tmpy;  x1 ^= tmpy
         (x0, x1, x2, x3) = (x3, x2, x0, x1)    # word shuffle
         (y0, y1, y2, y3) = (y3, y2, y0, y1)
+
     where ELL(v) = ROT(v ^ (v << 16), 16); ``<<`` is an ordinary
     zero-filling left *shift* on a 32-bit word (not a rotation), and
     ``ROT`` is a right rotation.

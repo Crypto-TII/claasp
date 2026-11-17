@@ -589,21 +589,21 @@ def milp_xor_truncated(model, input_1, input_2, output):
     in the deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-    model the result c of the truncated XOR between inputs a and b.
+    model the result c of the truncated XOR between inputs a and b::
 
-    _______________
-     a  |  b  |  c
-    _______________
-     0  |  0  |  0
-     0  |  1  |  1
-     0  |  2  |  2
-     1  |  0  |  1
-     1  |  1  |  0
-     1  |  2  |  2
-     2  |  0  |  2
-     2  |  1  |  2
-     2  |  2  |  2
-    _______________
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  2  |  2
+         2  |  0  |  2
+         2  |  1  |  2
+         2  |  2  |  2
+        _______________
 
     The table can be obtained with the following lines:
 
@@ -644,29 +644,29 @@ def milp_xor_truncated_wordwise(model, input_1, input_2, output):
     in deterministic truncated XOR differential model.
 
     This method uses a binary encoding (where each variable v is seen as a binary tuple (v0, v1), where v0 is the MSB) to
-    model the result c of the truncated XOR between inputs a and b.
+    model the result c of the truncated XOR between inputs a and b::
 
-    _______________
-     a  |  b  |  c
-    _______________
-     0  |  0  |  0
-     0  |  1  |  1
-     0  |  2  |  2
-     0  |  3  |  3
-     1  |  0  |  1
-     1  |  1  |  0
-     1  |  1  |  1
-     1  |  2  |  3
-     1  |  3  |  3
-     2  |  0  |  2
-     2  |  1  |  3
-     2  |  2  |  3
-     2  |  3  |  3
-     3  |  0  |  3
-     3  |  1  |  3
-     3  |  2  |  3
-     3  |  3  |  3
-    _______________
+        _______________
+         a  |  b  |  c
+        _______________
+         0  |  0  |  0
+         0  |  1  |  1
+         0  |  2  |  2
+         0  |  3  |  3
+         1  |  0  |  1
+         1  |  1  |  0
+         1  |  1  |  1
+         1  |  2  |  3
+         1  |  3  |  3
+         2  |  0  |  2
+         2  |  1  |  3
+         2  |  2  |  3
+         2  |  3  |  3
+         3  |  0  |  3
+         3  |  1  |  3
+         3  |  2  |  3
+         3  |  3  |  3
+        _______________
 
 
     Espresso was used to reduce the number of constraints to 91 inequalities.

@@ -29,7 +29,7 @@ class CastBlockCipher(Cipher):
     Return a cipher object of CAST-128 Block Cipher.
 
     Reference:
-    Implementation and Test Vectors based on [A1997].
+    Implementation and Test Vectors based on [A1997]_.
 
     INPUT:
     - ``key_bit_size`` -- **integer** (default: `128`); size of the key in bits

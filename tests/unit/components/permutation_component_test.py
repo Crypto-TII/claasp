@@ -11,6 +11,10 @@ from claasp.cipher_modules.models.milp.milp_models.milp_wordwise_deterministic_t
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
 from claasp.components.permutation_component import Permutation
 
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
+
 PERMUTATION = [1, 3, 2, 0]
 
 
@@ -96,8 +100,9 @@ def test_cms_xor_wrappers_match_cms_constraints():
 
     assert cms_diff_variables == cms_variables
     assert cms_diff_constraints == cms_constraints
-    assert cms_lin_variables == cms_variables
-    assert cms_lin_constraints == cms_constraints
+    sat_lin_variables, sat_lin_constraints = permutation_component.sat_xor_linear_mask_propagation_constraints()
+    assert cms_lin_variables == sat_lin_variables
+    assert cms_lin_constraints == sat_lin_constraints
 
 
 def test_smt_constraints():
@@ -377,3 +382,57 @@ def test_milp_wordwise_deterministic_truncated_constraints():
 
     assert len(variables) == 24
     assert len(constraints) == 12
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = PermutationCipher(bit_size=4, permutation_description=PERMUTATION)
+    model = SmtXorQuasidifferentialModel(cipher)
+    permutation_component = cipher.component_from_id("permutation_0_0")
+    variables, constraints = permutation_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == [
+        "permutation_0_0_0",
+        "permutation_0_0_1",
+        "permutation_0_0_2",
+        "permutation_0_0_3",
+        "qdt_permutation_0_0_0",
+        "qdt_permutation_0_0_1",
+        "qdt_permutation_0_0_2",
+        "qdt_permutation_0_0_3",
+    ]
+
+    assert constraints == [
+        "(assert (= permutation_0_0_0 plaintext_3))",
+        "(assert (= permutation_0_0_1 plaintext_0))",
+        "(assert (= permutation_0_0_2 plaintext_2))",
+        "(assert (= permutation_0_0_3 plaintext_1))",
+        "(assert (= qdt_permutation_0_0_0 qdt_plaintext_3))",
+        "(assert (= qdt_permutation_0_0_1 qdt_plaintext_0))",
+        "(assert (= qdt_permutation_0_0_2 qdt_plaintext_2))",
+        "(assert (= qdt_permutation_0_0_3 qdt_plaintext_1))",
+    ]
+
+
+def test_sat_permutation_linear_masks_preserve_inner_product():
+    component = make_permutation_component()
+    variables, clauses = component.sat_xor_linear_mask_propagation_constraints()
+    assert variables == [f"{component.id}_{i}_i" for i in range(4)] + [
+        f"{component.id}_{i}_o" for i in range(4)
+    ]
+    for input_mask in range(16):
+        for output_mask in range(16):
+            assignment = dict(zip(variables, [
+                (mask >> (3 - i)) & 1
+                for mask in (input_mask, output_mask) for i in range(4)
+            ]))
+            feasible = all(any(
+                assignment[literal.lstrip("-")] != literal.startswith("-")
+                for literal in clause.split()
+            ) for clause in clauses)
+            preserves_parity = all(
+                ((input_mask & value).bit_count() % 2)
+                == ((output_mask & sum(
+                    ((value >> (3 - i)) & 1) << (3 - PERMUTATION[i]) for i in range(4)
+                )).bit_count() % 2)
+                for value in range(16)
+            )
+            assert feasible == preserves_parity

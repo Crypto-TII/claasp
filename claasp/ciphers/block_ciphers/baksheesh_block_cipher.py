@@ -35,13 +35,13 @@ class BaksheeshBlockCipher(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.baksheesh_block_cipher import BaksheeshBlockCipher
-    sage: baksheesh = BaksheeshBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=35)
-    sage: baksheesh.number_of_rounds
-    35
+        sage: from claasp.ciphers.block_ciphers.baksheesh_block_cipher import BaksheeshBlockCipher
+        sage: baksheesh = BaksheeshBlockCipher(block_bit_size=128, key_bit_size=128, number_of_rounds=35)
+        sage: baksheesh.number_of_rounds
+        35
 
-    sage: baksheesh.component_from(0, 0).id
-    'xor_0_0'
+        sage: baksheesh.component_from(0, 0).id
+        'xor_0_0'
     """
     def __init__(self, block_bit_size=128, key_bit_size=128, number_of_rounds=35):
         super().__init__(

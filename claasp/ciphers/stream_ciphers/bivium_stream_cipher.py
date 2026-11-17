@@ -50,19 +50,19 @@ class BiviumStreamCipher(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
-    sage: biv = BiviumStreamCipher(keystream_bit_len = 2**8)
-    sage: key = 0xffffffffffffffffffff
-    sage: iv = 0xffffffffffffffffffff
-    sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
-    sage: biv.evaluate([key, iv]) == ks
-    True
+        sage: from claasp.ciphers.stream_ciphers.bivium_stream_cipher import BiviumStreamCipher
+        sage: biv = BiviumStreamCipher(keystream_bit_len = 2**8)
+        sage: key = 0xffffffffffffffffffff
+        sage: iv = 0xffffffffffffffffffff
+        sage: ks = 0x30d0e5ede563dee67884718977510a4c22661cf128d8f75af4a2708276014d83
+        sage: biv.evaluate([key, iv]) == ks
+        True
 
-    sage: key = 0xffffffffff0000000000
-    sage: iv = 0xffffffffff
-    sage: ks = 0xdebe55784f853606399af3f6f4b8d0a706963a91f2ba4c687baea16da074f3c3
-    sage: biv.evaluate([key, iv]) == ks
-    True
+        sage: key = 0xffffffffff0000000000
+        sage: iv = 0xffffffffff
+        sage: ks = 0xdebe55784f853606399af3f6f4b8d0a706963a91f2ba4c687baea16da074f3c3
+        sage: biv.evaluate([key, iv]) == ks
+        True
 
     """
 

@@ -1,4 +1,6 @@
 import io
+
+import pytest
 from contextlib import redirect_stdout
 from random import getrandbits
 
@@ -82,6 +84,28 @@ def test_remove_key_schedule_without_round_key_injection_evaluate():
     output_with_zero_injections = removed_with_injection.evaluate(zero_round_key_inputs, intermediate_output=True)[0]
 
     assert output_without_injection == output_with_zero_injections
+
+
+@pytest.mark.parametrize("block_bits,key_bits", [(128, 128), (128, 256), (256, 256)])
+def test_remove_split_round_key_injections(block_bits, key_bits):
+    cipher = UblockBlockCipher(block_bit_size=block_bits, key_bit_size=key_bits, number_of_rounds=2)
+    without_keys = cipher.remove_key_schedule(keep_round_key_injection=False)
+    with_keys = cipher.remove_key_schedule(keep_round_key_injection=True)
+    assert without_keys.inputs == ["plaintext"]
+    assert not any(
+        component.type == "word_operation"
+        and component.description[0] == "XOR"
+        and component.input_bit_size == component.output_bit_size
+        for component in without_keys.all_components()
+    )
+    for plaintext in (0, 1, 1 << (block_bits - 1), (1 << block_bits) - 1):
+        assert without_keys.evaluate([plaintext]) == with_keys.evaluate(
+            [plaintext] + [0] * (len(with_keys.inputs) - 1)
+        )
+    # Previously the retained one-word XOR crashed the SAT encoder.
+    for component in without_keys.all_components():
+        if component.type == "word_operation" and component.description[0] == "XOR":
+            component.sat_constraints()
 
 
 def test_replace_bit_reordering_components_as_direct_wiring_for_permutations():

@@ -532,6 +532,7 @@ class MznXorLinearModel(MznModel):
         Return a list of Cp constraints that fix the input variables to a specific value.
 
         INPUT:
+
         - ``fixed_variables`` -- **list** (default: `[]`); dictionaries containing name, bit_size,
           value (as integer) for the variables that need to be fixed to a certain value:
 

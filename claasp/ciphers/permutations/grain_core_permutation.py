@@ -64,7 +64,7 @@ class GrainCorePermutation(Cipher):
 
     This class implements the 160-clock key/IV-initialization core of **Grain v1** (the "Grain-80" variant:
     80-bit key, 64-bit IV, 160-bit internal state), as specified by Hell, Johansson and Meier, "Grain: A
-    stream cipher for constrained environments" (2005), later tweaked and submitted to the eSTREAM project,
+    stream cipher for constrained environments" (2005) [HJM2005]_, later tweaked and submitted to the eSTREAM project,
     where the tweaked version became known as "Grain v1" and was selected for the eSTREAM portfolio. This is
     **not** Grain-128, Grain-128a, or Grain-128AEAD -- those are different, incompatible members of the
     Grain family with different state sizes and (for the 128a/AEAD variants) authentication.

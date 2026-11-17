@@ -12,6 +12,7 @@ from claasp.ciphers.block_ciphers.serpent_block_cipher import SerpentBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
+from claasp.ciphers.permutations.keccak_permutation import KeccakPermutation
 from claasp.ciphers.permutations.keccak_sbox_permutation import KeccakSboxPermutation
 from claasp.ciphers.toys.toyspn1 import ToySPN1
 
@@ -89,6 +90,12 @@ def test_feistel_division_property_trail_on_todo_tables(parameters, table):
 ], ids=["aes", "serpent", "simon48"])
 def test_structure(cipher, structure):
     assert DivisionPropertyPathSearch(cipher).structure == structure
+
+
+def test_keccak_circuit_form():
+    sbox_form = DivisionPropertyPathSearch(KeccakSboxPermutation(number_of_rounds=2, word_size=4))
+    circuit_form = DivisionPropertyPathSearch(KeccakPermutation(number_of_rounds=2, word_size=4))
+    assert sbox_form.structure == circuit_form.structure == "(5, 2, 20)-SPN"
 
 
 def test_structure_given_by_the_caller():

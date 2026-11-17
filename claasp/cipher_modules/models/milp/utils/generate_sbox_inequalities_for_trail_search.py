@@ -49,7 +49,7 @@ def sbox_inequalities(sbox, analysis="differential", algorithm="milp"):
     - ``algorithm`` -- **string** (default: `greedy`); choosing the algorithm for computing the S-box model, one of
       ['none', 'greedy', 'milp']
 
-        EXAMPLES::
+    EXAMPLES::
 
         sage: from sage.crypto.sbox import SBox
         sage: SBox_PRESENT = SBox([12,5,6,11,9,0,10,13,3,14,15,8,4,7,1,2])

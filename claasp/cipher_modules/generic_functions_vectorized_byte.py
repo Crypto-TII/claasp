@@ -272,8 +272,9 @@ def byte_vector_XOR(input):
     Computes the result of the XOR operation.
 
     INPUT:
+
     - ``input`` -- **list**; A list of numpy byte matrices to be XORed, each with one row per byte, and one column per
-        sample.
+      sample.
     """
     output = reduce(lambda x, y: x ^ y, input)
     return output
@@ -285,9 +286,8 @@ def byte_vector_AND(input):
 
     INPUT:
 
-    INPUT:
     - ``input`` -- **list**; A list of numpy byte matrices to be ANDed, each with one row per byte, and one column per
-        sample.
+      sample.
     """
     output = reduce(lambda x, y: x & y, input)
     return output
@@ -299,9 +299,8 @@ def byte_vector_OR(input):
 
     INPUT:
 
-    INPUT:
     - ``input`` -- **list**; A list of numpy byte matrices to be ORed, each with one row per byte, and one column per
-        sample.
+      sample.
     """
     output = reduce(lambda x, y: x | y, input)
     return output

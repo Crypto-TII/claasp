@@ -37,10 +37,8 @@ from claasp.name_mappings import (
 
 def group_triples(var_names):
     """
-    Given a list of variable names (strings) of the form
-       hw_{p|q|r}_modadd_X_Y_Z
-    group them by (X,Y,Z) and return a dict:
-       grouped[(X, Y, Z)] = (pVarName, qVarName, rVarName)
+    Given a list of variable names (strings) of the form ``hw_{p|q|r}_modadd_X_Y_Z``,
+    group them by (X,Y,Z) and return a dict ``grouped[(X, Y, Z)] = (pVarName, qVarName, rVarName)``,
     where pVarName, qVarName, rVarName are the corresponding names.
     We assume each group has exactly three variables: one for p, q, and r.
     """

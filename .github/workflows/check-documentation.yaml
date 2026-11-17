@@ -1,0 +1,40 @@
+name: Check documentation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - develop
+      - main
+  push:
+    branches:
+      - develop
+
+concurrency:
+  group: check-documentation_${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-documentation:
+    runs-on: ubuntu-latest
+    # The CLAASP base image already has Sage, Sphinx and LaTeX installed.
+    container:
+      image: tiicrc/claasp-base:develop
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+      with:
+        persist-credentials: false
+
+    - name: Build documentation
+      # -W turns Sphinx warnings into errors, so new docstring formatting problems fail the check;
+      # --keep-going lists all of them instead of stopping at the first one.
+      run: SPHINXOPTS="-W --keep-going" make doc
+
+    - name: Upload HTML documentation
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: claasp-documentation-html
+        path: docs/build/html
+        retention-days: 14

@@ -8,3 +8,11 @@ def test_find_lowest_weight_xor_linear_trail():
     trail = sat.find_lowest_weight_xor_linear_trail()
 
     assert trail["total_weight"] == 3.0
+
+
+# Goal: the search with Matsui bounds is inherited by the CryptoMiniSat model and finds the optimum.
+def test_find_lowest_weight_xor_linear_trail_with_matsui_bounds():
+    speck = SpeckBlockCipher(number_of_rounds=7)
+    cms = CmsSatXorLinearModel(speck)
+    trail = cms.find_lowest_weight_xor_linear_trail_with_matsui_bounds([0, 0, 1, 3, 5, 7])
+    assert trail["total_weight"] == 9

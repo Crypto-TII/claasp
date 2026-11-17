@@ -38,13 +38,13 @@ class SplightBlockCipher(Cipher):
 
     EXAMPLES::
 
-    sage: from claasp.ciphers.block_ciphers.splight_block_cipher import SplightBlockCipher
-    sage: splight = SplightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=32)
-    sage: splight.number_of_rounds
-    32
+        sage: from claasp.ciphers.block_ciphers.splight_block_cipher import SplightBlockCipher
+        sage: splight = SplightBlockCipher(block_bit_size=64, key_bit_size=128, number_of_rounds=32)
+        sage: splight.number_of_rounds
+        32
 
-    sage: splight.component_from(0, 0).id
-    'sbox_0_0'
+        sage: splight.component_from(0, 0).id
+        'sbox_0_0'
     """
 
     def __init__(self, block_bit_size=64, key_bit_size=128, number_of_rounds=32):

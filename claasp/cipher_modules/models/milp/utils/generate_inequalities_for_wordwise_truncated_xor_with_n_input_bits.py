@@ -44,15 +44,14 @@ wordwise_truncated_xor_inequalities_between_n_input_bits_file_path = os.path.joi
 
 def generate_valid_points_input_words(wordsize=4, max_pattern_value=3):
     """
-    Model 1 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294
+    Model 1 from https://tosc.iacr.org/index.php/ToSC/article/view/8702/8294 ::
 
-    delta | zeta
-    ------------
-      0   |  Z (0)
-      1   |  N (> 0)
-      2   |  N*
-      3   |  U
-
+        delta | zeta
+        ------------
+          0   |  Z (0)
+          1   |  N (> 0)
+          2   |  N*
+          3   |  U
 
     """
 

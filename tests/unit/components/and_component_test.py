@@ -4,7 +4,9 @@ from claasp.cipher_modules.models.milp.milp_models.milp_bitwise_deterministic_tr
 )
 from claasp.ciphers.single_component_ciphers.and_cipher import AndCipher
 from claasp.components.and_component import And, cp_xor_differential_probability_ddt, cp_xor_linear_probability_lat
-
+from claasp.cipher_modules.models.smt.smt_models.smt_xor_quasidifferential_model import (
+    SmtXorQuasidifferentialModel,
+)
 
 def test_cp_xor_differential_probability_ddt():
     assert cp_xor_differential_probability_ddt(2) == [4, 0, 2, 2, 2, 2, 2, 2]
@@ -107,3 +109,31 @@ def test_milp_bitwise_deterministic_truncated_xor_differential_constraints():
     assert str(constraints[1]) == '1 - 4*x_36 <= x_0 + x_12'
     assert str(constraints[-2]) == 'x_35 <= 2 + 2*x_47'
     assert str(constraints[-1]) == '2 <= x_35 + 2*x_47'
+
+def test_smt_xor_quasidifferential_propagation_constraints():
+    cipher = AndCipher(word_bit_size=2, number_of_inputs=2)
+    model = SmtXorQuasidifferentialModel(cipher)
+    and_component = cipher.component_from(0, 0)
+    variables, constraints = and_component.smt_xor_quasidifferential_propagation_constraints(model)
+
+    assert variables == ['and_0_0_0', 'and_0_0_1', 'qdt_and_0_0_0', 'qdt_and_0_0_1',
+                         'hw_qdt_and_0_0_0', 'hw_qdt_and_0_0_1']
+
+    assert len(constraints) == 8
+    assert constraints[0] == '(assert (=> and_0_0_0 (or plaintext_0 key_0)))'
+    assert constraints[3] == '(assert (= hw_qdt_and_0_0_0 (or plaintext_0 key_0 qdt_and_0_0_0)))'
+    assert constraints[-1] == '(assert (= hw_qdt_and_0_0_1 (or plaintext_1 key_1 qdt_and_0_0_1)))'
+
+
+def test_smt_xor_quasidifferential_propagation_constraints_more_than_two_operands():
+    cipher = AndCipher(word_bit_size=2, number_of_inputs=3)
+    model = SmtXorQuasidifferentialModel(cipher)
+    and_component = cipher.component_from(0, 0)
+
+    try:
+        and_component.smt_xor_quasidifferential_propagation_constraints(model)
+        raised = False
+    except NotImplementedError:
+        raised = True
+
+    assert raised
