@@ -77,6 +77,12 @@ class MznHadipourBoomerangModel(MznModel):
         e0em_cipher.inputs_bit_size.extend(eme1_cipher.inputs_bit_size)
 
         unified_cipher = e0em_cipher
+        unified_cipher.print_as_python_dictionary()
+
+        unified_cipher.upper_rounds = self.top_part_number_of_rounds
+        unified_cipher.middle_rounds = self.middle_part_number_of_rounds
+        unified_cipher.lower_rounds = self.bottom_part_number_of_rounds
+
 
         self._first_step = []
         self._first_step_find_all_solutions = []
@@ -259,8 +265,14 @@ class MznHadipourBoomerangModel(MznModel):
             for middle_non_linear_transition_ids in middle_keys:
                 if 'modadd' in middle_non_linear_transition_ids:
                     deltaL, deltaR, nablaL, nablaR, _, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                    # if 'lea' in self.cipher.id:
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, branch_size))
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, branch_size, self.count_middle_p-1))
+                    # else:                        
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size, self.count_middle_p-1))
                     self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size, self.count_middle_p-1))
+                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size, self.count_middle_p-1))                    
                     self.branch_size = branch_size
                 elif 'and' in middle_non_linear_transition_ids:
                     self._cp_xor_differential_constraints.append('constraint middle_weight = 0;')
@@ -294,8 +306,14 @@ class MznHadipourBoomerangModel(MznModel):
             for middle_non_linear_transition_ids in list_ubct_middle_keys:
                 if 'modadd' in middle_non_linear_transition_ids:
                     deltaL, deltaR, nablaL, nablaR, deltaLL, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                    # if 'lea' in self.cipher.id:
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, branch_size))
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, branch_size, self.count_middle_p-1))
+                    # else:
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1))
                     self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1))
+                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1)) 
                     self.branch_size = branch_size
                 elif 'and' in middle_non_linear_transition_ids:
                     upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
@@ -313,8 +331,14 @@ class MznHadipourBoomerangModel(MznModel):
             for middle_non_linear_transition_ids in list_lbct_middle_keys:
                 if 'modadd' in middle_non_linear_transition_ids:
                     deltaL, deltaR, nablaL, nablaR, _, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                    # if 'lea' in self.cipher.id:
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, nablaLL, branch_size))
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, nablaLL, branch_size, self.count_middle_p-1))
+                    # else:
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
+                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))         
                     self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))
+                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))                                       
                 elif 'and' in middle_non_linear_transition_ids:
                     upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
                     lower_input_and = component_with_input_id_links['lower_'+middle_non_linear_transition_ids]
@@ -332,8 +356,14 @@ class MznHadipourBoomerangModel(MznModel):
                 for middle_non_linear_transition_ids in list_ebct_middle_keys:
                     if 'modadd' in middle_non_linear_transition_ids:
                         deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
+                        # if 'lea' in self.cipher.id:
+                        #     self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, nablaLL, branch_size))
+                        #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, nablaLL, branch_size, self.count_middle_p-1))
+                        # else:
+                        #     self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
+                        #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size, self.count_middle_p-1))                    
                         self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
-                        self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size, self.count_middle_p-1))
+                        self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size, self.count_middle_p-1))                                       
                     elif 'and' in middle_non_linear_transition_ids:
                         upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
                         lower_input_and = component_with_input_id_links['lower_'+middle_non_linear_transition_ids]
@@ -723,6 +753,9 @@ class MznHadipourBoomerangModel(MznModel):
         for inputs in self.cipher.inputs:
             if 'upper_plaintext' in inputs:
                 self._model_constraints.append(f'constraint sum({inputs})>0;')
+                # if 'chacha_permutation' in self.cipher.id:
+                #     for i in range(128*3):
+                #         self._model_constraints.append(f'constraint {inputs}[{i}] = 0;')
             if 'lower_cipher_output' in inputs:
                 self._model_constraints.append(f'constraint sum({inputs})>0;')
         return      

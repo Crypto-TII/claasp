@@ -1486,7 +1486,7 @@ def _remove_non_key_components_from_rounds(cipher, list_of_rounds, key_schedule_
     removed_component_ids = []
     intermediate_outputs = {}
     copy_of_the_cipher = deepcopy(cipher)
-    component_output_sizes = {component.id: component.output_bit_size for component in cipher.get_all_components()}
+    component_output_sizes = {component.id: component.output_bit_size for component in cipher.all_components()}
     for component in key_schedule_components:
         if component is not None:
             component_output_sizes[component.id] = component.output_bit_size

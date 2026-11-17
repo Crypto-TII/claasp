@@ -44,7 +44,7 @@ class MznBoomerangModelARXOptimized(MznXorDifferentialModelARXOptimized):
     def build_boomerang_model(self, weight=None, max_weight=None):
         self.dict_of_components = []
 
-        for component in self.original_cipher.get_all_components():
+        for component in self.original_cipher.all_components():
             model_type = (
                 "create_bct_mzn_constraint_from_component_ids"
                 if component.id in self.sboxes_ids

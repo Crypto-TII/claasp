@@ -1,0 +1,133 @@
+================================================================================
+LEA TEST RESULTS LATEX TABLE GENERATION - SUMMARY
+================================================================================
+
+GENERATION DATE: $(date)
+SOURCE DIRECTORY: /raid/homespace/rocbrunelli/claasp_x_boomerang/claasp/test_operation_modadd/test_lea
+OUTPUT FILE: /raid/homespace/rocbrunelli/claasp_x_boomerang/claasp/lea_tables.tex
+SCRIPT: generate_lea_latex_tables.py
+
+================================================================================
+STATISTICS
+================================================================================
+
+Total Test Configurations: 8
+Total Log Files Processed: 81
+LaTeX Tables Generated: 9 (1 overview + 8 per-configuration)
+
+BREAKDOWN BY CONFIGURATION:
+  test_10r_4_1_5                         10 seeds
+  test_11r_5_1_5                         10 seeds
+  test_12r_5_1_6                         10 seeds
+  test_13r_6_1_6                         10 seeds
+  test_14r_7_1_6                         11 seeds
+  test_16r_8_1_7                         10 seeds
+  test_16r_8_1_7_for_2_days              10 seeds
+  test_16r_8_1_7_time_1week_threads_24   10 seeds
+
+================================================================================
+TABLE STRUCTURE
+================================================================================
+
+Table 1: OVERVIEW TABLE - "LEA Test Results - Best Probability"
+   Purpose: Single best result per test configuration (highest total probability)
+   Columns: R, r_0, r_m, r_1, p, q, r, p²q²r, Seed, Time (s)
+   Rows: 8 (one per configuration)
+
+Tables 2-9: PER-CONFIGURATION TABLES - "LEA X rounds (r_0=A, r_m=B, r_1=C) - All Seeds"
+   Purpose: All results for each specific test configuration
+   Columns: r_0, r_m, r_1, p, q, r, p²q²r, Seed, Time (s)
+   Rows: Variable (one per seed)
+
+================================================================================
+DATA EXTRACTION
+================================================================================
+
+From each log file, the script extracts:
+  ✓ Seed number (from filename: test_lea_*_seed_X.log)
+  ✓ Upper weight (from: "Upper weight = X.X")
+  ✓ Lower weight (from: "Lower weight = X.X")
+  ✓ Middle weight (from: "Middle weight = X.X")
+  ✓ Trail weight (from: "Trail weight = X.X")
+  ✓ Execution time (from: "Done (overall time X.XX s)")
+
+Derived Calculations:
+  p = 2^(-upper_weight)
+  q = 2^(-lower_weight)
+  r = 2^(-middle_weight)
+  total_probability = p² × q² × r
+
+================================================================================
+NUMBER FORMATTING
+================================================================================
+
+Times:
+  - Rounded to 2 decimal places
+  - Example: 86408.55 seconds
+
+Probabilities:
+  - Numbers < 0.001: Scientific notation (e.g., 2.14e-10)
+  - Numbers >= 0.001: Decimal notation (e.g., 0.9202)
+  - Precision: 4 decimal places for small numbers, 4 significant figures
+
+================================================================================
+LATEX FORMATTING
+================================================================================
+
+The tables are formatted using:
+  - Standard LaTeX tabular environment with borders
+  - \small font size for improved readability
+  - Math mode for probability expressions ($p$, $q$, $r$, $p^2q^2r$)
+  - Descriptive captions and labels for referencing
+
+To use in your LaTeX document:
+  \documentclass{article}
+  \begin{document}
+  \input{lea_tables.tex}
+  \end{document}
+
+================================================================================
+FILE INFORMATION
+================================================================================
+
+Output File: lea_tables.tex
+  - Size: ~11 KB
+  - Lines: ~219
+  - Format: UTF-8
+  - Encoding: LaTeX source code
+
+Related Files:
+  - generate_lea_latex_tables.py (generation script)
+  - LEA_TABLES_README.md (detailed documentation)
+  - GENERATION_SUMMARY.txt (this file)
+
+================================================================================
+USAGE INSTRUCTIONS
+================================================================================
+
+1. To regenerate tables after new logs:
+   cd /raid/homespace/rocbrunelli/claasp_x_boomerang/claasp
+   python3 generate_lea_latex_tables.py
+
+2. To include in a LaTeX document:
+   \input{lea_tables.tex}
+
+3. To view/edit the tables:
+   cat lea_tables.tex
+   # or open with your preferred text editor
+
+4. To compile with pdflatex:
+   pdflatex document.tex
+
+================================================================================
+NOTES
+================================================================================
+
+- All timestamps are absolute (no relative filtering applied)
+- MiniZinc solver output includes optimization process overhead
+- Empty seed values indicate files without complete data
+- Scientific notation is used automatically for very small probabilities
+- The "Trail weight" is extracted but not directly displayed in tables
+- Configuration names are parsed from directory structure automatically
+
+================================================================================
