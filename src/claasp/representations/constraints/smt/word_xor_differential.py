@@ -299,7 +299,9 @@ class WordXorDifferentialSMTModel:
         weights = []
         probability_factors: list[tuple[int, tuple[int, ...]]] = []
 
-        def rule(component, operands, output):
+        weights_by_component = {}
+
+        def component_rule(component, operands, output):
             width = component.output_type.unit_type.encoded_bit_size
             assert width is not None
             if isinstance(component, (ModularAdd, ModularSubtract)):
@@ -462,6 +464,12 @@ class WordXorDifferentialSMTModel:
                     f"no word differential semantics for {type(component).__name__}"
                 )
 
+        def rule(component, operands, output):
+            start = len(weights)
+            component_rule(component, operands, output)
+            weights_by_component[component.component_id] = tuple(weights[start:])
+
+        self._weights_by_component = weights_by_component
         propagation.relations(rule, unit_arrays, operands_by_id)
         if self.nonzero_input is not None:
             add(
