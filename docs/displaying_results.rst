@@ -39,6 +39,23 @@ Use ``result.to_terminal()`` for the default report and
 Topic-specific reports and plots are demonstrated in each analysis guide.
 To save terminal output, pass an open text stream as ``file=``.
 
+Exact differential and linear trails accept ``value_format="binary"`` for
+MSB-first ``0b`` strings, ``"underscore_one"`` for zeros as ``_``, and
+``"dot_one"`` for zeros as ``.``. Both compact and detailed output use the
+selected notation; ones remain ``1`` and leading zeros preserve the width.
+The separate external-input-pattern table is omitted from these terminal views;
+retained input patterns remain available on the result and in exported reports.
+
+This retained trail needs no solver::
+
+   >>> from io import StringIO
+   >>> from claasp.semantics.cryptanalysis import Trail, TrailKind, XorDifference
+   >>> trail = Trail(TrailKind.XOR_DIFFERENTIAL, XorDifference(1, 4), XorDifference(2, 4), ())
+   >>> output = StringIO()
+   >>> trail.to_terminal(value_format="dot_one", file=output)
+   >>> '...1' in output.getvalue(), '..1.' in output.getvalue()
+   (True, True)
+
 Saving plots
 ------------
 

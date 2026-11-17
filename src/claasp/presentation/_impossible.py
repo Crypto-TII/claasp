@@ -36,7 +36,7 @@ def _is_impossible(result):
     )
 
 
-def _groups(result, *, details=False):
+def _groups(result, *, details=False, include_key=False):
     from claasp.analysis.composed_search import ImpossibleSearchResult
     from claasp.representations.constraints.sat.trails import AutomaticWordImpossibleSATResult
 
@@ -45,7 +45,7 @@ def _groups(result, *, details=False):
             (
                 f"Candidate {i}, middle round {item.middle_round}, {item.representation}",
                 item.trail,
-                _rows(item.trail, item.middle_round, details=details),
+                _rows(item.trail, item.middle_round, details=details, include_key=include_key),
             )
             for i, item in enumerate(result.candidates)
         )
@@ -57,7 +57,9 @@ def _groups(result, *, details=False):
                 (
                     f"Middle round {result.middle_round}",
                     result.trail,
-                    _rows(result.trail, result.middle_round, details=details),
+                    _rows(
+                        result.trail, result.middle_round, details=details, include_key=include_key
+                    ),
                 ),
             )
         )
@@ -65,7 +67,12 @@ def _groups(result, *, details=False):
         (
             "Impossible differential trail",
             result,
-            _rows(result, getattr(result, "middle_round", None), details=details),
+            _rows(
+                result,
+                getattr(result, "middle_round", None),
+                details=details,
+                include_key=include_key,
+            ),
         ),
     )
 
@@ -95,7 +102,13 @@ def _boundary(trail):
     return trail.forward, trail.backward, trail.contradictory_positions, False
 
 
-def _rows(trail, middle_round, *, details):
+def _is_key_input(name):
+    import re
+
+    return re.search(r"(?:^|_)keys?\d*(?:_|$)", name.lower()) is not None
+
+
+def _rows(trail, middle_round, *, details, include_key=False):
     from claasp.semantics.cryptanalysis import ImpossiblePropagationBoundary
 
     above, below, positions, wordwise = _boundary(trail)
@@ -106,7 +119,9 @@ def _rows(trail, middle_round, *, details):
     rows: list[_Row] = []
     if forward is not None:
         rows.extend(
-            _Row("above ↓", "input", name, pattern) for name, pattern in getattr(forward, inputs)
+            _Row("above ↓", "input", name, pattern)
+            for name, pattern in getattr(forward, inputs)
+            if include_key or not _is_key_input(name)
         )
     rows.extend(
         _Row("above ↓", str(number), "round output", pattern)
@@ -156,8 +171,8 @@ def _values(pattern):
 def _pattern(pattern, *, value_format):
     if hasattr(pattern, "bits"):
         bits = str(pattern)
-        if value_format == "underscore_one":
-            return bits.replace("0", "_")
+        if value_format in ("underscore_one", "dot_one"):
+            return bits.replace("0", "." if value_format == "dot_one" else "_")
         if "?" in bits:
             return "0b" + bits
         return _format_trail_value(int(bits, 2), len(bits), value_format=value_format, pad_hex=True)
@@ -176,6 +191,41 @@ def _pattern(pattern, *, value_format):
     return "[" + ", ".join(words) + "]"
 
 
+def _middle_patterns(above, below, positions, *, value_format):
+    """Align one marker row with the displayed bits, hex digits, or word cells."""
+    if hasattr(above, "bits"):
+        # A partial bit pattern has no exact hex representation. Use binary for
+        # both meeting rows so the marker stays aligned with both differences.
+        notation = (
+            "binary"
+            if value_format == "hex" and ("?" in str(above) or "?" in str(below))
+            else value_format
+        )
+        upper, lower = (_pattern(pattern, value_format=notation) for pattern in (above, below))
+        prefix = 2 if notation in ("binary", "hex") else 0
+        marks = [" "] * prefix + ["."] * (len(upper) - prefix)
+        padding = (-len(above.bits)) % 4
+        for position in positions:
+            digit = (position + padding) // 4 if notation == "hex" else position
+            marks[prefix + digit] = "!"
+        return upper, "".join(marks), lower
+    a, b = (
+        _pattern(pattern, value_format=value_format)[1:-1].split(", ") for pattern in (above, below)
+    )
+    widths = tuple(max(len(left), len(right)) for left, right in zip(a, b))
+    upper = "[" + ", ".join(value.ljust(width) for value, width in zip(a, widths)) + "]"
+    lower = "[" + ", ".join(value.ljust(width) for value, width in zip(b, widths)) + "]"
+    marker = (
+        "["
+        + ", ".join(
+            "!".center(width, ".") if i in positions else "." * width
+            for i, width in enumerate(widths)
+        )
+        + "]"
+    )
+    return upper, marker, lower
+
+
 def _notes(result):
     notes = []
     if hasattr(result, "complete"):
@@ -190,7 +240,7 @@ def _notes(result):
         notes.append(f"Attempted middle rounds: {result.attempted_rounds}")
     notes.extend(
         (
-            "! marks contradictory MSB-first bit/word positions in both middle rows.",
+            "! marks contradictory MSB-first bit/word positions between the middle rows.",
             "? is unknown; * is a nonzero word of unspecified value.",
             "Round labels count original graph boundaries. Below ↑ propagates from ciphertext.",
             "Retained abstract evidence; no whole-primitive probability claim.",
@@ -199,16 +249,18 @@ def _notes(result):
     return tuple(notes)
 
 
-def _to_terminal(result, *, details=False, value_format="binary", file=None):
+def _to_terminal(result, *, details=False, value_format="binary", include_key=False, file=None):
     from claasp.presentation import Table, TableColumn, TableRow, render_terminal_table
 
     _validate_value_format(value_format)
     print("Impossible differential trail", file=file)
     for note in _notes(result):
         print(note, file=file)
-    groups = _groups(result, details=details)
+    groups = _groups(result, details=details, include_key=include_key)
     if not groups:
         print("No retained witness to display.", file=file)
+    if value_format == "hex":
+        print("In hex bit patterns, ! marks the digit containing a contradictory bit.", file=file)
     for title, trail, rows in groups:
         print(title, file=file)
         columns = tuple(
@@ -218,24 +270,18 @@ def _to_terminal(result, *, details=False, value_format="binary", file=None):
                 ("boundary", "Boundary"),
                 ("source", "Source"),
                 ("pattern", "Difference"),
-                ("conflict", "Contradiction !"),
             )
         )
-        values = tuple(
-            TableRow.of(
-                row.direction,
-                row.boundary,
-                row.source,
-                _pattern(row.pattern, value_format=value_format),
-                "".join(
-                    "!" if i in row.contradictions else "."
-                    for i in range(len(_values(row.pattern)))
-                )
-                if row.contradictions
-                else "",
-            )
-            for row in rows
-        )
-        print(render_terminal_table(Table(columns, values)), file=file)
+        above, below, positions, _ = _boundary(trail)
+        upper, marker, lower = _middle_patterns(above, below, positions, value_format=value_format)
+        values = []
+        for row in rows:
+            pattern = _pattern(row.pattern, value_format=value_format)
+            if row.contradictions:
+                pattern = upper if row.direction == "above ↓" else lower
+            values.append(TableRow.of(row.direction, row.boundary, row.source, pattern))
+            if row.contradictions and row.direction == "above ↓":
+                values.append(TableRow.of("", row.boundary, "contradiction", marker))
+        print(render_terminal_table(Table(columns, tuple(values))), file=file)
         if not getattr(trail, "forward_rounds", ()) and not getattr(trail, "backward_rounds", ()):
             print("Intermediate round observations were not retained in this witness.", file=file)

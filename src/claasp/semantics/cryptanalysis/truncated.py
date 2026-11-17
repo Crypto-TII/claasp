@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from claasp._result_presentation import ImpossiblePlotMixin as _ImpossiblePlotMixin
 from claasp._result_presentation import ImpossibleTerminalMixin as _ImpossibleTerminalMixin
 from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp._result_presentation import TerminalMixin as _TerminalMixin
@@ -289,7 +290,7 @@ class TruncatedXorDifference:
 
 
 @dataclass(frozen=True, slots=True)
-class ImpossiblePropagationBoundary(_ImpossibleTerminalMixin, _PlotMixin):
+class ImpossiblePropagationBoundary(_ImpossibleTerminalMixin, _ImpossiblePlotMixin):
     """Forward and backward partial differences meeting at one graph boundary.
 
     EXAMPLES::

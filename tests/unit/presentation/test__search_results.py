@@ -7,7 +7,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from claasp._result_presentation import ImpossibleTerminalMixin, PlotMixin, TerminalMixin
+from claasp._result_presentation import (
+    ImpossiblePlotMixin,
+    ImpossibleTerminalMixin,
+    PlotMixin,
+    TerminalMixin,
+)
 from claasp.analysis.advanced_trails import CPCharacteristicResult, TruncatedPropagationResult
 from claasp.analysis.boomerang_search import BoomerangSearchResult, BoomerangSearchStatus
 from claasp.analysis.composed_search import (
@@ -222,7 +227,9 @@ def _close_figures():
 def test_all_search_result_families_render_retained_evidence(name, tmp_path):
     result = _fixtures()[name]
     assert issubclass(type(result), PlotMixin)
-    assert type(result).plot is PlotMixin.plot
+    assert type(result).plot is (
+        ImpossiblePlotMixin.plot if isinstance(result, ImpossiblePlotMixin) else PlotMixin.plot
+    )
     if isinstance(result, ImpossibleTerminalMixin):
         assert type(result).to_terminal is ImpossibleTerminalMixin.to_terminal
     elif isinstance(result, TerminalMixin):
@@ -420,7 +427,8 @@ def test_result_family_inventory_covers_all_new_reporting_methods():
     for path in root.rglob("*.py"):
         for node in ast.parse(path.read_text()).body:
             if isinstance(node, ast.ClassDef) and any(
-                isinstance(base, ast.Name) and base.id == "_PlotMixin" for base in node.bases
+                isinstance(base, ast.Name) and base.id in ("_PlotMixin", "_ImpossiblePlotMixin")
+                for base in node.bases
             ):
                 expected.add(node.name)
     assert expected == {type(result).__name__ for result in _fixtures().values()}

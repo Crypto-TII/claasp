@@ -1,14 +1,14 @@
 """A full vertical impossible-trail diagram with a duplicated meeting state."""
 
 
-def _plot(result, *, details, value_format, show, save_to):
+def _plot(result, *, details, value_format, show, save_to, include_key=False):
     from claasp.drivers.renderers.presentation import FigureArtifact, _finish_figure, _matplotlib
     from claasp.presentation._impossible import _boundary, _groups, _notes, _pattern, _values
     from claasp.presentation._trail_values import _validate_value_format
     from claasp.provenance import DriverIdentity, DriverKind
 
     _validate_value_format(value_format)
-    groups = _groups(result, details=details)
+    groups = _groups(result, details=details, include_key=include_key)
     pyplot = _matplotlib()
     import numpy as np
     from matplotlib.colors import BoundaryNorm, ListedColormap
@@ -22,7 +22,12 @@ def _plot(result, *, details, value_format, show, save_to):
         gridspec_kw={"height_ratios": heights},
     )
     try:
-        notes = tuple(note.replace("! marks", "Red crosses mark") for note in _notes(result))
+        notes = tuple(
+            note.replace("! marks", "Red crosses mark").replace(
+                "between the middle rows", "in both middle rows"
+            )
+            for note in _notes(result)
+        )
         figure.suptitle("Impossible differential trail\n" + "\n".join(notes), fontsize=9)
         series = []
         if not groups:

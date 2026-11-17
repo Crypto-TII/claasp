@@ -49,12 +49,28 @@ def test_public_search_retains_original_round_labels_and_meeting_patterns(primit
         result.to_terminal(details=details, file=default)
         assert "0x" not in default.getvalue()
         assert default.getvalue().count("meeting state") == 2
-    stream = StringIO()
-    result.to_terminal(value_format="underscore_one", file=stream)
-    assert stream.getvalue().count("meeting state") == 2
-    assert "ciphertext" in stream.getvalue()
-    if candidate.representation == "bitwise":
-        assert "round output" in stream.getvalue()
+    for notation in ("underscore_one", "dot_one"):
+        stream = StringIO()
+        result.to_terminal(value_format=notation, file=stream)
+        text = stream.getvalue()
+        lines = text.splitlines()
+        meeting = [i for i, line in enumerate(lines) if "meeting state" in line]
+        assert len(meeting) == 2 and meeting[1] == meeting[0] + 2
+        assert "contradiction" in lines[meeting[0] + 1]
+        assert "!" in lines[meeting[0] + 1]
+        assert not any("| key " in line for line in lines)
+        assert "ciphertext" in text
+        if candidate.representation == "bitwise":
+            assert "round output" in text
+    shown = StringIO()
+    result.to_terminal(include_key=True, file=shown)
+    inputs = (
+        trail.forward.input_patterns
+        if candidate.representation == "bitwise"
+        else trail.forward.input_differences
+    )
+    if "key" in dict(inputs):
+        assert any("| key " in line for line in shown.getvalue().splitlines())
 
 
 def test_inverse_round_labels_survive_an_unkeyed_slice_with_renumbered_rounds():
