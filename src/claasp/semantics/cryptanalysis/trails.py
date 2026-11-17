@@ -457,7 +457,8 @@ class TrailSearchResult:
         """Display round differences, or the full component evidence on request.
 
         Use ``value_format="binary"`` for width-preserving ``0b`` values or
-        ``"underscore_one"`` for zeros shown as underscores, in either view.
+        ``"underscore_one"`` for zeros shown as underscores, or ``"dot_one"``
+        for zeros shown as dots, in either view.
 
         Presentation is imported only when this convenience method is called;
         producing and checking the typed result remain independent of a
@@ -478,10 +479,9 @@ class TrailSearchResult:
             True
         """
 
-        from claasp.presentation import trail_section
-        from claasp.presentation._terminal import to_terminal
+        from claasp.presentation._terminal import _trail_to_terminal
 
-        to_terminal(trail_section(self, details=details, value_format=value_format), file=file)
+        _trail_to_terminal(self, details=details, value_format=value_format, file=file)
 
     def plot(self, *, show: bool = True, save_to: str | Path | None = None) -> "FigureArtifact":
         """Plot relative and cumulative trail weight against round number.

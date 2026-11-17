@@ -21,7 +21,13 @@ from claasp.semantics.cryptanalysis import (
 @pytest.mark.parametrize("details", (False, True))
 @pytest.mark.parametrize("kind", ("Linear", "Differential"))
 @pytest.mark.parametrize(
-    "notation,expected", (("hex", "0x1"), ("binary", "0b00000001"), ("underscore_one", "_______1"))
+    "notation,expected",
+    (
+        ("hex", "0x1"),
+        ("binary", "0b00000001"),
+        ("underscore_one", "_______1"),
+        ("dot_one", ".......1"),
+    ),
 )
 def test_characteristic_and_enumeration_values_use_one_notation(kind, details, notation, expected):
     module = import_module(f"claasp.representations.constraints.smt.word_xor_{kind.lower()}")
@@ -45,16 +51,30 @@ def test_characteristic_and_enumeration_values_use_one_notation(kind, details, n
         assert expected in text
         if notation != "hex":
             assert "0x" not in text
-            assert ("0b0000000000000000" if notation == "binary" else "_" * 16) in text
+            assert (
+                "0b0000000000000000"
+                if notation == "binary"
+                else ("." if notation == "dot_one" else "_") * 16
+            ) in text
         assert ("sbox" in text) == details
         assert trail.total_weight == 1
     if notation != "hex" and details:
-        assert ("0b00000010" if notation == "binary" else "______1_") in text
+        assert (
+            "0b00000010"
+            if notation == "binary"
+            else ("......1." if notation == "dot_one" else "______1_")
+        ) in text
 
 
 @pytest.mark.parametrize("details", (False, True))
 @pytest.mark.parametrize("linear", (False, True))
-def test_common_trails_and_optimized_results_include_named_inputs(details, linear):
+@pytest.mark.parametrize(
+    "notation,input_value,output_value",
+    (("binary", "0b00000001", "0b00000010"), ("dot_one", ".......1", "......1.")),
+)
+def test_terminal_omits_named_input_table_but_reports_preserve_it(
+    details, linear, notation, input_value, output_value
+):
     pattern = XorMask if linear else XorDifference
     kind = TrailKind.XOR_LINEAR if linear else TrailKind.XOR_DIFFERENTIAL
     transition = Transition(kind, pattern(1, 8), pattern(2, 8), 1, 2)
@@ -64,10 +84,15 @@ def test_common_trails_and_optimized_results_include_named_inputs(details, linea
     )
     for item in (trail, result):
         output = StringIO()
-        item.to_terminal(details=details, value_format="binary", file=output)
-        assert "0b00000001" in output.getvalue() and "0b00000010" in output.getvalue()
+        item.to_terminal(details=details, value_format=notation, file=output)
+        assert input_value in output.getvalue() and output_value in output.getvalue()
         assert "0x" not in output.getvalue()
-    assert "key" in output.getvalue() and "0b0000000000000000" in output.getvalue()
+    assert "External input patterns" not in output.getvalue()
+    assert "key" not in output.getvalue()
+    from claasp.presentation.adapters import trail_section
+
+    assert any(table.title == "External input patterns" for table in trail_section(result).tables)
+    assert result.input_patterns == (("key", pattern(0, 16)),)
 
 
 @pytest.mark.parametrize("value,width", ((-1, 8), (256, 8), (1, 0), (True, 1)))
@@ -83,6 +108,7 @@ def test_bad_notation_rejected_even_for_an_empty_enumeration():
         WordXorLinearEnumeration((), True, 0).to_terminal(value_format="octal")
     assert _format_trail_value(0, value_format="binary") == "0b0"
     assert _format_trail_value(0, value_format="underscore_one") == "_"
+    assert _format_trail_value(0, value_format="dot_one") == "."
 
 
 @pytest.mark.parametrize("kind", ("linear", "differential"))

@@ -2,8 +2,8 @@
 
 
 def _validate_value_format(value_format):
-    if value_format not in ("hex", "binary", "underscore_one"):
-        raise ValueError("value_format must be 'hex', 'binary', or 'underscore_one'")
+    if value_format not in ("hex", "binary", "underscore_one", "dot_one"):
+        raise ValueError("value_format must be 'hex', 'binary', 'underscore_one', or 'dot_one'")
 
 
 def _format_trail_value(value, width=None, *, value_format="hex", pad_hex=False):
@@ -17,4 +17,6 @@ def _format_trail_value(value, width=None, *, value_format="hex", pad_hex=False)
         digits = (width + 3) // 4 if pad_hex else 1
         return f"0x{value:0{digits}x}"
     bits = f"{value:0{width}b}"
-    return "0b" + bits if value_format == "binary" else bits.replace("0", "_")
+    if value_format == "binary":
+        return "0b" + bits
+    return bits.replace("0", "." if value_format == "dot_one" else "_")

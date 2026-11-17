@@ -90,7 +90,8 @@ class WordXorDifferentialCharacteristic(_PlotMixin):
         """Print retained characteristic evidence without starting a solver.
 
         ``value_format`` selects ``hex`` (default), MSB-first ``binary``
-        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        with a ``0b`` prefix, ``underscore_one`` (zero shown as ``_``),
+        or ``dot_one`` (zero shown as ``.``).
         Model-produced results retain full input/output widths, including
         leading zeros. The same notation applies with ``details=True``.
 
@@ -105,6 +106,10 @@ class WordXorDifferentialCharacteristic(_PlotMixin):
             >>> output = StringIO()
             >>> result.to_terminal(details=True, value_format="underscore_one", file=output)
             >>> '1_' in output.getvalue()
+            True
+            >>> output = StringIO()
+            >>> result.to_terminal(details=True, value_format="dot_one", file=output)
+            >>> '1.' in output.getvalue()
             True
         """
         from claasp.presentation._terminal import to_terminal
@@ -168,7 +173,8 @@ class WordXorDifferentialEnumeration(_PlotMixin):
         """Print retained characteristic evidence without starting a solver.
 
         ``value_format`` selects ``hex`` (default), MSB-first ``binary``
-        with a ``0b`` prefix, or ``underscore_one`` (zero shown as ``_``).
+        with a ``0b`` prefix, ``underscore_one`` (zero shown as ``_``),
+        or ``dot_one`` (zero shown as ``.``).
         Model-produced results retain full input/output widths, including
         leading zeros. The same notation applies with ``details=True``.
 

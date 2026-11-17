@@ -99,3 +99,50 @@ assert not hasattr(result, '__dict__')
 assert 'matplotlib.pyplot' not in sys.modules
 """
     subprocess.run([sys.executable, "-c", script], check=True)
+
+
+def test_impossible_mixins_forward_key_visibility_and_notation(monkeypatch, tmp_path):
+    from claasp._result_presentation import ImpossiblePlotMixin, ImpossibleTerminalMixin
+    from claasp.drivers.renderers import _impossible as renderer
+    from claasp.presentation import _impossible as presentation
+
+    @dataclass(frozen=True, slots=True)
+    class ImpossibleExample(ImpossibleTerminalMixin, ImpossiblePlotMixin):
+        value: int
+
+    result = ImpossibleExample(1)
+    calls = []
+    artifact = object()
+
+    def plot(receiver, **options):
+        assert receiver is result
+        calls.append(options)
+        return artifact
+
+    def terminal(receiver, **options):
+        assert receiver is result
+        calls.append(options)
+
+    monkeypatch.setattr(renderer, "_plot", plot)
+    monkeypatch.setattr(presentation, "_to_terminal", terminal)
+    assert not hasattr(result, "__dict__")
+    assert ImpossibleTerminalMixin.__slots__ == ImpossiblePlotMixin.__slots__ == ()
+    result.to_terminal()
+    assert calls[-1] == dict(details=False, value_format="binary", include_key=False, file=None)
+    stream = StringIO()
+    result.to_terminal(details=True, value_format="dot_one", include_key=True, file=stream)
+    assert calls[-1] == dict(details=True, value_format="dot_one", include_key=True, file=stream)
+    assert result.plot(show=False) is artifact
+    assert calls[-1] == dict(
+        details=False, value_format="hex", include_key=False, show=False, save_to=None
+    )
+    destination = tmp_path / "impossible.png"
+    assert (
+        result.plot(
+            details=True, value_format="dot_one", include_key=True, show=False, save_to=destination
+        )
+        is artifact
+    )
+    assert calls[-1] == dict(
+        details=True, value_format="dot_one", include_key=True, show=False, save_to=destination
+    )

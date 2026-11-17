@@ -49,6 +49,17 @@ Print the outcome:
 
 From the result above it is possible to see that with the 6-round version of Speck there is an impossible differential happening in the second middle round. The contradiction happens because ``0b??????????100000??????????1000??`` and ``0b????????????????????????100?????`` differ for at least one bit in the 26-th position.
 
+The ``!`` row sits between the two meeting differences in the same column.
+Named key inputs are hidden by default in both terminal output and plots.
+Use ``result.to_terminal(include_key=True)`` or
+``result.plot(include_key=True)`` to include them, including zero differences.
+This display choice does not change the retained trail.
+
+For dots instead of zeros, use
+``result.to_terminal(value_format="dot_one")``; add ``details=True`` to show
+retained component states in the same notation. Unknown ``?`` and abstract
+nonzero-word ``*`` values keep their meaning.
+
 It is also possible to plot the result in order to see the same information visually.
 
 .. plot::
