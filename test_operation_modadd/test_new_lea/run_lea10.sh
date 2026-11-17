@@ -20,14 +20,4 @@ GUROBI_DLL=/opt/gurobi1302/linux64/lib/libgurobi.so.13.0.2
         --readParam ../../gurobi_params_suggested_7.prm \
         --verbose --statistics \
         lea_14r_7_1_6.mzn > test_lea_14r_7_1_6_seed_7.log 2>&1
-
-    $MZN --solver gurobi --gurobi-dll $GUROBI_DLL \
-        --readParam ../../gurobi_params_suggested_8.prm \
-        --verbose --statistics \
-        lea_14r_7_1_6.mzn > test_lea_14r_7_1_6_seed_8.log 2>&1
-
-    $MZN --solver gurobi --gurobi-dll $GUROBI_DLL \
-        --readParam ../../gurobi_params_suggested_45.prm \
-        --verbose --statistics \
-        lea_14r_7_1_6.mzn > test_lea_14r_7_1_6_seed_45.log 2>&1
 )
