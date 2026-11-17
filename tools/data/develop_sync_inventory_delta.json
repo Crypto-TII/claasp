@@ -1,0 +1,58 @@
+{
+  "records": [
+    {
+      "disposition": "migrate",
+      "evidence": [
+        "tests/unit/representations/constraints/sat/test__matsui_bounds.py",
+        "tests/integration/test_matsui_trail_search.py"
+      ],
+      "kind": "source",
+      "path": "claasp/cipher_modules/models/sat/utils/matsui_bounds.py",
+      "scope": "Integral consecutive-window SAT constraints and portable exact optimization; caller-certified lower bounds, exhaustive truth-assignment checks.",
+      "sha256": "27319acf16d05e0918030ee94c0c67921ac95abc0746d66ffd43e299b41bde76",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/representations/constraints/sat/_matsui_bounds.py"
+    },
+    {
+      "disposition": "migrate",
+      "evidence": [
+        "tests/unit/analysis/test_spn_structure.py",
+        "tests/unit/analysis/test_division_property.py"
+      ],
+      "kind": "source",
+      "path": "claasp/cipher_modules/spn_structure.py",
+      "scope": "Typed graph extraction with structural GF(2) composition and chi recognition; no Sage matrix/API compatibility.",
+      "sha256": "2a11beaebbd4c0f10935feb091e54973de66dd8200c17fc944eb8589eb9248ad",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/analysis/spn_structure.py"
+    },
+    {
+      "disposition": "migrate",
+      "evidence": [
+        "tests/unit/representations/constraints/sat/test__matsui_bounds.py",
+        "tests/integration/test_matsui_trail_search.py"
+      ],
+      "kind": "test",
+      "path": "tests/unit/cipher_modules/models/sat/utils/matsui_bounds_test.py",
+      "scope": "Integral consecutive-window SAT constraints and portable exact optimization; caller-certified lower bounds, exhaustive truth-assignment checks.",
+      "sha256": "5b7e0098d7b25229ec4db20204d6512c0517675db528e26826526afeea27d1a4",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/representations/constraints/sat/_matsui_bounds.py"
+    },
+    {
+      "disposition": "migrate",
+      "evidence": [
+        "tests/unit/analysis/test_spn_structure.py",
+        "tests/unit/analysis/test_division_property.py"
+      ],
+      "kind": "test",
+      "path": "tests/unit/cipher_modules/spn_structure_test.py",
+      "scope": "Typed graph extraction with structural GF(2) composition and chi recognition; no Sage matrix/API compatibility.",
+      "sha256": "f36bdae4151243ea6a6a1fb55664c08ceace35758a50ee5b25a019d5d8eb54ee",
+      "status": "ported-with-semantic-regressions",
+      "v5_destination": "src/claasp/analysis/spn_structure.py"
+    }
+  ],
+  "schema_version": 1,
+  "source_commit": "078f29ee9aae0f33a987520d6eab86c99c6eb4ed"
+}

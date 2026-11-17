@@ -14,8 +14,8 @@ SPEC.loader.exec_module(GATE)
 
 def test_current_source_inventory_has_no_unmapped_added_modules():
     result = GATE.validate()
-    assert result["core_inventory_files"] == 600
-    assert result["delta_files"] == 19
+    assert result["core_inventory_files"] == 604
+    assert result["delta_files"] == 23
     assert result["resources"] == 1667
 
 

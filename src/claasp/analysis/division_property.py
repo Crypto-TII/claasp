@@ -570,39 +570,21 @@ def _nonlinear_layers(primitive):
 
 
 def _spn_parameters(primitive):
-    layers = _nonlinear_layers(primitive)
-    components = [component for layer in layers for component, _ in layer]
-    if not all(isinstance(component, (BitVectorSBox, SBox)) for component in components):
-        raise ValueError("nonlinear components must be S-boxes")
+    from claasp.analysis.spn_structure import SpnStructure
 
-    def dimensions(component):
-        if isinstance(component, SBox):
-            return (
-                component.inputs[0].array_type.unit_type.encoded_bit_size,
-                component.output_type.unit_type.encoded_bit_size,
-                component.output_type.unit_count,
-            )
-        return (
-            component.inputs[0].array_type.encoded_bit_size,
-            component.output_type.encoded_bit_size,
-            1,
-        )
-
-    width = dimensions(components[0])[0]
-    if any(dimensions(component)[:2] != (width, width) for component in components):
+    layers = SpnStructure(primitive).substitution_layers
+    boxes = [box for layer in layers for box in layer.sboxes]
+    width = len(boxes[0].positions)
+    if any(len(box.positions) != width for box in boxes):
         raise ValueError("all S-boxes must map l bits to l bits")
-    if not all(len(set(component.table)) == len(component.table) for component in components):
+    if any(len(set(box.table)) != len(box.table) for box in boxes):
         raise ValueError("S-boxes must be bijective")
-    count = sum(dimensions(component)[2] for component, _ in layers[0])
-    if (
-        any(sum(dimensions(component)[2] for component, _ in layer) != count for layer in layers)
-        or count * width != primitive.graph.output.array_type.encoded_bit_size
-    ):
-        raise ValueError("every nonlinear layer must cover the state with equally sized S-boxes")
-
+    count = len(layers[0].sboxes)
+    if any(len(layer.sboxes) != count for layer in layers):
+        raise ValueError("every nonlinear layer must contain equally sized S-boxes")
     return {
         "sbox_bit_size": width,
-        "sbox_degree": max(degree for layer in layers for _, degree in layer),
+        "sbox_degree": max(_table_degree(box.table) for box in boxes),
         "number_of_sboxes": count,
     }
 

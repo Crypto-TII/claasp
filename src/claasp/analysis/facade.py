@@ -466,6 +466,20 @@ class Analysis:
 
         return MinimaxDifferentialAnalysis(self.primitive).find_lowest_weight_trail(**options)
 
+    def spn_structure(self):
+        """Return full substitution layers and structurally composed binary maps.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> structure = Present(number_of_rounds=2).analysis.spn_structure()
+            >>> len(structure.substitution_layers), len(structure.linear_layers)
+            (2, 2)
+        """
+        from claasp.analysis.spn_structure import SpnStructure
+
+        return SpnStructure(self.primitive)
+
     def find_lowest_weight_xor_differential_trail(
         self,
         *,
