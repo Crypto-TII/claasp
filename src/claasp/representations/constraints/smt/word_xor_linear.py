@@ -185,6 +185,10 @@ class WordXorLinearSMTModel:
     masks back to the producer. Native XOR-aware execution is not required.
 
 
+    ``output_mask`` fixes the packed MSB-first mask at the complete graph
+    output. None is unrestricted; zero explicitly fixes the all-zero mask.
+    The restriction participates in decoding checks and enumeration metadata.
+
     EXAMPLES::
 
         >>> try:
@@ -213,6 +217,7 @@ class WordXorLinearSMTModel:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         self._weight_interval = _weight_interval(
@@ -234,6 +239,16 @@ class WordXorLinearSMTModel:
         self.constraints = _trail_constraints(constraints, primitive)
         self.nonzero_input = nonzero_input
         self.fixed_input_masks = dict(fixed_input_masks or {})
+        self.output_mask = output_mask
+        if output_mask is not None:
+            output_type = primitive.graph.output.array_type
+            if (
+                not isinstance(output_type.unit_type, (Bit, Word, BinaryExtensionField))
+                or not isinstance(output_mask, int)
+                or isinstance(output_mask, bool)
+                or not 0 <= output_mask < (1 << output_type.encoded_bit_size)
+            ):
+                raise ValueError("output mask must fit the complete graph-output width")
         self.fixed_inputs = dict(fixed_inputs or {})
         for name, value in self.fixed_inputs.items():
             if name not in primitive.graph.input_arrays:
@@ -513,6 +528,13 @@ class WordXorLinearSMTModel:
                 add(
                     (literal if value & (1 << (len(unit_arrays[name]) - 1 - bit)) else -literal,),
                     "fixed_external_mask",
+                )
+        if self.output_mask is not None:
+            for bit, variable in enumerate(output):
+                literal = indices[variable]
+                add(
+                    (literal if self.output_mask & (1 << (len(output) - 1 - bit)) else -literal,),
+                    "fixed_output_mask",
                 )
         semantic_names = tuple(variables)
         self.constraints._encode(unit_arrays, output, allocate, indices, add)
@@ -914,6 +936,7 @@ class WordXorLinearSMTModel:
         return (
             trail.input_masks == inputs
             and trail.output_mask == _packed(self._output, values)
+            and (self.output_mask is None or trail.output_mask == self.output_mask)
             and trail.steps == tuple(steps)
             and trail.constant_sign == constant_sign
             and _within_interval(trail.steps, self._weight_interval)
@@ -955,6 +978,7 @@ class WordXorLinearSMTModel:
             ),
             ("formula_sha256", sha256(repr(formula).encode()).hexdigest()),
             ("fixed_inputs", repr(tuple(sorted(self.fixed_inputs.items())))),
+            ("output_mask", repr(self.output_mask)),
         )
         blocking_names = {name for names in self._unit_arrays.values() for name in names}
         blocking_names.update(

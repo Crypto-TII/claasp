@@ -1297,6 +1297,10 @@ class WordSemiDeterministicXorDifferentialLinearMILPModel:
 class WordXorLinearMILPModel:
     """Assemble exact XOR-linear Word graphs as portable MILP.
 
+    ``output_mask`` fixes the packed MSB-first mask at the complete graph
+    output through the shared linear relation. None is unrestricted, and zero
+    explicitly fixes all output-mask bits to zero.
+
     EXAMPLES::
 
         >>> from claasp.primitives import ToySpeck
@@ -1324,6 +1328,7 @@ class WordXorLinearMILPModel:
         maximum_weight,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ) -> None:
         from claasp.representations.constraints.sat.trails import WordXorLinearSATModel
@@ -1333,6 +1338,7 @@ class WordXorLinearMILPModel:
             maximum_weight=maximum_weight,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         self.primitive = primitive

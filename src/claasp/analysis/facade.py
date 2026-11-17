@@ -1561,12 +1561,16 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         """Find one checked characteristic without minimizing its weight.
 
         Return None only after proved UNSAT. Solver errors and interruptions
         propagate; they never mean that no characteristic exists.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1593,6 +1597,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return first_characteristic(model, solver)
@@ -1606,12 +1611,16 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         """Find one characteristic at a physical weight, with optional tolerance.
 
         Non-integral weights use the same exact-probability interval checks
         as enumeration. None means proved UNSAT, not a solver interruption.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1635,6 +1644,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return first_characteristic(model, solver)
@@ -1648,6 +1658,7 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
         limit=1000,
     ):
@@ -1655,6 +1666,9 @@ class Analysis:
 
         A finite limit can leave undiscovered trails. Call require_complete()
         before treating the returned trails as an exhaustive collection.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1680,6 +1694,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
             limit=limit,
         )
@@ -1796,6 +1811,7 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
         limit=1000,
     ):
@@ -1808,6 +1824,9 @@ class Analysis:
         A finite limit can return a useful witness without exhausting the
         interval. Check complete before claiming that every trail was found.
         Requires Z3; these examples run in the Z3 integration job.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1835,6 +1854,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
@@ -1849,6 +1869,7 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         from claasp.analysis.constraints import _trail_constraints
@@ -1880,6 +1901,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=policy.nonzero_input,
             fixed_input_masks=policy.fixed_patterns,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return model
