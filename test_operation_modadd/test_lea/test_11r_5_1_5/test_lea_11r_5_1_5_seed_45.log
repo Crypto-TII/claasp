@@ -1,0 +1,1707 @@
+Warning: multiple executables '../../../bin/fzn-gecode' found on the system, using '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/bin/fzn-gecode'
+Warning: multiple executables '../../../bin/fzn-gecode' found on the system, using '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/bin/fzn-gecode'
+MiniZinc to FlatZinc converter, version 2.9.5, build 2281171821
+Copyright (C) 2014-2026 Monash University, NICTA, Data61
+Parsing file(s) lea_11r_5_1_5.mzn', 'cmd:/QuadrIntSolverConfig=true', 'cmd:/QuadrFloatSolverConfig=true' ...
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_internal.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/output.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/output/array2d_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/output/gantt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_random.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_debug.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_reflect.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_ite.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_language.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_sort.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_ann.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_string.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_logic.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_array.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_coercion.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_math.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/stdlib/stdlib_compare.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/flatzinc_builtins.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/solver_redefinitions.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/table.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_table_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_table_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_table_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_table_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_table_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_array_set_intersect.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_array_set_union.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_array_opt_int_union.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_array_int_union.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_lesseq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_lesseq_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_lesseq_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_lesseq_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_lesseq_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_lesseq_float_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_lesseq_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_lesseq_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_lesseq_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_less.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_less_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_less_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_less_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_less_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_less_float_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_less_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_less_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_less_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_partiality.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_opt_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_opt_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_if_then_else_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_opt_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_opt_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_opt_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_var_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_if_then_else_opt_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_if_then_else_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_lt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_lt_par_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_lt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_lt_par.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_lt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_gt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_gt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_gt_par_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_gt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_gt_par.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_neq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_neq_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_neq_par_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_neq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_neq_par.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_leq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_leq_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_leq_par_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_leq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_leq_par.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_geq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_geq_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_geq_par_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_geq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_geq_par.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count_eq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_eq_par_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_eq_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_eq_par.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_count_eq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/redefinitions-2.7.1.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/redefinitions-2.5.2.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/redefinitions-2.3.3.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefinitions-2.2.1.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/redefinitions-2.1.1.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/redefinitions-2.1.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefinitions-2.0.2.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefinitions-2.0.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefinitions.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/nosets.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefs_lin_halfreifs.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefs_lin_imp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefs_lin_reifs.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/domain_encodings.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefs_bool_imp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/redefs_bool_reifs.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/options.mzn'
+processing file '/raid/homespace/rocbrunelli/claasp_x_boomerang/claasp/test_operation_modadd/test_lea/test_11r_5_1_5/lea_11r_5_1_5.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/globals.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/writes_seq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_writes_seq_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_writes_seq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/writes.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_writes_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_writes.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/write.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_write_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_write.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/weighted_spanning_tree.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dwst_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dwst.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_wst_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_wst.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/var_perm_sym.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_var_perm_sym.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/var_sqr_sym.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_var_sqr_sym.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/value_precede_chain.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_chain_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_chain_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_chain_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_chain_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_chain_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/value_precede.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_value_precede_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/tree.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dtree_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dtree_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dtree_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dtree_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_tree_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_tree_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_tree_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_tree_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/symmetric_all_different.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_symmetric_all_different_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_symmetric_all_different.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/analyse_all_different.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/sum_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sum_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sum_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/sum_pred.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sum_pred_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sum_pred.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/subgraph.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_subgraph_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_subgraph_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_subgraph_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_subgraph_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/subcircuit.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_subcircuit_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/alldifferent.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_subcircuit.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/strict_lex2.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strict_lex2_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strict_lex2.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/strictly_increasing.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_float_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_float_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_float_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_int_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_strictly_increasing_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/strictly_decreasing.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/steiner.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dsteiner_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dsteiner.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_steiner_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_steiner.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/span.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_span_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_span.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/sort_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/sort.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sort_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sort.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/sliding_among.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sliding_among_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sliding_among_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/sliding_sum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_sliding_sum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_sliding_sum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/seq_precede_chain.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_seq_precede_chain_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_seq_precede_chain_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_seq_precede_chain_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_seq_precede_chain_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/roots_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/roots.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_roots_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_roots.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/regular_regexp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_regexp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/regular_nfa.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_nfa_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_nfa_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_nfa_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_nfa.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/regular.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_set.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_set.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_regular_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_regular.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/reachable.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dreachable_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dreachable_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dreachable_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dreachable_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_reachable_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_reachable_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_reachable_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_reachable_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/range_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/range.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_range_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_range.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/piecewise_linear_non_continuous.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_piecewise_linear_non_continuous_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_piecewise_linear_non_continuous.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/piecewise_linear.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_piecewise_linear_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_piecewise_linear.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/partition_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_partition_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_partition_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/nvalue_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/nvalue.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_nvalue_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_nvalue.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/neural_net.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_neural_net_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_neural_net.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/network_flow.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_network_flow_cost_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_network_flow_cost.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_network_flow_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_network_flow.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/minimum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/member.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_set_member_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_set_member.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_float_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_member_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/mdd_nondet.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_mdd_nondet_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_mdd_nondet.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/mdd.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_mdd_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_mdd.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/maximum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/link_set_to_booleans.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_link_set_to_booleans_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_link_set_to_booleans.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex2_strict.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex2.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex2_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex2.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_chain_greater.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_chain_less.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_less_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_less_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_less_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_less_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_chain_greatereq_orbitope.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_chain_lesseq_orbitope.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_lesseq_orbitope_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_chain_lesseq_orbitope.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_chain_greatereq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_chain_lesseq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_lesseq_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_chain_lesseq_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_lex_chain_lesseq_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_lex_chain_lesseq_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_greater.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/lex_greatereq.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/knapsack.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_knapsack_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_knapsack.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/inverse_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_inverse_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_inverse_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/inverse_in_range.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_inverse_in_range_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_inverse_in_range.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/inverse_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/inverse.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_inverse_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_inverse_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_inverse.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/int_set_channel.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_int_set_channel_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_int_set_channel.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/increasing.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_int_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_float_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_float_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_float_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_bool_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_increasing_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/global_cardinality_low_up_closed.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/global_cardinality_low_up.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/global_cardinality_closed_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/global_cardinality_closed.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_closed_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_closed_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_closed_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_closed.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_closed_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_closed_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_closed_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_closed.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/global_cardinality_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/global_cardinality.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_low_up.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_global_cardinality.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/geost.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_nonoverlap_k_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_nonoverlap_k.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_smallest_bb_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_smallest_bb.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_bb_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_bb.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_geost.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/exactly.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_exactly_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_exactly_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_exactly_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_exactly_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/exactly.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/exactly.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/element.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/distribute_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/distribute.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_distribute_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_distribute.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/disjunctive_strict_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_strict_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_strict_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_strict_opt_decomp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/disjunctive_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/disjunctive_strict.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_strict_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_strict.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/disjunctive.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjunctive.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/disjoint.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjoint_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_disjoint.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/diffn_nonstrict_k.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_nonstrict_k_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_nonstrict_k.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/diffn_k.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_k_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_k.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/diffn_nonstrict.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_nonstrict_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_nonstrict.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/diffn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_diffn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/decreasing.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/dag.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dag_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dag.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/cumulatives_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulatives_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/cumulatives.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulatives.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulatives_decomp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/cumulative_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulative_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulative_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulative_opt_decomp.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/cumulative.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cumulative_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_cumulative.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/count.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/cost_regular.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cost_regular_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cost_regular.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/cost_mdd.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cost_mdd_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_cost_mdd.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/connected.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dconnected_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dconnected.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_connected_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_connected.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/circuit_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_circuit_opt_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_circuit_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/circuit.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_circuit_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_circuit.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/bounded_path.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_dpath_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/path.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dpath_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dpath_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dpath_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_dpath_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_path_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_path_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_path_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_path_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_dpath_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_dpath_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_dpath_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_path_enum_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_path_enum.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_path_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bounded_path_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/bin_packing_load_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/bin_packing_load.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_load_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_load_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_load.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/bin_packing_capa.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_capa_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_capa_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_capa.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/bin_packing.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_bin_packing.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_most1.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_most1_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_most1.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_most.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_most_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_most_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_most_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_most_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_most.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_most.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_least.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_least_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_least_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_least_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_at_least_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_least.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/at_least.mzn.deprecated.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/arg_val.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_val_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_val_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_max_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_val_float_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_val_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_val_bool_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_val_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_min_bool.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/arg_max.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_max_float_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_max_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_max_bool_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_max_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_max_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/arg_min.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_min_float_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_min_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_min_bool_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_min_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_min_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/arg_sort.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_sort_float.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_arg_sort_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/among_fn.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_among.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/among.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_among_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/alternative.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_alternative_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_alternative.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/all_equal.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_equal_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_equal_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_equal_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_equal_int.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/all_disjoint.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_disjoint_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_disjoint.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/all_different_except_0.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_alldifferent_except_0_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_alldifferent_except_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_alldifferent_except_0.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/all_different_except.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_alldifferent_except.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/all_different.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_different_set_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_different_set.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_different_int_reif.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/fzn_all_different_int_opt.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/alldifferent_except_0.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/std/alldifferent_except.mzn'
+processing file '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear/fzn_all_different_int.mzn'
+ done parsing (0.17 s)
+Flattening ...
+	CompilePass: Flatten with '/opt/MiniZincIDE-2.9.5-bundle-linux-x86_64/share/minizinc/linear' library ...
+MIP domains ...
+ 1335 POSTs [ 1152,24,0,0,0,66,0,0,0,0, ], LINEQ [ 36,0,0,0,1182,0,0,0,132, ], 1314 / 2502 vars, 1284 cliques, 1 / 2.78505 / 32 NSubIntv m/a/m, 0 / 0.39094 / 15 SubIntvSize m/a/m, 93+1188(1188) clq eq_encoded 
+ done (8.39 s)
+Optimizing ... done (8.72 s)
+Converting to old FlatZinc ... done (9.28 s)
+ done (9.28 s)
+ done (9.45 s), max stack depth 44
+% Generated FlatZinc statistics:
+%%%mzn-stat: paths=0
+%%%mzn-stat: flatBoolVars=2172
+%%%mzn-stat: flatIntVars=44768
+%%%mzn-stat: flatFloatVars=3336
+%%%mzn-stat: flatIntConstraints=59306
+%%%mzn-stat: flatFloatConstraints=3426
+%%%mzn-stat: evaluatedReifiedConstraints=18011
+%%%mzn-stat: evaluatedHalfReifiedConstraints=5703
+%%%mzn-stat: eliminatedLinearConstraints=1818
+%%%mzn-stat: method="minimize"
+%%%mzn-stat: flatTime=9.49961
+%%%mzn-stat-end
+Maximum memory 185 Mbytes.
+      % SOLVING PHASE
+MIP solver plugin, compiled Jan 23 2026, using: MIP wrapper for Gurobi library 13.0.2.  Compiled  Jan 23 2026  08:26:40
+  MIP: objective variable index (0-based): 8740
+  MIPWrapper: adding the 50276 Phase-1 variables... done.
+  MIPSolverinstance: adding constraints... done, 61292 rows && 50276 columns in total.
+    MIPSolverinstance: this is a MINimization problem.
+    MIPSolverinstance: bounds for the objective function: 0, 195600
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (linux64 - "Ubuntu 22.04.5 LTS")
+
+CPU model: AMD EPYC 7713 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 16 threads
+
+Non-default parameters:
+TimeLimit  86400
+FeasibilityTol  1e-08
+IntFeasTol  1e-08
+MIPGap  1e-08
+Heuristics  0.5
+NodefileStart  0.5
+NonConvex  2
+PreQLinearize  1
+Presolve  1
+PreSparsify  0
+Seed  45
+Threads  16
+OutputFlag  0
+
+Academic license 947306 - for non-commercial use only - registered to ma___@uniroma3.it
+Optimize a model with 61292 rows, 50276 columns and 207119 nonzeros (Min)
+Model fingerprint: 0xa0997f07
+Model has 1 linear objective coefficients
+Model has 1440 quadratic constraints
+Variable types: 3336 continuous, 46940 integer (2172 binary)
+Coefficient statistics:
+  Matrix range     [1e-03, 6e+04]
+  QMatrix range    [1e+00, 1e+00]
+  QLMatrix range   [1e+00, 1e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [5e-01, 2e+05]
+  RHS range        [1e-03, 6e+04]
+
+Presolve removed 24364 rows and 22013 columns
+Presolve time: 0.94s
+Presolved: 49681 rows, 32034 columns, 182513 nonzeros
+Variable types: 5271 continuous, 26763 integer (24996 binary)
+
+Deterministic concurrent LP optimizer: primal and dual simplex (primal and dual model)
+Showing primal log only...
+
+Root relaxation presolved: 50307 rows, 27618 columns, 176720 nonzeros
+
+
+Root simplex log...
+
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+   25730    9.3312303e+04   2.643982e+01   3.136378e+09      5s
+   38594    7.0209469e+03   0.000000e+00   1.982697e+10     10s
+   43902    3.6926600e+03   0.000000e+00   4.611424e+08     15s
+   47692    1.9139008e+03   0.000000e+00   1.249019e+08     20s
+Concurrent spin time: 3.73s (can be avoided by choosing Method=3)
+
+Solved with dual simplex
+
+Root relaxation: objective 0.000000e+00, 27409 iterations, 22.44 seconds (11.80 work units)
+Total elapsed time = 25.09s (DegenMoves)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00000    0 7586          -    0.00000      -     -   70s
+     0     0  106.94565    0 4886          -  106.94565      -     -  139s
+H    0     0                    23294.000000  106.94565   100%     -  175s
+H    0     0                    22894.000000  106.94565   100%     -  175s
+H    0     0                    22294.000000  106.94565   100%     -  175s
+H    0     0                    22094.000000  106.94565   100%     -  175s
+     0     0  106.94565    0  907 22094.0000  106.94565   100%     -  175s
+H    0     0                    21894.000000  106.94565   100%     -  220s
+H    0     0                    21094.000000  106.94565  99.5%     -  220s
+H    0     0                    20894.000000  106.94565  99.5%     -  220s
+H    0     0                    17200.000000  106.94565  99.4%     -  220s
+H    0     0                    17000.000000  106.94565  99.4%     -  220s
+H    0     0                    16400.000000  106.94565  99.3%     -  220s
+H    0     0                    16200.000000  106.94565  99.3%     -  220s
+H    0     0                    15800.000000  106.94565  99.3%     -  220s
+H    0     0                    12200.000000  106.94565  99.1%     -  220s
+H    0     0                    11400.000000  106.94565  99.1%     -  220s
+     0     0  138.23501    0  865 11400.0000  138.23501  98.8%     -  220s
+     0     0  138.23501    0  117 11400.0000  138.23501  98.8%     -  222s
+     0     0  143.99683    0 8062 11400.0000  143.99683  98.7%     -  237s
+H    0     0                    11000.000000  143.99683  98.7%     -  271s
+H    0     0                    10000.000000  143.99683  98.6%     -  271s
+     0     0  163.27465    0 8645 10000.0000  163.27465  98.4%     -  272s
+     0     0  163.27465    0 7718 10000.0000  163.27465  98.4%     -  286s
+     0     0  169.06295    0 7873 10000.0000  169.06295  98.3%     -  305s
+     0     0  189.31973    0 8391 10000.0000  189.31973  98.1%     -  319s
+     0     0  196.19048    0 8445 10000.0000  196.19048  98.0%     -  324s
+     0     0  196.19048    0 8549 10000.0000  196.19048  98.0%     -  337s
+     0     0  196.19048    0 8495 10000.0000  196.19048  98.0%     -  341s
+     0     0  199.74473    0 8638 10000.0000  199.74473  98.0%     -  354s
+     0     0  199.74473    0 8601 10000.0000  199.74473  98.0%     -  354s
+     0     0  199.74473    0 7736 10000.0000  199.74473  98.0%     -  378s
+     0     2  200.00000    0 7730 10000.0000  200.00000  98.0%     -  395s
+     1     4  200.00000    1 7615 10000.0000  200.00000  98.0%  2712  404s
+     3     8  200.00000    2 7574 10000.0000  200.00000  98.0%  7493  413s
+     7    16  200.00000    3 7851 10000.0000  200.00000  98.0%  8282  428s
+    15    32  200.00000    4 8006 10000.0000  200.00000  98.0% 11546  442s
+    31    33 3050.85641    5 8266 10000.0000  200.00000  98.0% 11745  472s
+    32    48 4022.94237    6 8236 10000.0000  200.00000  98.0% 11959  498s
+    47    72 4436.87226    7 8257 10000.0000  200.00000  98.0% 14339  517s
+    71   102 4822.56944    8 8162 10000.0000  200.00000  98.0% 12984  536s
+   101   127 5222.56944   10 8132 10000.0000  200.00000  98.0% 10881  553s
+   126   169 6105.90278   12 8112 10000.0000  200.00000  98.0% 10016  566s
+   168   194 6205.90278   13 8015 10000.0000  200.00000  98.0%  8626  576s
+H  176   194                    8400.0000000  200.00000  97.6%  8522  576s
+H  193   222                    7600.0000000  200.00000  97.4%  8265  596s
+   222   263 6868.00000   17 7944 7600.00000  200.00000  97.4%  7778  608s
+H  243   263                    5805.0000000  200.00000  96.6%  7433  608s
+H  249   263                    4680.0000000  200.00000  95.7%  7357  608s
+   263   267     cutoff   19      4680.00000  200.00000  95.7%  7168  620s
+H  268   267                    4480.0000000  200.00000  95.5%  7083  620s
+   297   283  462.01373   10 4183 4480.00000  200.00000  95.5%  6736  632s
+H  301   283                    4391.0000000  200.00000  95.4%  6705  632s
+   313   300  662.01373   11 4183 4391.00000  200.00000  95.4%  6783  649s
+   330   316  662.01373   11 4127 4391.00000  200.00000  95.4%  6807  659s
+H  341   316                    4387.0000000  200.00000  95.4%  6781  659s
+H  345   316                    4385.0000000  200.00000  95.4%  6768  659s
+   346   338  665.77181   12 4152 4385.00000  200.00000  95.4%  6753  667s
+H  347   338                    4384.0000000  200.00000  95.4%  6734  667s
+   368   363  665.77181   12 4039 4384.00000  200.00000  95.4%  6543  689s
+   393   387  671.05263   13 4168 4384.00000  200.00000  95.4%  6298  723s
+   417   415  670.12987   13 4044 4384.00000  200.00000  95.4%  6085  743s
+   445   431  675.32468   14 4168 4384.00000  200.00000  95.4%  5821  776s
+   463   446  680.51948   15 4188 4384.00000  200.00000  95.4%  5778  827s
+   486   467  684.61538   16 4151 4384.00000  200.00000  95.4%  5725  881s
+   517   493  692.90323   17 4140 4384.00000  200.00000  95.4%  5606  950s
+   551   521  700.00000   18  405 4384.00000  200.00000  95.4%  5470  999s
+   583   558  700.00000   19  411 4384.00000  200.00000  95.4%  5318 1069s
+   620   580  700.00000   20  402 4384.00000  200.00000  95.4%  5149 1109s
+   644   601  700.00000   21  405 4384.00000  200.00000  95.4%  5123 1129s
+   665   619  800.00000   24  372 4384.00000  200.00000  95.4%  5117 1151s
+   683   649  800.00000   22  404 4384.00000  200.00000  95.4%  5056 1172s
+   713   674  900.00000   23  366 4384.00000  200.00000  95.4%  4921 1189s
+   738   712  800.00000   28  372 4384.00000  200.00000  95.4%  4823 1213s
+   784   757  800.00000   29  408 4384.00000  200.00000  95.4%  4685 1229s
+   829   794  800.00000   30  383 4384.00000  200.00000  95.4%  4548 1250s
+   866   833  800.00000   31  383 4384.00000  200.00000  95.4%  4419 1269s
+   905   882  800.00000   32  365 4384.00000  200.00000  95.4%  4282 1297s
+   954   958  800.00000   33  365 4384.00000  200.00000  95.4%  4147 1340s
+  1030  1026  800.00000   34  287 4384.00000  200.00000  95.4%  3952 1383s
+  1119  1122  800.00000   35  287 4384.00000  200.00000  95.4%  3807 1420s
+  1222  1179  800.00000   36  268 4384.00000  200.00000  95.4%  3648 1459s
+  1297  1254  800.00000   37  268 4384.00000  200.00000  95.4%  3625 1507s
+  1377  1336  800.00000   38  249 4384.00000  200.00000  95.4%  3606 1553s
+  1470  1451  800.00000   38  251 4384.00000  200.00000  95.4%  3530 1609s
+  1606  1539  800.00000   36  270 4384.00000  200.00000  95.4%  3432 1676s
+  1717  1648  800.00000   39  208 4384.00000  200.00000  95.4%  3401 1740s
+  1838  1795  800.00000   40  186 4384.00000  200.00000  95.4%  3375 1800s
+  1995  1875  800.00000   41  186 4384.00000  200.00000  95.4%  3256 1879s
+  2078  2039  800.00000   42  168 4384.00000  200.00000  95.4%  3186 1939s
+  2271  2040 2618.75000   32 10476 4384.00000  200.00000  95.4%  3057 2039s
+  2273  2041 4208.38257   32 3894 4384.00000  200.00000  95.4%  3054 2097s
+  2274  2042 3963.74680   79 4242 4384.00000  200.00000  95.4%  3053 2138s
+  2275  2043 3800.00000   84 3955 4384.00000  200.00000  95.4%  3051 2213s
+  2276  2043 2200.00000  164 7523 4384.00000  355.55548  91.9%  3050 2327s
+  2277  2044 3821.55672   99 7628 4384.00000  360.81626  91.8%  3049 2374s
+  2278  2045 3471.83757   97 7806 4384.00000  367.16094  91.6%  3047 2398s
+  2279  2045 4311.11111   28 7845 4384.00000  369.37136  91.6%  3046 2412s
+  2280  2046 3000.00000  150 7917 4384.00000  369.37136  91.6%  3045 2419s
+  2281  2047 3800.00000   58 7987 4384.00000  369.74783  91.6%  3043 2440s
+  2282  2047 2619.45055  137 1174 4384.00000  371.42853  91.5%  3042 2482s
+  2283  2048 4000.00000  128 1180 4384.00000  374.19350  91.5%  3041 2489s
+  2284  2049 2259.00886    9  554 4384.00000  374.99996  91.4%  3039 2527s
+  2285  2049 3600.00000   47  510 4384.00000  376.47055  91.4%  3038 2531s
+  2286  2050 1476.98526    7  414 4384.00000  378.94732  91.4%  3037 2553s
+  2287  2051 2600.00000   65  164 4384.00000  378.94732  91.4%  3035 2903s
+  2288  2051 3686.95652   24  197 4384.00000  380.46268  91.3%  3034 2966s
+  2289  2052  764.51613   29  119 4384.00000  382.60865  91.3%  3033 2991s
+  2290  2053 4000.00000   95 1377 4384.00000  383.33329  91.3%  3031 3095s
+  2291  2053 1800.00000   96 1233 4384.00000  383.66835  91.2%  3030 3296s
+  2292  2054 3640.90909   12 1651 4384.00000  383.98427  91.2%  3029 3451s
+  2293  2055 4298.73684   13 1643 4384.00000  383.98427  91.2%  3027 3468s
+  2294  2055 1800.00000   91 4057 4384.00000  385.95168  91.2%  3026 3505s
+  2295  2056 2600.00000   80 4075 4384.00000  387.20764  91.2%  3025 3511s
+  2296  2057 2329.76140   46 4054 4384.00000  388.20293  91.1%  3023 3530s
+  2297  2057 4200.00000   29 4078 4384.00000  388.49005  91.1%  3022 3543s
+  2298  2058 2484.86499   13 4055 4384.00000  388.62993  91.1%  3021 3555s
+  2299  2059 1800.00000   97  539 4384.00000  389.74344  91.1%  3020 3584s
+  2300  2059 3179.75207   12  790 4384.00000  391.33745  91.1%  3018 3607s
+  2301  2060 3999.34587  117 4071 4384.00000  391.84282  91.1%  3017 3629s
+  2302  2061 2800.00000   52 4080 4384.00000  391.93869  91.1%  3016 3635s
+  2303  2061 4023.25218    7 4059 4384.00000  392.73284  91.0%  3014 3644s
+  2304  2062  765.27546   30 4084 4384.00000  393.03300  91.0%  3013 3649s
+  2305  2063 3900.00000   33 4120 4384.00000  393.29519  91.0%  3012 3658s
+  2306  2063 3700.00000   45 4091 4384.00000  393.30541  91.0%  3010 3661s
+  2307  2064 2331.54053   41 4176 4384.00000  394.67407  91.0%  3009 3669s
+  2308  2065 3900.00000   46 4234 4384.00000  395.07786  91.0%  3008 3682s
+  2309  2065 3200.00000   82 4204 4384.00000  395.13530  91.0%  3006 3687s
+  2310  2066 2400.00000   39 4154 4384.00000  395.63670  91.0%  3005 3692s
+  2311  2067 1934.46328   42 4189 4384.00000  395.65755  91.0%  3004 3696s
+  2312  2067 4000.00000   59 4238 4384.00000  395.99914  91.0%  3003 3702s
+  2313  2068 2604.56140  128 3569 4384.00000  395.99939  91.0%  3001 3737s
+  2314  2069  600.00807   50 3569 4384.00000  512.66580  88.3%  3000 3773s
+  2315  2071  512.66580   10  242 4384.00000  512.66580  88.3%  3269 3793s
+  2316  2074  512.66580   11  322 4384.00000  512.66580  88.3%  3269 3816s
+  2319  2079  512.66580   12  240 4384.00000  512.66580  88.3%  3275 3841s
+  2325  2089  512.66580   13  305 4384.00000  512.66580  88.3%  3287 3864s
+  2333  2086  700.00000   12  462 4384.00000  512.66580  88.3%  3310 3865s
+  2337  2097  650.00000   14  574 4384.00000  512.66580  88.3%  3328 3908s
+  2349  2155  700.00000   15  526 4384.00000  512.66580  88.3%  3444 3960s
+  2413  2159  800.00000   16   50 4384.00000  512.66580  88.3%  3478 3982s
+  2438  2178 1200.00000   17   74 4384.00000  512.66580  88.3%  3528 4018s
+  2468  2194 1000.00000   17   91 4384.00000  512.66580  88.3%  3557 4052s
+  2496  2218 1100.00000   18  120 4384.00000  512.66580  88.3%  3569 4075s
+  2530  2232 2066.66667   18  115 4384.00000  512.66580  88.3%  3576 4104s
+  2557  2254 1200.00000   19  125 4384.00000  512.66580  88.3%  3576 4138s
+  2592  2270     cutoff   21      4384.00000  512.66580  88.3%  3562 4157s
+  2622  2283 1200.00000   24   86 4384.00000  512.66580  88.3%  3559 4175s
+  2650  2290 1200.00000   25   69 4384.00000  512.66580  88.3%  3547 4213s
+  2670  2300 1200.00000   25   63 4384.00000  512.66580  88.3%  3552 4235s
+  2690  2306 infeasible   39      4384.00000  512.66580  88.3%  3567 4274s
+  2709  2316 1492.10437   26 3877 4384.00000  512.66580  88.3%  3609 4311s
+  2726  2325 1600.00000   26   48 4384.00000  512.66580  88.3%  3642 4340s
+  2742  2343 1600.00000   27   32 4384.00000  512.66580  88.3%  3668 4375s
+  2769  2353 1600.00000   30   42 4384.00000  512.66580  88.3%  3674 4400s
+  2790  2367 1600.00000   32   50 4384.00000  512.66580  88.3%  3697 4420s
+  2813  2384 1600.00000   33   55 4384.00000  512.66580  88.3%  3702 4440s
+  2838  2405 1600.00000   34   54 4384.00000  512.66580  88.3%  3697 4465s
+  2867  2433 1800.00000   35   46 4384.00000  512.66580  88.3%  3691 4487s
+  2911  2466 3800.00000   38  105 4384.00000  512.66580  88.3%  3680 4513s
+  2965  2488 1600.00000   39   48 4384.00000  512.66580  88.3%  3647 4544s
+  3023  2509 1600.00000   40   48 4384.00000  512.66580  88.3%  3616 4583s
+  3078  2540 1600.00000   41   48 4384.00000  512.66580  88.3%  3586 4609s
+  3150  2570 1600.00000   43   48 4384.00000  512.66580  88.3%  3563 4650s
+  3223  2606 1600.00000   44   32 4384.00000  512.66580  88.3%  3542 4687s
+  3294  2644 1600.00000   45   32 4384.00000  512.66580  88.3%  3525 4725s
+  3365  2698 1600.00000   47   32 4384.00000  512.66580  88.3%  3502 4781s
+  3477  2758 1600.00000   49   27 4384.00000  512.66580  88.3%  3437 4822s
+  3595  2834 1600.00000   50   27 4384.00000  512.66580  88.3%  3378 4877s
+  3716  2866 1600.00000   51   41 4384.00000  512.66580  88.3%  3343 4916s
+  3818  2874 1600.00000   54   19 4384.00000  512.66580  88.3%  3322 4986s
+  3906  2927 1600.00000   55   17 4384.00000  512.66580  88.3%  3337 5042s
+  3992  2987 1600.00000   57   17 4384.00000  512.66580  88.3%  3323 5099s
+  4097  3031 1600.00000   63   14 4384.00000  512.66580  88.3%  3305 5157s
+  4187  3110 1600.00000   68   14 4384.00000  512.66580  88.3%  3310 5210s
+  4333  3215 1600.00000   70   14 4384.00000  512.66580  88.3%  3272 5308s
+  4520  3302 1600.00000   72   14 4384.00000  512.66580  88.3%  3199 5365s
+  4725  3332 1600.00000   75   14 4384.00000  512.66580  88.3%  3139 5420s
+  4864  3425 1600.00000   77   22 4384.00000  512.66580  88.3%  3134 5513s
+  5039  3478 1600.00000   80   13 4384.00000  512.66580  88.3%  3107 5567s
+  5181  3538 1600.00000   87    9 4384.00000  512.66580  88.3%  3111 5633s
+  5316  3626 1866.66667  101   25 4384.00000  512.66580  88.3%  3120 5702s
+  5490  3663 2000.00000  110    5 4384.00000  512.66580  88.3%  3122 5816s
+  5641  3693 2000.00000  112    5 4384.00000  512.66580  88.3%  3143 5930s
+  5811  3775 2000.00000  114    5 4384.00000  512.66580  88.3%  3156 6005s
+  5986  3831 2000.00000  116    5 4384.00000  512.66580  88.3%  3152 6082s
+  6138  4020 2000.00000  118    5 4384.00000  512.66580  88.3%  3141 6185s
+  6435  4117 infeasible  130      4384.00000  512.66580  88.3%  3086 6310s
+  6678  4289  800.00000   30   98 4384.00000  512.66580  88.3%  3063 6424s
+  6969  4376 1000.00000   37  152 4384.00000  512.66580  88.3%  3022 6497s
+  7183  4602 1000.00000   43  152 4384.00000  512.66580  88.3%  3011 6590s
+  7574  4806 1000.00000   51   57 4384.00000  512.66580  88.3%  2954 6667s
+  8032  5017 1000.00000   56   57 4384.00000  512.66580  88.3%  2889 6803s
+  8490  5049 1000.00000   61   57 4384.00000  512.66580  88.3%  2816 6889s
+  8677  5211 1000.00000   67   66 4384.00000  512.66580  88.3%  2775 7004s
+  8885  5267 1000.00000   72   66 4384.00000  512.66580  88.3%  2755 7106s
+  8985  5388 1200.00000   83   45 4384.00000  512.66580  88.3%  2778 7219s
+  9140  5563 1000.46033   88 4209 4384.00000  512.66580  88.3%  2771 7326s
+  9346  5612 1001.22279   93 4096 4384.00000  512.66580  88.3%  2762 7436s
+  9455  5693 1001.92968   98 4110 4384.00000  512.66580  88.3%  2793 7598s
+  9581  5865 1004.08162  102  297 4384.00000  512.66580  88.3%  2815 7753s
+  9832  6069 1009.15074  110 4117 4384.00000  512.66580  88.3%  2818 7920s
+ 10121  6346 1016.32652  126  131 4384.00000  512.66580  88.3%  2808 8048s
+ 10462  6603 1041.12444  143 4121 4384.00000  512.66580  88.3%  2796 8187s
+ 10832  6852 1200.00000  165   54 4384.00000  512.66580  88.3%  2787 8335s
+ 11281  7114  520.66556   56  601 4384.00000  512.66580  88.3%  2756 8461s
+ 11654  7292  552.85088   69 3753 4384.00000  512.66580  88.3%  2743 8603s
+ 11906  7591  602.79497   73 4746 4384.00000  512.66580  88.3%  2756 8730s
+ 12273  7876 1619.46164   76 4862 4384.00000  512.66580  88.3%  2750 8916s
+ 12725  8087 2252.79497   80 4691 4384.00000  512.66580  88.3%  2740 9042s
+ 13138  8241 4036.07873   86 4705 4384.00000  512.66580  88.3%  2743 9243s
+ 13372  8472 infeasible   88      4384.00000  512.66580  88.3%  2767 9398s
+ 13794  8628 2000.00000  102   20 4384.00000  512.66580  88.3%  2774 9691s
+ 14030  8980     cutoff  111      4384.00000  512.66580  88.3%  2801 9921s
+ 14500  9102 1000.00000   75   16 4384.00000  512.66580  88.3%  2790 10104s
+ 14719  9274 4000.00000   91   31 4384.00000  512.66580  88.3%  2814 10331s
+ 15091  9350 infeasible   85      4384.00000  512.66580  88.3%  2844 10551s
+ 15349  9657  512.66580   86 4888 4384.00000  512.66580  88.3%  2874 10758s
+ 15793  9897  512.66580   93 4672 4384.00000  512.66580  88.3%  2901 10968s
+ 16137 10629  512.66580  100 1464 4384.00000  512.66580  88.3%  2924 11257s
+ 17084 10950  512.66580  106 1340 4384.00000  512.66580  88.3%  2869 11528s
+ 17460 11998  512.66580  112 4676 4384.00000  512.66580  88.3%  2876 11757s
+ 18746 12534  512.66580  119 1526 4384.00000  512.66580  88.3%  2786 12051s
+ 19546 12826  512.66580  126 4711 4384.00000  512.66580  88.3%  2766 12306s
+ 19933 12869  512.66580  132 4728 4384.00000  512.66580  88.3%  2774 12554s
+ 20004 12917  742.93041  132 1314 4384.00000  512.66580  88.3%  2770 12883s
+ 20058 12998  512.66580  133 4719 4384.00000  512.66580  88.3%  2777 13215s
+ 20191 13074 1400.07327  133 1260 4384.00000  512.66580  88.3%  2776 13570s
+ 20317 13183  512.66580  135 1362 4384.00000  512.66580  88.3%  2779 13862s
+ 20443 13352 3250.07239  145 1442 4384.00000  512.66580  88.3%  2789 14423s
+ 20742 14072  512.66580  155 1553 4384.00000  512.66580  88.3%  2797 15511s
+ 22077 14435 3205.55556  118   60 4384.00000  512.66580  88.3%  2778 16124s
+ 22750 15132 2000.00000   33  249 4384.00000  512.66580  88.3%  2788 16925s
+ 23969 15750 1815.06234   79 3810 4384.00000  512.66580  88.3%  2811 17569s
+ 24952 16377 2298.52931  108  167 4384.00000  512.66580  88.3%  2818 18292s
+ 25978 17348 2443.10777   37 7846 4384.00000  512.66580  88.3%  2860 18874s
+ 27185 17769 3301.15781   65 4479 4384.00000  512.66580  88.3%  2884 19375s
+ 27811 18256 2801.16782   44 3296 4384.00000  512.66580  88.3%  2928 19963s
+ 28764 18680 1594.75410  178  176 4384.00000  512.66580  88.3%  2988 20586s
+ 29691 19343 3702.23182  180  855 4384.00000  512.66580  88.3%  3038 21125s
+ 31035 19765 infeasible  183      4384.00000  512.66580  88.3%  3086 21616s
+ 31999 21731 2101.27599   41 4552 4384.00000  524.22158  88.0%  3138 22034s
+ 34621 22369 1217.68478   88 3271 4384.00000  535.89663  87.8%  3077 22424s
+ 35704 23163 1232.90367  102 4323 4384.00000  559.85828  87.2%  3084 22776s
+ 37121 24227  977.57576   20 3380 4384.00000  562.90318  87.2%  3121 23148s
+ 38924 25268 2843.27856  217  362 4384.00000  581.76361  86.7%  3131 23558s
+ 40470 26218 1155.45315   31   98 4384.00000  592.73284  86.5%  3156 23974s
+ 40576 26218 1400.00000  143   34 4384.00000  599.05088  86.3%  3160 23975s
+ 42145 26219 4098.15099   48 10375 4384.00000  600.00000  86.3%  3178 26198s
+ 42147 26220 3233.49558  116  149 4384.00000  600.00000  86.3%  3178 26211s
+ 42148 26221 2450.00000   34  753 4384.00000  600.00000  86.3%  3178 26265s
+ 42149 26222 3000.00000  115 8800 4384.00000  600.00000  86.3%  3178 26324s
+ 42150 26222 1200.07319   93 9330 4384.00000  602.22934  86.3%  3178 26362s
+ 42151 26223 1800.00000   82 9630 4384.00000  623.81046  85.8%  3178 26386s
+ 42152 26224 2801.00605   71 9347 4384.00000  631.34460  85.6%  3178 26400s
+ 42153 26224 2400.00000   73 9476 4384.00000  633.74673  85.5%  3178 26409s
+ 42154 26225 2837.71867   35 9572 4384.00000  634.19868  85.5%  3178 26415s
+ 42156 26226 3628.67647  198 9592 4384.00000  634.42973  85.5%  3177 26424s
+ 42157 26227  804.54331  162 9515 4384.00000  634.49786  85.5%  3177 26427s
+ 42159 26228 1432.92784  154 9473 4384.00000  634.53264  85.5%  3177 26433s
+ 42160 26229 3539.54249   40 9719 4384.00000  641.86895  85.4%  3177 26455s
+ 42161 26230 2800.00000   96 9536 4384.00000  650.02524  85.2%  3177 26478s
+ 42162 26230 3800.00000  142 9493 4384.00000  651.99840  85.1%  3177 26488s
+ 42163 26231 2800.00000   63 9547 4384.00000  652.29880  85.1%  3177 26492s
+ 42164 26232 2000.00000  155 9489 4384.00000  652.36599  85.1%  3177 26496s
+ 42166 26233 2310.52632   68 9631 4384.00000  652.39980  85.1%  3177 26501s
+ 42167 26234 3443.51453   89 9635 4384.00000  652.40020  85.1%  3177 26573s
+ 42168 26234 3266.81057  167 9347 4384.00000  666.41147  84.8%  3176 26588s
+ 42169 26235 2500.00000   48 9407 4384.00000  673.17831  84.6%  3176 26603s
+ 42170 26236 2350.00000   84 9581 4384.00000  675.14281  84.6%  3176 26614s
+ 42171 26236 3828.67647  197 9688 4384.00000  675.56536  84.6%  3176 26622s
+ 42172 26237 4000.00000  102 9658 4384.00000  675.71513  84.6%  3176 26627s
+ 42173 26238  799.99996   61 9710 4384.00000  675.77751  84.6%  3176 26630s
+ 42175 26239 2801.14275   40 9572 4384.00000  675.78727  84.6%  3176 26705s
+ 42176 26240  686.48634   49 9259 4384.00000  686.48634  84.3%  3176 26723s
+ 42177 26240 1047.27260   88 9418 4384.00000  688.46760  84.3%  3176 26734s
+ 42178 26241 1002.61333   95 9848 4384.00000  688.94779  84.3%  3176 26741s
+ 42179 26242 1100.00000  204 9716 4384.00000  688.99782  84.3%  3176 26745s
+ 42181 26243 3350.00000   31 9612 4384.00000  689.01063  84.3%  3175 26836s
+ 42182 26244 1800.00000  187 9572 4384.00000  698.78893  84.1%  3175 26878s
+ 42183 26244 2400.00000  194 9833 4384.00000  700.93967  84.0%  3175 26898s
+ 42184 26245 1000.00000   32 9841 4384.00000  701.75814  84.0%  3175 26909s
+ 42185 26246 2800.00000   41 9923 4384.00000  702.25705  84.0%  3175 26921s
+ 42186 26246 3775.54749  111 10015 4384.00000  702.35210  84.0%  3175 26927s
+ 42187 26247 4028.67647   98 10045 4384.00000  702.37136  84.0%  3175 26930s
+ 42190 26249 2933.33333   36 9933 4384.00000  702.39726  84.0%  3175 26936s
+ 42191 26250 1982.83477   35 9854 4384.00000  702.39726  84.0%  3175 27022s
+ 42192 26250 3800.00000   63 9627 4384.00000  711.37906  83.8%  3175 27052s
+ 42193 26251 3200.00000   46 9732 4384.00000  713.89908  83.7%  3175 27068s
+ 42194 26252 4041.63381  172 9903 4384.00000  714.50518  83.7%  3175 27078s
+ 42195 26252  866.66667   56 10032 4384.00000  714.80232  83.7%  3174 27087s
+ 42196 26253 3801.12351  171 9878 4384.00000  714.82761  83.7%  3174 27091s
+ 42198 26254 2816.24365  128 10052 4384.00000  714.86082  83.7%  3174 27097s
+ 42199 26255 3628.67647  181 10089 4384.00000  714.86082  83.7%  3174 27183s
+ 42200 26256 2600.00000   86 10110 4384.00000  725.63533  83.4%  3174 27230s
+ 42201 26256 3011.84486  105 10173 4384.00000  728.50303  83.4%  3174 27257s
+ 42202 26257 2004.33224  105 10283 4384.00000  729.65045  83.4%  3174 27269s
+ 42203 26258  856.33915  156 10174 4384.00000  729.82349  83.4%  3174 27274s
+ 42204 26258 1204.16662   94 10137 4384.00000  729.87220  83.4%  3174 27277s
+ 42205 26259 2705.49555   72 10028 4384.00000  729.87972  83.4%  3174 27374s
+ 42206 26260 3018.51872  119 10448 4384.00000  737.65401  83.2%  3174 27436s
+ 42207 26260 3828.67647  230 10570 4384.00000  738.97303  83.1%  3174 27461s
+ 42208 26261 1675.32917  217 10640 4384.00000  739.69587  83.1%  3173 27480s
+ 42209 26262 3061.39996  110 10586 4384.00000  739.81588  83.1%  3173 27488s
+ 42210 26262 3300.00000  100 10549 4384.00000  740.06348  83.1%  3173 27499s
+ 42211 26263 1800.00000  309 10545 4384.00000  740.10097  83.1%  3173 27507s
+ 42212 26264 3066.66667  222 10567 4384.00000  740.11452  83.1%  3173 27512s
+ 42213 26264 2300.00000   53 10458 4384.00000  740.12191  83.1%  3173 27609s
+ 42214 26265 1800.00000   41 10407 4384.00000  746.82551  83.0%  3173 27655s
+ 42215 26266 1125.99369  180 10488 4384.00000  749.50818  82.9%  3173 27688s
+ 42216 26266 2150.00000   64 10607 4384.00000  750.26077  82.9%  3173 27704s
+ 42217 26267 1582.12444  151 10524 4384.00000  750.50883  82.9%  3173 27710s
+ 42218 26268 2000.07319   97 10459 4384.00000  750.73102  82.9%  3173 27715s
+ 42220 26269 2800.00000  239 10477 4384.00000  750.81375  82.9%  3173 27721s
+ 42222 26270 1411.04189   98 10423 4384.00000  750.82505  82.9%  3172 27828s
+ 42223 26271 3750.00000   74 10191 4384.00000  755.50659  82.8%  3172 27861s
+ 42224 26272 3358.71599   37 10685 4384.00000  756.40435  82.7%  3172 27876s
+ 42225 26272 1964.02059   90 10578 4384.00000  756.74031  82.7%  3172 27885s
+ 42226 26273 1300.07232  175 10698 4384.00000  756.88342  82.7%  3172 27892s
+ 42227 26274  998.80739   50 10663 4384.00000  756.92112  82.7%  3172 27895s
+ 42228 26274 3001.70861   48 10590 4384.00000  756.92554  82.7%  3172 27987s
+ 42229 26275 1314.32921  151 10655 4384.00000  761.17926  82.6%  3172 28026s
+ 42230 26276 4099.13249  204 10903 4384.00000  761.84404  82.6%  3172 28046s
+ 42231 26276 3304.66723   75 10960 4384.00000  761.95308  82.6%  3172 28054s
+ 42232 26277 4101.78370  106 10681 4384.00000  762.01660  82.6%  3172 28059s
+ 42233 26278 3002.87818  131 10615 4384.00000  762.07276  82.6%  3172 28063s
+ 42234 26278 2401.30107   57 10625 4384.00000  762.10115  82.6%  3171 28068s
+ 42235 26279 2983.33330   64 10463 4384.00000  762.10790  82.6%  3171 28178s
+ 42236 26280 1011.45794  100 10892 4384.00000  766.81822  82.5%  3171 28218s
+ 42237 26280 2100.08008   86 11091 4384.00000  767.55051  82.5%  3171 28237s
+ 42238 26281 3600.00000  272 11042 4384.00000  767.77501  82.5%  3171 28252s
+ 42239 26282  880.48578  171 11193 4384.00000  767.82870  82.5%  3171 28261s
+ 42240 26282 3400.96955   83 10894 4384.00000  767.86235  82.5%  3171 28269s
+ 42241 26283 2001.04234  118 10927 4384.00000  767.87752  82.5%  3171 28274s
+ 42242 26284 1099.99997   83 11119 4384.00000  767.89423  82.5%  3171 28278s
+ 42243 26284 2601.12351  123 11106 4384.00000  767.89443  82.5%  3171 28410s
+ 42244 26285 1268.68916   38 10477 4384.00000  771.35551  82.4%  3171 28445s
+ 42245 26286 4098.15099   48 10397 4384.00000  771.93962  82.4%  3171 28467s
+ 42246 26286 1258.55023   59 10572 4384.00000  772.07524  82.4%  3171 28478s
+ 42247 26287 3233.49558  116 10558 4384.00000  772.10981  82.4%  3171 28483s
+ 42248 26288 2450.00000   34 10596 4384.00000  772.12359  82.4%  3170 28487s
+ 42249 26288 3000.00000  115 10578 4384.00000  772.12396  82.4%  3170 28674s
+ 42250 26289 1200.07319   93 10528 4384.00000  774.93691  82.3%  3170 28706s
+ 42251 26290 1800.00000   82 10315 4384.00000  775.52600  82.3%  3170 28724s
+ 42252 26290 2801.00605   71 10330 4384.00000  775.63470  82.3%  3170 28733s
+ 42253 26291 2400.00000   73 10728 4384.00000  775.69239  82.3%  3170 28740s
+ 42254 26292 2837.71867   35 10637 4384.00000  775.75394  82.3%  3170 28747s
+ 42255 26292 2610.29097  154 10664 4384.00000  775.76599  82.3%  3170 28750s
+ 42257 26294  804.54331  162 10428 4384.00000  775.78274  82.3%  3170 28884s
+ 42258 26294 3400.00000   45 10739 4384.00000  777.95558  82.3%  3170 28906s
+ 42259 26295 1432.92784  154 11322 4384.00000  778.50961  82.2%  3170 28919s
+ 42260 26296 3539.54249   40 11391 4384.00000  778.63386  82.2%  3170 28927s
+ 42261 26296 2800.00000   96 11423 4384.00000  778.68613  82.2%  3169 28932s
+ 42262 26297 3800.00000  142 11363 4384.00000  778.72962  82.2%  3169 28938s
+ 42263 26298 2800.00000   63 11392 4384.00000  778.74847  82.2%  3169 28943s
+ 42264 26298 2000.00000  155 11529 4384.00000  778.75429  82.2%  3169 29108s
+ 42265 26299 1400.00000  182 10538 4384.00000  779.59374  82.2%  3169 29132s
+ 42266 26300 2310.52632   68 10851 4384.00000  779.99762  82.2%  3169 29147s
+ 42267 26300 3443.51453   89 10864 4384.00000  780.06883  82.2%  3169 29158s
+ 42268 26301 3266.81057  167 10934 4384.00000  780.09040  82.2%  3169 29164s
+ 42269 26302 2500.00000   48 10912 4384.00000  780.09149  82.2%  3169 29286s
+ 42270 26302 2350.00000   84 10703 4384.00000  783.37826  82.1%  3169 29317s
+ 42271 26303 3828.67647  197 10651 4384.00000  784.19462  82.1%  3169 29334s
+ 42272 26304 4000.00000  102 10624 4384.00000  784.30524  82.1%  3169 29345s
+ 42274 26305 2971.42857  156 10341 4384.00000  784.33446  82.1%  3168 29353s
+ 42275 26306 2801.14275   40 10381 4384.00000  784.34394  82.1%  3168 29472s
+ 42276 26306  785.78849   49 10578 4384.00000  785.78849  82.1%  3168 29494s
+ 42277 26307 1047.27260   88 10682 4384.00000  786.10476  82.1%  3168 29506s
+ 42278 26308 1002.61333   95 10747 4384.00000  786.18987  82.1%  3168 29511s
+ 42279 26308 1100.00000  204 10701 4384.00000  786.21416  82.1%  3168 29517s
+ 42280 26309 1404.16662  104 10738 4384.00000  786.28566  82.1%  3168 29526s
+ 42281 26310 3350.00000   31 10839 4384.00000  786.34624  82.1%  3168 29534s
+ 42282 26310 1800.00000  187 10903 4384.00000  786.36375  82.1%  3168 29541s
+ 42283 26311 2400.00000  194 10998 4384.00000  786.37357  82.1%  3168 29701s
+ 42284 26312 1000.00000   32 10802 4384.00000  786.80911  82.1%  3168 29718s
+ 42285 26312 2800.00000   41 10801 4384.00000  787.12987  82.0%  3168 29734s
+ 42286 26313 3775.54749  111 10729 4384.00000  787.29527  82.0%  3168 29743s
+ 42287 26314 4028.67647   98 10933 4384.00000  787.32263  82.0%  3168 29747s
+ 42288 26314  857.86845   55 10887 4384.00000  787.32446  82.0%  3167 29894s
+ 42289 26315 2475.67568  159 10734 4384.00000  787.44508  82.0%  3167 29904s
+ 42290 26316 2933.33333   36 10717 4384.00000  787.47407  82.0%  3167 29908s
+ 42291 26316 1982.83477   35 10677 4384.00000  787.48151  82.0%  3167 30064s
+ 42292 26317 3800.00000   63 10960 4384.00000  787.52274  82.0%  3167 30071s
+ 42293 26318 3200.00000   46 10757 4384.00000  787.52989  82.0%  3167 30245s
+ 42294 26318 4041.63381  172 10798 4384.00000  787.53618  82.0%  3167 30251s
+ 42295 26319  866.66667   56 10777 4384.00000  787.53620  82.0%  3167 30367s
+ 42296 26320 3801.12351  171 11059 4384.00000  787.55481  82.0%  3167 30376s
+ 42297 26320 2400.00000  194 11012 4384.00000  787.55561  82.0%  3167 30536s
+ 42298 26321 2816.24365  128 11098 4384.00000  787.56471  82.0%  3167 30540s
+ 42299 26322 3628.67647  181 11119 4384.00000  787.56471  82.0%  3167 30691s
+ 42300 26322 2600.00000   86 10229 4384.00000  790.50816  82.0%  3167 30731s
+ 42301 26323 3011.84486  105 10172 4384.00000  791.39152  81.9%  3166 30754s
+ 42302 26324 2004.33224  105 10508 4384.00000  791.63892  81.9%  3166 30767s
+ 42303 26324  856.33915  156 10450 4384.00000  791.72325  81.9%  3166 30776s
+ 42304 26325 1204.16662   94 10442 4384.00000  791.74610  81.9%  3166 30782s
+ 42305 26326 2705.49555   72 10417 4384.00000  791.76355  81.9%  3166 30788s
+ 42306 26326 3018.51872  119 10492 4384.00000  791.77906  81.9%  3166 30793s
+ 42307 26327 3828.67647  230 10512 4384.00000  791.78618  81.9%  3166 30905s
+ 42308 26328 1675.32917  217 9994 4384.00000  794.33117  81.9%  3166 30932s
+ 42309 26328 3061.39996  110 10544 4384.00000  794.84905  81.9%  3166 30945s
+ 42310 26329 3300.00000  100 10550 4384.00000  794.98577  81.9%  3166 30953s
+ 42311 26330 1800.00000  309 10870 4384.00000  795.06749  81.9%  3166 30958s
+ 42312 26330 3066.66667  222 10869 4384.00000  795.09005  81.9%  3166 30961s
+ 42313 26331 2300.00000   53 10897 4384.00000  795.09411  81.9%  3166 31095s
+ 42314 26332 1800.00000   41 10690 4384.00000  796.64965  81.8%  3165 31122s
+ 42315 26332 1125.99369  180 10962 4384.00000  796.96183  81.8%  3165 31137s
+ 42316 26333 2150.00000   64 10976 4384.00000  797.04721  81.8%  3165 31148s
+ 42317 26334 1582.12444  151 10943 4384.00000  797.07398  81.8%  3165 31156s
+ 42318 26334 2000.07319   97 10904 4384.00000  797.08506  81.8%  3165 31264s
+ 42319 26335 1100.96955   37 10828 4384.00000  797.27974  81.8%  3165 31276s
+ 42320 26336 2800.00000  239 10855 4384.00000  797.33065  81.8%  3165 31283s
+ 42321 26336 3116.66667   40 11006 4384.00000  797.34488  81.8%  3165 31288s
+ 42322 26337 1411.04189   98 10925 4384.00000  797.35466  81.8%  3165 31414s
+ 42323 26338 3750.00000   74 10881 4384.00000  797.44136  81.8%  3165 31425s
+ 42324 26338 3358.71599   37 10899 4384.00000  797.46503  81.8%  3165 31430s
+ 42325 26339 1964.02059   90 10684 4384.00000  797.46904  81.8%  3165 31594s
+ 42326 26340 1300.07232  175 11072 4384.00000  797.83974  81.8%  3165 31615s
+ 42327 26340  998.80739   50 11174 4384.00000  797.95305  81.8%  3165 31624s
+ 42328 26341 3001.70861   48 11240 4384.00000  797.98488  81.8%  3164 31630s
+ 42329 26342 1314.32921  151 11185 4384.00000  798.00007  81.8%  3164 31636s
+ 42330 26342 4099.13249  204 11175 4384.00000  798.00592  81.8%  3164 31766s
+ 42331 26343 3304.66723   75 10799 4384.00000  803.06106  81.7%  3164 31823s
+ 42332 26344 4101.78370  106 11099 4384.00000  805.79006  81.6%  3164 31857s
+ 42333 26344 3002.87818  131 11094 4384.00000  806.32779  81.6%  3164 31875s
+ 42334 26345 2401.30107   57 11208 4384.00000  806.47706  81.6%  3164 31889s
+ 42335 26346 2983.33330   64 11140 4384.00000  806.49747  81.6%  3164 31896s
+ 42336 26346 1011.45794  100 11134 4384.00000  806.51243  81.6%  3164 31901s
+ 42337 26347 2100.08008   86 11088 4384.00000  806.51506  81.6%  3164 32021s
+ 42338 26348 3600.00000  272 11072 4384.00000  807.63300  81.6%  3164 32048s
+ 42339 26348  880.48578  171 11471 4384.00000  807.81852  81.6%  3164 32062s
+ 42340 26349 3400.96955   83 11484 4384.00000  807.84644  81.6%  3164 32067s
+ 42341 26350 2001.04234  118 11130 4384.00000  807.90456  81.6%  3163 32073s
+ 42342 26350 1099.99997   83 11236 4384.00000  807.91579  81.6%  3163 32225s
+ 42343 26351 2601.12351  123 11341 4384.00000  808.15238  81.6%  3163 32239s
+ 42344 26352 1268.68916   38 11060 4384.00000  808.19230  81.6%  3163 32249s
+ 42345 26352 4098.15099   48 11104 4384.00000  808.20507  81.6%  3163 32441s
+ 42346 26353 1258.55023   59 11363 4384.00000  808.44184  81.6%  3163 32460s
+ 42347 26354 3233.49558  116 11116 4384.00000  808.47318  81.6%  3163 32468s
+ 42348 26354 2450.00000   34 11292 4384.00000  808.51640  81.6%  3163 32481s
+ 42349 26355 3000.00000  115 11394 4384.00000  808.56056  81.6%  3163 32491s
+ 42350 26356 1200.07319   93 11290 4384.00000  808.56982  81.6%  3163 32634s
+ 42351 26356 1800.00000   82 10968 4384.00000  808.61838  81.6%  3163 32642s
+ 42352 26357 2801.00605   71 11360 4384.00000  808.64725  81.6%  3163 32646s
+ 42353 26358 2400.00000   73 11347 4384.00000  808.64943  81.6%  3163 32865s
+ 42354 26358 2837.71867   35 11468 4384.00000  808.66778  81.6%  3163 32870s
+ 42355 26359 2610.29097  154 11288 4384.00000  808.67070  81.6%  3162 33085s
+ 42357 26360  808.69793  162 11248 4384.00000  808.69793  81.6%  3162 33245s
+ 42358 26361 3400.00000   45 11162 4384.00000  808.70549  81.6%  3162 33256s
+ 42359 26362 1432.92784  154 11231 4384.00000  808.70901  81.6%  3162 33430s
+ 42361 26363 2800.00000   96 11187 4384.00000  808.72203  81.6%  3162 33583s
+ 42362 26364 3800.00000  142 10940 4384.00000  814.15666  81.4%  3162 33633s
+ 42363 26364 2800.00000   63 11050 4384.00000  816.57274  81.4%  3162 33676s
+ 42364 26365 2000.00000  155 11385 4384.00000  817.42674  81.4%  3162 33696s
+ 42365 26366 1400.00000  182 11023 4384.00000  817.64847  81.3%  3162 33709s
+ 42366 26366 2310.52632   68 11394 4384.00000  817.72284  81.3%  3162 33721s
+ 42367 26367 3443.51453   89 11455 4384.00000  817.75016  81.3%  3162 33728s
+ 42368 26368 3266.81057  167 11362 4384.00000  817.75691  81.3%  3161 33893s
+ 42369 26368 2500.00000   48 11477 4384.00000  818.73689  81.3%  3161 33913s
+ 42370 26369 2350.00000   84 11352 4384.00000  818.88847  81.3%  3161 33924s
+ 42371 26370 3828.67647  197 11483 4384.00000  818.91112  81.3%  3161 33931s
+ 42372 26370 4000.00000  102 11239 4384.00000  818.94480  81.3%  3161 33941s
+ 42373 26371  818.97751   61 11643 4384.00000  818.97751  81.3%  3161 33950s
+ 42374 26372 2971.42857  156 11677 4384.00000  818.97791  81.3%  3161 34118s
+ 42375 26372 2801.14275   40 11402 4384.00000  820.36202  81.3%  3161 34158s
+ 42376 26373  821.00272   49 11817 4384.00000  821.00272  81.3%  3161 34189s
+ 42377 26374 1047.27260   88 11913 4384.00000  821.15247  81.3%  3161 34204s
+ 42378 26374 1002.61333   95 11824 4384.00000  821.19509  81.3%  3161 34213s
+ 42379 26375 1100.00000  204 11688 4384.00000  821.21318  81.3%  3161 34219s
+ 42380 26376 1404.16662  104 11751 4384.00000  821.21783  81.3%  3161 34374s
+ 42381 26376 3350.00000   31 11780 4384.00000  821.42733  81.3%  3160 34397s
+ 42382 26377 1800.00000  187 11777 4384.00000  821.45572  81.3%  3160 34404s
+ 42383 26378 2400.00000  194 11799 4384.00000  821.46787  81.3%  3160 34605s
+ 42384 26378 1000.00000   32 11716 4384.00000  821.58352  81.3%  3160 34626s
+ 42385 26379 2800.00000   41 11748 4384.00000  821.64822  81.3%  3160 34637s
+ 42386 26380 3775.54749  111 11628 4384.00000  821.66884  81.3%  3160 34647s
+ 42387 26380 4028.67647   98 11827 4384.00000  821.67097  81.3%  3160 34836s
+ 42388 26381  857.86845   55 11697 4384.00000  821.90000  81.3%  3160 34854s
+ 42389 26382 2475.67568  159 11831 4384.00000  821.93192  81.3%  3160 34866s
+ 42390 26382 2933.33333   36 11768 4384.00000  821.94592  81.3%  3160 35069s
+ 42391 26383 1982.83477   35 11431 4384.00000  823.70494  81.2%  3160 35107s
+ 42392 26384 3800.00000   63 11771 4384.00000  824.10874  81.2%  3160 35128s
+ 42393 26384 3200.00000   46 11799 4384.00000  824.20179  81.2%  3160 35142s
+ 42394 26385 4041.63381  172 11847 4384.00000  824.22334  81.2%  3160 35149s
+ 42395 26386  866.66667   56 11723 4384.00000  824.24445  81.2%  3159 35156s
+ 42396 26386 3801.12351  171 11715 4384.00000  824.25279  81.2%  3159 35304s
+ 42397 26387 2400.00000  194 11743 4384.00000  824.54075  81.2%  3159 35318s
+ 42398 26388 2816.24365  128 11512 4384.00000  824.62295  81.2%  3159 35326s
+ 42399 26388 3628.67647  181 11528 4384.00000  824.66046  81.2%  3159 35332s
+ 42400 26389 2600.00000   86 11627 4384.00000  824.66889  81.2%  3159 35498s
+ 42401 26390 3011.84486  105 11580 4384.00000  824.70667  81.2%  3159 35506s
+ 42402 26390 2004.33224  105 11635 4384.00000  824.71267  81.2%  3159 35712s
+ 42403 26391  856.33915  156 11457 4384.00000  824.71326  81.2%  3159 35715s
+ 42404 26392 1204.16662   94 11847 4384.00000  824.72462  81.2%  3159 35877s
+ 42405 26392 2705.49555   72 11829 4384.00000  824.73036  81.2%  3159 35894s
+ 42406 26393 3018.51872  119 11794 4384.00000  824.73623  81.2%  3159 36038s
+ 42407 26394 3828.67647  230 11156 4384.00000  829.38266  81.1%  3159 36089s
+ 42408 26394 1675.32917  217 11537 4384.00000  830.61845  81.1%  3158 36122s
+ 42409 26395 3061.39996  110 11828 4384.00000  831.04266  81.0%  3158 36147s
+ 42410 26396 3300.00000  100 11761 4384.00000  831.11847  81.0%  3158 36154s
+ 42411 26396 1800.00000  309 11621 4384.00000  831.14097  81.0%  3158 36160s
+ 42412 26397 3066.66667  222 11352 4384.00000  831.18074  81.0%  3158 36169s
+ 42413 26398 2300.00000   53 11456 4384.00000  831.18968  81.0%  3158 36266s
+ 42414 26398 1800.00000   41 11679 4384.00000  832.02686  81.0%  3158 36292s
+ 42415 26399 1125.99369  180 11834 4384.00000  832.14372  81.0%  3158 36303s
+ 42416 26400 2150.00000   64 11792 4384.00000  832.18388  81.0%  3158 36311s
+ 42417 26400 1582.12444  151 11814 4384.00000  832.21091  81.0%  3158 36318s
+ 42418 26401 2000.07319   97 11851 4384.00000  832.21286  81.0%  3158 36498s
+ 42419 26402 1100.96955   37 11539 4384.00000  832.57847  81.0%  3158 36519s
+ 42420 26402 2800.00000  239 11475 4384.00000  832.67550  81.0%  3158 36529s
+ 42421 26403 3116.66667   40 11102 4384.00000  833.07127  81.0%  3158 36545s
+ 42422 26404 1411.04189   98 11204 4384.00000  833.17563  81.0%  3157 36554s
+ 42423 26404 3750.00000   74 11251 4384.00000  833.21566  81.0%  3157 36561s
+ 42424 26405 3358.71599   37 11166 4384.00000  833.24912  81.0%  3157 36565s
+ 42425 26406 1964.02059   90 11433 4384.00000  833.25948  81.0%  3157 36824s
+ 42426 26406 1300.07232  175 11535 4384.00000  835.83217  80.9%  3157 36882s
+ 42427 26407  998.80739   50 11223 4384.00000  837.16200  80.9%  3157 36926s
+ 42428 26408 3001.70861   48 11564 4384.00000  837.54260  80.9%  3157 36954s
+ 42429 26408 1314.32921  151 11610 4384.00000  837.71408  80.9%  3157 36978s
+ 42430 26409 4099.13249  204 11863 4384.00000  837.76755  80.9%  3157 36990s
+ 42431 26410 3304.66723   75 11682 4384.00000  837.77699  80.9%  3157 37155s
+ 42432 26410 4101.78370  106 11589 4384.00000  839.15748  80.9%  3157 37229s
+ 42433 26411 3002.87818  131 11773 4384.00000  839.50105  80.9%  3157 37253s
+ 42434 26412 2401.30107   57 11405 4384.00000  839.57869  80.8%  3157 37261s
+ 42435 26412 2983.33330   64 11625 4384.00000  839.65174  80.8%  3156 37272s
+ 42436 26413 1011.45794  100 11572 4384.00000  839.67350  80.8%  3156 37276s
+ 42437 26414 2100.08008   86 11396 4384.00000  839.69405  80.8%  3156 37280s
+ 42438 26414 3600.00000  272 11550 4384.00000  839.69640  80.8%  3156 37420s
+ 42439 26415  880.48578  171 11057 4384.00000  841.03336  80.8%  3156 37468s
+ 42440 26416 3400.96955   83 11645 4384.00000  841.36098  80.8%  3156 37499s
+ 42441 26416 2001.04234  118 11708 4384.00000  841.41712  80.8%  3156 37514s
+ 42442 26417 1099.99997   83 11881 4384.00000  841.42995  80.8%  3156 37668s
+ 42443 26418 2601.12351  123 11453 4384.00000  841.63847  80.8%  3156 37692s
+ 42444 26418 1268.68916   38 11417 4384.00000  841.69483  80.8%  3156 37705s
+ 42445 26419 4098.15099   48 11420 4384.00000  841.70820  80.8%  3156 37924s
+ 42446 26420 1258.55023   59 11377 4384.00000  844.42317  80.7%  3156 37994s
+ 42447 26420 3233.49558  116 11598 4384.00000  845.05196  80.7%  3156 38027s
+ 42448 26421 2450.00000   34 11776 4384.00000  845.30276  80.7%  3156 38043s
+ 42449 26422 3000.00000  115 11890 4384.00000  845.35866  80.7%  3155 38052s
+ 42450 26422 1200.07319   93 11836 4384.00000  845.37838  80.7%  3155 38059s
+ 42451 26423 1800.00000   82 11873 4384.00000  845.38904  80.7%  3155 38282s
+ 42452 26424 2801.00605   71 11445 4384.00000  850.14715  80.6%  3155 38383s
+ 42453 26424 2400.00000   73 11468 4384.00000  851.28622  80.6%  3155 38420s
+ 42454 26425 2837.71867   35 11506 4384.00000  851.55816  80.6%  3155 38436s
+ 42455 26426 2610.29097  154 11741 4384.00000  851.61445  80.6%  3155 38448s
+ 42456 26426 3628.67647  198 11506 4384.00000  851.64378  80.6%  3155 38454s
+ 42457 26427  851.66094  162 11604 4384.00000  851.66094  80.6%  3155 38459s
+ 42458 26428 3400.00000   45 11556 4384.00000  851.66280  80.6%  3155 38604s
+ 42459 26428 1432.92784  154 11666 4384.00000  852.27832  80.6%  3155 38631s
+ 42460 26429 3539.54249   40 11632 4384.00000  852.43271  80.6%  3155 38647s
+ 42461 26430 2800.00000   96 11645 4384.00000  852.47544  80.6%  3155 38656s
+ 42462 26430 3800.00000  142 11678 4384.00000  852.52007  80.6%  3154 38664s
+ 42463 26431 2800.00000   63 11658 4384.00000  852.54140  80.6%  3154 38670s
+ 42464 26432 2000.00000  155 11675 4384.00000  852.54430  80.6%  3154 38887s
+ 42465 26432 1400.00000  182 11555 4384.00000  852.85883  80.5%  3154 38902s
+ 42466 26433 2310.52632   68 11851 4384.00000  852.96344  80.5%  3154 38914s
+ 42467 26434 3443.51453   89 11859 4384.00000  852.99138  80.5%  3154 38921s
+ 42468 26434 3266.81057  167 11832 4384.00000  853.00434  80.5%  3154 39189s
+ 42469 26435 2500.00000   48 11926 4384.00000  853.08695  80.5%  3154 39213s
+ 42470 26436 2350.00000   84 12054 4384.00000  853.13460  80.5%  3154 39224s
+ 42471 26436 3828.67647  197 12104 4384.00000  853.15249  80.5%  3154 39232s
+ 42472 26437 4000.00000  102 12109 4384.00000  853.16227  80.5%  3154 39541s
+ 42473 26438  853.20756   61 12106 4384.00000  853.20756  80.5%  3154 39553s
+ 42474 26438 2971.42857  156 11979 4384.00000  853.53430  80.5%  3154 39576s
+ 42475 26439 2801.14275   40 11872 4384.00000  853.61918  80.5%  3154 39586s
+ 42476 26440  853.64004   49 11735 4384.00000  853.64004  80.5%  3153 39593s
+ 42477 26440 1047.27260   88 11623 4384.00000  853.65047  80.5%  3153 39772s
+ 42478 26441 1002.61333   95 11637 4384.00000  853.69960  80.5%  3153 39805s
+ 42480 26442 1404.16662  104 11733 4384.00000  853.71986  80.5%  3153 40109s
+ 42481 26443 3350.00000   31 11599 4384.00000  853.76544  80.5%  3153 40114s
+ 42482 26444 1800.00000  187 11688 4384.00000  853.76936  80.5%  3153 40322s
+ 42483 26444 2400.00000  194 11697 4384.00000  853.77870  80.5%  3153 40329s
+ 42484 26445 1000.00000   32 11701 4384.00000  853.78589  80.5%  3153 40542s
+ 42485 26446 2800.00000   41 11629 4384.00000  853.80180  80.5%  3153 40546s
+ 42486 26446 3775.54749  111 11698 4384.00000  853.80737  80.5%  3153 40738s
+ 42487 26447 4028.67647   98 11660 4384.00000  853.80946  80.5%  3153 40756s
+ 42488 26448  857.86845   55 11648 4384.00000  853.80946  80.5%  3153 40919s
+ 42489 26448 2475.67568  159 11739 4384.00000  853.90985  80.5%  3152 40928s
+ 42490 26449 2933.33333   36 11725 4384.00000  853.94378  80.5%  3152 40934s
+ 42491 26450 1982.83477   35 11711 4384.00000  853.95768  80.5%  3152 41179s
+ 42492 26450 3800.00000   63 11682 4384.00000  853.97024  80.5%  3152 41191s
+ 42493 26451 3200.00000   46 11685 4384.00000  853.97187  80.5%  3152 41442s
+ 42495 26452  866.66667   56 11707 4384.00000  853.98235  80.5%  3152 41690s
+ 42496 26453 3801.12351  171 11707 4384.00000  853.99000  80.5%  3152 41695s
+ 42497 26454 2400.00000  194 11758 4384.00000  853.99006  80.5%  3152 41949s
+ 42498 26454 2816.24365  128 11710 4384.00000  853.99079  80.5%  3152 41950s
+ 42499 26455 3628.67647  181 11713 4384.00000  853.99140  80.5%  3152 42329s
+ 42500 26456 2600.00000   86 11683 4384.00000  853.99349  80.5%  3152 42520s
+ 42501 26456 3011.84486  105 11656 4384.00000  853.99354  80.5%  3152 42822s
+ 42502 26457 2004.33224  105 11568 4384.00000  855.17524  80.5%  3151 42893s
+ 42503 26458  856.33915  156 11611 4384.00000  855.42328  80.5%  3151 42908s
+ 42504 26458 1204.16662   94 11577 4384.00000  855.50326  80.5%  3151 42917s
+ 42505 26459 2705.49555   72 11523 4384.00000  855.53453  80.5%  3151 42922s
+ 42506 26460 3018.51872  119 11619 4384.00000  855.55173  80.5%  3151 42926s
+ 42507 26460 3828.67647  230 11615 4384.00000  855.55825  80.5%  3151 43150s
+ 42508 26461 1675.32917  217 11648 4384.00000  855.68038  80.5%  3151 43168s
+ 42509 26462 3061.39996  110 11592 4384.00000  855.72272  80.5%  3151 43178s
+ 42510 26462 3300.00000  100 11590 4384.00000  855.74824  80.5%  3151 43182s
+ 42511 26463 1800.00000  309 11706 4384.00000  855.75687  80.5%  3151 43550s
+ 42512 26464 3066.66667  222 11586 4384.00000  855.78995  80.5%  3151 43555s
+ 42514 26465 1800.00000   41 11699 4384.00000  855.82855  80.5%  3151 43565s
+ 42516 26466 2150.00000   64 11694 4384.00000  855.85604  80.5%  3150 43884s
+ 42517 26467 1582.12444  151 11662 4384.00000  855.86916  80.5%  3150 43887s
+ 42518 26468 2000.07319   97 11655 4384.00000  855.87646  80.5%  3150 44206s
+ 42519 26468 1100.96955   37 11695 4384.00000  855.88246  80.5%  3150 44210s
+ 42520 26469 2800.00000  239 11718 4384.00000  855.88506  80.5%  3150 44529s
+ 42521 26470 3116.66667   40 11695 4384.00000  855.89302  80.5%  3150 44550s
+ 42522 26470 1411.04189   98 11660 4384.00000  855.89500  80.5%  3150 44785s
+ 42524 26472 3358.71599   37 11670 4384.00000  855.89694  80.5%  3150 45005s
+ 42525 26472 1964.02059   90 11669 4384.00000  855.89694  80.5%  3150 45014s
+ 42526 26473 1300.07232  175 11667 4384.00000  855.89694  80.5%  3150 45299s
+ 42527 26474  998.80739   50 11226 4384.00000  855.89694  80.5%  3150 45457s
+ 42528 26474 3001.70861   48 11367 4384.00000  855.89860  80.5%  3150 45638s
+ 42529 26475 1314.32921  151 11338 4384.00000  855.91184  80.5%  3149 45834s
+ 42530 26476 4099.13249  204 11374 4384.00000  855.91201  80.5%  3149 46026s
+ 42531 26476 3304.66723   75 11519 4384.00000  855.91205  80.5%  3149 46030s
+ 42532 26477 4101.78370  106 11388 4384.00000  855.91205  80.5%  3149 46196s
+ 42533 26478 3002.87818  131 11202 4384.00000  859.71548  80.4%  3149 46308s
+ 42534 26478 2401.30107   57 11377 4384.00000  860.59011  80.4%  3149 46340s
+ 42535 26479 2983.33330   64 11234 4384.00000  860.76153  80.4%  3149 46355s
+ 42536 26480 1011.45794  100 11512 4384.00000  860.83274  80.4%  3149 46364s
+ 42537 26480 2100.08008   86 11507 4384.00000  860.85562  80.4%  3149 46369s
+ 42538 26481 3600.00000  272 11523 4384.00000  860.86216  80.4%  3149 46527s
+ 42539 26482  880.48578  171 11467 4384.00000  861.60239  80.3%  3149 46562s
+ 42540 26482 3400.96955   83 11622 4384.00000  861.73852  80.3%  3149 46590s
+ 42541 26483 2001.04234  118 11638 4384.00000  861.77756  80.3%  3149 46596s
+ 42542 26484 1099.99997   83 11746 4384.00000  861.81592  80.3%  3149 46601s
+ 42543 26484 2601.12351  123 11667 4384.00000  861.83104  80.3%  3148 46898s
+ 42544 26485 1268.68916   38 11674 4384.00000  862.04221  80.3%  3148 46945s
+ 42545 26486 4098.15099   48 11692 4384.00000  862.09130  80.3%  3148 46951s
+ 42546 26486 1258.55023   59 11670 4384.00000  862.11110  80.3%  3148 46955s
+ 42547 26487 3233.49558  116 11765 4384.00000  862.11840  80.3%  3148 47193s
+ 42548 26488 2450.00000   34 11709 4384.00000  862.14670  80.3%  3148 47201s
+ 42549 26488 3000.00000  115 11832 4384.00000  862.17530  80.3%  3148 47205s
+ 42551 26490 1800.00000   82 11431 4384.00000  862.21324  80.3%  3148 47211s
+ 42552 26490 2801.00605   71 11496 4384.00000  862.21841  80.3%  3148 47505s
+ 42554 26492 2837.71867   35 11555 4384.00000  862.24842  80.3%  3148 47754s
+ 42555 26492 2610.29097  154 11432 4384.00000  862.29355  80.3%  3148 47759s
+ 42556 26493 3628.67647  198 11406 4384.00000  862.30018  80.3%  3147 48030s
+ 42557 26494  862.32235  162 11451 4384.00000  862.32235  80.3%  3147 48061s
+ 42558 26494 3400.00000   45 11470 4384.00000  862.32247  80.3%  3147 48400s
+ 42559 26495 1432.92784  154 11371 4384.00000  862.43711  80.3%  3147 48411s
+ 42560 26496 3539.54249   40 11289 4384.00000  862.46176  80.3%  3147 48416s
+ 42562 26497 3800.00000  142 11747 4384.00000  862.49147  80.3%  3147 48689s
+ 42563 26498 2800.00000   63 11768 4384.00000  862.52888  80.3%  3147 50835s
+ 42564 26498 2000.00000  155 11688 4384.00000  892.57768  79.6%  3147 51435s
+ 42565 26499 1400.00000  182 11698 4384.00000  900.00000  79.5%  3147 51921s
+ 42566 26500 2310.52632   68 11570 4384.00000  900.00000  79.5%  3147 51928s
+ 42567 26500 3443.51453   89 11793 4384.00000  903.37781  79.4%  3147 52201s
+ 42568 26501 3266.81057  167 11627 4384.00000  903.37781  79.4%  3147 52210s
+ 42569 26502 2500.00000   48 11826 4384.00000  908.41690  79.3%  3147 52625s
+ 42570 26502 2350.00000   84 11839 4384.00000  908.41690  79.3%  3146 52632s
+ 42571 26503 3828.67647  197 11793 4384.00000  915.45458  79.1%  3146 53045s
+ 42572 26504 4000.00000  102 11792 4384.00000  915.45458  79.1%  3146 53111s
+ 42573 26504  915.45458   61 11889 4384.00000  915.45458  79.1%  3146 53120s
+ 42574 26505 2971.42857  156 11926 4384.00000  915.45458  79.1%  3146 53125s
+ 42575 26506 2801.14275   40 11839 4384.00000  920.19322  79.0%  3146 53368s
+ 42576 26506  920.19322   49 11894 4384.00000  920.19322  79.0%  3146 53373s
+ 42577 26507 1047.27260   88 11916 4384.00000  932.63162  78.7%  3146 53826s
+ 42578 26508 1002.61333   95 11513 4384.00000  932.63162  78.7%  3146 53864s
+ 42579 26508 1100.00000  204 11513 4384.00000  932.63162  78.7%  3146 53956s
+ 42580 26511  932.63162   20 11411 4384.00000  932.63162  78.7%  3190 53990s
+ 42581 26512 1042.10907   20 10334 4384.00000  932.63162  78.7%  3191 54168s
+ 42582 26514  932.63162   21 11943 4384.00000  932.63162  78.7%  3191 54556s
+ 42585 26519  932.63162   22 11880 4384.00000  932.63162  78.7%  3194 54859s
+ 42591 26529  932.63162   23 11844 4384.00000  932.63162  78.7%  3196 55063s
+ 42603 26529 1383.10631   23 10107 4384.00000  932.63162  78.7%  3207 55329s
+ 42607 26538 2159.55465   24 8387 4384.00000  932.63162  78.7%  3211 55609s
+ 42617 26605 2517.74368   25 8171 4384.00000  932.63162  78.7%  3215 55796s
+ 42687 26595 2786.78922   30 3287 4384.00000  932.63162  78.7%  3228 55864s
+ 42703 26604 2795.06083   31 3287 4384.00000  932.63162  78.7%  3231 55939s
+ 42719 26619 3320.00000   32  338 4384.00000  932.63162  78.7%  3234 55991s
+ 42747 26641 3333.33333   33  317 4384.00000  932.63162  78.7%  3236 56041s
+ 42785 26653 3333.33333   34  306 4384.00000  932.63162  78.7%  3239 56127s
+ 42817 26671 3733.33333   35  498 4384.00000  932.63162  78.7%  3241 56210s
+ 42863 26679 3800.00000   36  441 4384.00000  932.63162  78.7%  3243 56318s
+ 42907 26676 3800.00000   37  434 4384.00000  932.63162  78.7%  3244 56392s
+ 42942 26666 4000.00000   40  296 4384.00000  932.63162  78.7%  3246 56471s
+ 42964 26666 infeasible   41      4384.00000  932.63162  78.7%  3247 56529s
+ 42981 26661     cutoff   40      4384.00000  932.63162  78.7%  3249 56604s
+ 43004 26663 2471.46071   25 6005 4384.00000  932.63162  78.7%  3249 56670s
+ 43023 26665 2471.63678   26 5971 4384.00000  932.63162  78.7%  3251 56774s
+ 43040 26669 2471.47432   25 6021 4384.00000  932.63162  78.7%  3253 56821s
+ 43055 26673 2221.22107   25 10025 4384.00000  932.63162  78.7%  3255 56862s
+ 43068 26673 1996.71321   45 5661 4384.00000  932.63162  78.7%  3256 56936s
+ 43083 26675 1997.23765   46 5645 4384.00000  932.63162  78.7%  3258 57042s
+ 43098 26679 1997.29347   47 5628 4384.00000  932.63162  78.7%  3260 57190s
+ 43115 26686 2566.00175   28 9963 4384.00000  932.63162  78.7%  3262 57334s
+ 43129 26691 2929.08583   30 5504 4384.00000  932.63162  78.7%  3264 57436s
+ 43143 26706 2971.97364   31 5457 4384.00000  932.63162  78.7%  3266 57537s
+ 43163 26709 3072.09832   32 5447 4384.00000  932.63162  78.7%  3268 57614s
+ 43178 26725 3072.23198   33 5473 4384.00000  932.63162  78.7%  3269 57766s
+ 43209 26727 3272.36831   36 6249 4384.00000  932.63162  78.7%  3270 57867s
+ 43238 26731 3422.47326   38 6296 4384.00000  932.63162  78.7%  3274 57942s
+ 43253 26741 3672.47326   39 6385 4384.00000  932.63162  78.7%  3275 58010s
+ 43272 26749 3710.80297   40 10156 4384.00000  932.63162  78.7%  3277 58077s
+ 43298 26762 3745.80297   41 10107 4384.00000  932.63162  78.7%  3277 58156s
+ 43331 26760 3793.69645   42 9950 4384.00000  932.63162  78.7%  3278 58242s
+ 43347 26766 4030.25812   43 10007 4384.00000  932.63162  78.7%  3279 58330s
+ 43369 26786 4068.70852   44 9922 4384.00000  932.63162  78.7%  3281 58421s
+ 43408 26812 4088.83287   45 9977 4384.00000  932.63162  78.7%  3281 58525s
+ 43465 26826 4089.15603   46 6416 4384.00000  932.63162  78.7%  3280 58630s
+ 43518 26815 4139.15603   47 6339 4384.00000  932.63162  78.7%  3280 58709s
+ 43535 26824     cutoff   48      4384.00000  932.63162  78.7%  3282 58868s
+ 43565 26825 1324.15986   25 10535 4384.00000  932.63162  78.7%  3282 58997s
+ 43601 26830 1325.87447   26 10518 4384.00000  932.63162  78.7%  3285 59161s
+ 43635 26838 1327.21533   27 10656 4384.00000  932.63162  78.7%  3287 59354s
+ 43667 26868 1329.56974   28 10509 4384.00000  932.63162  78.7%  3289 59534s
+ 43713 26905 3695.46915   40 9847 4384.00000  932.63162  78.7%  3294 59669s
+ 43784 26916     cutoff   41      4384.00000  932.63162  78.7%  3297 59826s
+ 43879 26933 3699.89020   41 9834 4384.00000  932.63162  78.7%  3298 59966s
+ 43958 26937     cutoff   41      4384.00000  932.63162  78.7%  3302 60130s
+ 44024 26998 2455.17333   99 1390 4384.00000  932.63162  78.7%  3311 60356s
+ 44107 27075 2850.00000  101  279 4384.00000  932.63162  78.7%  3317 60569s
+ 44229 27101 infeasible  111      4384.00000  932.63162  78.7%  3323 60794s
+ 44339 27161  932.63162   35 11834 4384.00000  932.63162  78.7%  3330 61222s
+ 44460 27202 infeasible   48      4384.00000  932.63162  78.7%  3335 61495s
+ 44587 27242  932.63162   36 11989 4384.00000  932.63162  78.7%  3347 61743s
+ 44737 27271  932.63162   38 11953 4384.00000  932.63162  78.7%  3355 62092s
+ 44882 27324  932.63162   39 11719 4384.00000  932.63162  78.7%  3368 62351s
+ 45024 27344  932.63162   40 11742 4384.00000  932.63162  78.7%  3383 62637s
+ 45136 27323  932.63162   41 11723 4384.00000  932.63162  78.7%  3396 62895s
+ 45152 27345 1101.56874   29 10159 4384.00000  932.63162  78.7%  3400 63113s
+ 45209 27382  932.63162   42 11790 4384.00000  932.63162  78.7%  3406 63269s
+ 45331 27443 1890.93450   42 5703 4384.00000  932.63162  78.7%  3418 63531s
+ 45472 27541  932.63162   43 11873 4384.00000  932.63162  78.7%  3426 63975s
+ 45646 27556 1713.06028   34 8697 4384.00000  932.63162  78.7%  3441 64530s
+ 45821 27628  932.63162   44 11835 4384.00000  932.63162  78.7%  3458 65000s
+ 46023 27689  932.63162   45 11811 4384.00000  932.63162  78.7%  3472 65314s
+ 46222 27740  932.63162   46 11755 4384.00000  932.63162  78.7%  3489 65752s
+ 46380 27797 1477.02286   47 5867 4384.00000  932.63162  78.7%  3514 66149s
+ 46565 27876  932.63162   47 11758 4384.00000  932.63162  78.7%  3540 66706s
+ 46788 27811  932.63162   49 11836 4384.00000  932.63162  78.7%  3556 67270s
+ 46810 27826 1111.85008   49 10706 4384.00000  932.63162  78.7%  3561 67624s
+ 46861 27864  932.63162   50 11706 4384.00000  932.63162  78.7%  3567 68255s
+ 46974 27929 1176.19297   49 11130 4384.00000  932.63162  78.7%  3576 68687s
+ 47139 27995  932.63162   51 11876 4384.00000  932.63162  78.7%  3598 69256s
+ 47355 28095  932.63162   52 11865 4384.00000  932.63162  78.7%  3613 69673s
+ 47650 28172  932.63162   53 11657 4384.00000  932.63162  78.7%  3634 70410s
+ 47960 28179  932.63162   54 11548 4384.00000  932.63162  78.7%  3662 71328s
+ 48178 28248  932.63162   55 11990 4384.00000  932.63162  78.7%  3692 72150s
+ 48421 28258  932.63162   57 11927 4384.00000  932.63162  78.7%  3724 72835s
+ 48659 28389  932.63162   58 11970 4384.00000  932.63162  78.7%  3753 73694s
+ 48922 28324  932.63162   59 11981 4384.00000  932.63162  78.7%  3788 74172s
+ 48950 28392  932.63162   60 12030 4384.00000  932.63162  78.7%  3792 74628s
+ 49080 28536  932.63162   61 11930 4384.00000  932.63162  78.7%  3801 75395s
+ 49363 28660  932.63162   63 11857 4384.00000  932.63162  78.7%  3826 76255s
+ 49665 28860  932.63162   65 11801 4384.00000  932.63162  78.7%  3857 76905s
+ 50043 28926  932.63162   67 11856 4384.00000  932.63162  78.7%  3892 77862s
+ 50342 29051  932.63162   69 11953 4384.00000  932.63162  78.7%  3942 79124s
+ 50687 29088  932.63162   70 12057 4384.00000  932.63162  78.7%  3988 80196s
+ 51008 29213 1081.70874   71 10822 4384.00000  932.63162  78.7%  4045 81157s
+ 51349 29113 1630.92954   72 5604 4384.00000  932.63162  78.7%  4095 83706s
+ 51367 29122  932.63162   73 11828 4384.00000  932.63162  78.7%  4101 86183s
+ 51384 29132 1559.62186   73 6017 4384.00000  932.63162  78.7%  4105 86400s
+
+Cutting planes:
+  Learned: 7
+  Gomory: 104
+  Lift-and-project: 6
+  Cover: 553
+  Implied bound: 545
+  Projected implied bound: 2
+  Clique: 121
+  MIR: 92
+  StrongCG: 1
+  Flow cover: 1349
+  GUB cover: 1029
+  Inf proof: 28
+  Zero half: 583
+  RLT: 4321
+  Relax-and-lift: 1146
+  BQP: 232
+
+Explored 51400 nodes (211410939 simplex iterations) in 86400.23 seconds (50720.31 work units)
+Thread count was 16 (of 256 available processors)
+
+Solution count 10: 4384 4385 4387 ... 10000
+
+Time limit reached
+Best objective 4.384000000000e+03, best bound 9.330000000000e+02, gap 78.7181%
+
+User-callback calls 17792686, time in user-callback 2.68 sec
+%%%mzn-stat: objective=4384
+%%%mzn-stat: objectiveBound=933
+%%%mzn-stat: nodes=51400
+%%%mzn-stat: openNodes=29127
+%%%mzn-stat: solveTime=729906.9915
+%%%mzn-stat-end
+upper_plaintext = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+upper_key = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_0_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_0_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_0_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_0_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_0_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_0_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_1_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_1_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_1_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_1_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_1_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_1_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_2_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_2_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_2_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_2_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_2_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_2_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_3_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_3_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_3_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_3_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_3_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_3_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_4_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_4_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_4_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_4_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_4_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_4_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_5_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_5_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_5_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_5_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_5_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_rot_5_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_cipher_output_10_37 = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+lower_key = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_7 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_11 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_15 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_19 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_23 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_0_24 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_0_25 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_0_26 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_0_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_0_28 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_0_29 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_0_30 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_0_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_0_32 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_0_33 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+upper_modadd_0_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+upper probability = 1.0
+upper_rot_0_35 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_intermediate_output_0_37 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_1_24 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_1_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_1_26 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_1_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_1_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_1_29 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_1_30 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_1_31 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_1_32 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_1_33 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_1_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_1_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_intermediate_output_1_37 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_2_24 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_2_25 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_2_26 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 1.0
+upper_rot_2_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+upper_xor_2_28 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_2_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_2_30 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 1.0
+upper_rot_2_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_2_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_2_33 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_2_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_2_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_intermediate_output_2_37 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_3_24 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+upper_xor_3_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_3_26 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+upper probability = 2.0
+upper_rot_3_27 = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_3_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_3_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_3_30 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 1.0
+upper_rot_3_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_3_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_3_33 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_3_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 0.0
+upper_rot_3_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_intermediate_output_3_37 = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+upper_xor_4_24 = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_4_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_4_26 = [1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 3.0
+upper_rot_4_27 = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_4_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_4_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_4_30 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper probability = 1.0
+upper_rot_4_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_4_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_4_33 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+upper_modadd_4_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]
+upper probability = 1.0
+upper_rot_4_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+upper_intermediate_output_4_37 = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_5_24 = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_5_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_5_26 = [0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0]
+middle probability = 1.38
+upper_rot_5_27 = [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1]
+upper_xor_5_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_xor_5_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+upper_modadd_5_30 = [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+middle probability = 0.1
+upper_rot_5_31 = [1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1]
+upper_xor_5_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+upper_xor_5_33 = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+upper_modadd_5_34 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+middle probability = 0.36
+upper_rot_5_35 = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1]
+upper_intermediate_output_5_37 = [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_5_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+lower_rot_5_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0]
+lower_xor_5_24 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
+lower_modadd_5_26 = [1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0]
+lower_intermediate_output_5_37 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
+lower_xor_5_25 = [1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0]
+lower_xor_5_28 = [1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0]
+lower_modadd_5_30 = [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0]
+lower_xor_5_29 = [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0]
+lower_xor_5_32 = [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0]
+lower_modadd_5_34 = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0]
+lower_xor_5_33 = [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0]
+lower_rot_6_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_6_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+lower_rot_6_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+lower_xor_6_24 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_6_26 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_intermediate_output_6_37 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_6_25 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_6_28 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_6_30 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+lower probability = 1.0
+lower_xor_6_29 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+lower_xor_6_32 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+lower_modadd_6_34 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
+lower probability = 2.0
+lower_xor_6_33 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0]
+lower_rot_7_27 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_7_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_7_24 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_7_26 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_intermediate_output_7_37 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_7_25 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_7_28 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_7_30 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_xor_7_29 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_7_32 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_7_34 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_xor_7_33 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_8_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_8_24 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_8_26 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 1.0
+lower_intermediate_output_8_37 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_8_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_8_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_8_30 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_xor_8_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_8_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_8_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_xor_8_33 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_27 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_9_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_9_24 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_9_26 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 1.0
+lower_intermediate_output_9_37 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_9_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_9_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_9_30 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 0.0
+lower_xor_9_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_9_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_9_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 1.0
+lower_xor_9_33 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_10_24 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_27 = [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_rot_10_31 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+lower_rot_10_35 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+lower_modadd_10_26 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 1.0
+lower_xor_10_25 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_xor_10_28 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower_modadd_10_30 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+lower probability = 1.0
+lower_xor_10_29 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+lower_xor_10_32 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+lower_modadd_10_34 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+lower probability = 2.0
+lower_xor_10_33 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+Upper weight = 11.0
+Lower weight = 10.0
+Middle weight = 1.84
+Trail weight = 43.84
+----------
+%%%mzn-stat: objective=4384
+%%%mzn-stat: objectiveBound=932.631622119
+%%%mzn-stat: nodes=51400
+%%%mzn-stat: solveTime=729906.9915
+%%%mzn-stat-end
+%%%mzn-stat: nSolutions=1
+%%%mzn-stat-end
+   Done (overall time 86410.86 s).
