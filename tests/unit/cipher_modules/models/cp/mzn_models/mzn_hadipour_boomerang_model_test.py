@@ -301,6 +301,38 @@ def test_timeout_status_and_solver_options(monkeypatch):
     assert calls[-1]["timeout"] == timedelta(seconds=2)
     assert calls[-1]["processes"] == 3
     assert model.find_all_boomerang_trails_with_fixed_weight(0) == []
+    result = model.solve(
+        solve_external=True,
+        timeout_in_seconds_=Integer(2),
+        processes_=Integer(3),
+        nr_solutions_=1,
+        random_seed_=7,
+        free_search_=True,
+        optimisation_level_=0,
+    )
+    assert result["status"] == "UNKNOWN"
+    assert calls[-1] == dict(
+        all_solutions=False,
+        timeout=timedelta(seconds=2),
+        processes=3,
+        nr_solutions=1,
+        random_seed=7,
+        intermediate_solutions=False,
+        free_search=True,
+        optimisation_level=0,
+    )
+    result = model.solve(
+        timeout_in_seconds_=1,
+        timeout_in_seconds=2,
+        processes_=1,
+        processes=3,
+        all_solutions_=True,
+        all_solutions=False,
+    )
+    assert result["status"] == "UNKNOWN"
+    assert calls[-1]["timeout"] == timedelta(seconds=2)
+    assert calls[-1]["processes"] == 3
+    assert calls[-1]["all_solutions"] is False
 
 
 def test_invalid_weight_range():
@@ -360,3 +392,60 @@ def test_and_extended_switch_matches_all_bit_quartets():
     for index, count in enumerate(expected):
         if count:
             assert result["weights"][index] == -100 * math.log2(count / 4)
+
+
+def test_claasp_solver_arguments_return_requested_solutions():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    model.build_hadipour_boomerang_model(0)
+    solutions = model.solve(
+        solve_external=True,
+        solver_name="gecode",
+        timeout_in_seconds_=10,
+        processes_=1,
+        nr_solutions_=2,
+        random_seed_=7,
+        free_search_=True,
+        optimisation_level_=0,
+    )
+    assert isinstance(solutions, list)
+    assert len(solutions) == 2
+    assert all(solution["status"] == "SATISFIABLE" for solution in solutions)
+
+
+def test_optimization_returns_an_incumbent_list():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    model.build_hadipour_boomerang_model()
+    solutions = model.solve(
+        solver_name="gecode", timeout_in_seconds_=10, intermediate_solutions_=True
+    )
+    assert isinstance(solutions, list)
+    assert solutions
+    assert solutions[-1]["solver_status"] == "OPTIMAL_SOLUTION"
+
+
+def test_only_final_incumbent_is_marked_optimal():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    outputs = [
+        SimpleNamespace(
+            _output_item=(
+                "upper_plaintext = [0, 1, 0, 0]\nUpper weight = 0.0\n"
+                f"Middle weight = {weight}\nLower weight = 0.0\nTrail weight = {weight}\n"
+            )
+        )
+        for weight in (0.94, 0.0)
+    ]
+    result = SimpleNamespace(
+        solution=outputs, status=Status.OPTIMAL_SOLUTION, statistics={}
+    )
+    solutions = model._solver_result(result, "gecode", multiple=True, intermediate=True)
+    assert [solution["solver_status"] for solution in solutions] == [
+        "SATISFIED",
+        "OPTIMAL_SOLUTION",
+    ]
+    assert [solution["total_weight"] for solution in solutions] == ["0.94", "0.0"]
+
+
+def test_external_solver_flag_requires_boolean():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    with pytest.raises(ValueError, match="boolean"):
+        model.solve(solve_external="external")

@@ -401,25 +401,23 @@ class MznHadipourBoomerangModel(MznModel):
             predicate = kind + "_compute"
         return ["constraint " + predicate + "(" + ", ".join(arrays) + suffix]
 
+    def _switch_kind(self, round_number):
+        if self.middle_part_number_of_rounds == 1:
+            return "bct"
+        last_middle_round = (
+            self.top_part_number_of_rounds + self.middle_part_number_of_rounds - 1
+        )
+        return {self.top_part_number_of_rounds: "ubct", last_middle_round: "lbct"}.get(
+            round_number, "ebct"
+        )
+
     def _build_switches(self):
         keys = self._middle_keys()
         index = 0
         predicates = {}
         for key in keys:
             round_number = int(key.split("_")[1])
-            if self.middle_part_number_of_rounds == 1:
-                kind = "bct"
-            elif round_number == self.top_part_number_of_rounds:
-                kind = "ubct"
-            elif (
-                round_number
-                == self.top_part_number_of_rounds
-                + self.middle_part_number_of_rounds
-                - 1
-            ):
-                kind = "lbct"
-            else:
-                kind = "ebct"
+            kind = self._switch_kind(round_number)
             component = self._cipher.component_from_id(_UPPER_PREFIX + key)
             count = (
                 component.output_bit_size if component.description[0] == "AND" else 1
@@ -623,65 +621,23 @@ class MznHadipourBoomerangModel(MznModel):
             options["processes"] = index(processes)
         return options
 
-    def solve(
-        self,
-        model_type=_MODEL_TYPE,
-        solver_name=None,
-        timeout_in_seconds=None,
-        processes=None,
-        all_solutions=False,
-    ):
-        """Solve the current boomerang model and return parsed CLAASP results.
+    def _default_solver(self, solver_name):
+        if solver_name is not None:
+            return solver_name
+        modular = any(
+            component.type == WORD_OPERATION
+            and component.description[0] in _MODULAR_OPERATIONS
+            for component in self._cipher.all_components()
+        )
+        return GECODE if modular else SOLVER_DEFAULT
 
-        INPUT:
-
-        - ``model_type`` -- ``'boomerang'`` (default); other model types are rejected.
-        - ``solver_name`` -- installed MiniZinc solver ID; None selects gecode for
-          modular switches and CLAASP's default for AND-only models.
-          Use a float-capable solver such as gecode for modular switches.
-        - ``timeout_in_seconds`` -- optional positive time limit in seconds.
-        - ``processes`` -- optional positive solver process count.
-        - ``all_solutions`` -- bool, enumerate a satisfaction model if True.
-
-        OUTPUT: a solution dictionary, or a list when ``all_solutions=True``.
-        Weights are in bits. Check ``status`` and ``solver_status`` for
-        satisfiability and completion. A timeout without a solution is UNKNOWN;
-        enumeration returns an empty list if no solutions were found.
-        Call ``build_hadipour_boomerang_model`` first. See the class for the
-        probability assumptions and references.
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
-            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
-            sage: model.build_hadipour_boomerang_model(weight=None)
-            sage: result = model.solve(solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
-        """
-        if model_type != _MODEL_TYPE:
-            raise ValueError("This model only solves boomerang characteristics")
-        if not self._model_constraints:
-            raise ValueError("Build the boomerang model before solving")
-        if solver_name is None:
-            solver_name = (
-                GECODE
-                if any(
-                    component.type == WORD_OPERATION
-                    and component.description[0] in _MODULAR_OPERATIONS
-                    for component in self._cipher.all_components()
-                )
-                else SOLVER_DEFAULT
-            )
-        model = Model()
-        model.add_string(self.assemble_model())
-        options = self._solver_options(timeout_in_seconds, processes, all_solutions)
-        result = Instance(Solver.lookup(solver_name), model).solve(**options)
+    def _solver_result(self, result, solver_name, multiple, intermediate):
         if result.solution is None:
+            if multiple:
+                return []
             status = (
                 "UNSATISFIABLE" if result.status == Status.UNSATISFIABLE else "UNKNOWN"
             )
-            if all_solutions:
-                return []
             empty = convert_solver_solution_to_dictionary(
                 self.original_cipher,
                 _MODEL_TYPE,
@@ -702,7 +658,99 @@ class MznHadipourBoomerangModel(MznModel):
             )
             for solution in solutions
         ]
-        return parsed if all_solutions else parsed[-1]
+        if intermediate:
+            for solution in parsed[:-1]:
+                solution["solver_status"] = str(Status.SATISFIED)
+        return parsed if multiple else parsed[-1]
+
+    def solve(
+        self,
+        model_type=_MODEL_TYPE,
+        solve_external=False,
+        solver_name=None,
+        timeout_in_seconds_=None,
+        processes_=None,
+        nr_solutions_=None,
+        random_seed_=None,
+        all_solutions_=False,
+        intermediate_solutions_=False,
+        free_search_=False,
+        optimisation_level_=None,
+        *,
+        timeout_in_seconds=None,
+        processes=None,
+        all_solutions=None,
+    ):
+        """Solve a built boomerang model through the CLAASP solver interface.
+
+        INPUT:
+
+        - ``model_type`` -- ``'boomerang'`` (default); other models are rejected.
+        - ``solve_external`` -- bool compatibility flag (default: False).
+          Both modes use MiniZinc's CLI through its Python client and the same
+          boomerang parser; neither requires manual terminal output parsing.
+        - ``solver_name`` -- installed MiniZinc solver ID. None selects gecode
+          for modular switches and CLAASP's default for AND-only models.
+        - ``timeout_in_seconds_`` -- optional positive time limit in seconds.
+        - ``processes_`` -- optional positive integer solver process count.
+        - ``nr_solutions_`` -- optional number of satisfaction solutions to find.
+        - ``random_seed_`` -- optional integer solver random seed.
+        - ``all_solutions_`` -- bool (default: False); enumerate a satisfaction model.
+        - ``intermediate_solutions_`` -- bool (default: False); return optimization
+          incumbents as a list. Only the final entry can be proven optimal.
+        - ``free_search_`` -- bool (default: False); let the solver choose its search.
+        - ``optimisation_level_`` -- optional MiniZinc compiler level, 0 through 5.
+        - ``timeout_in_seconds``, ``processes``, ``all_solutions`` -- keyword-only
+          aliases used by the search methods. A non-None alias takes precedence
+          over the corresponding underscored CLAASP argument.
+
+        OUTPUT: a CLAASP solution dictionary, or a list when requesting multiple
+        solutions, enumerating, or requesting optimization incumbents. Weights are in bits. Check ``status``
+        and ``solver_status`` for satisfiability and completion. A timeout without
+        a solution is UNKNOWN; list searches return an empty list if none were
+        found. Solver options depend on the selected backend's capabilities.
+        Call ``build_hadipour_boomerang_model`` first. See the class documentation
+        for probability assumptions and references.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: model.build_hadipour_boomerang_model(weight=None)
+            sage: result = model.solve(solver_name='gecode', timeout_in_seconds_=1)  # optional - minizinc
+        """
+        if model_type != _MODEL_TYPE:
+            raise ValueError("This model only solves boomerang characteristics")
+        if not isinstance(solve_external, bool):
+            raise ValueError("solve_external must be a boolean")
+        if not self._model_constraints:
+            raise ValueError("Build the boomerang model before solving")
+        solver_name = self._default_solver(solver_name)
+        model = Model()
+        model.add_string(self.assemble_model())
+        enumerate_all = all_solutions_ if all_solutions is None else all_solutions
+        options = self._solver_options(
+            timeout_in_seconds_ if timeout_in_seconds is None else timeout_in_seconds,
+            processes_ if processes is None else processes,
+            enumerate_all,
+        )
+        options.update(
+            nr_solutions=nr_solutions_,
+            random_seed=random_seed_,
+            intermediate_solutions=intermediate_solutions_,
+            free_search=free_search_,
+            optimisation_level=optimisation_level_,
+        )
+        result = Instance(Solver.lookup(solver_name), model).solve(**options)
+        multiple = (
+            enumerate_all
+            or intermediate_solutions_
+            or (nr_solutions_ is not None and nr_solutions_ > 1)
+        )
+        return self._solver_result(
+            result, solver_name, multiple, intermediate_solutions_
+        )
 
     def find_one_boomerang_trail(
         self,

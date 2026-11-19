@@ -244,10 +244,10 @@ class CipherOutput(Component):
     def cp_xor_differential_propagation_constraints(self, model):
         return self.cp_constraints()
     
-    def cp_xor_differential_propagation_constraints_boomerang(self, model):
+    def cp_xor_differential_propagation_constraints_boomerang(self, model=None):
         """Return XOR difference constraints for a boomerang arm's output.
 
-        INPUT: ``model`` -- boomerang model, unused for this linear component.
+        INPUT: ``model`` -- optional model, forwarded to the ordinary linear builder.
 
         OUTPUT: pair of MiniZinc string lists (declarations, constraints),
         identical to ordinary output difference propagation.
@@ -256,10 +256,10 @@ class CipherOutput(Component):
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: component = SpeckBlockCipher(number_of_rounds=1).all_components()[-1]
-            sage: component.cp_xor_differential_propagation_constraints_boomerang(None) == component.cp_constraints()
+            sage: component.cp_xor_differential_propagation_constraints_boomerang() == component.cp_constraints()
             True
         """
-        return self.cp_constraints()
+        return self.cp_xor_differential_propagation_constraints(model)
 
     def cp_xor_linear_mask_propagation_constraints(self, model=None):
         """

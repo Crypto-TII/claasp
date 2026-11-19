@@ -849,6 +849,12 @@ def test_exponential_predict_invalid_inputs():
         exponential_predict([1, 2], [1.0, 2.0], [3], prediction_quantile=1)
 
 
+@pytest.mark.parametrize('prediction_quantile', [0, 1, -0.1, 1.1, float('nan'), float('inf'), -float('inf')])
+def test_exponential_predict_rejects_invalid_quantiles(prediction_quantile):
+    with pytest.raises(ValueError, match='prediction_quantile'):
+        exponential_predict([1, 2], [1.0, 2.0], [3], prediction_quantile=prediction_quantile)
+
+
 def test_save_trail_lower_bounds_and_time_estimates(tmp_path):
     file_name = str(tmp_path / "lowest_weight_search.log")
     unsat_solution = {

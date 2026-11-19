@@ -550,8 +550,9 @@ class Modular(Component):
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: model = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
-            sage: model.build_hadipour_boomerang_model()
-            sage: 'upper_modadd_0_1' in model.component_and_probability
+            sage: component = model.cipher.component_from_id('upper_modadd_0_1')
+            sage: declarations, constraints = component.cp_xor_differential_propagation_constraints_boomerang(model)
+            sage: any('upper_p[' in constraint for constraint in constraints)
             True
         """
         return model._arm_differential_constraints(self)

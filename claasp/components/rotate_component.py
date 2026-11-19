@@ -326,7 +326,7 @@ class Rotate(Component):
     def cp_xor_differential_propagation_constraints_boomerang(self, model=None):
         """Return the linear XOR difference propagation constraints for one arm.
 
-        INPUT: ``model`` -- optional model, unused for this linear operation.
+        INPUT: ``model`` -- optional model, forwarded to the ordinary linear builder.
 
         OUTPUT: a pair of MiniZinc declarations and constraints, identical to
         ``cp_xor_differential_propagation_constraints``. The arm is determined
@@ -339,7 +339,7 @@ class Rotate(Component):
             sage: component.cp_xor_differential_propagation_constraints_boomerang() == component.cp_constraints()
             True
         """
-        return self.cp_constraints()
+        return self.cp_xor_differential_propagation_constraints(model)
     
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
