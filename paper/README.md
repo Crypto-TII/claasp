@@ -95,7 +95,9 @@ transitions to half the word size, following the existing search heuristic.
 The model supports two-input AND and modular-addition/subtraction nonlinear
 components. It does not yet support S-box/OR switches, mixed modular word
 sizes, or related-key searches. Multi-round switch composition retains the
-paper implementation's local independence assumptions. Verify reported
+paper implementation's local independence assumptions. Compatibility is imposed
+per nonlinear component; valid whole-cipher switches that rely on cancellation
+between nonlinear terms combined by XOR can be excluded. Verify reported
 external differences with independent experiments before making a cipher-level
 claim.
 
@@ -104,3 +106,5 @@ References:
 - Cid et al., [Boomerang Connectivity Table: A New Cryptanalysis Tool](https://doi.org/10.1007/978-3-319-78375-8_22), EUROCRYPT 2018.
 - Wang, Wang and Sun, [SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers](https://doi.org/10.46586/tosc.v2023.i1.152-191), ToSC 2023(1).
 - Boukerrou et al., [On the Feistel Counterpart of the Boomerang Connectivity Table: Introduction and Analysis of the FBCT](https://doi.org/10.13154/tosc.v2020.i1.331-362), ToSC 2020(1).
+- Yu and Teh, [Revisiting boomerang attacks on lightweight ARX and AND-RX ciphers with applications to KATAN, SIMON and CHAM](https://doi.org/10.1016/j.jisa.2024.103950), JISA 89 (2025).
+- Bellini et al., [Fully Automated Differential-Linear Attacks Against ARX Ciphers](https://doi.org/10.1007/978-3-031-30872-7_10), CT-RSA 2023 (piecewise-linear modeling approach).

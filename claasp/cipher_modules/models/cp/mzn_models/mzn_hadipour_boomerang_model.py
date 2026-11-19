@@ -93,6 +93,10 @@ class MznHadipourBoomerangModel(MznModel):
     Component ``weight`` entries are the raw differential weights in each arm;
     the overlap is accounted for by ``middle_weight``, so summing component
     weights does not give the objective.
+    Switch compatibility is imposed component by component. Valid boomerangs
+    relying on cancellation between nonlinear terms combined by XOR may be
+    excluded. Local table products also retain independence assumptions; they
+    are not a proof of compatibility across the entire cipher.
     Modular connectivity restricts half-size transitions to half the word size,
     a search heuristic. The logarithm approximation saturates at 32 bits for
     probabilities at most 0.001021453702391378; its precision is not 0.01 bits.
@@ -105,7 +109,10 @@ class MznHadipourBoomerangModel(MznModel):
     ToSC 2023(1), https://doi.org/10.46586/tosc.v2023.i1.152-191; and
     Boukerrou et al., *On the Feistel Counterpart of the Boomerang Connectivity
     Table: Introduction and Analysis of the FBCT*, ToSC 2020(1),
-    https://doi.org/10.13154/tosc.v2020.i1.331-362.
+    https://doi.org/10.13154/tosc.v2020.i1.331-362; and Yu and Teh,
+    *Revisiting boomerang attacks on lightweight ARX and AND-RX ciphers with
+    applications to KATAN, SIMON and CHAM*, JISA 89 (2025),
+    https://doi.org/10.1016/j.jisa.2024.103950.
 
     INPUT:
 
