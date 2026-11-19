@@ -610,11 +610,11 @@ class MznHadipourBoomerangModel(MznModel):
         if timeout_in_seconds is not None:
             if timeout_in_seconds <= 0:
                 raise ValueError("timeout_in_seconds must be positive")
-            options["timeout"] = timedelta(seconds=timeout_in_seconds)
+            options["timeout"] = timedelta(seconds=float(timeout_in_seconds))
         if processes is not None:
             if processes <= 0:
                 raise ValueError("processes must be positive")
-            options["processes"] = processes
+            options["processes"] = index(processes)
         return options
 
     def solve(

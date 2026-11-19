@@ -279,6 +279,7 @@ def test_invalid_solver_options(option):
 
 
 def test_timeout_status_and_solver_options(monkeypatch):
+    from sage.rings.integer import Integer
     import claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model as boomerang
 
     calls = []
@@ -291,7 +292,9 @@ def test_timeout_status_and_solver_options(monkeypatch):
         boomerang, "Instance", lambda solver, model: SimpleNamespace(solve=fake_solve)
     )
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
-    result = model.find_one_boomerang_trail(timeout_in_seconds=2, processes=3)
+    result = model.find_one_boomerang_trail(
+        timeout_in_seconds=Integer(2), processes=Integer(3)
+    )
     assert result["status"] == "UNKNOWN"
     assert result["total_weight"] is None
     assert calls[-1]["timeout"] == timedelta(seconds=2)
