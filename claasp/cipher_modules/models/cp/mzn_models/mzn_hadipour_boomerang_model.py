@@ -80,6 +80,9 @@ class MznHadipourBoomerangModel(MznModel):
     The objective is ``2 * upper_weight + middle_weight + 2 * lower_weight``.
     It is a characteristic estimate under the usual independence assumptions,
     not the sum of all characteristics with the same external differences.
+    Component ``weight`` entries are the raw differential weights in each arm;
+    the overlap is accounted for by ``middle_weight``, so summing component
+    weights does not give the objective.
     Modular connectivity restricts half-size transitions to half the word size,
     a search heuristic. The logarithm approximation saturates at 32 bits for
     probabilities at most 0.001021453702391378; its precision is not 0.01 bits.
@@ -591,6 +594,19 @@ class MznHadipourBoomerangModel(MznModel):
             solution["building_time_seconds"] = build_time
         return result
 
+    @staticmethod
+    def _solver_options(timeout_in_seconds, processes, all_solutions):
+        options = {"all_solutions": all_solutions}
+        if timeout_in_seconds is not None:
+            if timeout_in_seconds <= 0:
+                raise ValueError("timeout_in_seconds must be positive")
+            options["timeout"] = timedelta(seconds=timeout_in_seconds)
+        if processes is not None:
+            if processes <= 0:
+                raise ValueError("processes must be positive")
+            options["processes"] = processes
+        return options
+
     def solve(
         self,
         model_type="boomerang",
@@ -642,15 +658,7 @@ class MznHadipourBoomerangModel(MznModel):
             )
         model = Model()
         model.add_string(self.assemble_model())
-        options = {"all_solutions": all_solutions}
-        if timeout_in_seconds is not None:
-            if timeout_in_seconds <= 0:
-                raise ValueError("timeout_in_seconds must be positive")
-            options["timeout"] = timedelta(seconds=timeout_in_seconds)
-        if processes is not None:
-            if processes <= 0:
-                raise ValueError("processes must be positive")
-            options["processes"] = processes
+        options = self._solver_options(timeout_in_seconds, processes, all_solutions)
         result = Instance(Solver.lookup(solver_name), model).solve(**options)
         if result.solution is None:
             status = (
