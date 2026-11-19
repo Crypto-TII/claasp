@@ -115,7 +115,7 @@ class MznModel:
         self.probability_vars = []
         self.probability_modadd_vars_per_round = [[] for _ in range(self._cipher.number_of_rounds)]
         self.component_probability_var = {}
-        self._model_prefix = ['include "globals.mzn";', f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
+        self._model_prefix = [f"{usefulfunctions.MINIZINC_USEFUL_FUNCTIONS}"]
 
     def current_model_parts(self):
         return MiniZincModelParts(
@@ -874,6 +874,7 @@ class MznModel:
             solver_name_mzn = Solver.lookup(solver_name)
             bit_mzn_model = Model()
             bit_mzn_model.add_string(mzn_model_string)
+
             instance = Instance(solver_name_mzn, bit_mzn_model)
             start = time.time()
             if processes_ is not None and timeout_in_seconds_ is not None:
@@ -1163,6 +1164,26 @@ class MznModel:
             raise ValueError("No model generated")
         return self._model_constraints
 
+    def build_generic_mzn_model_from_dictionary(self, component_and_model_types):
+        self._variables_list = []
+        self._model_constraints = []
+        component_types = [CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, SBOX, WORD_OPERATION]
+        operation_types = ['AND', 'MODADD', 'MODSUB', 'NOT', 'OR', 'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'XOR']
+        for component_and_model_type in component_and_model_types:
+            component = component_and_model_type["component_object"]
+            model_type = component_and_model_type["model_type"]
+            operation = component.description[0]
+            if component.type not in component_types or (
+                    WORD_OPERATION == component.type and operation not in operation_types):
+                print(f'{component.id} not yet implemented')
+            else:
+                minizinc_xor_differential_propagation_constraints = getattr(component, model_type)
+                if model_type == 'create_bct_mzn_constraint_from_component_ids':
+                    variables, constraints = minizinc_xor_differential_propagation_constraints()
+                else:
+                    variables, constraints = minizinc_xor_differential_propagation_constraints(self)
+                self._model_constraints.extend(constraints)
+                self._variables_list.extend(variables)
     @property
     def model_variables(self):
         """
