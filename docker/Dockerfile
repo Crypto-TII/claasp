@@ -414,11 +414,10 @@ RUN printf '%s\n' \
     && chmod +x /usr/local/bin/mallob
 
 
-# Float constraints in modular boomerang models need Gecode. The x86 bundle
-# includes it; source-built arm64 MiniZinc needs the FlatZinc executable.
-RUN if [ "$TARGETARCH" = "arm64" ]; then \
-        apt-get -q update && apt-get install --no-install-recommends -y flatzinc; \
-    fi
+# Modular boomerang probabilities require a float-capable solver. Use matching
+# Gecode binaries and MiniZinc definitions when the image has none installed.
+COPY docker/install_gecode.sh /usr/local/bin/install-gecode
+RUN bash /usr/local/bin/install-gecode
 
 
 FROM claasp-base AS claasp-lib

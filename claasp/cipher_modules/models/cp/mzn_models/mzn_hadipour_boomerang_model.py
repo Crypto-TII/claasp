@@ -60,6 +60,13 @@ from claasp.cipher_modules.models.cp.solvers import GECODE, SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import CONSTANT, WORD_OPERATION
 
+_UPPER = "upper"
+_LOWER = "lower"
+_UPPER_PREFIX = _UPPER + "_"
+_LOWER_PREFIX = _LOWER + "_"
+_MODEL_TYPE = "boomerang"
+_MODULAR_OPERATIONS = ("MODADD", "MODSUB")
+
 _SWITCH_PREDICATES = {
     "bct": (get_bct_operations, get_evaluation_bct_operations),
     "ubct": (get_ubct_operations, get_evaluation_ubct_operations),
@@ -161,13 +168,16 @@ class MznHadipourBoomerangModel(MznModel):
         lower = deepcopy(cipher).get_partial_cipher(
             top, cipher.number_of_rounds - 1, keep_key_schedule=False
         )
-        self._data_inputs = {"upper_" + upper.inputs[0], "lower_" + lower.inputs[0]}
-        self._external_differences = {
-            "upper_" + upper.inputs[0],
-            "lower_" + lower.all_components_ids()[-1],
+        self._data_inputs = {
+            _UPPER_PREFIX + upper.inputs[0],
+            _LOWER_PREFIX + lower.inputs[0],
         }
-        upper.add_prefix("upper_")
-        lower.add_prefix("lower_")
+        self._external_differences = {
+            _UPPER_PREFIX + upper.inputs[0],
+            _LOWER_PREFIX + lower.all_components_ids()[-1],
+        }
+        upper.add_prefix(_UPPER_PREFIX)
+        lower.add_prefix(_LOWER_PREFIX)
         for round_number in range(top, cipher.number_of_rounds):
             upper.rounds.round_at(round_number).components.extend(
                 lower.rounds.round_at(round_number).components
@@ -195,7 +205,7 @@ class MznHadipourBoomerangModel(MznModel):
         return int(scaled)
 
     def _arm_differential_constraints(self, component):
-        side = "upper" if component.id.startswith("upper_") else "lower"
+        side = _UPPER if component.id.startswith(_UPPER_PREFIX) else _LOWER
         counter = "c_" + side
         arm = SimpleNamespace(
             c=getattr(self, counter),
@@ -253,7 +263,7 @@ class MznHadipourBoomerangModel(MznModel):
             for component in self._cipher.all_components()
             if component.type != CONSTANT
         )
-        for side in ("upper", "lower"):
+        for side in (_UPPER, _LOWER):
             probabilities = {0}
             tables = []
             already_added = []
@@ -280,22 +290,22 @@ class MznHadipourBoomerangModel(MznModel):
 
     def _middle_keys(self):
         upper = {
-            key.removeprefix("upper_")
+            key.removeprefix(_UPPER_PREFIX)
             for key in self.component_and_probability
-            if key.startswith("upper_")
+            if key.startswith(_UPPER_PREFIX)
         }
         lower = {
-            key.removeprefix("lower_")
+            key.removeprefix(_LOWER_PREFIX)
             for key in self.component_and_probability
-            if key.startswith("lower_")
+            if key.startswith(_LOWER_PREFIX)
         }
         return sorted(
             upper & lower, key=lambda key: tuple(map(int, key.split("_")[1:]))
         )
 
     def _add_and_switch(self, key, kind, start):
-        upper = self._cipher.component_from_id("upper_" + key)
-        lower = self._cipher.component_from_id("lower_" + key)
+        upper = self._cipher.component_from_id(_UPPER_PREFIX + key)
+        lower = self._cipher.component_from_id(_LOWER_PREFIX + key)
         inputs = []
         for component in (upper, lower):
             bits = [
@@ -348,7 +358,7 @@ class MznHadipourBoomerangModel(MznModel):
         return constraints
 
     def _add_modular_switch(self, key, kind, index):
-        upper, lower = "upper_" + key, "lower_" + key
+        upper, lower = _UPPER_PREFIX + key, _LOWER_PREFIX + key
         component = self._cipher.component_from_id(upper)
         size = component.output_bit_size
         if size < 2:
@@ -404,7 +414,7 @@ class MznHadipourBoomerangModel(MznModel):
                 kind = "lbct"
             else:
                 kind = "ebct"
-            component = self._cipher.component_from_id("upper_" + key)
+            component = self._cipher.component_from_id(_UPPER_PREFIX + key)
             count = (
                 component.output_bit_size if component.description[0] == "AND" else 1
             )
@@ -428,7 +438,7 @@ class MznHadipourBoomerangModel(MznModel):
         return keys
 
     def _weight_constraints(self, middle_keys):
-        for side in ("upper", "lower"):
+        for side in (_UPPER, _LOWER):
             terms = [
                 f"{side}_p[{index}]"
                 for key, indices in self.component_and_probability.items()
@@ -540,7 +550,7 @@ class MznHadipourBoomerangModel(MznModel):
         elapsed = statistics.get("time", timedelta()).total_seconds()
         result = convert_solver_solution_to_dictionary(
             self.original_cipher,
-            "boomerang",
+            _MODEL_TYPE,
             solver_name,
             elapsed,
             statistics.get("peakMem", -1),
@@ -609,7 +619,7 @@ class MznHadipourBoomerangModel(MznModel):
 
     def solve(
         self,
-        model_type="boomerang",
+        model_type=_MODEL_TYPE,
         solver_name=None,
         timeout_in_seconds=None,
         processes=None,
@@ -642,7 +652,7 @@ class MznHadipourBoomerangModel(MznModel):
             sage: model.build_hadipour_boomerang_model(weight=None)
             sage: result = model.solve(solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
         """
-        if model_type != "boomerang":
+        if model_type != _MODEL_TYPE:
             raise ValueError("This model only solves boomerang characteristics")
         if not self._model_constraints:
             raise ValueError("Build the boomerang model before solving")
@@ -651,7 +661,7 @@ class MznHadipourBoomerangModel(MznModel):
                 GECODE
                 if any(
                     component.type == WORD_OPERATION
-                    and component.description[0] in ("MODADD", "MODSUB")
+                    and component.description[0] in _MODULAR_OPERATIONS
                     for component in self._cipher.all_components()
                 )
                 else SOLVER_DEFAULT
@@ -668,7 +678,7 @@ class MznHadipourBoomerangModel(MznModel):
                 return []
             empty = convert_solver_solution_to_dictionary(
                 self.original_cipher,
-                "boomerang",
+                _MODEL_TYPE,
                 solver_name,
                 result.statistics.get("time", timedelta()).total_seconds(),
                 -1,

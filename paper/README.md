@@ -22,7 +22,10 @@ boomerang probability without accounting for the model's assumptions.
 
 Use a CLAASP checkout containing the boomerang model, SageMath, and MiniZinc.
 The historical batch scripts used MiniZinc 2.9.5 and Gurobi 13.0.2 on Linux.
-Gurobi needs a suitable installation and license. Set `MZN` to your MiniZinc
+Gurobi needs a suitable installation and license. For the Python examples,
+use a working Gecode installation. CLAASP's Linux image installs Gecode 6.3.0
+with matching MiniZinc definitions via `docker/install_gecode.sh`; Ubuntu's
+older FlatZinc library alone is incompatible with MiniZinc 2.9.4. Set `MZN` to your MiniZinc
 binary if it is not on PATH, and `GUROBI_DLL` to the Gurobi shared library.
 The parameter files specify seeds, thread counts, and potentially multi-day
 limits. Inspect them before starting a batch. The launchers run in the

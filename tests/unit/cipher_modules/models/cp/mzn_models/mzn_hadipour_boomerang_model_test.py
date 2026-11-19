@@ -1,6 +1,8 @@
 """Boomerang API regression and solver integration tests."""
 
+from contextlib import redirect_stdout
 from copy import deepcopy
+from io import StringIO
 from datetime import timedelta
 from types import SimpleNamespace
 
@@ -77,21 +79,20 @@ def test_invalid_weight(weight):
         ChachaPermutation(number_of_rounds=3, round_mode="half_half"),
     ],
 )
-def test_build_is_repeatable_and_does_not_mutate_cipher(
-    cipher, tmp_path, monkeypatch, capsys
-):
+def test_build_is_repeatable_and_does_not_mutate_cipher(cipher, tmp_path, monkeypatch):
     before = deepcopy(cipher.as_python_dictionary())
     monkeypatch.chdir(tmp_path)
-    model = MznHadipourBoomerangModel(
-        cipher, structure(1, 1, cipher.number_of_rounds - 2)
-    )
-    model.build_hadipour_boomerang_model()
-    first = model.assemble_model()
-    model.build_hadipour_boomerang_model()
-    assert model.assemble_model() == first
+    with redirect_stdout(StringIO()) as output:
+        model = MznHadipourBoomerangModel(
+            cipher, structure(1, 1, cipher.number_of_rounds - 2)
+        )
+        model.build_hadipour_boomerang_model()
+        first = model.assemble_model()
+        model.build_hadipour_boomerang_model()
+        assert model.assemble_model() == first
     assert cipher.as_python_dictionary() == before
     assert not list(tmp_path.iterdir())
-    assert capsys.readouterr().out == ""
+    assert output.getvalue() == ""
     assert model.component_and_probability
 
 
