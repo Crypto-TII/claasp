@@ -530,7 +530,7 @@ class SatDifferentialLinearModel(SatModel):
           next weights (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`).
           When searching from above, the file is
           ``<cipher_id>__sat_find_lowest_weight_xor_differential_linear_trail_from_above__<solver_name>solver``
-          ``[_<options>].log`` and it contains the trails found (see
+          ``[_<options>].log`` and it contains a line describing the search and one line per searched weight bound (see
           :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
         - ``search_from`` -- **str** (default: `below`); the search strategy:
 
@@ -590,7 +590,15 @@ class SatDifferentialLinearModel(SatModel):
         build_model = self._differential_linear_model_builder(fixed_values, num_unknown_vars)
         if search_from == "above":
             solution = self._search_trail_down_to_weight(
-                build_model, "XOR_DIFFERENTIAL_LINEAR_MODEL", 0, start_weight, log_file_name, solver_name, options, log
+                build_model,
+                "XOR_DIFFERENTIAL_LINEAR_MODEL",
+                0,
+                start_weight,
+                log_file_name,
+                solver_name,
+                options,
+                log,
+                fixed_values,
             )
         else:
             solution = self._search_trail_up_from_weight(
@@ -649,9 +657,9 @@ class SatDifferentialLinearModel(SatModel):
         - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
         - ``start_weight`` -- **int** (default: `None`); an upper bound for the weight of the first trail. If `None`,
           the first trail is searched without any weight bound
-        - ``log`` -- **bool** (default: False); if ``True``, after each searched weight, append to the file
+        - ``log`` -- **bool** (default: False); if ``True``, append to the file
           ``<cipher_id>__sat_search_xor_differential_linear_trail_down_to_weight_<end_weight>__<solver_name>solver``
-          ``[_<options>].log`` the result of the search and the trail found, if any (see
+          ``[_<options>].log`` a line describing the search, then one line per searched weight bound (see
           :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
 
         RETURN:
@@ -703,6 +711,7 @@ class SatDifferentialLinearModel(SatModel):
             solver_name,
             options,
             log,
+            fixed_values,
         )
         solution["test_name"] = "search_xor_differential_linear_trail_down_to_weight"
 

@@ -137,10 +137,18 @@ def test_find_lowest_weight_xor_linear_trail_from_above_with_log(tmp_path, monke
             remove(log_file_name)
 
     assert trail["total_weight"] == lowest_weight
-    lower_bound_lines = [line for line in log_content.splitlines() if " has no " in line]
-    assert len(lower_bound_lines) == 1
-    assert lower_bound_lines[0].endswith(f" {speck.id} has no xor_linear trail of weight <= {lowest_weight - 1}")
-    assert f"'components_values': {trail['components_values']!r}" in log_content
+    log_lines = log_content.splitlines()
+    assert log_lines[0].endswith(f" {speck.id} xor_linear search from above s {CRYPTOMINISAT_EXT} o none f default")
+    unsat_lines = [line for line in log_lines if " UNSAT " in line]
+    assert len(unsat_lines) == 1
+    assert f" UNSAT wc <={lowest_weight - 1} t " in unsat_lines[0]
+    assert log_lines[-1] == unsat_lines[0]
+    assert " SAT wc " in log_lines[-2]
+    assert f" wg {lowest_weight} pt " in log_lines[-2]
+    plaintext = trail["components_values"]["plaintext"]["value"]
+    ciphertext = trail["components_values"]["cipher_output_3_12_o"]["value"]
+    assert f" pt {plaintext} " in log_lines[-2]
+    assert f" ct {ciphertext} t " in log_lines[-2]
 
 
 def test_search_xor_linear_trail_down_to_weight():

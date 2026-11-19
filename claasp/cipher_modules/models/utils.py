@@ -519,15 +519,136 @@ def save_trail_lower_bounds_and_time_estimates(file_name, solution, searched_wei
         f.write(message)
 
 
-def save_trail_upper_bounds_and_times(file_name, solution, searched_weight, search_time, total_time):
+def _format_fixed_values(fixed_values):
     """
-    Append to ``file_name`` the result of the last step of a decreasing (from above) trail search.
+    Return a compact description of ``fixed_values``, e.g. ``plaintext[0:64]=0 cipher_output_5_73[64:128]!=0``.
+
+    The bit positions are written as half-open ranges and the bit values as ``0`` if they are all zero, as a
+    hexadecimal number if their number is a multiple of 4, as a binary number otherwise. An empty ``fixed_values``
+    is written as ``default``, i.e. the default constraints of the model.
+    """
+    if not fixed_values:
+        return "default"
+    descriptions = []
+    for fixed_value in fixed_values:
+        positions = list(fixed_value["bit_positions"])
+        ranges = []
+        for position in positions:
+            if ranges and ranges[-1][1] == position:
+                ranges[-1][1] = position + 1
+            else:
+                ranges.append([position, position + 1])
+        ranges_text = ",".join(f"{first}:{last}" for first, last in ranges)
+        bits = [int(bit) for bit in fixed_value["bit_values"]]
+        if not any(bits):
+            value = "0"
+        elif len(bits) % 4 == 0:
+            value = f"0x{int(''.join(map(str, bits)), 2):0{len(bits) // 4}x}"
+        else:
+            value = f"0b{''.join(map(str, bits))}"
+        constraint_type = fixed_value["constraint_type"]
+        relation = {"equal": "=", "not_equal": "!="}.get(constraint_type, f" {constraint_type} ")
+        descriptions.append(f"{fixed_value['component_id']}[{ranges_text}]{relation}{value}")
+
+    return " ".join(descriptions)
+
+
+def _format_trail_inputs_and_output(solution):
+    """
+    Return the input, the key (only if not zero) and the output of the trail in ``solution``, e.g.
+    ``pt 0x0040 ct 0x8000``.
+
+    The input is the value of ``plaintext``; the key is the value of the other inputs of the cipher; the output is the
+    value of the cipher output component (the output mask, for linear trails).
+    """
+    components_values = solution.get("components_values", {})
+    cipher_inputs = getattr(solution["cipher"], "inputs", ["plaintext", "key"])
+    parts = []
+    if "plaintext" in components_values:
+        parts.append(f"pt {components_values['plaintext']['value']}")
+    key_values = {
+        cipher_input: components_values[cipher_input]["value"]
+        for cipher_input in cipher_inputs
+        if cipher_input != "plaintext"
+        and cipher_input in components_values
+        and int(components_values[cipher_input]["value"], 16) != 0
+    }
+    if list(key_values) == ["key"]:
+        parts.append(f"k {key_values['key']}")
+    elif key_values:
+        parts.append("k " + " ".join(f"{cipher_input}={value}" for cipher_input, value in key_values.items()))
+    outputs = [component_id for component_id in components_values if component_id.startswith(CIPHER_OUTPUT)]
+    output_masks = [component_id for component_id in outputs if component_id.endswith("_o")]
+    if output_masks or outputs:
+        parts.append(f"ct {components_values[(output_masks or outputs)[-1]]['value']}")
+
+    return " ".join(parts)
+
+
+def save_trail_search_from_above_header(
+    file_name, cipher_id, model_type, solver_name, options, fixed_values, end_weight=0
+):
+    """
+    Append to ``file_name`` a line describing a decreasing (from above) trail search, before its first step.
+
+    The line contains the cipher, the model, the solver (``s``), its options (``o``), the fixed values (``f``, see
+    the format below) and, if not `0`, the weight at which the search stops (``end``). The fixed values are written
+    as ``<component_id>[<bit ranges>]=<value>`` (``!=`` for ``not_equal``), the bit ranges being half-open, e.g.
+    ``plaintext[0:64]=0 cipher_output_5_73[64:128]!=0``; ``default`` means the default constraints of the model.
+
+    INPUT:
+
+    - ``file_name`` -- **string**; the path of the log file; the content is appended
+    - ``cipher_id`` -- **string**; the id of the cipher
+    - ``model_type`` -- **string**; the type of the trails, e.g. ``xor_differential``
+    - ``solver_name`` -- **string**; the name of the solver
+    - ``options`` -- **list of strings**; the options of the solver, or `None`
+    - ``fixed_values`` -- **list**; the fixed values of the search (see ``set_fixed_variables``)
+    - ``end_weight`` -- **integer** (default: `0`); the search stops when a trail of weight at most ``end_weight``
+      is found
+
+    EXAMPLES::
+
+        sage: import os
+        sage: from sage.misc.temporary_file import tmp_filename
+        sage: from claasp.cipher_modules.models.utils import save_trail_search_from_above_header, set_fixed_variables
+        sage: file_name = tmp_filename(ext='.log')
+        sage: key = set_fixed_variables('key', 'equal', range(64), [0] * 64)
+        sage: plaintext = set_fixed_variables('plaintext', 'not_equal', range(16, 32), [0] * 16)
+        sage: save_trail_search_from_above_header(
+        ....:     file_name, 'speck_p32_k64_o32_r5', 'xor_differential', 'KISSAT_EXT', None, [key, plaintext])
+        sage: with open(file_name) as f:
+        ....:     f.read().split(' ', 2)[2].strip()
+        'speck_p32_k64_o32_r5 xor_differential search from above s KISSAT_EXT o none f key[0:64]=0 plaintext[16:32]!=0'
+        sage: os.remove(file_name)
+    """
+    timestamp = str(datetime.datetime.now().replace(microsecond=0))
+    options_text = " ".join(options) if options else "none"
+    end_text = f" end {end_weight}" if end_weight else ""
+    with open(file_name, "a") as f:
+        f.write(
+            f"{timestamp} {cipher_id} {model_type} search from above s {solver_name} o {options_text} "
+            f"f {_format_fixed_values(fixed_values)}{end_text}\n"
+        )
+
+
+def save_trail_upper_bounds_and_times(file_name, solution, searched_weight, search_time, elapsed_time):
+    """
+    Append to ``file_name`` one line with the result of the last step of a decreasing (from above) trail search.
 
     The search looks for a trail of weight at most ``searched_weight``, each time lowering ``searched_weight`` below
-    the weight of the last trail found. If the last step is SATISFIABLE, the weight of the found trail is an upper
-    bound for the lowest weight, and the full solution is written; its ``solving_time_seconds`` is replaced by
-    ``total_time``, so that each logged trail reports the time needed to find it from the start of the search. If
-    the last step is UNSATISFIABLE, ``searched_weight`` is a lower bound (strict) for the weight of the trails.
+    the weight of the last trail found. The line is
+
+    * ``<timestamp> SAT wc <=<searched_weight> wg <weight> pt <input> [k <key>] ct <output> t <time> tt <elapsed>``
+      if a trail is found: its weight is an upper bound for the lowest weight. The key is written only if it is not
+      zero, i.e. not in the single-key setting
+    * ``<timestamp> UNSAT wc <=<searched_weight> t <time> tt <elapsed>`` if no trail of weight at most
+      ``searched_weight`` exists (with the fixed values of the search): ``searched_weight + 1`` is a lower bound for
+      the lowest weight
+    * ``<timestamp> <status> wc <=<searched_weight> t <time> tt <elapsed>`` for any other status of the solver
+
+    where ``wc`` is the weight constraint (``none`` if the weight was not bounded), ``t`` is the duration of the
+    step and ``tt`` the time elapsed from the start of the search.
 
     INPUT:
 
@@ -535,7 +656,7 @@ def save_trail_upper_bounds_and_times(file_name, solution, searched_weight, sear
     - ``solution`` -- **dictionary**; the solution of the last step, as returned by the ``solve`` method of the model
     - ``searched_weight`` -- **integer**; the weight bound of the last step, or `None` if the weight was not bounded
     - ``search_time`` -- **float**; the elapsed wall-clock time (in seconds) of the last step
-    - ``total_time`` -- **float**; the solving time (in seconds) of all the steps so far
+    - ``elapsed_time`` -- **float**; the elapsed wall-clock time (in seconds) from the start of the search
 
     EXAMPLES::
 
@@ -544,31 +665,33 @@ def save_trail_upper_bounds_and_times(file_name, solution, searched_weight, sear
         sage: from claasp.cipher_modules.models.utils import save_trail_upper_bounds_and_times
         sage: file_name = tmp_filename(ext='.log')
         sage: solution = {'cipher': 'speck_p32_k64_o32_r5', 'model_type': 'xor_differential',
+        ....:             'solver_name': 'CADICAL_EXT', 'status': 'SATISFIABLE', 'total_weight': 9.0,
+        ....:             'components_values': {'plaintext': {'value': '0x0211'},
+        ....:                                   'key': {'value': '0x0000'},
+        ....:                                   'cipher_output_4_12': {'value': '0x8000', 'weight': 0}}}
+        sage: save_trail_upper_bounds_and_times(file_name, solution, 12, 1.0, 3.0)
+        sage: solution = {'cipher': 'speck_p32_k64_o32_r5', 'model_type': 'xor_differential',
         ....:             'solver_name': 'CADICAL_EXT', 'status': 'UNSATISFIABLE', 'total_weight': None}
-        sage: save_trail_upper_bounds_and_times(file_name, solution, 8, 1.0, 3.0)
+        sage: save_trail_upper_bounds_and_times(file_name, solution, 8, 61.0, 64.0)
         sage: with open(file_name) as f:
-        ....:     'has no xor_differential trail of weight <= 8' in f.read()
-        True
+        ....:     [line.split(' ', 2)[2] for line in f.read().splitlines()]
+        ['SAT wc <=12 wg 9 pt 0x0211 ct 0x8000 t 0:00:01 tt 0:00:03',
+         'UNSAT wc <=8 t 0:01:01 tt 0:01:04']
         sage: os.remove(file_name)
     """
     timestamp = str(datetime.datetime.now().replace(microsecond=0))
-    bound = "with no weight bound" if searched_weight is None else f"for weight <= {int(searched_weight)}"
-    message = ""
-    if solution["status"] == UNSATISFIABLE:
-        weight_text = "" if searched_weight is None else f" of weight <= {int(searched_weight)}"
-        message += f"{timestamp} {solution['cipher']} has no {solution['model_type']} trail{weight_text}\n"
-    elif solution["status"] == SATISFIABLE:
-        message += (
-            f"{timestamp} {solution['cipher']} has a {solution['model_type']} trail of weight "
-            f"{solution['total_weight']}\n"
-        )
-    message += (
-        f"{timestamp} {solution['solver_name']} terminated the search {bound} in "
-        f"{datetime.timedelta(seconds=round(float(search_time)))} (status: {solution['status']}, total solving "
-        f"time: {datetime.timedelta(seconds=round(float(total_time)))})\n"
-    )
+    status = {SATISFIABLE: "SAT", UNSATISFIABLE: "UNSAT"}.get(solution["status"], solution["status"])
+    weight_constraint = "none" if searched_weight is None else f"<={int(searched_weight)}"
+    message = f"{timestamp} {status} wc {weight_constraint}"
     if solution["status"] == SATISFIABLE:
-        message += f"{dict(solution, solving_time_seconds=total_time)}\n"
+        message += f" wg {float(solution['total_weight']):g}"
+        trail_text = _format_trail_inputs_and_output(solution)
+        if trail_text:
+            message += f" {trail_text}"
+    message += (
+        f" t {datetime.timedelta(seconds=round(float(search_time)))}"
+        f" tt {datetime.timedelta(seconds=round(float(elapsed_time)))}\n"
+    )
     with open(file_name, "a") as f:
         f.write(message)
 

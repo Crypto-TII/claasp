@@ -234,29 +234,30 @@ def test_find_lowest_weight_xor_differential_trail_from_above_with_log(tmp_path,
     assert trail["total_weight"] == lowest_weight
     log_lines = log_content.splitlines()
 
+    # a line describing the search, then one line per searched weight bound
+    assert log_lines[0].endswith(
+        f" {speck.id} xor_differential search from above s {CRYPTOMINISAT_EXT} o none f default"
+    )
+    steps = [line.split(" ")[2:] for line in log_lines[1:]]
+
+    # only the last search is UNSATISFIABLE, and it proves the lower bound
+    assert [step[0] for step in steps] == ["SAT"] * (len(steps) - 1) + ["UNSAT"]
+
     # the first search has no weight bound, then the bound decreases strictly, down to lowest_weight - 1
-    status_lines = [line for line in log_lines if " (status: " in line]
-    assert f" {CRYPTOMINISAT_EXT} terminated the search with no weight bound in " in status_lines[0]
-    searched_weights = [int(line.split("weight <= ")[1].split(" ")[0]) for line in status_lines[1:]]
+    assert steps[0][1:3] == ["wc", "none"]
+    searched_weights = [int(step[2].removeprefix("<=")) for step in steps[1:]]
     assert searched_weights == sorted(searched_weights, reverse=True)
     assert len(set(searched_weights)) == len(searched_weights)
     assert searched_weights[-1] == lowest_weight - 1
-    for line in status_lines[:-1]:
-        assert " (status: SATISFIABLE, total solving time: " in line
-    assert " (status: UNSATISFIABLE, total solving time: " in status_lines[-1]
-
-    # only the last search is UNSATISFIABLE, and it proves the lower bound
-    lower_bound_lines = [line for line in log_lines if " has no " in line]
-    assert len(lower_bound_lines) == 1
-    assert lower_bound_lines[0].endswith(f" {speck.id} has no xor_differential trail of weight <= {lowest_weight - 1}")
 
     # every SATISFIABLE search logs a trail lighter than the previous one, the last one being the returned trail
-    trail_lines = [line for line in log_lines if " has a " in line]
-    assert len(trail_lines) == len(status_lines) - 1
-    weights = [float(line.split("trail of weight ")[1]) for line in trail_lines]
+    weights = [float(step[step.index("wg") + 1]) for step in steps[:-1]]
     assert weights == sorted(weights, reverse=True)
     assert weights[-1] == trail["total_weight"]
-    assert f"'components_values': {trail['components_values']!r}" in log_content
+    plaintext = trail["components_values"]["plaintext"]["value"]
+    ciphertext = trail["components_values"]["cipher_output_3_12"]["value"]
+    # single-key setting: the key is not written
+    assert f" pt {plaintext} ct {ciphertext} t " in log_lines[-2]
 
 
 def test_search_xor_differential_trail_down_to_weight():

@@ -67,6 +67,7 @@ from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_lower_bo
 from claasp.cipher_modules.models.utils import (
     convert_solver_solution_to_dictionary,
     save_trail_lower_bounds_and_time_estimates,
+    save_trail_search_from_above_header,
     save_trail_upper_bounds_and_times,
     set_component_solution,
 )
@@ -219,7 +220,7 @@ class SatModel:
         return solution
 
     def _search_trail_down_to_weight(
-        self, build_model, model_type, end_weight, start_weight, log_file_name, solver_name, options, log
+        self, build_model, model_type, end_weight, start_weight, log_file_name, solver_name, options, log, fixed_values
     ):
         """
         Return the lowest weight trail found by a search from above, stopping at ``end_weight``.
@@ -233,6 +234,10 @@ class SatModel:
         a trail of weight at most ``end_weight`` is found, returning it.
 
         If no trail of weight at most ``start_weight`` exists, the UNSATISFIABLE solution is returned.
+
+        If ``log`` is ``True``, a line describing the search (with ``fixed_values``) is appended to ``log_file_name``
+        before the first step, then one line per step (see
+        :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`).
         """
         if end_weight < 0:
             raise ValueError("end_weight must be non-negative")
@@ -241,6 +246,11 @@ class SatModel:
 
         total_time = 0
         max_memory = 0
+        search_start_time = time.time()
+        if log:
+            save_trail_search_from_above_header(
+                log_file_name, self.cipher_id, model_type, solver_name, options, fixed_values, end_weight
+            )
 
         def search_weight_at_most(weight):
             nonlocal total_time, max_memory
@@ -254,7 +264,11 @@ class SatModel:
             max_memory = max(max_memory, solution["memory_megabytes"])
             if log:
                 save_trail_upper_bounds_and_times(
-                    log_file_name, solution, weight, end_solving_time - end_building_time, total_time
+                    log_file_name,
+                    solution,
+                    weight,
+                    end_solving_time - end_building_time,
+                    end_solving_time - search_start_time,
                 )
             return solution
 

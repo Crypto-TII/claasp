@@ -273,19 +273,20 @@ def test_lowest_differential_linear_trail_from_above_with_log_6_rounds_speck(tmp
 
     assert trail["total_weight"] == lowest_weight
     log_lines = log_content.splitlines()
-    status_lines = [line for line in log_lines if " (status: " in line]
-    assert f" {CADICAL_EXT} terminated the search with no weight bound in " in status_lines[0]
-    lower_bound_lines = [line for line in log_lines if " has no " in line]
-    assert len(lower_bound_lines) == 1
-    assert lower_bound_lines[0].endswith(
-        f" {speck.id} has no XOR_DIFFERENTIAL_LINEAR_MODEL trail of weight <= {lowest_weight - 1}"
+    assert log_lines[0].endswith(
+        f" {speck.id} XOR_DIFFERENTIAL_LINEAR_MODEL search from above s {CADICAL_EXT} o none "
+        "f key[0:64]=0 plaintext[0:32]!=0 cipher_output_5_12[0:32]!=0"
     )
-    trail_lines = [line for line in log_lines if " has a " in line]
-    assert len(trail_lines) == len(status_lines) - 1
-    weights = [float(line.split("trail of weight ")[1]) for line in trail_lines]
+    steps = [line.split(" ")[2:] for line in log_lines[1:]]
+    assert [step[0] for step in steps] == ["SAT"] * (len(steps) - 1) + ["UNSAT"]
+    assert steps[0][1:3] == ["wc", "none"]
+    assert steps[-1][1:3] == ["wc", f"<={lowest_weight - 1}"]
+    weights = [float(step[step.index("wg") + 1]) for step in steps[:-1]]
     assert weights == sorted(weights, reverse=True)
     assert weights[-1] == trail["total_weight"]
-    assert f"'components_values': {trail['components_values']!r}" in log_content
+    plaintext = trail["components_values"]["plaintext"]["value"]
+    ciphertext = trail["components_values"]["cipher_output_5_12"]["value"]
+    assert f" pt {plaintext} ct {ciphertext} t " in log_lines[-2]
 
 
 def test_differential_linear_trail_with_fixed_weight_3_rounds_chacha():

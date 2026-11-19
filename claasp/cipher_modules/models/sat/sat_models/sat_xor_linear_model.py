@@ -306,7 +306,7 @@ class SatXorLinearModel(SatModel):
           (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`). When
           searching from above, the file is
           ``<cipher_id>__sat_find_lowest_weight_xor_linear_trail_from_above__<solver_name>solver[_<options>].log``
-          and it contains the trails found (see
+          and it contains a line describing the search and one line per searched weight bound (see
           :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
         - ``search_from`` -- **string** (default: `below`); the search strategy:
 
@@ -360,7 +360,7 @@ class SatXorLinearModel(SatModel):
         build_model = self._xor_linear_model_builder(fixed_values)
         if search_from == "above":
             solution = self._search_trail_down_to_weight(
-                build_model, XOR_LINEAR, 0, start_weight, log_file_name, solver_name, options, log
+                build_model, XOR_LINEAR, 0, start_weight, log_file_name, solver_name, options, log, fixed_values
             )
         else:
             solution = self._search_trail_up_from_weight(
@@ -411,9 +411,9 @@ class SatXorLinearModel(SatModel):
         - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
         - ``start_weight`` -- **integer** (default: `None`); an upper bound for the weight of the first trail. If
           `None`, the first trail is searched without any weight bound
-        - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
+        - ``log`` -- **boolean** (default: `False`); if ``True``, append to the file
           ``<cipher_id>__sat_search_xor_linear_trail_down_to_weight_<end_weight>__<solver_name>solver[_<options>].log``
-          the result of the search and the trail found, if any (see
+          a line describing the search, then one line per searched weight bound (see
           :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
 
         .. SEEALSO::
@@ -448,6 +448,7 @@ class SatXorLinearModel(SatModel):
             solver_name,
             options,
             log,
+            fixed_values,
         )
         solution["test_name"] = "search_xor_linear_trail_down_to_weight"
 

@@ -4,6 +4,7 @@ import pickle
 import sys
 from contextlib import redirect_stdout
 from io import StringIO
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -39,6 +40,7 @@ from claasp.cipher_modules.models.utils import (
     linear_checker_permutation,
     print_components_values,
     save_trail_lower_bounds_and_time_estimates,
+    save_trail_search_from_above_header,
     save_trail_upper_bounds_and_times,
     set_component_solution,
     set_component_value_weight_sign,
@@ -885,6 +887,38 @@ def test_save_trail_lower_bounds_and_time_estimates(tmp_path):
     assert content.count("expected to terminate") == 1
 
 
+def test_save_trail_search_from_above_header(tmp_path):
+    file_name = str(tmp_path / "search_from_above.log")
+    fixed_values = [
+        set_fixed_variables("key", "equal", range(64), [0] * 64),
+        set_fixed_variables("plaintext", "equal", [0, 1, 2, 3, 8, 9, 10, 11], [1, 0, 1, 0, 0, 0, 0, 1]),
+        set_fixed_variables("plaintext", "equal", [4, 5, 6], [0, 1, 1]),
+        set_fixed_variables("cipher_output_4_12", "not_equal", range(16, 32), [0] * 16),
+    ]
+    try:
+        save_trail_search_from_above_header(
+            file_name, "speck_p32_k64_o32_r5", "xor_differential", "KISSAT_EXT", None, fixed_values
+        )
+        save_trail_search_from_above_header(
+            file_name, "speck_p32_k64_o32_r5", "xor_linear", "MALLOB_EXT", ["-t=32", "-satsolver=k"], [], 12
+        )
+        with open(file_name) as f:
+            content = f.read()
+    finally:
+        if os.path.exists(file_name):
+            os.remove(file_name)
+
+    lines = content.splitlines()
+    assert len(lines) == 2
+    assert lines[0].endswith(
+        " speck_p32_k64_o32_r5 xor_differential search from above s KISSAT_EXT o none f key[0:64]=0 "
+        "plaintext[0:4,8:12]=0xa1 plaintext[4:7]=0b011 cipher_output_4_12[16:32]!=0"
+    )
+    assert lines[1].endswith(
+        " speck_p32_k64_o32_r5 xor_linear search from above s MALLOB_EXT o -t=32 -satsolver=k f default end 12"
+    )
+
+
 def test_save_trail_upper_bounds_and_times(tmp_path):
     file_name = str(tmp_path / "search_from_above.log")
     sat_solution = {
@@ -894,13 +928,39 @@ def test_save_trail_upper_bounds_and_times(tmp_path):
         "status": "SATISFIABLE",
         "total_weight": 12.0,
         "solving_time_seconds": 2.0,
+        "components_values": {
+            "plaintext": {"value": "0x00400000"},
+            "key": {"value": "0x0000000000000000"},
+            "xor_0_2": {"value": "0x0040", "weight": 0},
+            "cipher_output_4_12": {"value": "0x80008002", "weight": 0},
+        },
     }
-    lighter_solution = dict(sat_solution, total_weight=9.0, solving_time_seconds=4.0)
-    unsat_solution = dict(sat_solution, status="UNSATISFIABLE", total_weight=None, solving_time_seconds=30.0)
+    related_key_solution = dict(
+        sat_solution,
+        total_weight=9.5,
+        components_values=dict(sat_solution["components_values"], key={"value": "0x0000000000000040"}),
+    )
+    # in a real solution, "cipher" is the cipher object, whose inputs are the plaintext and the round keys here
+    linear_solution = dict(
+        sat_solution,
+        cipher=SimpleNamespace(inputs=["plaintext", "key_0_2", "key_1_2", "key_2_2"]),
+        model_type="xor_linear",
+        total_weight=3.0,
+        components_values={
+            "plaintext": {"value": "0x00000010"},
+            "key_0_2": {"value": "0x0020"},
+            "key_1_2": {"value": "0x0000"},
+            "key_2_2": {"value": "0x0001"},
+            "cipher_output_2_12_o": {"value": "0x02050204", "weight": 0},
+            "cipher_output_2_12_i": {"value": "0x02050204", "weight": 0},
+        },
+    )
+    unsat_solution = dict(sat_solution, status="UNSATISFIABLE", total_weight=None, components_values={})
     try:
-        save_trail_upper_bounds_and_times(file_name, sat_solution, None, 2.0, 2.0)
-        save_trail_upper_bounds_and_times(file_name, lighter_solution, 11, 4.0, 6.0)
-        save_trail_upper_bounds_and_times(file_name, unsat_solution, 8, 30.0, 36.0)
+        save_trail_upper_bounds_and_times(file_name, sat_solution, None, 2.0, 2.5)
+        save_trail_upper_bounds_and_times(file_name, related_key_solution, 11, 4.0, 7.0)
+        save_trail_upper_bounds_and_times(file_name, linear_solution, 8, 3.0, 10.0)
+        save_trail_upper_bounds_and_times(file_name, unsat_solution, 2, 3601.0, 3611.0)
         with open(file_name) as f:
             content = f.read()
     finally:
@@ -908,24 +968,14 @@ def test_save_trail_upper_bounds_and_times(tmp_path):
             os.remove(file_name)
 
     lines = content.splitlines()
-    assert lines[0].endswith(" speck_p32_k64_o32_r5 has a xor_differential trail of weight 12.0")
+    assert len(lines) == 4
+    # the key is written only if it is not zero, i.e. not in the single-key setting
+    assert lines[0].endswith(" SAT wc none wg 12 pt 0x00400000 ct 0x80008002 t 0:00:02 tt 0:00:02")
     assert lines[1].endswith(
-        " CRYPTOMINISAT_EXT terminated the search with no weight bound in 0:00:02 "
-        "(status: SATISFIABLE, total solving time: 0:00:02)"
+        " SAT wc <=11 wg 9.5 pt 0x00400000 k 0x0000000000000040 ct 0x80008002 t 0:00:04 tt 0:00:07"
     )
-    assert "'total_weight': 12.0" in lines[2]
-    assert lines[3].endswith(" speck_p32_k64_o32_r5 has a xor_differential trail of weight 9.0")
-    assert lines[4].endswith(
-        " CRYPTOMINISAT_EXT terminated the search for weight <= 11 in 0:00:04 "
-        "(status: SATISFIABLE, total solving time: 0:00:06)"
+    # for linear trails, the output is the output mask and only the non-zero round key masks are written
+    assert lines[2].endswith(
+        " SAT wc <=8 wg 3 pt 0x00000010 k key_0_2=0x0020 key_2_2=0x0001 ct 0x02050204 t 0:00:03 tt 0:00:10"
     )
-    # the logged trail reports the solving time from the start of the search
-    assert "'total_weight': 9.0" in lines[5]
-    assert "'solving_time_seconds': 6.0" in lines[5]
-    assert lighter_solution["solving_time_seconds"] == 4.0
-    assert lines[6].endswith(" speck_p32_k64_o32_r5 has no xor_differential trail of weight <= 8")
-    assert lines[7].endswith(
-        " CRYPTOMINISAT_EXT terminated the search for weight <= 8 in 0:00:30 "
-        "(status: UNSATISFIABLE, total solving time: 0:00:36)"
-    )
-    assert len(lines) == 8
+    assert lines[3].endswith(" UNSAT wc <=2 t 1:00:01 tt 1:00:11")
