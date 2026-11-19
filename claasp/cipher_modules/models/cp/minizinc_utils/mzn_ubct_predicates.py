@@ -24,7 +24,7 @@ def get_ubct_operations():
     int: num_rows_ubct = 32;
     int: num_cols_last_table_ubct = 7;
     int: num_cols_ubct = 10;
-    array[0..num_cols_ubct-1] of var 0..1: b_ubct;
+
     array[0..num_workers_ubct-1,0..num_rows_ubct-1,0..num_cols_ubct-1] of 0..1: ubct_table =
          array3d(0..num_workers_ubct-1,0..num_rows_ubct-1,0..num_cols_ubct-1,
       [

@@ -24,7 +24,7 @@ def get_lbct_operations():
     int: num_rows_lbct = 32;
     int: num_cols_last_table_lbct = 11;
     int: num_cols_lbct = 15;
-    array[0..num_cols_lbct-1] of var 0..1: b_lbct;
+
     array[0..num_workers_lbct-1,0..num_rows_lbct-1,0..num_cols_lbct-1] of 0..1: lbct_table =
          array3d(0..num_workers_lbct-1,0..num_rows_lbct-1,0..num_cols_lbct-1,
       [

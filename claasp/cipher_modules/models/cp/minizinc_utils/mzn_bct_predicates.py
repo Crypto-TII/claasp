@@ -23,7 +23,7 @@ def get_bct_operations():
     int:num_workers_bct = 4;
     int: num_rows_bct = 16;
     int: num_cols_bct = 9;
-    array[0..num_cols_bct-1] of var 0..1: b_bct;
+
     array[0..num_workers_bct-1,0..num_rows_bct-1,0..num_cols_bct-1] of 0..1: bct_table =
          array3d(0..num_workers_bct-1,0..num_rows_bct-1,0..num_cols_bct-1,
       [

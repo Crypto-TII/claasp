@@ -24,7 +24,7 @@ def get_ebct_operations():
     int: num_rows_ebct = 64;
     int: num_cols_last_table_ebct = 14;
     int: num_cols_ebct = 16;
-    array[0..num_cols_ebct-1] of var 0..1: b_ebct;
+
     array[0..num_workers_ebct-1,0..num_rows_ebct-1,0..num_cols_ebct-1] of 0..1: ebct_table =
          array3d(0..num_workers_ebct-1,0..num_rows_ebct-1,0..num_cols_ebct-1,
       [

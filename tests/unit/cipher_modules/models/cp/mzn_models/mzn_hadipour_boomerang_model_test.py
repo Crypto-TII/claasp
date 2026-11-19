@@ -185,8 +185,9 @@ def test_unsatisfiable_external_difference():
 
 
 @pytest.mark.parametrize("bounded", [False, True])
-def test_enumerate_small_fixed_external_differences(bounded):
-    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+@pytest.mark.parametrize("middle", [1, 2, 3])
+def test_enumerate_small_fixed_external_differences(bounded, middle):
+    model = MznHadipourBoomerangModel(toy_modadd(middle), structure(0, middle, 0))
     model.build_hadipour_boomerang_model()
     output = next(
         name
@@ -205,7 +206,7 @@ def test_enumerate_small_fixed_external_differences(bounded):
     solutions = method(
         0, fixed_values=fixed, solver_name="gecode", timeout_in_seconds=30
     )
-    assert solutions
+    assert len(solutions) == 1
     assert all(solution["total_weight"] == "0.0" for solution in solutions)
 
 
