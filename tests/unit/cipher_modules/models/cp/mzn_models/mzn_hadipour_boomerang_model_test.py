@@ -302,3 +302,56 @@ def test_invalid_weight_range():
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
     with pytest.raises(ValueError, match="min_weight"):
         model.find_all_boomerang_trails_with_weight_at_most(1, min_weight=2)
+
+
+def test_and_extended_switch_matches_all_bit_quartets():
+    """Check joint derivative compatibility and probability, including zero directions."""
+    import itertools
+    import math
+    from minizinc import Instance, Model, Solver
+
+    cases = list(itertools.product(range(2), repeat=6))
+    model = Model()
+    source = [
+        "array[0..63] of var bool: valid;",
+        "array[0..63] of var 0..200: weights;",
+    ]
+    expected = []
+    for index, (a, b, c, d, upper, lower) in enumerate(cases):
+        count = sum(
+            ((x & y) ^ ((x ^ a) & (y ^ b))) == upper
+            and ((x & y) ^ ((x ^ c) & (y ^ d))) == lower
+            and (
+                (x & y)
+                ^ ((x ^ a) & (y ^ b))
+                ^ ((x ^ c) & (y ^ d))
+                ^ ((x ^ a ^ c) & (y ^ b ^ d))
+            )
+            == 0
+            for x, y in itertools.product(range(2), repeat=2)
+        )
+        expected.append(count)
+        constraints = MznHadipourBoomerangModel._and_switch_constraints(
+            *map(str, (a, b, c, d, upper, lower)),
+            str(100 if a or b else 0),
+            str(100 if c or d else 0),
+            f"weights[{index}]",
+            "ebct",
+        )
+        source.append(constraints[-1])
+        conditions = [
+            line.removeprefix("constraint ").removesuffix(";")
+            for line in constraints[:-1]
+        ]
+        conditions.extend([f"({a}+{b}>0 \\/ {upper}=0)", f"({c}+{d}>0 \\/ {lower}=0)"])
+        source.append(
+            f"constraint valid[{index}] = ("
+            + " /\\ ".join(f"({condition})" for condition in conditions)
+            + ");"
+        )
+    model.add_string("\n".join(source + ["solve satisfy;"]))
+    result = Instance(Solver.lookup("gecode"), model).solve()
+    assert result["valid"] == [bool(count) for count in expected]
+    for index, count in enumerate(expected):
+        if count:
+            assert result["weights"][index] == -100 * math.log2(count / 4)

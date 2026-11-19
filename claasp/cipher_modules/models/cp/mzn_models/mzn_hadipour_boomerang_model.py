@@ -308,21 +308,41 @@ class MznHadipourBoomerangModel(MznModel):
         for bit in range(upper.output_bit_size):
             a, b = inputs[0][0][bit], inputs[0][1][bit]
             c, d = inputs[1][0][bit], inputs[1][1][bit]
-            self._model_constraints.append(f"constraint {a} * {d} = {b} * {c};")
-            target = f"middle_p[{start + bit}]"
-            sources = []
-            if kind in ("ubct", "ebct"):
-                sources.append(
-                    f"upper_p[{self.component_and_probability[upper.id][bit]}]"
+            upper_weight = f"upper_p[{self.component_and_probability[upper.id][bit]}]"
+            lower_weight = f"lower_p[{self.component_and_probability[lower.id][bit]}]"
+            self._model_constraints.extend(
+                self._and_switch_constraints(
+                    a,
+                    b,
+                    c,
+                    d,
+                    f"{upper.id}[{bit}]",
+                    f"{lower.id}[{bit}]",
+                    upper_weight,
+                    lower_weight,
+                    f"middle_p[{start + bit}]",
+                    kind,
                 )
-            if kind in ("lbct", "ebct"):
-                sources.append(
-                    f"lower_p[{self.component_and_probability[lower.id][bit]}]"
-                )
-            if not sources:
-                sources = ["0"]
-            for source in sources:
-                self._model_constraints.append(f"constraint {target} = {source};")
+            )
+
+    @staticmethod
+    def _and_switch_constraints(
+        a, b, c, d, upper_output, lower_output, upper_weight, lower_weight, target, kind
+    ):
+        # D_(a,b)(xy) = bx + ay + ab. Vanishing second derivative forces
+        # the two linear equations to have rank at most one. When both
+        # directions are nonzero they coincide, so their outputs must agree.
+        constraints = [f"constraint {a} * {d} = {b} * {c};"]
+        if kind == "ebct":
+            constraints.append(
+                f"constraint ({a} + {b} > 0 /\\ {c} + {d} > 0) -> "
+                f"({upper_output} = {lower_output});"
+            )
+            weight = f"max([{upper_weight}, {lower_weight}])"
+        else:
+            weight = {"ubct": upper_weight, "lbct": lower_weight}.get(kind, "0")
+        constraints.append(f"constraint {target} = {weight};")
+        return constraints
 
     def _add_modular_switch(self, key, kind, index):
         upper, lower = "upper_" + key, "lower_" + key
