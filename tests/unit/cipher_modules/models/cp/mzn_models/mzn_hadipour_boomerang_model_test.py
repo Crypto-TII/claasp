@@ -276,7 +276,7 @@ def test_prebuilt_solve_requires_a_model_and_rejects_other_types():
         model.solve("xor_linear")
 
 
-@pytest.mark.parametrize("option", ["timeout_in_seconds", "processes"])
+@pytest.mark.parametrize("option", ["timeout_in_seconds_", "processes_"])
 def test_invalid_solver_options(option):
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
     model.build_hadipour_boomerang_model(None)
@@ -330,18 +330,6 @@ def test_timeout_status_and_solver_options(monkeypatch):
         free_search=True,
         optimisation_level=0,
     )
-    result = model.solve(
-        timeout_in_seconds_=1,
-        timeout_in_seconds=2,
-        processes_=1,
-        processes=3,
-        all_solutions_=True,
-        all_solutions=False,
-    )
-    assert result["status"] == "UNKNOWN"
-    assert calls[-1]["timeout"] == timedelta(seconds=2)
-    assert calls[-1]["processes"] == 3
-    assert calls[-1]["all_solutions"] is False
 
 
 def test_invalid_weight_range():

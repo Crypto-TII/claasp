@@ -888,3 +888,9 @@ def test_save_trail_lower_bounds_and_time_estimates(tmp_path):
     assert "has a xor_differential trail of weight 3.0\n" in content
     assert "terminated the search for weight 3 in 0:00:09 (status: SATISFIABLE)\n" in content
     assert content.count("expected to terminate") == 1
+
+
+@pytest.mark.parametrize('prediction_quantile', [0.01, 0.6, 0.99])
+def test_exponential_predict_accepts_fractional_quantiles(prediction_quantile):
+    predictions = exponential_predict([1, 2, 3], [2.0, 4.0, 8.0], [4], prediction_quantile=prediction_quantile, n_bootstrap=5, seed=0)
+    assert predictions[0]['y_pred'] == pytest.approx(16.0)

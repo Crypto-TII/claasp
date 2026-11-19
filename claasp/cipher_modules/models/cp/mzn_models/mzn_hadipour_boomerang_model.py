@@ -600,9 +600,9 @@ class MznHadipourBoomerangModel(MznModel):
         build_time = time.perf_counter() - start
         result = self.solve(
             solver_name=solver_name,
-            timeout_in_seconds=timeout_in_seconds,
-            processes=processes,
-            all_solutions=all_solutions,
+            timeout_in_seconds_=timeout_in_seconds,
+            processes_=processes,
+            all_solutions_=all_solutions,
         )
         for solution in result if isinstance(result, list) else [result]:
             solution["building_time_seconds"] = build_time
@@ -679,10 +679,6 @@ class MznHadipourBoomerangModel(MznModel):
         intermediate_solutions_=False,
         free_search_=False,
         optimisation_level_=None,
-        *,
-        timeout_in_seconds=None,
-        processes=None,
-        all_solutions=None,
     ):
         """Solve a built boomerang model through the CLAASP solver interface.
 
@@ -703,9 +699,6 @@ class MznHadipourBoomerangModel(MznModel):
           incumbents as a list. Only the final entry can be proven optimal.
         - ``free_search_`` -- bool (default: False); let the solver choose its search.
         - ``optimisation_level_`` -- optional MiniZinc compiler level, 0 through 5.
-        - ``timeout_in_seconds``, ``processes``, ``all_solutions`` -- keyword-only
-          aliases used by the search methods. A non-None alias takes precedence
-          over the corresponding underscored CLAASP argument.
 
         OUTPUT: a CLAASP solution dictionary, or a list when requesting multiple
         solutions, enumerating, or requesting optimization incumbents. Weights are in bits. Check ``status``
@@ -732,12 +725,7 @@ class MznHadipourBoomerangModel(MznModel):
         solver_name = self._default_solver(solver_name)
         model = Model()
         model.add_string(self.assemble_model())
-        enumerate_all = all_solutions_ if all_solutions is None else all_solutions
-        options = self._solver_options(
-            timeout_in_seconds_ if timeout_in_seconds is None else timeout_in_seconds,
-            processes_ if processes is None else processes,
-            enumerate_all,
-        )
+        options = self._solver_options(timeout_in_seconds_, processes_, all_solutions_)
         options.update(
             nr_solutions=nr_solutions_,
             random_seed=random_seed_,
@@ -747,7 +735,7 @@ class MznHadipourBoomerangModel(MznModel):
         )
         result = Instance(Solver.lookup(solver_name), model).solve(**options)
         multiple = (
-            enumerate_all
+            all_solutions_
             or intermediate_solutions_
             or (nr_solutions_ is not None and nr_solutions_ > 1)
         )
