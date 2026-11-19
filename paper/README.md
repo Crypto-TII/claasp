@@ -5,7 +5,9 @@ It can be copied into a separate paper artifact repository. CLAASP itself does
 not import these files, and the archived searches are not unit tests.
 
 - `manifest.json`: original paths, relocated paths, and original Git blob IDs.
-- `scripts/`: historical batch launchers and the standalone BCT table evaluator.
+- `scripts/`: historical batch launchers, the standalone BCT table evaluator,
+  and the 16-round LEA 8/1/7 model generator formerly stored as a pytest.
+  Run the generator with `sage -python paper/scripts/generate_lea_model.py OUTPUT_DIR`.
 - `experimental_results/`: original generated MiniZinc models, solver logs,
   parameter files, and the original JSON result. The original experiment
   directory names are retained, including `test_new_*` and `test_single_key_*`.
@@ -37,6 +39,7 @@ copy the directory before rerunning if you want to preserve the archive.
 Generate and solve a small example directly, without shell parsing:
 
 ```python
+import sage.all
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
 
@@ -57,7 +60,23 @@ print(solution["status"], solution.get("total_weight"))
 `find_all_boomerang_trails_with_fixed_weight` and
 `find_all_boomerang_trails_with_weight_at_most` enumerate encoded assignments.
 Check `solver_status` for completion/optimality. Fixed component IDs use
-`upper_` and `lower_` prefixes. Keys have zero differences by default.
+`upper_` and `lower_` prefixes. Block-cipher key inputs have zero differences
+by default. For permutation models such as ChaCha, fix the constant/key bits
+of the input state explicitly through `fixed_values` for the intended setting.
+
+To fix an external difference, use the usual CLAASP fixed-variable format:
+
+```python
+from claasp.cipher_modules.models.utils import set_fixed_variables, integer_to_bit_list
+
+fixed = [set_fixed_variables(
+    "upper_plaintext", "equal", list(range(32)),
+    integer_to_bit_list(1, 32, "big"),
+)]
+solution = model.find_one_boomerang_trail(
+    fixed_values=fixed, timeout_in_seconds=30,
+)
+```
 
 For model export, call `build_hadipour_boomerang_model()` followed by
 `write_minizinc_model_to_file(output_directory)`. Building alone writes no file.
@@ -80,7 +99,8 @@ paper implementation's local independence assumptions. Verify reported
 external differences with independent experiments before making a cipher-level
 claim.
 
-References: Cid et al., *Boomerang Connectivity Table: A New Cryptanalysis Tool*,
-EUROCRYPT 2018, DOI 10.1007/978-3-319-78375-8_22; Wang, Wang and Sun,
-*SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers*,
-ToSC 2023(1), DOI 10.46586/tosc.v2023.i1.152-191.
+References:
+
+- Cid et al., [Boomerang Connectivity Table: A New Cryptanalysis Tool](https://doi.org/10.1007/978-3-319-78375-8_22), EUROCRYPT 2018.
+- Wang, Wang and Sun, [SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers](https://doi.org/10.46586/tosc.v2023.i1.152-191), ToSC 2023(1).
+- Boukerrou et al., [On the Feistel Counterpart of the Boomerang Connectivity Table: Introduction and Analysis of the FBCT](https://doi.org/10.13154/tosc.v2020.i1.331-362), ToSC 2020(1).

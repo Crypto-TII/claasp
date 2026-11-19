@@ -83,6 +83,9 @@ class MznHadipourBoomerangModel(MznModel):
     Both arms use forward component equations: fixing the lower output is
     equivalent to backward propagation, without constructing an inverse graph.
     BCT/UBCT/LBCT/EBCT constraints connect the two arms in Em.
+    Block-cipher key inputs have zero differences. For permutation models
+    such as ChaCha, use ``fixed_values`` to fix the constant/key portion of
+    the state when targeting a particular stream-cipher setting.
 
     The objective is ``2 * upper_weight + middle_weight + 2 * lower_weight``.
     It is a characteristic estimate under the usual independence assumptions,
@@ -99,7 +102,10 @@ class MznHadipourBoomerangModel(MznModel):
     References: Cid et al., *Boomerang Connectivity Table*, EUROCRYPT 2018,
     https://doi.org/10.1007/978-3-319-78375-8_22; Wang, Wang and Sun,
     *SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers*,
-    ToSC 2023(1), https://doi.org/10.46586/tosc.v2023.i1.152-191.
+    ToSC 2023(1), https://doi.org/10.46586/tosc.v2023.i1.152-191; and
+    Boukerrou et al., *On the Feistel Counterpart of the Boomerang Connectivity
+    Table: Introduction and Analysis of the FBCT*, ToSC 2020(1),
+    https://doi.org/10.13154/tosc.v2020.i1.331-362.
 
     INPUT:
 
