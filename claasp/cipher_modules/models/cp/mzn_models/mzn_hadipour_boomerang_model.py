@@ -632,7 +632,10 @@ class MznHadipourBoomerangModel(MznModel):
         return GECODE if modular else SOLVER_DEFAULT
 
     def _solver_result(self, result, solver_name, multiple, intermediate):
-        if result.solution is None:
+        no_solution = result.solution is None or (
+            isinstance(result.solution, list) and not result.solution
+        )
+        if no_solution:
             if multiple:
                 return []
             status = (

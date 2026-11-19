@@ -182,6 +182,11 @@ def test_unsatisfiable_external_difference():
     assert result["status"] == "UNSATISFIABLE"
     assert result["components_values"] == {}
     assert result["total_weight"] is None
+    explicit_limit = model.solve(
+        solver_name="gecode", nr_solutions_=1, timeout_in_seconds_=10
+    )
+    assert explicit_limit["status"] == "UNSATISFIABLE"
+    assert explicit_limit["components_values"] == {}
 
 
 @pytest.mark.parametrize("bounded", [False, True])
@@ -287,7 +292,11 @@ def test_timeout_status_and_solver_options(monkeypatch):
 
     def fake_solve(**options):
         calls.append(options)
-        return SimpleNamespace(solution=None, status=Status.UNKNOWN, statistics={})
+        return SimpleNamespace(
+            solution=[] if options.get("nr_solutions") is not None else None,
+            status=Status.UNKNOWN,
+            statistics={},
+        )
 
     monkeypatch.setattr(
         boomerang, "Instance", lambda solver, model: SimpleNamespace(solve=fake_solve)
