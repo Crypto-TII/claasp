@@ -406,40 +406,6 @@ class Modular(Component):
 
         return cp_declarations, cp_constraints
     
-    def cp_twoterms_xor_differential_probability_boomerang(self, input_1, input_2, out, input_length,
-                                                 cp_constraints, cp_declarations, c, model):
-        ### try to find a way to relate the index of probabiliies with the actual component
-        if input_1 not in model.modadd_twoterms_mant:
-            cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{input_1} = LShift({input_1},1);')
-            model.modadd_twoterms_mant.append(input_1)
-            # print('case 1')
-        if input_2 not in model.modadd_twoterms_mant:
-            cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{input_2} = LShift({input_2},1);')
-            model.modadd_twoterms_mant.append(input_2)
-            # print('case 2')
-        if out not in model.modadd_twoterms_mant:
-            cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
-            model.modadd_twoterms_mant.append(out)
-            # print('case 3')
-        cp_declarations.append(f'array[0..{input_length - 1}] of var 0..1: eq_{out} = '
-                               f'Eq(Shi_{input_1}, Shi_{input_2}, Shi_{out});')
-        # print(f'component: {self.id}')
-        if 'upper_' not in out and 'lower' not in out:
-            cp_constraints.append(f'constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = '
-                              f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
-                              f'true endif) /\\ p[{c}] = ({input_length}-sum(eq_{out}))*100;')
-        elif 'upper_' in out:
-            
-            cp_constraints.append(f'constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = '
-                              f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
-                              f'true endif) /\\ upper_p[{c}] = ({input_length}-sum(eq_{out}))*100;')
-        elif 'lower_' in out:
-            cp_constraints.append(f'constraint forall(j in 0..{input_length - 1})(if eq_{out}[j] = '
-                              f'1 then (sum([{input_1}[j], {input_2}[j], {out}[j]]) mod 2) = Shi_{input_2}[j] else '
-                              f'true endif) /\\ lower_p[{c}] = ({input_length}-sum(eq_{out}))*100;')
-
-        return cp_declarations, cp_constraints
-
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
@@ -552,99 +518,43 @@ class Modular(Component):
             )
             probability.append(model.c)
             model.c += 1
-
-        # print(output_id_link)
-        self.cp_twoterms_xor_differential_probability(f'pre_{output_id_link}_{2 * num_add - 3}',
-                                                      f'pre_{output_id_link}_0', f'{output_id_link}',
-                                                      self.output_bit_size, cp_constraints, cp_declarations, model.c, model)
+        self.cp_twoterms_xor_differential_probability(
+            f"pre_{output_id_link}_{2 * num_add - 3}",
+            f"pre_{output_id_link}_0",
+            f"{output_id_link}",
+            self.output_bit_size,
+            cp_constraints,
+            cp_declarations,
+            model.c,
+            model,
+        )
         probability.append(model.c)
         model.c += 1
         model.component_and_probability[output_id_link] = probability
-        result = cp_declarations, cp_constraints
-        return result
-    
+
+        return cp_declarations, cp_constraints
+
     def cp_xor_differential_propagation_constraints_boomerang(self, model):
-        r"""
-        Return lists of declarations and constraints for the probability of Modular Addition/Substraction component for CP xor differential probability in the boomerang.
+        """Return declarations and XOR differential constraints for one boomerang arm.
 
         INPUT:
 
-        - ``model`` -- **model object**; a model instance
+        - ``model`` -- boomerang model with ``c_upper`` and ``c_lower`` counters.
+          The component ID must start with ``upper_`` or ``lower_``.
+
+        OUTPUT: a pair of lists (MiniZinc declarations, constraints). Weights
+        use hundredths of a bit, as in the ordinary differential model.
 
         EXAMPLES::
 
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_model import MznModel
-            sage: speck = SpeckBlockCipher(number_of_rounds=3)
-            sage: cp = MznModel(speck)
-            sage: modadd_component = speck.component_from(0, 1)
-            sage: modadd_component.cp_xor_differential_propagation_constraints(cp)
-            (['array[0..15] of var 0..1: pre_modadd_0_1_0;',
-              ...
-              'array[0..15] of var 0..1: eq_modadd_0_1 = Eq(Shi_pre_modadd_0_1_1, Shi_pre_modadd_0_1_0, Shi_modadd_0_1);'],
-             ['constraint pre_modadd_0_1_0[0] = rot_0_0[0];',
-              ...
-              'constraint pre_modadd_0_1_1[15] = plaintext[31];',
-              'constraint forall(j in 0..15)(if eq_modadd_0_1[j] = 1 then (sum([pre_modadd_0_1_1[j], pre_modadd_0_1_0[j], modadd_0_1[j]]) mod 2) = Shi_pre_modadd_0_1_0[j] else true endif) /\\ p[0] = 1600-100 * sum(eq_modadd_0_1);'])
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: model.build_hadipour_boomerang_model()
+            sage: 'upper_modadd_0_1' in model.component_and_probability
+            True
         """
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
-        num_add = self.description[1]
-        all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-        input_len = len(all_inputs) // num_add
-        cp_declarations = []
-        cp_constraints = []
-        for i in range(num_add):    
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
-            cp_constraints.extend([f'constraint pre_{output_id_link}_{i}[{j}] = {all_inputs[i * input_len + j]};'
-                                   for j in range(input_len)])
-        for i in range(num_add, 2 * num_add - 2):
-            cp_declarations.append(f'array[0..{input_len - 1}] of var 0..1: pre_{output_id_link}_{i};')
-        probability = []
-        probability_upper = []
-        probability_lower = []
-        # print('I AM INSIDE BOOOOOOOOOMERAAAAAAAAANG')
-        for i in range(num_add - 2):
-            self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{num_add - 1}',
-                                                          f'pre_{output_id_link}_{i + 1}',
-                                                          f'pre_{output_id_link}_{num_add + i}', output_size,
-                                                          cp_constraints, cp_declarations, model.c, model)
-            probability.append(model.c)
-            model.c += 1
-
-        # print(output_id_link)
-        if 'upper_' not in output_id_link and 'lower_' not in output_id_link:
-            self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{2 * num_add - 3}',
-                                                      f'pre_{output_id_link}_0', f'{output_id_link}',
-                                                      output_size, cp_constraints, cp_declarations, model.c, model)
-            probability.append(model.c)
-            model.c += 1
-            model.component_and_probability[output_id_link] = probability
-        elif 'upper_' in output_id_link:
-            self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{2 * num_add - 3}',
-                                                      f'pre_{output_id_link}_0', f'{output_id_link}',
-                                                      output_size, cp_constraints, cp_declarations, model.c_upper, model)
-            probability_upper.append(model.c_upper)
-            model.component_and_probability[output_id_link] = probability_upper
-            # model.upper_probabilities_and_index[output_id_link] = model.c_upper
-            model.c_upper += 1 
-        elif 'lower_' in output_id_link:
-            self.cp_twoterms_xor_differential_probability_boomerang(f'pre_{output_id_link}_{2 * num_add - 3}',
-                                                      f'pre_{output_id_link}_0', f'{output_id_link}',
-                                                      output_size, cp_constraints, cp_declarations, model.c_lower, model)
-            probability_lower.append(model.c_lower)
-            # model.lower_probabilities_and_index[output_id_link] = model.c_lower
-            model.c_lower += 1
-            model.component_and_probability[output_id_link] = probability_lower
-
-        # print(cp_declarations)
-        # print(cp_constraints)
-        result = cp_declarations, cp_constraints
-        return result
+        return model._arm_differential_constraints(self)
 
     def cp_xor_differential_propagation_constraints_arx_optimized(self, model):
         """
@@ -1996,7 +1906,6 @@ class Modular(Component):
         return variables, constraints
 
     def create_bct_mzn_constraint_from_component_ids(self):
-        variables = []
         component_dict = self.as_python_dictionary()
         delta_left_component_id = component_dict["input_id_link"][0]
         delta_right_component_id = component_dict["input_id_link"][1]
@@ -2022,8 +1931,8 @@ class Modular(Component):
         nabla_left = f"array1d(0..{branch_size}-1, [{nabla_left_str}])"
         nabla_right = f"array1d(0..{branch_size}-1, [{nabla_right_str}])"
 
-        constraint = [
+        constraint = (
             f"constraint onlyLargeSwitch_BCT_enum({delta_left}, {delta_right}, "
             f"{nabla_left}, {nabla_right}, 1, {branch_size}) = true;\n"
-        ]
+        )
         return constraint

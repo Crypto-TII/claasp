@@ -22,6 +22,7 @@ COIN_BC = "coin-bc"
 CPLEX = "cplex"
 FINDMUS = "findmus"
 GLOBALIZER = "globalizer"
+GECODE = "gecode"
 GUROBI = "gurobi"
 SCIP = "scip"
 # MiniZinc solver id for Google OR-Tools (CP-SAT backend).
@@ -35,6 +36,7 @@ SOLVER_DEFAULT = CHUFFED
 
 
 CP_SOLVERS_INTERNAL = [
+    {"solver_brand_name": "Gecode", "solver_name": GECODE},
     {"solver_brand_name": "Choco", "solver_name": CHOCO},
     {"solver_brand_name": "Chuffed", "solver_name": CHUFFED},
     {"solver_brand_name": "COIN-BC", "solver_name": COIN_BC},

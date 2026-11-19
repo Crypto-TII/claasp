@@ -1,4 +1,23 @@
 def get_evaluation_bct_operations(nbit):
+    """Return MiniZinc source for modular-addition boomerang connectivity.
+
+    The transition tables follow Wang, Wang and Sun, *SAT-aided Automatic
+    Search of Boomerang Distinguishers for ARX Ciphers*, ToSC 2023(1),
+    https://doi.org/10.46586/tosc.v2023.i1.152-191. Connectivity uses bits
+    from least to most significant; probability evaluation takes CLAASP's
+    most-significant-bit-first arrays and ignores the final carry.
+
+    INPUT: ``nbit`` -- integer word size, at least 2.
+
+    OUTPUT: string of MiniZinc declarations and predicates; include it once
+    in the model. These helpers generate source and do not invoke a solver.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_bct_predicate import get_evaluation_bct_operations
+        sage: isinstance(get_evaluation_bct_operations(4), str)
+        True
+    """
     bct_string = f"""
         array[0..15, 0..3, 0..3] of 0..4: tables_bct = array3d(0..15, 0..3, 0..3, 
 [

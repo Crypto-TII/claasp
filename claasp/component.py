@@ -586,10 +586,50 @@ class Component:
         return input_full_tuple, output_full_tuple
     
     def add_prefix(self, prefix='upper_'):
+        """Prepend ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1).component_from(0, 0)
+            sage: obj.add_prefix()
+            sage: obj.id
+            'upper_rot_0_0'
+            sage: obj.remove_prefix()
+            sage: obj.id
+            'rot_0_0'
+        """
         self._id = prefix + self.id
         self._input._id_links = [prefix + i for i in self.input_id_links]
 
     def remove_prefix(self, prefix='upper_'):
+        """Remove one leading occurrence of ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1).component_from(0, 0)
+            sage: obj.add_prefix()
+            sage: obj.id
+            'upper_rot_0_0'
+            sage: obj.remove_prefix()
+            sage: obj.id
+            'rot_0_0'
+        """
         self._id = self.id[len(prefix):] if self.id.startswith(prefix) else self.id
         self._input._id_links = [i[len(prefix):] if i.startswith(prefix) else i for i in self.input_id_links]
     

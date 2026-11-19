@@ -83,11 +83,51 @@ class Round:
         print("  ],")
 
     def add_prefix(self, prefix='upper_'):
+        """Prepend ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1).rounds.round_at(0)
+            sage: obj.add_prefix()
+            sage: obj.components[0].id
+            'upper_rot_0_0'
+            sage: obj.remove_prefix()
+            sage: obj.components[0].id
+            'rot_0_0'
+        """
         for component_number in range(self.number_of_components):
             requested_component = self.component_from(component_number)
             requested_component.add_prefix(prefix)
     
     def remove_prefix(self, prefix='upper_'):
+        """Remove one leading occurrence of ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1).rounds.round_at(0)
+            sage: obj.add_prefix()
+            sage: obj.components[0].id
+            'upper_rot_0_0'
+            sage: obj.remove_prefix()
+            sage: obj.components[0].id
+            'rot_0_0'
+        """
         for component_number in range(self.number_of_components):
             requested_component = self.component_from(component_number)
             requested_component.remove_prefix(prefix)

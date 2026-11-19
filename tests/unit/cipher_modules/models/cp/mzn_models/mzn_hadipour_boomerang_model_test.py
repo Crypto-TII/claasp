@@ -1,52 +1,304 @@
-from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
-from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
-from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
-from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
-from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
-from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+"""Boomerang API regression and solver integration tests."""
+
+from copy import deepcopy
+from datetime import timedelta
+from types import SimpleNamespace
+
+import pytest
+from minizinc import Status
+
+from claasp.cipher import Cipher
+from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import (
+    MznHadipourBoomerangModel,
+)
+from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.katan_block_cipher import KatanBlockCipher
+from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
+from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
 
 
-
-def test_build_boomerang_model_chacha():
-    # currently doing
-    # TODO: state of 512 elements, I have to put the first 128*3 bit to be equal to 0
-    # TODO: all experiments from 0 of chacha, put more rounds lower part, i.e. 4r 6-1-9, 6-2-8, 4-1-11, 4-2-10
-    # cipher = ChachaPermutation(number_of_rounds=28, round_mode='half_half')
-
-    # still to start
-    # TODO: redo experiments for chaskey without word_size
-    # prepared the input and the script, ready to lunch in two friday
-    # cipher = ChaskeyPiPermutation(number_of_rounds=7)
-    
-    # still to start
-    # TODO: try to invert the input of LEA for the tables
-    cipher = LeaBlockCipher(number_of_rounds=16)
+def structure(top=1, middle=1, bottom=1):
+    return dict(
+        top_part_number_of_rounds=top,
+        middle_part_number_of_rounds=middle,
+        bottom_part_number_of_rounds=bottom,
+    )
 
 
-    # 4, 5, 6, 7 rounds
-    # cipher = SpeckBlockCipher(number_of_rounds=10)
-    # cipher = SpeckBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=12)
-    # cipher = SimonBlockCipher(number_of_rounds=13)
-    # cipher = SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=16)
-    # cipher = KatanBlockCipher(number_of_rounds=86)
-    # cipher = KatanBlockCipher(block_bit_size=48, number_of_rounds=83)
+def toy_modadd(rounds=1, operation="modadd"):
+    cipher = Cipher("boomerang_test", "permutation", ["plaintext"], [4], 4)
+    left, right = "plaintext", "plaintext"
+    left_bits, right_bits = [0, 1], [2, 3]
+    for _ in range(rounds):
+        cipher.add_round()
+        left = getattr(cipher, "add_" + operation + "_component")(
+            [left, right], [left_bits, right_bits], 2
+        ).id
+        left_bits = [0, 1]
+        cipher.add_round_output_component([left, right], [left_bits, right_bits], 4)
+    cipher.add_cipher_output_component([left, right], [left_bits, right_bits], 4)
+    return cipher
 
-    
-    top_part_number_of_rounds = 8
-    middle_part_number_of_rounds = 1
-    bottom_part_number_of_rounds = 7
 
-    component_dict = {
-        "top_part_number_of_rounds": top_part_number_of_rounds,
-        "middle_part_number_of_rounds": middle_part_number_of_rounds,
-        "bottom_part_number_of_rounds": bottom_part_number_of_rounds
-    }
+@pytest.mark.parametrize(
+    "counts",
+    [
+        structure(-1, 2, 2),
+        structure(1, 0, 2),
+        structure(1, 1, 2),
+        structure(True, 1, 1),
+        structure(1.0, 1, 1),
+        {},
+    ],
+)
+def test_invalid_structure(counts):
+    with pytest.raises(ValueError):
+        MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), counts)
 
-    mzn_bct_model = MznHadipourBoomerangModel(cipher, component_dict)
-    mzn_bct_model.build_hadipour_boomerang_model()
 
-# if __name__ == "__main__":
-#     test_build_boomerang_model_chacha()
+@pytest.mark.parametrize("weight", [-2, 0.001, float("inf"), float("nan"), "invalid"])
+def test_invalid_weight(weight):
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    with pytest.raises(ValueError):
+        model.build_hadipour_boomerang_model(weight)
+
+
+@pytest.mark.parametrize(
+    "cipher",
+    [
+        SpeckBlockCipher(number_of_rounds=3),
+        SimonBlockCipher(number_of_rounds=3),
+        LeaBlockCipher(number_of_rounds=3),
+        KatanBlockCipher(number_of_rounds=3),
+        ChaskeyPiPermutation(number_of_rounds=3),
+        ChachaPermutation(number_of_rounds=3, round_mode="half_half"),
+    ],
+)
+def test_build_is_repeatable_and_does_not_mutate_cipher(
+    cipher, tmp_path, monkeypatch, capsys
+):
+    before = deepcopy(cipher.as_python_dictionary())
+    monkeypatch.chdir(tmp_path)
+    model = MznHadipourBoomerangModel(
+        cipher, structure(1, 1, cipher.number_of_rounds - 2)
+    )
+    model.build_hadipour_boomerang_model()
+    first = model.assemble_model()
+    model.build_hadipour_boomerang_model()
+    assert model.assemble_model() == first
+    assert cipher.as_python_dictionary() == before
+    assert not list(tmp_path.iterdir())
+    assert capsys.readouterr().out == ""
+    assert model.component_and_probability
+
+
+@pytest.mark.parametrize("middle", [1, 2, 3])
+@pytest.mark.parametrize("factory", [SpeckBlockCipher, SimonBlockCipher])
+def test_switch_variants(factory, middle):
+    model = MznHadipourBoomerangModel(
+        factory(number_of_rounds=middle + 2), structure(1, middle, 1)
+    )
+    model.build_hadipour_boomerang_model()
+    assert len(model._middle_probabilities) == middle
+    if factory == SpeckBlockCipher:
+        kinds = (
+            ["BCT"]
+            if middle == 1
+            else ["UBCT", "LBCT"] + (["EBCT"] if middle == 3 else [])
+        )
+        for kind in kinds:
+            assert "onlyLargeSwitch_" + kind + "_enum" in model.assemble_model()
+
+
+def test_fixed_values_and_export(tmp_path):
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    fixed = [
+        set_fixed_variables("upper_plaintext", "equal", [0, 1, 2, 3], [0, 1, 0, 0])
+    ]
+    model.build_hadipour_boomerang_model(1.25, fixed)
+    assert "constraint weight = 125;" in model.model_constraints
+    assert "solve satisfy;" in model.model_constraints
+    assert "upper_plaintext[1] = 1" in model.assemble_model()
+    model.write_minizinc_model_to_file(str(tmp_path))
+    assert len(list(tmp_path.glob("*.mzn"))) == 1
+
+
+def test_prefix_round_trip_invalidates_cached_lookup():
+    cipher = SpeckBlockCipher(number_of_rounds=2)
+    component = cipher.component_from_id("rot_0_0")
+    cipher.add_prefix()
+    assert cipher.component_from_id("upper_rot_0_0") is component
+    cipher.remove_prefix()
+    assert cipher.component_from_id("rot_0_0") is component
+    cipher.remove_prefix("not_present_")
+    assert cipher.inputs[0] == "plaintext"
+
+
+def test_parser_preserves_fractional_weight():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    raw = SimpleNamespace(
+        _output_item="upper_plaintext = [0, 1, 0, 0]\nUpper weight = 0.0\nMiddle weight = 1.25\nLower weight = 0.0\nTrail weight = 1.25\n"
+    )
+    result = model._parse_boomerang_solution(
+        raw, Status.OPTIMAL_SOLUTION, "gecode", {"time": timedelta(seconds=2)}
+    )
+    assert result["components_values"]["upper_plaintext"]["value"] == "0x4"
+    assert result["total_weight"] == "1.25"
+    assert result["middle_weight"] == 1.25
+    assert result["status"] == "SATISFIABLE"
+
+
+def test_solve_and_fixed_weight_round_trip():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    result = model.find_lowest_weight_boomerang_trail(
+        solver_name="gecode", timeout_in_seconds=30
+    )
+    assert result["status"] == "SATISFIABLE"
+    assert result["solver_status"] == "OPTIMAL_SOLUTION"
+    assert (
+        float(result["total_weight"])
+        == 2 * result["upper_weight"]
+        + result["middle_weight"]
+        + 2 * result["lower_weight"]
+    )
+    assert result["building_time_seconds"] >= 0
+    again = model.find_one_boomerang_trail_with_fixed_weight(
+        float(result["total_weight"]), solver_name="gecode", timeout_in_seconds=30
+    )
+    assert again["status"] == "SATISFIABLE"
+    assert again["total_weight"] == result["total_weight"]
+
+
+def test_unsatisfiable_external_difference():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    fixed = [set_fixed_variables("upper_plaintext", "equal", range(4), [0] * 4)]
+    result = model.find_one_boomerang_trail(
+        fixed, solver_name="gecode", timeout_in_seconds=30
+    )
+    assert result["status"] == "UNSATISFIABLE"
+    assert result["components_values"] == {}
+    assert result["total_weight"] is None
+
+
+@pytest.mark.parametrize("bounded", [False, True])
+def test_enumerate_small_fixed_external_differences(bounded):
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    model.build_hadipour_boomerang_model()
+    output = next(
+        name
+        for name in model.cipher.all_components_ids()
+        if name.startswith("lower_cipher_output")
+    )
+    fixed = [
+        set_fixed_variables("upper_plaintext", "equal", range(4), [1, 0, 0, 0]),
+        set_fixed_variables(output, "equal", range(4), [1, 0, 0, 0]),
+    ]
+    method = (
+        model.find_all_boomerang_trails_with_weight_at_most
+        if bounded
+        else model.find_all_boomerang_trails_with_fixed_weight
+    )
+    solutions = method(
+        0, fixed_values=fixed, solver_name="gecode", timeout_in_seconds=30
+    )
+    assert solutions
+    assert all(solution["total_weight"] == "0.0" for solution in solutions)
+
+
+@pytest.mark.parametrize(
+    "delta,nabla", [(1, 1), (1, 4), (4, 1), (4, 4), (5, 5), (3, 7)]
+)
+@pytest.mark.parametrize("operation", ["modadd", "modsub"])
+def test_two_bit_modular_switch_matches_exhaustive_boomerang(delta, nabla, operation):
+    import math
+
+    def forward(x):
+        left, right = x >> 2, x & 3
+        return (((left + right) & 3) << 2) | right
+
+    def backward(x):
+        left, right = x >> 2, x & 3
+        return (((left - right) & 3) << 2) | right
+
+    if operation == "modsub":
+        forward, backward = backward, forward
+    successes = sum(
+        backward(forward(x) ^ nabla) ^ backward(forward(x ^ delta) ^ nabla) == delta
+        for x in range(16)
+    )
+    cipher = toy_modadd(operation=operation)
+    output = "lower_" + cipher.all_components_ids()[-1]
+    model = MznHadipourBoomerangModel(cipher, structure(0, 1, 0))
+    fixed = [
+        set_fixed_variables(
+            "upper_plaintext",
+            "equal",
+            range(4),
+            [(delta >> i) & 1 for i in reversed(range(4))],
+        ),
+        set_fixed_variables(
+            output, "equal", range(4), [(nabla >> i) & 1 for i in reversed(range(4))]
+        ),
+    ]
+    solution = model.find_one_boomerang_trail(
+        fixed, solver_name="gecode", timeout_in_seconds=10
+    )
+    assert (solution["status"] == "SATISFIABLE") == bool(successes)
+    if successes:
+        assert abs(float(solution["total_weight"]) + math.log2(successes / 16)) < 0.1
+
+
+@pytest.mark.parametrize("middle", [2, 3])
+@pytest.mark.parametrize("operation", ["modadd", "modsub"])
+def test_multiround_modular_predicates_solve(middle, operation):
+    model = MznHadipourBoomerangModel(
+        toy_modadd(middle, operation), structure(0, middle, 0)
+    )
+    result = model.find_one_boomerang_trail(solver_name="gecode", timeout_in_seconds=15)
+    assert result["status"] == "SATISFIABLE"
+
+
+def test_prebuilt_solve_requires_a_model_and_rejects_other_types():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    with pytest.raises(ValueError, match="Build"):
+        model.solve()
+    with pytest.raises(ValueError, match="only solves"):
+        model.solve("xor_linear")
+
+
+@pytest.mark.parametrize("option", ["timeout_in_seconds", "processes"])
+def test_invalid_solver_options(option):
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    model.build_hadipour_boomerang_model(None)
+    with pytest.raises(ValueError, match="positive"):
+        model.solve(**{option: 0})
+
+
+def test_timeout_status_and_solver_options(monkeypatch):
+    import claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model as boomerang
+
+    calls = []
+
+    def fake_solve(**options):
+        calls.append(options)
+        return SimpleNamespace(solution=None, status=Status.UNKNOWN, statistics={})
+
+    monkeypatch.setattr(
+        boomerang, "Instance", lambda solver, model: SimpleNamespace(solve=fake_solve)
+    )
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    result = model.find_one_boomerang_trail(timeout_in_seconds=2, processes=3)
+    assert result["status"] == "UNKNOWN"
+    assert result["total_weight"] is None
+    assert calls[-1]["timeout"] == timedelta(seconds=2)
+    assert calls[-1]["processes"] == 3
+    assert model.find_all_boomerang_trails_with_fixed_weight(0) == []
+
+
+def test_invalid_weight_range():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    with pytest.raises(ValueError, match="min_weight"):
+        model.find_all_boomerang_trails_with_weight_at_most(1, min_weight=2)

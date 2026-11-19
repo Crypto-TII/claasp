@@ -297,27 +297,6 @@ class Xor(Component):
 
         return cp_declarations, cp_constraints
     
-    def milp_xor_gurobi(self, model=None):
-        # For the xor constraint a^b = c:
-        # var 0..1: dummy
-        # constraint a+b+c = 2*dummy 
-        output_size = int(self.output_bit_size)
-        input_id_links = self.input_id_links
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
-        cp_declarations = []
-        cp_declarations.extend([f'array[0..{output_size}-1] of var 0..1: dummy_{output_id_link};'])
-        all_inputs = []
-        for id_link, bit_positions in zip(input_id_links, input_bit_positions):
-            all_inputs.extend([f'{id_link}[{position}]' for position in bit_positions])
-        cp_constraints = []
-        for i in range(output_size):
-            operation = ' + '.join(all_inputs[i::output_size])
-            new_constraint = f'constraint 2*dummy_{output_id_link}[{i}] = ({operation} + {output_id_link}[{i}]);'
-            cp_constraints.append(new_constraint)
-
-        return cp_declarations, cp_constraints 
-
     def cp_continuous_differential_propagation_constraints(self, model):
         output_id_link = self.id
         input_len = self.output_bit_size
@@ -550,7 +529,22 @@ class Xor(Component):
     
     
     def cp_xor_differential_propagation_constraints_boomerang(self, model=None):
-        return self.milp_xor_gurobi()
+        """Return the linear XOR difference propagation constraints for one arm.
+
+        INPUT: ``model`` -- optional model, unused for this linear operation.
+
+        OUTPUT: a pair of MiniZinc declarations and constraints, identical to
+        ``cp_xor_differential_propagation_constraints``. The arm is determined
+        by the component's prefixed ID and input links.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: component = SpeckBlockCipher(number_of_rounds=1).component_from(0, 0)
+            sage: component.cp_xor_differential_propagation_constraints_boomerang() == component.cp_constraints()
+            True
+        """
+        return self.cp_constraints()
 
     def cp_xor_differential_propagation_first_step_constraints(self, model, variables_list=None):
         """

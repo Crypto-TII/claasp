@@ -54,6 +54,13 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
+    - name: Install Gecode for modular boomerang tests
+      run: |
+        if ! minizinc --solvers | grep -q org.gecode.gecode; then
+          sudo apt-get -q update
+          sudo apt-get install --no-install-recommends -y flatzinc
+        fi
+
     - name: Run pytest
       run: |
         uname -a

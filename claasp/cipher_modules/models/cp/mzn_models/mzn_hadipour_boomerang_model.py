@@ -15,816 +15,876 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ****************************************************************************
 
-from claasp.cipher_modules.models.cp.mzn_model import MznModel #, solve_satisfy
-from claasp.cipher_modules.models.sat.utils.utils import _generate_component_model_types, _set_model_type_for_components
-from claasp.name_mappings import SBOX, CIPHER_OUTPUT, CONSTANT, INTERMEDIATE_OUTPUT, LINEAR_LAYER, MIX_COLUMN, WORD_OPERATION
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import get_bct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_lbct_predicates import get_lbct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ubct_predicates import get_ubct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ebct_predicates import get_ebct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicate import get_evaluation_ubct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_lbct_predicate import get_evaluation_lbct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ebct_predicate import get_evaluation_ebct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_bct_predicate import get_evaluation_bct_operations
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import get_approx_logarithm_operation
-from copy import deepcopy
 import math
-from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import update_and_or_ddt_valid_probabilities_boomerang
-from sage.crypto.sbox import SBox
+import time
+from copy import deepcopy
+from datetime import timedelta
+from decimal import Decimal, InvalidOperation
+from operator import index
+from types import SimpleNamespace
+
+from minizinc import Instance, Model, Solver, Status
+
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
+    get_approx_logarithm_operation,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import (
+    get_bct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ebct_predicates import (
+    get_ebct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_bct_predicate import (
+    get_evaluation_bct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ebct_predicate import (
+    get_evaluation_ebct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_lbct_predicate import (
+    get_evaluation_lbct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicate import (
+    get_evaluation_ubct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_lbct_predicates import (
+    get_lbct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ubct_predicates import (
+    get_ubct_operations,
+)
+from claasp.cipher_modules.models.cp.mzn_model import MznModel
+from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (
+    update_and_or_ddt_valid_probabilities,
+)
+from claasp.cipher_modules.models.cp.solvers import GECODE, SOLVER_DEFAULT
+from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
+from claasp.name_mappings import CONSTANT, WORD_OPERATION
+
+_SWITCH_PREDICATES = {
+    "bct": (get_bct_operations, get_evaluation_bct_operations),
+    "ubct": (get_ubct_operations, get_evaluation_ubct_operations),
+    "lbct": (get_lbct_operations, get_evaluation_lbct_operations),
+    "ebct": (get_ebct_operations, get_evaluation_ebct_operations),
+}
+
 
 class MznHadipourBoomerangModel(MznModel):
+    """Search single-key boomerang characteristics of ARX and AND-based ciphers.
+
+    The cipher is split into E0, Em, E1. Upper differences propagate through
+    E0 and Em; lower differences are constrained by their output through E1 and Em.
+    Both arms use forward component equations: fixing the lower output is
+    equivalent to backward propagation, without constructing an inverse graph.
+    BCT/UBCT/LBCT/EBCT constraints connect the two arms in Em.
+
+    The objective is ``2 * upper_weight + middle_weight + 2 * lower_weight``.
+    It is a characteristic estimate under the usual independence assumptions,
+    not the sum of all characteristics with the same external differences.
+    Modular connectivity restricts half-size transitions to half the word size,
+    a search heuristic. The logarithm approximation saturates at 32 bits for
+    probabilities at most 0.001021453702391378; its precision is not 0.01 bits.
+    Modular-addition switch probabilities use the piecewise approximation in
+    :func:`get_approx_logarithm_operation`; optimality refers to that model.
+
+    References: Cid et al., *Boomerang Connectivity Table*, EUROCRYPT 2018,
+    https://doi.org/10.1007/978-3-319-78375-8_22; Wang, Wang and Sun,
+    *SAT-aided Automatic Search of Boomerang Distinguishers for ARX Ciphers*,
+    ToSC 2023(1), https://doi.org/10.46586/tosc.v2023.i1.152-191.
+
+    INPUT:
+
+    - ``cipher`` -- CLAASP cipher; two-input MODADD/MODSUB and AND are the
+      supported nonlinear operations. S-boxes and OR switches are unsupported.
+    - ``boomerang_structure`` -- dictionary containing nonnegative integer
+      ``top_part_number_of_rounds``, positive ``middle_part_number_of_rounds``,
+      and nonnegative ``bottom_part_number_of_rounds``. Their sum must equal
+      ``cipher.number_of_rounds``. Zero-length outer arms are supported.
+
+    OUTPUT: a model. Construction does not change ``cipher`` or write files.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+        sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+        sage: structure = dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1)
+        sage: model = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), structure)
+        sage: model.build_hadipour_boomerang_model(weight=4)
+        sage: 'constraint weight = 400;' in model.model_constraints
+        True
+        sage: result = model.find_one_boomerang_trail(solver_name='gecode', timeout_in_seconds=3)  # optional - minizinc
+    """
+
     def __init__(self, cipher, boomerang_structure):
-        self.boomerang_structure = boomerang_structure
-        self.top_part_number_of_rounds = boomerang_structure["top_part_number_of_rounds"]
-        self.middle_part_number_of_rounds = boomerang_structure["middle_part_number_of_rounds"]
-        self.bottom_part_number_of_rounds = boomerang_structure["bottom_part_number_of_rounds"]
-
-        total_number_of_rounds = self.top_part_number_of_rounds + self.middle_part_number_of_rounds + self.bottom_part_number_of_rounds
-        # print(f'Total number of rounds: {total_number_of_rounds}')
-        # print(f'Cipher number of rounds: {cipher.number_of_rounds}')
-        # cipher.print_as_python_dictionary()
-        
-        print(f'Total number of rounds: {total_number_of_rounds}')
-        print(f'Cipher number of rounds: {cipher.number_of_rounds}')
-        assert total_number_of_rounds == cipher.number_of_rounds
-
-        cipher.print_as_python_dictionary()
-        
-        e0em_cipher = cipher.get_partial_cipher(
-            start_round=0,
-            end_round=self.top_part_number_of_rounds + self.middle_part_number_of_rounds - 1,
-            keep_key_schedule=False
+        keys = (
+            "top_part_number_of_rounds",
+            "middle_part_number_of_rounds",
+            "bottom_part_number_of_rounds",
         )
-        
-        e0em_cipher.add_prefix('upper_')
-        
-        eme1_cipher = cipher.cipher_partial_inverse(
-            start_round=self.top_part_number_of_rounds,
-            end_round=self.top_part_number_of_rounds + self.middle_part_number_of_rounds + self.bottom_part_number_of_rounds - 1,
-            keep_key_schedule=False
-        )
-
-        eme1_cipher.add_prefix('lower_')
-        
-        for i in range(0, self.middle_part_number_of_rounds):
-            e0em_cipher._rounds.rounds[self.top_part_number_of_rounds + i]._components.extend(eme1_cipher._rounds.rounds[self.bottom_part_number_of_rounds +
-                                                                                                                        self.middle_part_number_of_rounds -i -1]._components)        
-        ## add also the last part of e1
-        for i in range(0, self.bottom_part_number_of_rounds):
-            e0em_cipher._rounds.rounds[self.top_part_number_of_rounds + self.middle_part_number_of_rounds + i]._components.extend(eme1_cipher._rounds.rounds[self.bottom_part_number_of_rounds 
-                                                                                                                                                             - i - 1]._components)
-        e0em_cipher.inputs.extend(eme1_cipher.inputs)
-        e0em_cipher.inputs_bit_size.extend(eme1_cipher.inputs_bit_size)
-
-        unified_cipher = e0em_cipher
-        unified_cipher.print_as_python_dictionary()
-
-        unified_cipher.upper_rounds = self.top_part_number_of_rounds
-        unified_cipher.middle_rounds = self.middle_part_number_of_rounds
-        unified_cipher.lower_rounds = self.bottom_part_number_of_rounds
-
-
-        self._first_step = []
-        self._first_step_find_all_solutions = []
-        self._cp_xor_differential_constraints = []
-
-        super().__init__(unified_cipher)
-
-    def input_xor_differential_constraints(self):
-        """
-        Return a list of CP declarations and a list of Cp constraints for the first part of the xor differential model.
-
-        INPUT:
-
-        - None
-
-        EXAMPLES::
-
-            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (MznXorDifferentialModel)
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = MznXorDifferentialModel(speck)
-            sage: cp.input_xor_differential_constraints()
-            (['array[0..31] of var 0..1: plaintext;',
-              'array[0..63] of var 0..1: key;',
-               ...
-              'array[0..31] of var 0..1: cipher_output_3_12;',
-              'array[0..6] of var {0, 900, 200, 1100, 400, 1300, 600, 1500, 800, 100, 1000, 300, 1200, 500, 1400, 700}: p;',
-              'var int: weight = sum(p);'],
-             [])
-        """
-        
-        self._cp_xor_differential_constraints = [f'array[0..{bit_size - 1}] of var 0..1: {input_};'
-                           for input_, bit_size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)]
-        
-        self.sbox_mant = []
-        prob_count_upper = 0
-        prob_count_lower = 0
-        valid_probabilities_upper = {0}
-        valid_probabilities_lower = {0}
-        and_already_added_upper = []
-        and_already_added_lower = []
-
-        component_with_output_bit_size = {}
-        component_with_input_id_links = {}
-        
-        for component in self._cipher.all_components():
-            if CONSTANT not in component.type:
-                output_id_link = component.id
-                app = f'array[0..{int(component.output_bit_size) - 1}] of var 0..1: {output_id_link};'
-                if app not in self._cp_xor_differential_constraints and app not in self._model_constraints:
-                    self._cp_xor_differential_constraints.append(f'array[0..{int(component.output_bit_size) - 1}] of var 0..1: {output_id_link};')
-                if SBOX in component.type:
-                    if 'upper_' in component.id:
-                        prob_count_upper += 1
-                        self.update_sbox_ddt_valid_probabilities(component, valid_probabilities_upper)
-                    elif 'lower_' in component.id:
-                        prob_count_lower += 1
-                        self.update_sbox_ddt_valid_probabilities(component, valid_probabilities_lower)
-                elif WORD_OPERATION in component.type:
-                    if 'AND' in component.description[0] or component.description[0] == 'OR':
-                        if 'upper_' in component.id:
-                            prob_count_upper += (component.description[1]-1) * component.output_bit_size
-                            update_and_or_ddt_valid_probabilities_boomerang(and_already_added_upper, component, self._cp_xor_differential_constraints,
-                                                          valid_probabilities_upper)
-                            component_with_output_bit_size[component.id] = component.output_bit_size
-                            component_with_input_id_links[component.id] = component.input_id_links
-                        if 'lower_' in component.id:
-                            prob_count_lower += (component.description[1]-1) * component.output_bit_size
-                            update_and_or_ddt_valid_probabilities_boomerang(and_already_added_lower, component, self._cp_xor_differential_constraints,
-                                                          valid_probabilities_lower)
-                            component_with_output_bit_size[component.id] = component.output_bit_size
-                            component_with_input_id_links[component.id] = component.input_id_links
-                    elif 'MODADD' in component.description[0]:
-                        prob_count_upper += component.description[1] - 1
-                        output_size = component.output_bit_size
-                        valid_probabilities_upper |= set(range(100 * output_size)[::100])
-                        component_with_output_bit_size[component.id] = component.output_bit_size
-                    elif 'MODSUB' in component.description[0]:
-                        prob_count_lower += component.description[1] - 1
-                        output_size = component.output_bit_size
-                        valid_probabilities_lower |= set(range(100 * output_size)[::100])
-                        component_with_output_bit_size[component.id] = component.output_bit_size
-        
-
-        upper_keys = [key.removeprefix('upper_') for key in self.component_and_probability.keys() if 'upper_' in key]
-        lower_keys = [key.removeprefix('lower_') for key in self.component_and_probability.keys() if 'lower_' in key]
-        
-        middle_keys = list(set(upper_keys) & set(lower_keys)) ## non linear year id just in Em
-        just_upper_keys = ['upper_' + key for key in upper_keys if key not in middle_keys] ## non linear layer id just in E0
-        just_lower_keys = ['lower_' + key for key in lower_keys if key not in middle_keys] ## non linear layer id just in E1
-
-        prob_count_middle = 0
-        prob_count_middle_modadd = 0
-        prob_count_middle_and = 0
-        for middle_key in middle_keys:
-            if any(middle_key in k for k in component_with_output_bit_size.keys()):
-                if 'and' in middle_key or 'or' in middle_key:
-                    prob_count_middle += component_with_output_bit_size['upper_'+middle_key]
-                    prob_count_middle_and += 1
-                    print(f"component_with_output_bit_size[{'upper_'+middle_key}]: {component_with_output_bit_size['upper_'+middle_key]}")
-                elif 'modadd' in middle_key:
-                    prob_count_middle += 1
-                    prob_count_middle_modadd += 1
-        ### everytime I suppose that each operation is repeated in evey middle layer
-        print(f"prob_count_middle_and: {prob_count_middle_and}")
-        print(f"self.middle_part_number_of_rounds: {self.middle_part_number_of_rounds}")
-        print(f"prob_count_middle: {prob_count_middle}")
-        print(f"prob_count_upper: {prob_count_upper}")
-        print(f"prob_count_lower: {prob_count_lower}")
-        if prob_count_middle_and != self.middle_part_number_of_rounds:
-            total_declatation_of_p = f'array[0..{prob_count_upper + prob_count_lower - prob_count_middle}-1] of var int: p;'
-            self._cp_xor_differential_constraints.append(total_declatation_of_p)
-        else:
-            if self.middle_part_number_of_rounds == 1:
-                if prob_count_middle_modadd == 1:
-                    total_declatation_of_p = f'array[0..{prob_count_upper + prob_count_lower - prob_count_middle}-1] of var int: p;'
-                    self._cp_xor_differential_constraints.append(total_declatation_of_p)
-                else:
-                    total_declatation_of_p = f'array[0..{prob_count_upper + prob_count_lower - 2*prob_count_middle}-1] of var int: p;'
-                    self._cp_xor_differential_constraints.append(total_declatation_of_p)
-            elif self.middle_part_number_of_rounds == 2:
-                total_declatation_of_p = f'array[0..{prob_count_upper + prob_count_lower - prob_count_middle}-1] of var int: p;'
-                self._cp_xor_differential_constraints.append(total_declatation_of_p)
-            elif self.middle_part_number_of_rounds > 2:
-                app = 'upper_'+middle_keys[0]
-                if prob_count_middle_modadd == self.middle_part_number_of_rounds:
-                    total_declatation_of_p = f'array[0..{prob_count_upper + prob_count_lower - prob_count_middle_modadd - 2 * component_with_output_bit_size[app]}-1] of var int: p;'
-                    self._cp_xor_differential_constraints.append(total_declatation_of_p)
-                else:
-                    total_declatation_of_p = f'array[0..{prob_count_upper + prob_count_lower - 2 * component_with_output_bit_size[app]}-1] of var int: p;'
-                    self._cp_xor_differential_constraints.append(total_declatation_of_p)
-
-        if self.middle_part_number_of_rounds > 2 and prob_count_middle_and == self.middle_part_number_of_rounds:
-            prob_count_middle = prob_count_middle+component_with_output_bit_size['upper_'+middle_keys[0]]*(self.middle_part_number_of_rounds-2)
-
-        count_index_for_assign_p_with_upper_lower_middle_p = 0
-
-        cp_declarations_weight_upper = 'int: upper_weight = 0;'
-        if prob_count_upper > 0:
-            new_declaration_upper = f'array[0..{prob_count_upper}-1] of var {valid_probabilities_upper}: upper_p;'
-            self._cp_xor_differential_constraints.append(new_declaration_upper)
-            if self.top_part_number_of_rounds > 0:
-                cp_declarations_weight_upper = 'var int: upper_weight ='
-                for key in just_upper_keys:
-                    for element in self.component_and_probability[key]:
-                        cp_declarations_weight_upper += f' upper_p[{element}] +'
-                        contrains_of_p_upper = f'constraint p[{count_index_for_assign_p_with_upper_lower_middle_p}] = upper_p[{element}];'
-                        self._cp_xor_differential_constraints.append(contrains_of_p_upper)
-                        count_index_for_assign_p_with_upper_lower_middle_p += 1
-                cp_declarations_weight_upper = cp_declarations_weight_upper[:-2] + ';'
-                
-        self._cp_xor_differential_constraints.append(cp_declarations_weight_upper)
-
-        cp_declarations_weight_lower = 'int: lower_weight = 0;'
-        if prob_count_lower > 0:
-            new_declaration_lower = f'array[0..{prob_count_lower}-1] of var {valid_probabilities_lower}: lower_p;'
-            self._cp_xor_differential_constraints.append(new_declaration_lower)
-            if self.bottom_part_number_of_rounds > 0:
-                cp_declarations_weight_lower = 'var int: lower_weight ='
-                for key in just_lower_keys:
-                    for element in self.component_and_probability[key]:
-                        cp_declarations_weight_lower += f' lower_p[{element}] +'
-                        contrains_of_p_lower = f'constraint p[{count_index_for_assign_p_with_upper_lower_middle_p}] = lower_p[{element}];'
-                        self._cp_xor_differential_constraints.append(contrains_of_p_lower)
-                        count_index_for_assign_p_with_upper_lower_middle_p += 1
-                cp_declarations_weight_lower = cp_declarations_weight_lower[:-2] + ';'
-                
-        self._cp_xor_differential_constraints.append(cp_declarations_weight_lower)
-
-            
-        new_declaration_middle = f'array[0..{prob_count_middle}-1] of var 0..3200: middle_p;'
-        cp_declarations_weight_middle = 'var int: middle_weight = sum(middle_p);'  
-        self._cp_xor_differential_constraints.append(new_declaration_middle)
-        self.count_middle_p = 0
-        self.count_index_for_assign_p_with_upper_lower_middle_p = count_index_for_assign_p_with_upper_lower_middle_p
-        self._cp_xor_differential_constraints.append(cp_declarations_weight_middle)
-
-
-        if self.middle_part_number_of_rounds == 1:
-            for middle_non_linear_transition_ids in middle_keys:
-                if 'modadd' in middle_non_linear_transition_ids:
-                    deltaL, deltaR, nablaL, nablaR, _, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-                    # if 'lea' in self.cipher.id:
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, branch_size))
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, branch_size, self.count_middle_p-1))
-                    # else:                        
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size, self.count_middle_p-1))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_bct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, branch_size, self.count_middle_p-1))                    
-                    self.branch_size = branch_size
-                elif 'and' in middle_non_linear_transition_ids:
-                    self._cp_xor_differential_constraints.append('constraint middle_weight = 0;')
-                    upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
-                    lower_input_and = component_with_input_id_links['lower_'+middle_non_linear_transition_ids]
-                    for i in range(component_with_output_bit_size['upper_'+middle_non_linear_transition_ids]):
-                        #constraint beta^m /\ nabla^n = beta^n /\ nabla^m
-                        and_constraint = f"constraint ({upper_input_and[0]}[{i}]*{lower_input_and[1]}[{i}]) = ({upper_input_and[1]}[{i}]*{lower_input_and[0]}[{i}]);"
-                        self._model_constraints.append(and_constraint)
-        else:           
-            vals = [int(s.split('_')[1]) for s in middle_keys]
-            mn, mx = min(vals), max(vals)
-
-            list_ubct_middle_keys, list_ebct_middle_keys, list_lbct_middle_keys = (
-                [s for s in middle_keys if int(s.split('_')[1]) == mn],
-                [s for s in middle_keys if mn < int(s.split('_')[1]) < mx],
-                [s for s in middle_keys if int(s.split('_')[1]) == mx],
+        if set(boomerang_structure) != set(keys):
+            raise ValueError(
+                "boomerang_structure must specify top, middle and bottom round counts"
             )
+        try:
+            counts = [index(boomerang_structure[key]) for key in keys]
+        except TypeError as exc:
+            raise ValueError("Round counts must be nonnegative integers") from exc
+        if any(isinstance(boomerang_structure[key], bool) for key in keys) or any(
+            n < 0 for n in counts
+        ):
+            raise ValueError("Round counts must be nonnegative integers")
+        if counts[1] == 0 or sum(counts) != cipher.number_of_rounds:
+            raise ValueError(
+                "The middle must be nonempty and round counts must sum to the cipher rounds"
+            )
+        self.boomerang_structure = dict(zip(keys, counts))
+        (
+            self.top_part_number_of_rounds,
+            self.middle_part_number_of_rounds,
+            self.bottom_part_number_of_rounds,
+        ) = counts
+        self.original_cipher = deepcopy(cipher)
+        unified = self._unify_cipher(cipher)
+        super().__init__(unified)
+        self.c_upper = self.c_lower = 0
+        self._middle_probabilities = {}
 
-            print(f"list_ubct_middle_keys: {list_ubct_middle_keys}")
-            print(f"list_ebct_middle_keys: {list_ebct_middle_keys}")
-            print(f"list_lbct_middle_keys: {list_lbct_middle_keys}")
+    def _unify_cipher(self, cipher):
+        top = self.top_part_number_of_rounds
+        middle = self.middle_part_number_of_rounds
+        bottom = self.bottom_part_number_of_rounds
+        upper = deepcopy(cipher).get_partial_cipher(
+            0, top + middle - 1, keep_key_schedule=False
+        )
+        lower = deepcopy(cipher).get_partial_cipher(
+            top, cipher.number_of_rounds - 1, keep_key_schedule=False
+        )
+        self._data_inputs = {"upper_" + upper.inputs[0], "lower_" + lower.inputs[0]}
+        self._external_differences = {
+            "upper_" + upper.inputs[0],
+            "lower_" + lower.all_components_ids()[-1],
+        }
+        upper.add_prefix("upper_")
+        lower.add_prefix("lower_")
+        for round_number in range(top, cipher.number_of_rounds):
+            upper.rounds.round_at(round_number).components.extend(
+                lower.rounds.round_at(round_number).components
+            )
+        upper.inputs.extend(lower.inputs)
+        upper.inputs_bit_size.extend(lower.inputs_bit_size)
+        upper.upper_rounds, upper.middle_rounds, upper.lower_rounds = (
+            top,
+            middle,
+            bottom,
+        )
+        upper.rounds._invalidate_indexes()
+        return upper
 
-            #BCT 1. cond -> boom cond S^-1(S(x))......
-            #UBCT 2. cond -> 1. boom cond, 2. standard propagation of upper differe S(x+delta_in)+S(x)=delta_out
-            #LBCT 2. cond -> 1. boom cond, 2. standard propagation of lower differen S(x+nabla_in)+S(x) =nabla_out
-            #EBCT 3. cond -> 1. boom cond 2. S(x+delta_in)+S(x)=delta_out 3. S(x+nabla_in)+S(x) =nabla_out
-            # modadd -> new evaluation using SAT-AIDED paper, based on property of modular addition
-            # and -> boom cond = deterministic cond beta^m /\ nabla^n == beta^n /\ nabla^m, standard propg = standard constraint claasp
-            #UBCT 
-            for middle_non_linear_transition_ids in list_ubct_middle_keys:
-                if 'modadd' in middle_non_linear_transition_ids:
-                    deltaL, deltaR, nablaL, nablaR, deltaLL, _, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-                    # if 'lea' in self.cipher.id:
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, branch_size))
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, branch_size, self.count_middle_p-1))
-                    # else:
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ubct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, branch_size, self.count_middle_p-1)) 
-                    self.branch_size = branch_size
-                elif 'and' in middle_non_linear_transition_ids:
-                    upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
-                    lower_input_and = component_with_input_id_links['lower_'+middle_non_linear_transition_ids]
-                    for i in range(component_with_output_bit_size['upper_'+middle_non_linear_transition_ids]):
-                        middle_p_constraint = f"constraint middle_p[{self.count_middle_p}] == p[{self.count_index_for_assign_p_with_upper_lower_middle_p}];"
-                        self._model_constraints.append(middle_p_constraint)
-                        and_constraint = f"constraint ({upper_input_and[0]}[{i}]*{lower_input_and[1]}[{i}]) == ({upper_input_and[1]}[{i}]*{lower_input_and[0]}[{i}]);"
-                        self._model_constraints.append(and_constraint)
-                        forward_contraint = f"constraint table([{upper_input_and[0]}[{i}]]++[{upper_input_and[1]}[{i}]]++[upper_{middle_non_linear_transition_ids}[{i}]]++[middle_p[{self.count_middle_p}]],upper_and2inputs_DDT);"
-                        self._model_constraints.append(forward_contraint)
-                        self.count_middle_p += 1
-                        self.count_index_for_assign_p_with_upper_lower_middle_p += 1
+    @staticmethod
+    def _scaled_weight(weight):
+        try:
+            scaled = Decimal(str(weight)) * 100
+        except InvalidOperation as exc:
+            raise ValueError(
+                "Weight must be a finite nonnegative multiple of 0.01"
+            ) from exc
+        if not scaled.is_finite() or scaled < 0 or scaled != scaled.to_integral_value():
+            raise ValueError("Weight must be a finite nonnegative multiple of 0.01")
+        return int(scaled)
 
-            for middle_non_linear_transition_ids in list_lbct_middle_keys:
-                if 'modadd' in middle_non_linear_transition_ids:
-                    deltaL, deltaR, nablaL, nablaR, _, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-                    # if 'lea' in self.cipher.id:
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, nablaLL, branch_size))
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, nablaLL, branch_size, self.count_middle_p-1))
-                    # else:
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
-                    #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))         
-                    self._model_constraints.extend(MznHadipourBoomerangModel.lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size))
-                    self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_lbct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, nablaLL, branch_size, self.count_middle_p-1))                                       
-                elif 'and' in middle_non_linear_transition_ids:
-                    upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
-                    lower_input_and = component_with_input_id_links['lower_'+middle_non_linear_transition_ids]
-                    for i in range(component_with_output_bit_size['lower_'+middle_non_linear_transition_ids]):
-                        middle_p_constraint = f"constraint middle_p[{self.count_middle_p}] == p[{self.count_index_for_assign_p_with_upper_lower_middle_p}];"
-                        self._model_constraints.append(middle_p_constraint)
-                        and_constraint = f"constraint ({upper_input_and[0]}[{i}]*{lower_input_and[1]}[{i}]) == ({upper_input_and[1]}[{i}]*{lower_input_and[0]}[{i}]);"
-                        self._model_constraints.append(and_constraint)
-                        backward_contraint = f"constraint table([{lower_input_and[0]}[{i}]]++[{lower_input_and[1]}[{i}]]++[lower_{middle_non_linear_transition_ids}[{i}]]++[middle_p[{self.count_middle_p}]],lower_and2inputs_DDT);"
-                        self._model_constraints.append(backward_contraint)
-                        self.count_middle_p += 1
-                        self.count_index_for_assign_p_with_upper_lower_middle_p += 1
+    def _arm_differential_constraints(self, component):
+        side = "upper" if component.id.startswith("upper_") else "lower"
+        counter = "c_" + side
+        arm = SimpleNamespace(
+            c=getattr(self, counter),
+            modadd_twoterms_mant=self.modadd_twoterms_mant,
+            component_and_probability={},
+        )
+        declarations, constraints = (
+            component.cp_xor_differential_propagation_constraints(arm)
+        )
+        self.component_and_probability.update(arm.component_and_probability)
+        setattr(self, counter, arm.c)
+        # Replace only probability identifiers, preserving every component bit index.
+        constraints = [
+            line.replace("p[", side + "_p[").replace(
+                "and2inputs_DDT", side + "_and2inputs_DDT"
+            )
+            for line in constraints
+        ]
+        return declarations, constraints
 
-            if self.middle_part_number_of_rounds > 2:       
-                for middle_non_linear_transition_ids in list_ebct_middle_keys:
-                    if 'modadd' in middle_non_linear_transition_ids:
-                        deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size = self.addSwitch(middle_non_linear_transition_ids)
-                        # if 'lea' in self.cipher.id:
-                        #     self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, nablaLL, branch_size))
-                        #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaR, deltaL, nablaR, nablaL, deltaLL, nablaLL, branch_size, self.count_middle_p-1))
-                        # else:
-                        #     self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
-                        #     self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size, self.count_middle_p-1))                    
-                        self._model_constraints.extend(MznHadipourBoomerangModel.ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size))
-                        self._model_constraints.extend(MznHadipourBoomerangModel.evaluation_ebct_mzn_constraint_from_component_ids(deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size, self.count_middle_p-1))                                       
-                    elif 'and' in middle_non_linear_transition_ids:
-                        upper_input_and = component_with_input_id_links['upper_'+middle_non_linear_transition_ids]
-                        lower_input_and = component_with_input_id_links['lower_'+middle_non_linear_transition_ids]
-                        for i in range(component_with_output_bit_size['upper_'+middle_non_linear_transition_ids]):
-                            middle_p_constraint = f"constraint middle_p[{self.count_middle_p}] == p[{self.count_index_for_assign_p_with_upper_lower_middle_p}];"
-                            self._model_constraints.append(middle_p_constraint)
-                            and_constraint = f"constraint ({upper_input_and[0]}[{i}]*{lower_input_and[1]}[{i}]) == ({upper_input_and[1]}[{i}]*{lower_input_and[0]}[{i}]);"
-                            self._model_constraints.append(and_constraint)
-                            backward_contraint = f"constraint table([{lower_input_and[0]}[{i}]]++[{lower_input_and[1]}[{i}]]++[lower_{middle_non_linear_transition_ids}[{i}]]++[middle_p[{self.count_middle_p}]],lower_and2inputs_DDT);"
-                            self._model_constraints.append(backward_contraint)
-                            forward_contraint = f"constraint table([{upper_input_and[0]}[{i}]]++[{upper_input_and[1]}[{i}]]++[upper_{middle_non_linear_transition_ids}[{i}]]++[middle_p[{self.count_middle_p}]],upper_and2inputs_DDT);"
-                            self._model_constraints.append(forward_contraint)
-                            self.count_middle_p += 1
-                            self.count_index_for_assign_p_with_upper_lower_middle_p += 1
-        
+    def _build_components(self):
+        for component in self._cipher.all_components():
+            operation = component.description[0]
+            if component.type == WORD_OPERATION and operation in (
+                "MODADD",
+                "MODSUB",
+                "AND",
+            ):
+                if component.description[1] != 2:
+                    raise NotImplementedError(
+                        "Boomerang nonlinear components must have two operands"
+                    )
+                declarations, constraints = self._arm_differential_constraints(
+                    component
+                )
+            else:
+                method = getattr(
+                    component, "cp_xor_differential_propagation_constraints", None
+                )
+                if method is None or component.type == "sbox" or operation == "OR":
+                    raise NotImplementedError(
+                        f"Unsupported boomerang component: {component.id}"
+                    )
+                declarations, constraints = method(self)
+            self._variables_list.extend(declarations)
+            self._model_constraints.extend(constraints)
 
-        new_declaration = 'var int: weight = (2 * upper_weight) + (2 * lower_weight) + middle_weight;'
-        self._cp_xor_differential_constraints.append(new_declaration)
+    def _declare_bits_and_arm_weights(self):
+        declarations = [
+            f"array[0..{size - 1}] of var 0..1: {name};"
+            for name, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
+        ]
+        declarations.extend(
+            f"array[0..{component.output_bit_size - 1}] of var 0..1: {component.id};"
+            for component in self._cipher.all_components()
+            if component.type != CONSTANT
+        )
+        for side in ("upper", "lower"):
+            probabilities = {0}
+            tables = []
+            already_added = []
+            for component in self._cipher.all_components():
+                if (
+                    component.id.startswith(side + "_")
+                    and component.type == WORD_OPERATION
+                    and component.description[0] == "AND"
+                ):
+                    update_and_or_ddt_valid_probabilities(
+                        already_added, component, tables, probabilities
+                    )
+            declarations.extend(
+                line.replace("and2inputs_DDT", side + "_and2inputs_DDT")
+                for line in tables
+            )
+            max_weight = 100 * max(
+                component.output_bit_size for component in self._cipher.all_components()
+            )
+            declarations.append(
+                f"array[0..{getattr(self, 'c_' + side) - 1}] of var 0..{max_weight}: {side}_p;"
+            )
+        return declarations
 
-        variables = []
-        return variables, self._cp_xor_differential_constraints
-    
-    def addSwitch(self, middle_non_linear_transition_ids):
-        self.component_and_probability['middle_' + middle_non_linear_transition_ids] = [self.count_middle_p]
-        middle_non_linear_transition_ids_up = 'upper_' + middle_non_linear_transition_ids
-        middle_non_linear_transition_ids_lo = 'lower_' + middle_non_linear_transition_ids
-        contrains_of_p_middle = f'constraint p[{self.count_index_for_assign_p_with_upper_lower_middle_p}] = middle_p[{self.count_middle_p}];'         
-        self._cp_xor_differential_constraints.append(contrains_of_p_middle)
-    
-        deltaL = 'pre_' + middle_non_linear_transition_ids_up + '_0'
-        deltaR = 'pre_' + middle_non_linear_transition_ids_up + '_1'
-        nablaL = 'pre_' + middle_non_linear_transition_ids_lo + '_0'
-        nablaR = 'pre_' + middle_non_linear_transition_ids_lo + '_1'
-        deltaLL = middle_non_linear_transition_ids_up
-        nablaLL = middle_non_linear_transition_ids_lo
-        branch_size = self.cipher.component_from_id(middle_non_linear_transition_ids_up).output_bit_size
-        self.count_middle_p += 1
-        self.count_index_for_assign_p_with_upper_lower_middle_p += 1
+    def _middle_keys(self):
+        upper = {
+            key.removeprefix("upper_")
+            for key in self.component_and_probability
+            if key.startswith("upper_")
+        }
+        lower = {
+            key.removeprefix("lower_")
+            for key in self.component_and_probability
+            if key.startswith("lower_")
+        }
+        return sorted(
+            upper & lower, key=lambda key: tuple(map(int, key.split("_")[1:]))
+        )
 
-        return deltaL, deltaR, nablaL, nablaR, deltaLL, nablaLL, branch_size
+    def _add_and_switch(self, key, kind, start):
+        upper = self._cipher.component_from_id("upper_" + key)
+        lower = self._cipher.component_from_id("lower_" + key)
+        inputs = []
+        for component in (upper, lower):
+            bits = [
+                f"{link}[{bit}]"
+                for link, positions in zip(
+                    component.input_id_links, component.input_bit_positions
+                )
+                for bit in positions
+            ]
+            inputs.append(
+                (bits[: component.output_bit_size], bits[component.output_bit_size :])
+            )
+        for bit in range(upper.output_bit_size):
+            a, b = inputs[0][0][bit], inputs[0][1][bit]
+            c, d = inputs[1][0][bit], inputs[1][1][bit]
+            self._model_constraints.append(f"constraint {a} * {d} = {b} * {c};")
+            target = f"middle_p[{start + bit}]"
+            sources = []
+            if kind in ("ubct", "ebct"):
+                sources.append(
+                    f"upper_p[{self.component_and_probability[upper.id][bit]}]"
+                )
+            if kind in ("lbct", "ebct"):
+                sources.append(
+                    f"lower_p[{self.component_and_probability[lower.id][bit]}]"
+                )
+            if not sources:
+                sources = ["0"]
+            for source in sources:
+                self._model_constraints.append(f"constraint {target} = {source};")
 
-    def update_sbox_ddt_valid_probabilities(self, component, valid_probabilities):
-        input_size = int(component.input_bit_size)
-        output_id_link = component.id
-        description = component.description
-        sbox = SBox(description)
-        sbox_already_in = False
-        for mant in self.sbox_mant:
-            if description == mant[0]:
-                sbox_already_in = True
-        if not sbox_already_in:
-            sbox_ddt = sbox.difference_distribution_table()
-            for i in range(sbox_ddt.nrows()):
-                set_of_occurrences = set(sbox_ddt.rows()[i])
-                set_of_occurrences -= {0}
-                valid_probabilities.update({round(100 * math.log2(2 ** input_size / occurrence))
-                                            for occurrence in set_of_occurrences})
-            self.sbox_mant.append((description, output_id_link))
+    def _add_modular_switch(self, key, kind, index):
+        upper, lower = "upper_" + key, "lower_" + key
+        component = self._cipher.component_from_id(upper)
+        size = component.output_bit_size
+        if size < 2:
+            raise NotImplementedError("Modular switches require at least two bits")
+        args = [f"pre_{upper}_0", f"pre_{upper}_1", lower, f"pre_{lower}_1"]
+        upper_output, lower_input = upper, f"pre_{lower}_0"
+        if component.description[0] == "MODSUB":
+            # The triangular subtraction permutation is addition's inverse.
+            # BCT(F^-1)(a,b)=BCT(F)(b,a); upper/lower conditions exchange roles.
+            args = args[2:] + args[:2]
+            upper_output, lower_input = lower_input, upper_output
+            kind = {"ubct": "lbct", "lbct": "ubct"}.get(kind, kind)
+        if kind in ("ubct", "ebct"):
+            args.append(upper_output)
+        if kind in ("lbct", "ebct"):
+            args.append(lower_input)
+        self._model_constraints.extend(self._switch_constraint(kind, args, size))
+        self._model_constraints.extend(self._switch_constraint(kind, args, size, index))
+        return kind, size
 
+    @staticmethod
+    def _switch_constraint(kind, ids, size, index=None):
+        indices = range(size) if index is not None else reversed(range(size))
+        indices = list(indices)
+        arrays = [
+            f"array1d(0..{size}-1, [" + ",".join(f"{name}[{i}]" for i in indices) + "])"
+            for name in ids
+        ]
+        if index is None:
+            suffix = f", {size // 2}, {size}) = true;"
+            predicate = f"onlyLargeSwitch_{kind.upper()}_enum"
+        else:
+            suffix = f", {size}, middle_p[{index}]);"
+            predicate = kind + "_compute"
+        return ["constraint " + predicate + "(" + ", ".join(arrays) + suffix]
 
-    def final_xor_differential_constraints(self, weight, milp_modadd = False):
-        """
-        Return a CP constraints list for the cipher outputs and solving indications for single or second step model.
+    def _build_switches(self):
+        keys = self._middle_keys()
+        index = 0
+        predicates = {}
+        for key in keys:
+            round_number = int(key.split("_")[1])
+            if self.middle_part_number_of_rounds == 1:
+                kind = "bct"
+            elif round_number == self.top_part_number_of_rounds:
+                kind = "ubct"
+            elif (
+                round_number
+                == self.top_part_number_of_rounds
+                + self.middle_part_number_of_rounds
+                - 1
+            ):
+                kind = "lbct"
+            else:
+                kind = "ebct"
+            component = self._cipher.component_from_id("upper_" + key)
+            count = (
+                component.output_bit_size if component.description[0] == "AND" else 1
+            )
+            self._middle_probabilities[key] = list(range(index, index + count))
+            if component.description[0] == "AND":
+                self._add_and_switch(key, kind, index)
+            else:
+                kind, size = self._add_modular_switch(key, kind, index)
+                if predicates and size not in predicates.values():
+                    raise NotImplementedError(
+                        "Modular switches must have the same word size"
+                    )
+                predicates[kind] = size
+            index += count
+        self._variables_list.append(f"array[0..{index - 1}] of var 0..3200: middle_p;")
+        for kind, size in predicates.items():
+            connectivity, evaluation = _SWITCH_PREDICATES[kind]
+            self._model_constraints.extend([connectivity(), evaluation(size)])
+        if predicates:
+            self._model_constraints.append(get_approx_logarithm_operation())
+        return keys
+
+    def _weight_constraints(self, middle_keys):
+        for side in ("upper", "lower"):
+            terms = [
+                f"{side}_p[{index}]"
+                for key, indices in self.component_and_probability.items()
+                if key.startswith(side + "_")
+                and key.removeprefix(side + "_") not in middle_keys
+                for index in indices
+            ]
+            self._variables_list.append(
+                f"var int: {side}_weight = " + (" + ".join(terms) or "0") + ";"
+            )
+        self._variables_list.extend(
+            [
+                "var int: middle_weight = sum(middle_p);",
+                "var int: weight = 2 * upper_weight + middle_weight + 2 * lower_weight;",
+            ]
+        )
+
+    def _output_constraints(self):
+        lines = []
+        for name in self._cipher.inputs + self._cipher.all_components_ids():
+            lines.append(f'"{name} = " ++ show({name}) ++ "\\n"')
+        for name, indices in self.component_and_probability.items():
+            side = name.split("_")[0]
+            expression = " + ".join(f"{side}_p[{index}]" for index in indices) or "0"
+            lines.append(f'"weight {name} = " ++ show(({expression})/100) ++ "\\n"')
+        for label, variable in [
+            ("Upper weight", "upper_weight"),
+            ("Middle weight", "middle_weight"),
+            ("Lower weight", "lower_weight"),
+            ("Trail weight", "weight"),
+        ]:
+            lines.append(f'"{label} = " ++ show({variable}/100) ++ "\\n"')
+        return "output [" + " ++ ".join(lines) + "];"
+
+    def build_hadipour_boomerang_model(self, weight=-1, fixed_variables=None):
+        """Build the constraints without invoking a solver or writing a file.
 
         INPUT:
 
-        - ``weight`` -- **integer**; a specific weight. If set to non-negative integer, fixes the XOR trail weight
+        - ``weight`` -- negative log2 probability; -1 minimizes the weight,
+          None finds any trail; otherwise fixes it to a nonnegative multiple
+          of 0.01 bits.
+        - ``fixed_variables`` -- optional list from ``set_fixed_variables``.
+          IDs refer to the unified cipher (e.g. ``upper_plaintext`` and
+          ``lower_cipher_output_2_12``). Keys default to zero differences;
+          both external state differences must be nonzero.
+
+        OUTPUT: None; access ``model_constraints`` or ``assemble_model()``.
+        For the assumptions and references see the class documentation.
 
         EXAMPLES::
 
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model import (MznXorDifferentialModel)
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-            sage: speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
-            sage: cp = MznXorDifferentialModel(speck)
-            sage: cp.build_xor_differential_trail_model(-1)
-            sage: cp.final_xor_differential_constraints(-1)[:-1]
-            ['solve:: int_search(p, smallest, indomain_min, complete) minimize weight;']
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: model.build_hadipour_boomerang_model(4)
+            sage: 'solve satisfy;' in model.model_constraints
+            True
         """
-        cipher_inputs = self._cipher.inputs
-        cp_constraints = []
-        # if weight == -1:
-        cp_constraints.append('solve:: int_search(p, smallest, indomain_min, complete) minimize weight;')
-        # else:
-        #     cp_constraints.append(solve_satisfy)
-        new_constraint = 'output['
-        for element in cipher_inputs:
-            new_constraint = new_constraint + f'\"{element} = \"++ show({element}) ++ \"\\n\" ++'
-        for component in self._cipher.all_components():
-            if SBOX in component.type:
-                new_constraint = new_constraint + \
-                    f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ ' \
-                    f'show(p[{self.component_and_probability[component.id]}]/100) ++ \"\\n\" ++'
-            elif WORD_OPERATION in component.type:
-                new_constraint = self.get_word_operation_xor_differential_constraints(component, new_constraint, milp_modadd)
-            else:
-                new_constraint = new_constraint + f'\"{component.id} = \"++ ' \
-                                                  f'show({component.id})++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"Upper weight = \" ++ show(upper_weight/100) ++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"Lower weight = \" ++ show(lower_weight/100) ++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"Middle weight = \" ++ show(middle_weight/100) ++ \"\\n\" ++'
-        new_constraint = new_constraint + '\"Trail weight = \" ++ show(weight/100)  ];'
-        cp_constraints.append(new_constraint)
-
-        return cp_constraints
-    
-    def get_word_operation_xor_differential_constraints(self, component, new_constraint, milp_modadd = False):
-        if 'AND' in component.description[0] or (('MODADD' in component.description[0] or 'MODSUB' in component.description[0]) and not milp_modadd):
-            new_constraint = new_constraint + f'\"{component.id} = \"++ show({component.id})++ \"\\n\" ++ '
-            id_without_prefix = component.id.removeprefix('upper_').removeprefix('lower_')
-            if 'upper' in component.id and any(id_without_prefix in k for k in self.component_and_probability.keys()):
-                id_middle = 'middle_' + component.id.removeprefix('upper_')
-                if id_middle in self.component_and_probability:
-                    new_constraint = new_constraint + '\"middle probability = \"++ show('
-                    for id in self.component_and_probability[id_middle]:
-                        new_constraint = new_constraint + f'middle_p[{id}]/100+'
-                else:
-                    new_constraint = new_constraint + '\"upper probability = \"++ show('
-                    for id in self.component_and_probability[component.id]:
-                        new_constraint = new_constraint + f'upper_p[{id}]/100+'
-                new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++'
-                
-            elif 'lower' in component.id and any(id_without_prefix in k for k in self.component_and_probability.keys()):
-                id_middle = 'middle_' + component.id.removeprefix('lower_')
-                if id_middle in self.component_and_probability:
-                    new_constraint = new_constraint + '\"middle probability = \"++ show('
-                    for id in self.component_and_probability[id_middle]:
-                        new_constraint = new_constraint + f'middle_p[{id}]/100+' 
-                else: 
-                    new_constraint = new_constraint + '\"lower probability = \"++ show('
-                    for id in self.component_and_probability[component.id]:
-                        new_constraint = new_constraint + f'lower_p[{id}]/100+'
-                
-                new_constraint = new_constraint[:-1] + ') ++ \"\\n\" ++'
-            self.component_and_probability = {k: v for k, v in self.component_and_probability.items() if id_without_prefix not in k}
-
-        else:
-            new_constraint = new_constraint + f'\"{component.id} = \"++ ' \
-                                              f'show({component.id})++ \"\\n\" ++'
-
-        return new_constraint
-    
-    ##############################################################
-
-    @staticmethod
-    def evaluation_bct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, branch_size, index):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
-        
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-
-        constraint = [
-            f"constraint bct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {branch_size}, middle_p[{index}]);\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def bct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, branch_size):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = []
-        delta_right_vars = []
-        nabla_left_vars = []
-        nabla_right_vars = []
-        for i in range(branch_size):
-            delta_left_vars.append(f'{delta_left_component_id}[{branch_size - 1 - i}]')
-            delta_right_vars.append(f'{delta_right_component_id}[{branch_size - 1 - i}]')
-            nabla_left_vars.append(f'{nabla_left_component_id}[{branch_size - 1 - i}]')
-            nabla_right_vars.append(f'{nabla_right_component_id}[{branch_size - 1 - i}]')
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-
-        halfNum = int(branch_size / 2)
-
-        constraint = [
-            f"constraint onlyLargeSwitch_BCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {halfNum}, {branch_size}) = true;\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def evaluation_ebct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, delta_left_left_component_id, nabla_left_left_component_id, branch_size, index):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{ i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
-        delta_left_left_vars = [f'{delta_left_left_component_id}[{i}]' for i in range(branch_size)]
-        nabla_left_left_vars = [f'{nabla_left_left_component_id}[{i}]' for i in range(branch_size)]
-
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-        delta_left_left_str = ",".join(delta_left_left_vars)
-        nabla_left_left_str = ",".join(nabla_left_left_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-        delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
-        nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
-
-        constraint = [
-            f"constraint ebct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {nabla_left_left}, {branch_size}, middle_p[{index}]);\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def ebct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, delta_left_left_component_id, nabla_left_left_component_id, branch_size):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        delta_left_left_vars = [f'{delta_left_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_left_left_vars = [f'{nabla_left_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-        delta_left_left_str = ",".join(delta_left_left_vars)
-        nabla_left_left_str = ",".join(nabla_left_left_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-        delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
-        nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
-
-        ## to better understand the meaning of halfNum
-        halfNum = int(branch_size / 2)
-        
-
-        constraint = [
-            f"constraint onlyLargeSwitch_EBCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {nabla_left_left}, {halfNum}, {branch_size}) = true;\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def evaluation_lbct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, nabla_left_left_component_id, branch_size, index):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{ i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
-        nabla_left_left_vars = [f'{nabla_left_left_component_id}[{i}]' for i in range(branch_size)]
-
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-        nabla_left_left_str = ",".join(nabla_left_left_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-        nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
-
-        constraint = [
-            f"constraint lbct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {nabla_left_left}, {branch_size}, middle_p[{index}]);\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def lbct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, nabla_left_left_component_id, branch_size):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_left_left_vars = [f'{nabla_left_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-        nabla_left_left_str = ",".join(nabla_left_left_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-        nabla_left_left = f'array1d(0..{branch_size}-1, [{nabla_left_left_str}])'
-
-        ## to better understand the meaning of halfNum
-        halfNum = int(branch_size / 2)
-
-        constraint = [
-            f"constraint onlyLargeSwitch_LBCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {nabla_left_left}, {halfNum}, {branch_size}) = true;\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def evaluation_ubct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, delta_left_left_component_id, branch_size, index):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{i}]' for i in range(branch_size)]
-        delta_left_left_vars = [f'{delta_left_left_component_id}[{i}]' for i in range(branch_size)]
-        
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-        delta_left_left_str = ",".join(delta_left_left_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-        delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
-
-        constraint = [
-            f"constraint ubct_compute({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {branch_size}, middle_p[{index}]);\n"
-        ]
-        return constraint
-    
-    @staticmethod
-    def ubct_mzn_constraint_from_component_ids(delta_left_component_id, delta_right_component_id, nabla_left_component_id, nabla_right_component_id, delta_left_left_component_id, branch_size):
-        # variables = []
-        # branch_size = self.output_bit_size
-        delta_left_vars = [f'{delta_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        delta_right_vars = [f'{delta_right_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_left_vars = [f'{nabla_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        nabla_right_vars = [f'{nabla_right_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        delta_left_left_vars = [f'{delta_left_left_component_id}[{branch_size - 1 - i}]' for i in range(branch_size)]
-        
-        delta_left_str = ",".join(delta_left_vars)
-        delta_right_str = ",".join(delta_right_vars)
-        nabla_left_str = ",".join(nabla_left_vars)
-        nabla_right_str = ",".join(nabla_right_vars)
-        delta_left_left_str = ",".join(delta_left_left_vars)
-
-        delta_left = f'array1d(0..{branch_size}-1, [{delta_left_str}])'
-        delta_right = f'array1d(0..{branch_size}-1, [{delta_right_str}])'
-        nabla_left = f'array1d(0..{branch_size}-1, [{nabla_left_str}])'
-        nabla_right = f'array1d(0..{branch_size}-1, [{nabla_right_str}])'
-        delta_left_left = f'array1d(0..{branch_size}-1, [{delta_left_left_str}])'
-
-        ## to better understand the meaning of halfNum
-        halfNum = int(branch_size / 2)
-        print(branch_size)
-        print(halfNum)
-
-        constraint = [
-            f"constraint onlyLargeSwitch_UBCT_enum({delta_left}, {delta_right}, "
-            f"{nabla_left}, {nabla_right}, {delta_left_left}, {halfNum}, {branch_size}) = true;\n"
-        ]
-        return constraint
-    
-    def initial_constrain(self):
-        for inputs in self.cipher.inputs:
-            if 'upper_plaintext' in inputs:
-                self._model_constraints.append(f'constraint sum({inputs})>0;')
-                # if 'chacha_permutation' in self.cipher.id:
-                #     for i in range(128*3):
-                #         self._model_constraints.append(f'constraint {inputs}[{i}] = 0;')
-            if 'lower_cipher_output' in inputs:
-                self._model_constraints.append(f'constraint sum({inputs})>0;')
-        return      
-        
-    def build_hadipour_boomerang_model(self, weight=-1):
-        
-        component_and_model_types = _generate_component_model_types(
-            self.cipher,
-            model_type="cp_xor_differential_propagation_constraints_boomerang"
-        )
-        
+        scaled = None if weight in (-1, None) else self._scaled_weight(weight)
         self.initialise_model()
-        self.c_upper = 0
-        self.c_lower = 0
-        self.sbox_mant = []
-        self.input_sbox = []
-        self.component_and_probability = {}
-        self.table_of_solutions_length = 0
-        self.branch_size = 0
-        self.boomerang = True
-        self.branch_size = 0
+        self._variables_list = []
+        self.c_upper = self.c_lower = 0
+        self._middle_probabilities = {}
+        self._build_components()
+        self._variables_list.extend(self._declare_bits_and_arm_weights())
+        middle_keys = self._build_switches()
+        self._weight_constraints(middle_keys)
+        self._model_constraints.extend(
+            self.fix_variables_value_constraints(fixed_variables or [])
+        )
+        for name in self._cipher.inputs:
+            if name not in self._data_inputs:
+                self._model_constraints.append(f"constraint sum({name}) = 0;")
+        for name in sorted(self._external_differences):
+            self._model_constraints.append(f"constraint sum({name}) > 0;")
+        if weight is None:
+            self._model_constraints.append("solve satisfy;")
+        elif scaled is None:
+            self._model_constraints.append("solve minimize weight;")
+        else:
+            self._model_constraints.extend(
+                [f"constraint weight = {scaled};", "solve satisfy;"]
+            )
+        self._model_constraints = (
+            self._variables_list
+            + self._model_constraints
+            + [self._output_constraints()]
+        )
 
-        self.build_generic_mzn_model_from_dictionary(component_and_model_types)
+    def _parse_boomerang_solution(self, solution, status, solver_name, statistics):
+        components = {}
+        weights = {}
+        for line in solution.__dict__["_output_item"].splitlines():
+            name, separator, value = line.partition(" = ")
+            if not separator:
+                continue
+            if value.startswith("["):
+                bits = "".join(value.strip("[]").replace(",", " ").split())
+                components[name] = {
+                    "value": "0x"
+                    + format(int(bits, 2), f"0{math.ceil(len(bits) / 4)}x"),
+                    "weight": 0,
+                }
+            elif name.startswith("weight "):
+                components[name[7:]]["weight"] = float(value)
+            elif name.endswith("weight"):
+                weights[name] = float(value)
+        elapsed = statistics.get("time", timedelta()).total_seconds()
+        result = convert_solver_solution_to_dictionary(
+            self.original_cipher,
+            "boomerang",
+            solver_name,
+            elapsed,
+            statistics.get("peakMem", -1),
+            components,
+            str(weights["Trail weight"]),
+        )
+        result.update(
+            status="SATISFIABLE",
+            solver_status=str(status),
+            upper_weight=weights["Upper weight"],
+            middle_weight=weights["Middle weight"],
+            lower_weight=weights["Lower weight"],
+            boomerang_structure=dict(self.boomerang_structure),
+        )
+        return result
 
-        variables, constraints = self.input_xor_differential_constraints()
-        self._variables_list.extend(variables)
-        self._model_constraints.extend(constraints)
-        self._model_constraints = self._variables_list + self._model_constraints
-    
-        for input in self.cipher._inputs:
-            if 'plaintext' not in input and 'cipher_output' not in input:
-                self._model_constraints.extend([f'constraint sum({input}) = 0;'])
-        
-        self._model_constraints.extend(self.final_xor_differential_constraints(weight))
+    def _search(
+        self,
+        weight,
+        fixed_values,
+        solver_name,
+        timeout_in_seconds,
+        processes,
+        all_solutions=False,
+        max_weight=None,
+        min_weight=0,
+    ):
+        start = time.perf_counter()
+        self.build_hadipour_boomerang_model(weight, fixed_values)
+        if max_weight is not None:
+            lower, upper = (
+                self._scaled_weight(min_weight),
+                self._scaled_weight(max_weight),
+            )
+            if lower > upper:
+                raise ValueError("min_weight must not exceed max_weight")
+            self._model_constraints.extend(
+                [
+                    f"constraint weight >= {lower};",
+                    f"constraint weight <= {upper};",
+                ]
+            )
+        build_time = time.perf_counter() - start
+        result = self.solve(
+            solver_name=solver_name,
+            timeout_in_seconds=timeout_in_seconds,
+            processes=processes,
+            all_solutions=all_solutions,
+        )
+        for solution in result if isinstance(result, list) else [result]:
+            solution["building_time_seconds"] = build_time
+        return result
 
-        ### JUST FOR MODULAR ADDITION OPERATOR
-        if any('MODADD' in component.description[0] for component in self._cipher.all_components()):
-            if self.middle_part_number_of_rounds == 1:
-                self._model_constraints.extend([get_bct_operations()])
-                self._model_constraints.extend([get_evaluation_bct_operations(self.branch_size)])
-            else:
-                self._model_constraints.extend([get_lbct_operations()])
-                self._model_constraints.extend([get_ubct_operations()])
-                self._model_constraints.extend([get_evaluation_ubct_operations(self.branch_size)])
-                self._model_constraints.extend([get_evaluation_lbct_operations(self.branch_size)])
-                if self.middle_part_number_of_rounds > 2:
-                    self._model_constraints.extend([get_ebct_operations()])
-                    self._model_constraints.extend([get_evaluation_ebct_operations(self.branch_size)])
+    def solve(
+        self,
+        model_type="boomerang",
+        solver_name=None,
+        timeout_in_seconds=None,
+        processes=None,
+        all_solutions=False,
+    ):
+        """Solve the current boomerang model and return parsed CLAASP results.
 
-            self._model_constraints.extend([get_approx_logarithm_operation()])
+        INPUT:
 
-        self.initial_constrain()
-        self.write_minizinc_model_to_file(".")
+        - ``model_type`` -- ``'boomerang'`` (default); other model types are rejected.
+        - ``solver_name`` -- installed MiniZinc solver ID; None selects gecode for
+          modular switches and CLAASP's default for AND-only models.
+          Use a float-capable solver such as gecode for modular switches.
+        - ``timeout_in_seconds`` -- optional positive time limit in seconds.
+        - ``processes`` -- optional positive solver process count.
+        - ``all_solutions`` -- bool, enumerate a satisfaction model if True.
 
-        # # debug stuff
-        # from mzn_boomerang_model_arx_optimized_test import speck32_64_bct_distinguisher_verifier
-        # delta_up = [0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
-        # nabla_lo = [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]
-        # number_rounds = 10
-        # primi_16_delta_up = delta_up[:16]
-        # ultimi_16_delta_up = delta_up[16:]
-        # dec_primi_delta = sum(bit << (15 - i) for i, bit in enumerate(primi_16_delta_up))
-        # dec_ultimi_delta = sum(bit << (15 - i) for i, bit in enumerate(ultimi_16_delta_up))
-        # primi_16_nabla_lo = nabla_lo[:16]
-        # ultimi_16_nabla_lo = nabla_lo[16:]
-        # dec_primi_nabla = sum(bit << (15 - i) for i, bit in enumerate(primi_16_nabla_lo))
-        # dec_ultimi_nabla = sum(bit << (15 - i) for i, bit in enumerate(ultimi_16_nabla_lo))        
-        # prob = speck32_64_bct_distinguisher_verifier([dec_primi_delta,dec_ultimi_delta], [dec_primi_nabla,dec_ultimi_nabla], nr=number_rounds, n=2 ** 30 )
-        # print(f'prob = {prob}')
-        # if prob > 0:
-        #     exponent = math.log(prob, 2)
-        #     print(f'2^{exponent}')
+        OUTPUT: a solution dictionary, or a list when ``all_solutions=True``.
+        Weights are in bits. Check ``status`` and ``solver_status`` for
+        satisfiability and completion. A timeout without a solution is UNKNOWN;
+        enumeration returns an empty list if no solutions were found.
+        Call ``build_hadipour_boomerang_model`` first. See the class for the
+        probability assumptions and references.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: model.build_hadipour_boomerang_model(weight=None)
+            sage: result = model.solve(solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+        """
+        if model_type != "boomerang":
+            raise ValueError("This model only solves boomerang characteristics")
+        if not self._model_constraints:
+            raise ValueError("Build the boomerang model before solving")
+        if solver_name is None:
+            solver_name = (
+                GECODE
+                if any(
+                    component.type == WORD_OPERATION
+                    and component.description[0] in ("MODADD", "MODSUB")
+                    for component in self._cipher.all_components()
+                )
+                else SOLVER_DEFAULT
+            )
+        model = Model()
+        model.add_string(self.assemble_model())
+        options = {"all_solutions": all_solutions}
+        if timeout_in_seconds is not None:
+            if timeout_in_seconds <= 0:
+                raise ValueError("timeout_in_seconds must be positive")
+            options["timeout"] = timedelta(seconds=timeout_in_seconds)
+        if processes is not None:
+            if processes <= 0:
+                raise ValueError("processes must be positive")
+            options["processes"] = processes
+        result = Instance(Solver.lookup(solver_name), model).solve(**options)
+        if result.solution is None:
+            status = (
+                "UNSATISFIABLE" if result.status == Status.UNSATISFIABLE else "UNKNOWN"
+            )
+            if all_solutions:
+                return []
+            empty = convert_solver_solution_to_dictionary(
+                self.original_cipher,
+                "boomerang",
+                solver_name,
+                result.statistics.get("time", timedelta()).total_seconds(),
+                -1,
+                {},
+                None,
+            )
+            empty.update(status=status, solver_status=str(result.status))
+            return empty
+        solutions = (
+            result.solution if isinstance(result.solution, list) else [result.solution]
+        )
+        parsed = [
+            self._parse_boomerang_solution(
+                solution, result.status, solver_name, result.statistics
+            )
+            for solution in solutions
+        ]
+        return parsed if all_solutions else parsed[-1]
+
+    def find_one_boomerang_trail(
+        self,
+        fixed_values=None,
+        solver_name=None,
+        timeout_in_seconds=None,
+        processes=None,
+    ):
+        """Find one characteristic using MiniZinc.
+
+        INPUT:
+
+        - ``fixed_values`` -- optional list from ``set_fixed_variables``;
+          component IDs include ``upper_`` or ``lower_``. Defaults to the
+          single-key setting and nonzero external state differences.
+        - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
+          for modular switches and CLAASP's default solver for AND-only models.
+          Modular probability predicates require float support (e.g. gecode).
+        - ``timeout_in_seconds`` -- optional positive time limit, including
+          flattening. A time limit may leave optimality unproved.
+        - ``processes`` -- optional positive number of solver processes.
+
+        OUTPUT: CLAASP solution dictionary with hexadecimal component values,
+        ``total_weight``, ``upper_weight``, ``middle_weight``, ``lower_weight``,
+        solver statistics, build time, and ``solver_status``. ``status`` is
+        SATISFIABLE, UNSATISFIABLE or UNKNOWN (e.g. a timeout without a solution).
+        Check ``solver_status`` for proof of optimality. See the class
+        documentation for assumptions and citations.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_one_boomerang_trail(solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+        """
+        return self._search(
+            None,
+            fixed_values,
+            solver_name,
+            timeout_in_seconds,
+            processes,
+            all_solutions=False,
+        )
+
+    def find_one_boomerang_trail_with_fixed_weight(
+        self,
+        weight,
+        fixed_values=None,
+        solver_name=None,
+        timeout_in_seconds=None,
+        processes=None,
+    ):
+        """Find one characteristic of the given weight using MiniZinc.
+
+        INPUT:
+
+        - ``weight`` -- negative log2 probability in bits, a nonnegative
+          multiple of 0.01. The objective uses the class-level approximation.
+        - ``fixed_values`` -- optional list from ``set_fixed_variables``;
+          component IDs include ``upper_`` or ``lower_``. Defaults to the
+          single-key setting and nonzero external state differences.
+        - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
+          for modular switches and CLAASP's default solver for AND-only models.
+          Modular probability predicates require float support (e.g. gecode).
+        - ``timeout_in_seconds`` -- optional positive time limit, including
+          flattening. A time limit may leave optimality unproved.
+        - ``processes`` -- optional positive number of solver processes.
+
+        OUTPUT: CLAASP solution dictionary with hexadecimal component values,
+        ``total_weight``, ``upper_weight``, ``middle_weight``, ``lower_weight``,
+        solver statistics, build time, and ``solver_status``. ``status`` is
+        SATISFIABLE, UNSATISFIABLE or UNKNOWN (e.g. a timeout without a solution).
+        Check ``solver_status`` for proof of optimality. See the class
+        documentation for assumptions and citations.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_one_boomerang_trail_with_fixed_weight(4, solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+        """
+        return self._search(
+            weight,
+            fixed_values,
+            solver_name,
+            timeout_in_seconds,
+            processes,
+            all_solutions=False,
+        )
+
+    def find_lowest_weight_boomerang_trail(
+        self,
+        fixed_values=None,
+        solver_name=None,
+        timeout_in_seconds=None,
+        processes=None,
+    ):
+        """Find one minimum-weight characteristic using MiniZinc.
+
+        INPUT:
+
+        - ``fixed_values`` -- optional list from ``set_fixed_variables``;
+          component IDs include ``upper_`` or ``lower_``. Defaults to the
+          single-key setting and nonzero external state differences.
+        - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
+          for modular switches and CLAASP's default solver for AND-only models.
+          Modular probability predicates require float support (e.g. gecode).
+        - ``timeout_in_seconds`` -- optional positive time limit, including
+          flattening. A time limit may leave optimality unproved.
+        - ``processes`` -- optional positive number of solver processes.
+
+        OUTPUT: CLAASP solution dictionary with hexadecimal component values,
+        ``total_weight``, ``upper_weight``, ``middle_weight``, ``lower_weight``,
+        solver statistics, build time, and ``solver_status``. ``status`` is
+        SATISFIABLE, UNSATISFIABLE or UNKNOWN (e.g. a timeout without a solution).
+        Check ``solver_status`` for proof of optimality. See the class
+        documentation for assumptions and citations.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_lowest_weight_boomerang_trail(solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+        """
+        return self._search(
+            -1,
+            fixed_values,
+            solver_name,
+            timeout_in_seconds,
+            processes,
+            all_solutions=False,
+        )
+
+    def find_all_boomerang_trails_with_fixed_weight(
+        self,
+        weight,
+        fixed_values=None,
+        solver_name=None,
+        timeout_in_seconds=None,
+        processes=None,
+    ):
+        """Enumerate all characteristics of the given weight using MiniZinc.
+
+        INPUT:
+
+        - ``weight`` -- negative log2 probability in bits, a nonnegative
+          multiple of 0.01. The objective uses the class-level approximation.
+        - ``fixed_values`` -- optional list from ``set_fixed_variables``;
+          component IDs include ``upper_`` or ``lower_``. Defaults to the
+          single-key setting and nonzero external state differences.
+        - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
+          for modular switches and CLAASP's default solver for AND-only models.
+          Modular probability predicates require float support (e.g. gecode).
+        - ``timeout_in_seconds`` -- optional positive time limit, including
+          flattening. A time limit may leave optimality unproved.
+        - ``processes`` -- optional positive number of solver processes.
+
+        OUTPUT: list of CLAASP solution dictionaries. Empty for an unsatisfiable
+        model or a timeout before any solution; ``solver_status`` records
+        completeness on returned solutions. Enumeration is of the encoded
+        assignments, not aggregated external-difference probabilities.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_all_boomerang_trails_with_fixed_weight(4, solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+        """
+        return self._search(
+            weight,
+            fixed_values,
+            solver_name,
+            timeout_in_seconds,
+            processes,
+            all_solutions=True,
+        )
+
+    def find_all_boomerang_trails_with_weight_at_most(
+        self,
+        max_weight,
+        min_weight=0,
+        fixed_values=None,
+        solver_name=None,
+        timeout_in_seconds=None,
+        processes=None,
+    ):
+        """Enumerate all characteristics up to the given weight using MiniZinc.
+
+        INPUT:
+
+        - ``max_weight`` -- negative log2 probability in bits, a nonnegative
+          multiple of 0.01. The objective uses the class-level approximation.
+        - ``min_weight`` -- nonnegative lower weight bound in bits (default: 0).
+        - ``fixed_values`` -- optional list from ``set_fixed_variables``;
+          component IDs include ``upper_`` or ``lower_``. Defaults to the
+          single-key setting and nonzero external state differences.
+        - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
+          for modular switches and CLAASP's default solver for AND-only models.
+          Modular probability predicates require float support (e.g. gecode).
+        - ``timeout_in_seconds`` -- optional positive time limit, including
+          flattening. A time limit may leave optimality unproved.
+        - ``processes`` -- optional positive number of solver processes.
+
+        OUTPUT: list of CLAASP solution dictionaries. Empty for an unsatisfiable
+        model or a timeout before any solution; ``solver_status`` records
+        completeness on returned solutions. Enumeration is of the encoded
+        assignments, not aggregated external-difference probabilities.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_all_boomerang_trails_with_weight_at_most(4, solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+        """
+        return self._search(
+            None,
+            fixed_values,
+            solver_name,
+            timeout_in_seconds,
+            processes,
+            all_solutions=True,
+            max_weight=max_weight,
+            min_weight=min_weight,
+        )

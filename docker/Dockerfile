@@ -414,6 +414,13 @@ RUN printf '%s\n' \
     && chmod +x /usr/local/bin/mallob
 
 
+# Float constraints in modular boomerang models need Gecode. The x86 bundle
+# includes it; source-built arm64 MiniZinc needs the FlatZinc executable.
+RUN if [ "$TARGETARCH" = "arm64" ]; then \
+        apt-get -q update && apt-get install --no-install-recommends -y flatzinc; \
+    fi
+
+
 FROM claasp-base AS claasp-lib
 
 # Create a non-root user "sage" with home directory
