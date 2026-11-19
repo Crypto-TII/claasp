@@ -4,6 +4,10 @@ def get_approx_logarithm_operation():
     Input probabilities are in [0, 1]; integer output weights are in hundredths
     of a bit. Probabilities at most 0.001021453702391378 map to 3200.
     This is a search heuristic, not an exact logarithm or certified error bound.
+    For the piecewise-linear modeling approach, see Bellini et al., *Fully
+    Automated Differential-Linear Attacks Against ARX Ciphers*, CT-RSA 2023,
+    pp. 252-276, https://doi.org/10.1007/978-3-031-30872-7_10. The coefficients
+    and saturation threshold here are those of the original paper implementation.
 
     INPUT: None.
 
