@@ -221,6 +221,10 @@ class MultiInputNonlinearLogicalOperator(Component):
 
         - ``model`` -- **model object**; a model instance
 
+        OUTPUT: declaration and constraint lists. ``model.component_and_probability``
+        records the same zero-based probability indices used by the constraints;
+        ``model.c`` advances past the allocated entries.
+
         EXAMPLES::
 
             sage: from claasp.components.multi_input_non_linear_logical_operator_component import MultiInputNonlinearLogicalOperator
@@ -229,10 +233,13 @@ class MultiInputNonlinearLogicalOperator(Component):
             ....:         self.c = 0
             ....:         self.component_and_probability = {}
             sage: component = MultiInputNonlinearLogicalOperator(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2, 'and')
-            sage: component.cp_xor_differential_propagation_constraints(DummyModel())
+            sage: model = DummyModel()
+            sage: component.cp_xor_differential_propagation_constraints(model)
             ([],
              ['constraint table([input1[0]]++[input2[0]]++[and_0_0[0]]++[p[0]],and2inputs_DDT);',
               'constraint table([input1[1]]++[input2[1]]++[and_0_0[1]]++[p[1]],and2inputs_DDT);'])
+            sage: model.component_and_probability[component.id]
+            [0, 1]
         """
         num_add = self.description[1]
         all_inputs = []
@@ -246,8 +253,8 @@ class MultiInputNonlinearLogicalOperator(Component):
             inputs = "++".join(f"[{all_inputs[i + input_len * j]}]" for j in range(num_add))
             cp_constraint = f"constraint table({inputs}++[{self.id}[{i}]]++[p[{model.c}]],and{num_add}inputs_DDT);"
             cp_constraints.append(cp_constraint)
-            model.c += 1
             probability.append(model.c)
+            model.c += 1
         model.component_and_probability[self.id] = probability
 
         return cp_declarations, cp_constraints

@@ -446,3 +446,32 @@ def test_external_solver_flag_requires_boolean():
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
     with pytest.raises(ValueError, match="boolean"):
         model.solve(solve_external="external")
+
+
+@pytest.mark.parametrize("middle", [1, 2, 3])
+def test_real_simon_search_with_each_switch_kind(middle):
+    model = MznHadipourBoomerangModel(
+        SimonBlockCipher(number_of_rounds=middle + 2), structure(1, middle, 1)
+    )
+    result = model.find_one_boomerang_trail(
+        solver_name="chuffed", timeout_in_seconds=30
+    )
+    assert result["status"] == "SATISFIABLE"
+    assert int(result["components_values"]["upper_plaintext"]["value"], 16) != 0
+    output = next(
+        name
+        for name in result["components_values"]
+        if name.startswith("lower_cipher_output")
+    )
+    assert int(result["components_values"][output]["value"], 16) != 0
+
+
+def test_reproduce_archived_katan40_weight():
+    model = MznHadipourBoomerangModel(
+        KatanBlockCipher(number_of_rounds=40), structure(19, 1, 20)
+    )
+    result = model.find_one_boomerang_trail_with_fixed_weight(
+        12, solver_name="chuffed", timeout_in_seconds=30
+    )
+    assert result["status"] == "SATISFIABLE"
+    assert float(result["total_weight"]) == 12
