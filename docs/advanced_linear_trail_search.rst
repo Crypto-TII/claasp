@@ -102,18 +102,19 @@ Mask format
 ~~~~~~~~~~~
 
 The ``value_format`` parameter sets how masks are written in every table of the report,
-including the detailed one. It accepts three values:
+including the detailed one. It accepts four values:
 
 - ``"hex"``: hexadecimal, padded with leading zeros to the width of the mask (default);
 - ``"binary"``: binary with the ``0b`` prefix, keeping all leading zeros;
 - ``"underscore_one"``: binary without prefix, with each 0 written as ``_`` and each 1 as
-  ``1``, so that active bits stand out.
+  ``1``, so that active bits stand out;
+- ``"dot_one"``: the same as ``"underscore_one"``, but with each 0 written as ``.``.
 
 In every format the most significant bit is on the left. For example:
 
 .. code-block:: python
 
-   trail.to_terminal(value_format="underscore_one")
+   trail.to_terminal(value_format="dot_one")
 
 .. plot::
    :context:
@@ -124,11 +125,11 @@ In every format the most significant bit is on the left. For example:
    from pathlib import Path
 
    output = StringIO()
-   trail.to_terminal(file=output, value_format="underscore_one")
+   trail.to_terminal(file=output, value_format="dot_one")
    Path("_build").mkdir(exist_ok=True)
-   Path("_build/advanced_linear_trail_basic_terminal_underscore_one.txt").write_text(output.getvalue(), encoding="utf-8")
+   Path("_build/advanced_linear_trail_basic_terminal_dot_one.txt").write_text(output.getvalue(), encoding="utf-8")
 
-.. literalinclude:: _build/advanced_linear_trail_basic_terminal_underscore_one.txt
+.. literalinclude:: _build/advanced_linear_trail_basic_terminal_dot_one.txt
    :language: text
 
 Weight plot
