@@ -75,10 +75,6 @@ their product, that is, the correlation of the trail truncated at that round.
 this number of rounds. ``Total weight`` is :math:`-\log_2` of the absolute correlation of the
 trail, so a weight of 1 matches the correlation :math:`1/2` above.
 
-The ``External input patterns`` table gives the mask on each input of the cipher. The
-``plaintext`` mask is the same as the ``input`` row of the ``Round trail`` table. The ``key``
-mask is zero because the trail does not involve the key.
-
 For the search evidence and the trail component by component, request the detailed
 report:
 
