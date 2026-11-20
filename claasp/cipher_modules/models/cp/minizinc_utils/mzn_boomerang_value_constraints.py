@@ -9,8 +9,9 @@ probabilities is required. This certifies existence, not a probability.
 
 The exact layer intersects the componentwise search space; it does not restore
 switches omitted by that search space. See Cid et al., EUROCRYPT 2018,
-https://doi.org/10.1007/978-3-319-78375-8_22, and Kidmose et al.,
-A Formal Analysis of Boomerang Probabilities, ToSC 2022(4).
+https://doi.org/10.1007/978-3-319-78375-8_22, and Kidmose and Tiessen,
+A Formal Analysis of Boomerang Probabilities, ToSC 2022(1),
+https://doi.org/10.46586/tosc.v2022.i1.88-109.
 """
 
 from copy import deepcopy
