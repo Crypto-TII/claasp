@@ -93,6 +93,7 @@ def _retained_bits(model):
             if side not in result:
                 continue
             if round_number < top or round_number >= end:
+                result[side].update(_component_inputs(component))
                 result[side].update(
                     (component.id, bit) for bit in range(component.output_bit_size)
                 )
