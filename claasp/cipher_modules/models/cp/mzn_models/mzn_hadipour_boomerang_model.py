@@ -28,6 +28,9 @@ from minizinc import Instance, Model, Solver, Status
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
     get_approx_logarithm_operation,
 )
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_boomerang_value_constraints import (
+    build_boomerang_value_constraints,
+)
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import (
     get_bct_operations,
 )
@@ -123,6 +126,21 @@ class MznHadipourBoomerangModel(MznModel):
       and nonnegative ``bottom_part_number_of_rounds``. Their sum must equal
       ``cipher.number_of_rounds``. Zero-length outer arms are supported.
 
+    - ``enforce_value_compatibility`` -- bool (default: False). If True, add
+      four exact forward executions sharing the actual master key and all other
+      non-data inputs. SAT results include endpoint ``quartet_values`` that can
+      be replayed with the original cipher, and ``value_compatibility`` equals
+      ``'full_cipher'``. This certifies a retained quartet's existence, not its
+      probability. It intersects the restricted local search space and can be
+      substantially more expensive. The first input must be the permutation
+      state; every original component must have an exact CP model. Fix actual
+      input values through IDs such as ``quartet_0_key`` in ``fixed_values``.
+      Other executions share the same non-data inputs automatically.
+      Permutation key/constant words inside the first input must be fixed
+      explicitly in each execution for a restricted oracle setting.
+      All-solution enumeration is not supported in this mode: it would enumerate
+      value witnesses instead of distinct difference trails.
+
     OUTPUT: a model. Construction does not change ``cipher`` or write files.
 
     EXAMPLES::
@@ -135,9 +153,18 @@ class MznHadipourBoomerangModel(MznModel):
         sage: 'constraint weight = 400;' in model.model_constraints
         True
         sage: result = model.find_one_boomerang_trail(solver_name='gecode', timeout_in_seconds=3)  # optional - minizinc
+        sage: exact = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), structure, enforce_value_compatibility=True)
+        sage: exact.build_hadipour_boomerang_model(weight=None)
+        sage: 'quartet_0_key' in exact.assemble_model()
+        True
+
     """
 
-    def __init__(self, cipher, boomerang_structure):
+    def __init__(self, cipher, boomerang_structure, enforce_value_compatibility=False):
+        if not isinstance(enforce_value_compatibility, bool):
+            raise ValueError("enforce_value_compatibility must be a boolean")
+        self.enforce_value_compatibility = enforce_value_compatibility
+        self._value_witness_names = []
         keys = (
             "top_part_number_of_rounds",
             "middle_part_number_of_rounds",
@@ -469,7 +496,11 @@ class MznHadipourBoomerangModel(MznModel):
 
     def _output_constraints(self):
         lines = []
-        for name in self._cipher.inputs + self._cipher.all_components_ids():
+        for name in (
+            self._cipher.inputs
+            + self._cipher.all_components_ids()
+            + self._value_witness_names
+        ):
             lines.append(f'"{name} = " ++ show({name}) ++ "\\n"')
         for name, indices in self.component_and_probability.items():
             side = name.split("_")[0]
@@ -495,7 +526,9 @@ class MznHadipourBoomerangModel(MznModel):
         - ``fixed_variables`` -- optional list from ``set_fixed_variables``.
           IDs refer to the unified cipher (e.g. ``upper_plaintext`` and
           ``lower_cipher_output_2_12``). Keys default to zero differences;
-          both external state differences must be nonzero.
+          both external state differences must be nonzero. With exact value
+          compatibility enabled, ``quartet_0_`` input IDs fix actual values
+          (e.g. ``quartet_0_key``), rather than differences.
 
         OUTPUT: None; access ``model_constraints`` or ``assemble_model()``.
         For the assumptions and references see the class documentation.
@@ -534,6 +567,12 @@ class MznHadipourBoomerangModel(MznModel):
             self._model_constraints.extend(
                 [f"constraint weight = {scaled};", "solve satisfy;"]
             )
+        self._value_witness_names = []
+        if self.enforce_value_compatibility:
+            value_constraints, self._value_witness_names = (
+                build_boomerang_value_constraints(self)
+            )
+            self._model_constraints.extend(value_constraints)
         self._model_constraints = (
             self._variables_list
             + self._model_constraints
@@ -576,6 +615,11 @@ class MznHadipourBoomerangModel(MznModel):
             lower_weight=weights["Lower weight"],
             boomerang_structure=dict(self.boomerang_structure),
         )
+        if self.enforce_value_compatibility:
+            result["quartet_values"] = {
+                name: components.pop(name) for name in self._value_witness_names
+            }
+            result["value_compatibility"] = "full_cipher"
         return result
 
     def _search(
@@ -723,6 +767,11 @@ class MznHadipourBoomerangModel(MznModel):
             sage: model.build_hadipour_boomerang_model(weight=None)
             sage: result = model.solve(solver_name='gecode', timeout_in_seconds_=1)  # optional - minizinc
         """
+        if self.enforce_value_compatibility and all_solutions_:
+            raise NotImplementedError(
+                "Exact value compatibility currently supports single-trail search; "
+                "enumeration would enumerate value witnesses instead of distinct trails"
+            )
         if model_type != _MODEL_TYPE:
             raise ValueError("This model only solves boomerang characteristics")
         if not isinstance(solve_external, bool):

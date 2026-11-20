@@ -2259,11 +2259,13 @@ def _remap_positions_into_output(target_link, target_bit_positions, intermediate
             intermediate_output_position_links[(input_id_link, i)] = current_bit_position
             current_bit_position += 1
 
-    return [
-        intermediate_output_position_links[(target_link, bit)]
-        for bit in target_bit_positions
-        if (target_link, bit) in intermediate_output_position_links
-    ]
+    missing = [bit for bit in target_bit_positions if (target_link, bit) not in intermediate_output_position_links]
+    if missing:
+        raise ValueError(
+            f"Boundary output {intermediate_output.id!r} does not carry all requested bits "
+            f"of {target_link!r}: {missing}"
+        )
+    return [intermediate_output_position_links[(target_link, bit)] for bit in target_bit_positions]
 
 
 def _get_most_recent_intermediate_output(target_link, intermediate_outputs):
