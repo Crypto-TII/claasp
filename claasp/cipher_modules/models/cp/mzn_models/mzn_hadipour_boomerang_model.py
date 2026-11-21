@@ -251,20 +251,25 @@ class MznHadipourBoomerangModel(MznModel):
             self.middle_part_number_of_rounds,
             self.bottom_part_number_of_rounds,
         ) = counts
-        self.original_cipher = deepcopy(cipher)
+        self.original_cipher = self._data_first_copy(cipher)
+        unified = self._unify_cipher(self.original_cipher)
+        super().__init__(unified)
+        self.c_upper = self.c_lower = 0
+        self._middle_probabilities = {}
+
+    @staticmethod
+    def _data_first_copy(cipher):
+        result = deepcopy(cipher)
         if INPUT_PLAINTEXT in cipher.inputs:
             data_index = cipher.inputs.index(INPUT_PLAINTEXT)
             order = [data_index] + [
                 i for i in range(len(cipher.inputs)) if i != data_index
             ]
-            self.original_cipher.inputs[:] = [cipher.inputs[i] for i in order]
-            self.original_cipher.inputs_bit_size[:] = [
+            result.inputs[:] = [cipher.inputs[i] for i in order]
+            result.inputs_bit_size[:] = [
                 cipher.inputs_bit_size[i] for i in order
             ]
-        unified = self._unify_cipher(self.original_cipher)
-        super().__init__(unified)
-        self.c_upper = self.c_lower = 0
-        self._middle_probabilities = {}
+        return result
 
     def _unify_cipher(self, cipher):
         top = self.top_part_number_of_rounds
