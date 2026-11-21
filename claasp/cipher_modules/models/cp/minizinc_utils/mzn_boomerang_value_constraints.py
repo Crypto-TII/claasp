@@ -7,11 +7,13 @@ inputs). Their input differences pair executions 0/1 and 2/3, and their output
 differences pair 0/2 and 1/3. No inverse component model or product of local
 probabilities is required. This certifies existence, not a probability.
 
-The exact layer intersects the componentwise search space; it does not restore
-switches omitted by that search space. See Cid et al., EUROCRYPT 2018,
+With local middle tables, the exact layer intersects their restricted search
+space. With an exact middle, it retains only outer characteristics and external
+differences, allowing cancellations across middle components. See Cid et al., EUROCRYPT 2018,
 https://doi.org/10.1007/978-3-319-78375-8_22, and Kidmose and Tiessen,
 A Formal Analysis of Boomerang Probabilities, ToSC 2022(1),
-https://doi.org/10.46586/tosc.v2022.i1.88-109.
+https://doi.org/10.46586/tosc.v2022.i1.88-109. For a broader exact four-wise
+framework see Chang et al., https://eprint.iacr.org/2026/1473.
 """
 
 from copy import deepcopy
@@ -98,7 +100,8 @@ def _retained_bits(model):
                     (component.id, bit) for bit in range(component.output_bit_size)
                 )
             elif (
-                component.type == WORD_OPERATION
+                model.middle_model == "local"
+                and component.type == WORD_OPERATION
                 and component.description[0] in _NONLINEAR
             ):
                 result[side].update(
@@ -124,6 +127,9 @@ def build_boomerang_value_constraints(model):
     satisfiability certifies a compatible quartet within the original restricted
     local model. UNSAT rejects that modeled event, not its whole external hull.
     Unsupported components or incompatible input/output sizes raise explicitly.
+    With ``middle_model='exact'``, only outer characteristics and external
+    differences are retained, admitting arbitrary exact middle paths. The model's
+    ``_value_difference_bits`` records the anchored bits for result interpretation.
     This helper does not run a solver, mutate the original graph, or write files.
 
     EXAMPLES::
@@ -164,6 +170,10 @@ def build_boomerang_value_constraints(model):
     retained["lower"].update(
         ("lower_" + output.id, bit) for bit in range(output.output_bit_size)
     )
+    model._value_difference_bits = {}
+    for bits in retained.values():
+        for name, bit in bits:
+            model._value_difference_bits.setdefault(name, set()).add(bit)
     for side, bits in retained.items():
         for name, bit in sorted(bits):
             constraints.extend(_difference_constraints(side, name, [bit]))

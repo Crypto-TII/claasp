@@ -86,17 +86,20 @@ class MznHadipourBoomerangModel(MznModel):
     Both arms use forward component equations: fixing the lower output is
     equivalent to backward propagation, without constructing an inverse graph.
     BCT/UBCT/LBCT/EBCT constraints connect the two arms in Em.
+    Exact-middle mode replaces local middle tables by four complete executions;
+    its score contains only the outer differential weights.
     Block-cipher key inputs have zero differences. For permutation models
     such as ChaCha, use ``fixed_values`` to fix the constant/key portion of
     the state when targeting a particular stream-cipher setting.
 
-    The objective is ``2 * upper_weight + middle_weight + 2 * lower_weight``.
+    The local-middle objective is
+    ``2 * upper_weight + middle_weight + 2 * lower_weight``.
     It is a characteristic estimate under the usual independence assumptions,
     not the sum of all characteristics with the same external differences.
-    Component ``weight`` entries are the raw differential weights in each arm;
+    Component ``weight`` entries are raw differential weights in each arm;
     the overlap is accounted for by ``middle_weight``, so summing component
     weights does not give the objective.
-    Switch compatibility is imposed component by component. Valid boomerangs
+    Local-middle switch compatibility is imposed component by component. Valid boomerangs
     relying on cancellation between nonlinear terms combined by XOR may be
     excluded. Local table products also retain independence assumptions; they
     are not a proof of compatibility across the entire cipher.
@@ -120,7 +123,8 @@ class MznHadipourBoomerangModel(MznModel):
     INPUT:
 
     - ``cipher`` -- CLAASP cipher; two-input MODADD/MODSUB and AND are the
-      supported nonlinear operations. S-boxes and OR switches are unsupported.
+      supported nonlinear operations in differential arms and local switches.
+      Exact-middle mode additionally supports components with exact CP encoders.
     - ``boomerang_structure`` -- dictionary containing nonnegative integer
       ``top_part_number_of_rounds``, positive ``middle_part_number_of_rounds``,
       and nonnegative ``bottom_part_number_of_rounds``. Their sum must equal
@@ -141,6 +145,18 @@ class MznHadipourBoomerangModel(MznModel):
       All-solution enumeration is not supported in this mode: it would enumerate
       value witnesses instead of distinct difference trails.
 
+    - ``middle_model`` -- ``'local'`` (default) retains componentwise switches.
+      ``'exact'`` omits all middle difference propagation and local switch tables
+      and enables four exact executions. This admits cancellation between middle
+      components. Only the outer characteristics and external differences are
+      retained. The objective is twice the sum of outer differential weights,
+      an ordering heuristic, not a probability estimate. Results identify it as
+      ``score_type='outer_arm_weight'`` and set ``middle_weight=None``. Returned
+      ``retained_difference_bits`` identifies physically anchored component bits;
+      unretained auxiliary differences are omitted from ``components_values``.
+      Fixing such auxiliary bits raises ValueError. Exact middle components need
+      value encoders but do not need differential or connectivity encoders.
+
     OUTPUT: a model. Construction does not change ``cipher`` or write files.
 
     EXAMPLES::
@@ -157,13 +173,29 @@ class MznHadipourBoomerangModel(MznModel):
         sage: exact.build_hadipour_boomerang_model(weight=None)
         sage: 'quartet_0_key' in exact.assemble_model()
         True
+        sage: joint = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), structure, middle_model='exact')
+        sage: joint.build_hadipour_boomerang_model(weight=None)
+        sage: joint.enforce_value_compatibility
+        True
 
     """
 
-    def __init__(self, cipher, boomerang_structure, enforce_value_compatibility=False):
+    def __init__(
+        self,
+        cipher,
+        boomerang_structure,
+        enforce_value_compatibility=False,
+        middle_model="local",
+    ):
+        if middle_model not in ("local", "exact"):
+            raise ValueError("middle_model must be local or exact")
+        self.middle_model = middle_model
+        self._value_difference_bits = {}
         if not isinstance(enforce_value_compatibility, bool):
             raise ValueError("enforce_value_compatibility must be a boolean")
-        self.enforce_value_compatibility = enforce_value_compatibility
+        self.enforce_value_compatibility = (
+            enforce_value_compatibility or middle_model == "exact"
+        )
         self._value_witness_names = []
         keys = (
             "top_part_number_of_rounds",
@@ -266,8 +298,20 @@ class MznHadipourBoomerangModel(MznModel):
         ]
         return declarations, constraints
 
+    def _differential_components(self):
+        end = self.top_part_number_of_rounds + self.middle_part_number_of_rounds
+        for number, round_ in enumerate(self._cipher.rounds_as_list):
+            for component in round_.components:
+                if (
+                    self.middle_model == "local"
+                    or number < self.top_part_number_of_rounds
+                    or number >= end
+                    or component.type == CONSTANT
+                ):
+                    yield component
+
     def _build_components(self):
-        for component in self._cipher.all_components():
+        for component in self._differential_components():
             operation = component.description[0]
             if component.type == WORD_OPERATION and operation in (
                 "MODADD",
@@ -307,7 +351,7 @@ class MznHadipourBoomerangModel(MznModel):
             probabilities = {0}
             tables = []
             already_added = []
-            for component in self._cipher.all_components():
+            for component in self._differential_components():
                 if (
                     component.id.startswith(side + "_")
                     and component.type == WORD_OPERATION
@@ -501,6 +545,12 @@ class MznHadipourBoomerangModel(MznModel):
             + self._cipher.all_components_ids()
             + self._value_witness_names
         ):
+            if (
+                self.middle_model == "exact"
+                and name not in self._value_difference_bits
+                and name not in self._value_witness_names
+            ):
+                continue
             lines.append(f'"{name} = " ++ show({name}) ++ "\\n"')
         for name, indices in self.component_and_probability.items():
             side = name.split("_")[0]
@@ -520,7 +570,8 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- negative log2 probability; -1 minimizes the weight,
+        - ``weight`` -- local estimated weight, or outer-arm score in exact-middle
+          mode; -1 minimizes the weight,
           None finds any trail; otherwise fixes it to a nonnegative multiple
           of 0.01 bits.
         - ``fixed_variables`` -- optional list from ``set_fixed_variables``.
@@ -573,11 +624,25 @@ class MznHadipourBoomerangModel(MznModel):
                 build_boomerang_value_constraints(self)
             )
             self._model_constraints.extend(value_constraints)
+            if self.middle_model == "exact":
+                self._validate_retained_fixed_values(fixed_variables or [])
         self._model_constraints = (
             self._variables_list
             + self._model_constraints
             + [self._output_constraints()]
         )
+
+    def _validate_retained_fixed_values(self, fixed_variables):
+        for fixed in fixed_variables:
+            name = fixed["component_id"]
+            if name.startswith(("upper_", "lower_")) and not (
+                name in self._cipher.inputs and name not in self._data_inputs
+            ):
+                retained = self._value_difference_bits.get(name, set())
+                if not set(fixed["bit_positions"]).issubset(retained):
+                    raise ValueError(
+                        f"Cannot fix unretained middle difference bits: {name}"
+                    )
 
     def _parse_boomerang_solution(self, solution, status, solver_name, statistics):
         components = {}
@@ -620,6 +685,21 @@ class MznHadipourBoomerangModel(MznModel):
                 name: components.pop(name) for name in self._value_witness_names
             }
             result["value_compatibility"] = "full_cipher"
+            result["retained_difference_bits"] = {
+                name: sorted(bits) for name, bits in self._value_difference_bits.items()
+            }
+        if self.middle_model == "exact":
+            for name in list(components):
+                if name not in self._value_difference_bits:
+                    del components[name]
+                else:
+                    components[name]["retained_bit_positions"] = sorted(
+                        self._value_difference_bits[name]
+                    )
+            result["middle_weight"] = None
+            result["score_type"] = "outer_arm_weight"
+        else:
+            result["score_type"] = "local_characteristic_estimate"
         return result
 
     def _search(
@@ -680,7 +760,7 @@ class MznHadipourBoomerangModel(MznModel):
             and component.description[0] in _MODULAR_OPERATIONS
             for component in self._cipher.all_components()
         )
-        return GECODE if modular else SOLVER_DEFAULT
+        return GECODE if modular and self.middle_model == "local" else SOLVER_DEFAULT
 
     def _solver_result(self, result, solver_name, multiple, intermediate):
         no_solution = result.solution is None or (
@@ -815,7 +895,8 @@ class MznHadipourBoomerangModel(MznModel):
           single-key setting and nonzero external state differences.
         - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
           for modular switches and CLAASP's default solver for AND-only models.
-          Modular probability predicates require float support (e.g. gecode).
+          Local modular probability predicates require float support (e.g. gecode).
+          Exact-middle mode uses CLAASP's default integer solver instead.
         - ``timeout_in_seconds`` -- optional positive time limit, including
           flattening. A time limit may leave optimality unproved.
         - ``processes`` -- optional positive number of solver processes.
@@ -855,14 +936,15 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- negative log2 probability in bits, a nonnegative
+        - ``weight`` -- estimated weight (outer-arm score for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
           component IDs include ``upper_`` or ``lower_``. Defaults to the
           single-key setting and nonzero external state differences.
         - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
           for modular switches and CLAASP's default solver for AND-only models.
-          Modular probability predicates require float support (e.g. gecode).
+          Local modular probability predicates require float support (e.g. gecode).
+          Exact-middle mode uses CLAASP's default integer solver instead.
         - ``timeout_in_seconds`` -- optional positive time limit, including
           flattening. A time limit may leave optimality unproved.
         - ``processes`` -- optional positive number of solver processes.
@@ -906,7 +988,8 @@ class MznHadipourBoomerangModel(MznModel):
           single-key setting and nonzero external state differences.
         - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
           for modular switches and CLAASP's default solver for AND-only models.
-          Modular probability predicates require float support (e.g. gecode).
+          Local modular probability predicates require float support (e.g. gecode).
+          Exact-middle mode uses CLAASP's default integer solver instead.
         - ``timeout_in_seconds`` -- optional positive time limit, including
           flattening. A time limit may leave optimality unproved.
         - ``processes`` -- optional positive number of solver processes.
@@ -946,14 +1029,15 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- negative log2 probability in bits, a nonnegative
+        - ``weight`` -- estimated weight (outer-arm score for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
           component IDs include ``upper_`` or ``lower_``. Defaults to the
           single-key setting and nonzero external state differences.
         - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
           for modular switches and CLAASP's default solver for AND-only models.
-          Modular probability predicates require float support (e.g. gecode).
+          Local modular probability predicates require float support (e.g. gecode).
+          Exact-middle mode uses CLAASP's default integer solver instead.
         - ``timeout_in_seconds`` -- optional positive time limit, including
           flattening. A time limit may leave optimality unproved.
         - ``processes`` -- optional positive number of solver processes.
@@ -992,7 +1076,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``max_weight`` -- negative log2 probability in bits, a nonnegative
+        - ``max_weight`` -- estimated weight (outer-arm score for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``min_weight`` -- nonnegative lower weight bound in bits (default: 0).
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
@@ -1000,7 +1084,8 @@ class MznHadipourBoomerangModel(MznModel):
           single-key setting and nonzero external state differences.
         - ``solver_name`` -- installed MiniZinc solver ID. By default, gecode is used
           for modular switches and CLAASP's default solver for AND-only models.
-          Modular probability predicates require float support (e.g. gecode).
+          Local modular probability predicates require float support (e.g. gecode).
+          Exact-middle mode uses CLAASP's default integer solver instead.
         - ``timeout_in_seconds`` -- optional positive time limit, including
           flattening. A time limit may leave optimality unproved.
         - ``processes`` -- optional positive number of solver processes.
