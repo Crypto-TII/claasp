@@ -94,7 +94,8 @@ class MznHadipourBoomerangModel(MznModel):
 
     A named plaintext input is placed first in an internal copy. This supports
     key-first descriptions such as CHAM without changing the supplied cipher.
-    The library also supports S-box differential arms in exact-middle mode.
+    Exact-middle mode also supports two-input OR differential arms, using the
+    same DDT as AND. The library also supports S-box differential arms in that mode.
     Their DDT weights use CLAASP's rounded centibit scale and rank retained
     characteristics; they are not full external probabilities. Local S-box
     switches are unsupported.
@@ -131,7 +132,7 @@ class MznHadipourBoomerangModel(MznModel):
 
     - ``cipher`` -- CLAASP cipher; two-input MODADD/MODSUB and AND are the
       supported nonlinear operations in differential arms and local switches.
-      Exact-middle mode also supports S-box differential arms of up to eight
+      Exact-middle mode also supports two-input OR and S-box differential arms of up to eight
       input bits and middle components with exact CP encoders.
     - ``boomerang_structure`` -- dictionary containing nonnegative integer
       ``top_part_number_of_rounds``, positive ``middle_part_number_of_rounds``,
@@ -361,7 +362,10 @@ class MznHadipourBoomerangModel(MznModel):
                     "S-box differential tables support at most eight input bits"
                 )
             return self._arm_differential_constraints(component)
+        if operation == "OR" and self.middle_model != "exact":
+            raise NotImplementedError("OR arms require middle_model='exact'")
         if component.type == WORD_OPERATION and operation in (
+            "OR",
             "MODADD",
             "MODSUB",
             "AND",
@@ -372,7 +376,7 @@ class MznHadipourBoomerangModel(MznModel):
                 )
             return self._arm_differential_constraints(component)
         method = getattr(component, "cp_xor_differential_propagation_constraints", None)
-        if method is None or operation == "OR":
+        if method is None:
             raise NotImplementedError(
                 f"Unsupported boomerang component: {component.id}"
             )
@@ -402,7 +406,7 @@ class MznHadipourBoomerangModel(MznModel):
                 if (
                     component.id.startswith(side + "_")
                     and component.type == WORD_OPERATION
-                    and component.description[0] == "AND"
+                    and component.description[0] in ("AND", "OR")
                 ):
                     update_and_or_ddt_valid_probabilities(
                         already_added, component, tables, probabilities

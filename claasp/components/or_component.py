@@ -119,64 +119,33 @@ class Or(MultiInputNonlinearLogicalOperator):
         return polynomials
 
     def cp_constraints(self):
-        """
-        Return a list of CP declarations and a list of CP constraints for OR component for CP CIPHER model.
+        """Return exact bitwise OR declarations and CP value constraints.
 
-        INPUT:
+        INPUT: None. Operands are consecutive words in the flattened input
+        wiring; each word has ``output_bit_size`` bits. For Boolean inputs,
+        each output bit is the maximum of its corresponding operand bits.
+        This supports two or more operands without an external predicate.
 
-        - None
+        OUTPUT: pair of declaration and constraint lists. Output bits and
+        input bit positions use CLAASP's MSB-first convention.
 
         EXAMPLES::
 
             sage: from claasp.components.or_component import Or
-            sage: or_component = Or(0, 0, ['input1', 'input2'], [[0, 1], [0, 1]], 2)
-            sage: or_component.cp_constraints()
-            (['array[0..1] of var 0..1: or_0_0;',
-            'array[0..1] of var 0..1:pre_or_0_0_0;',
-            'array[0..1] of var 0..1:pre_or_0_0_1;'],
-            ['constraint pre_or_0_0_0[0]=input1[0];',
-            'constraint pre_or_0_0_0[1]=input1[1];',
-            'constraint pre_or_0_0_1[0]=input2[0];',
-            'constraint pre_or_0_0_1[1]=input2[1];',
-            'constraint or(pre_or_0_0_0, pre_or_0_0_1, or_0_0);'])
+            sage: component = Or(0, 0, ['a', 'b'], [[0, 1], [0, 1]], 2)
+            sage: component.cp_constraints()
+            (['array[0..1] of var 0..1: or_0_0;'], ['constraint or_0_0[0] = max([a[0], b[0]]);', 'constraint or_0_0[1] = max([a[1], b[1]]);'])
         """
-        input_id_link = self.input_id_links
-        numb_of_inp = len(input_id_link)
-        output_id_link = self.id
-        input_bit_positions = self.input_bit_positions
-        cp_declarations = []
-        cp_constraints = []
-        num_add = self.description[1]
-        all_inputs = []
-        for i in range(numb_of_inp):
-            for j in range(len(input_bit_positions[i])):
-                all_inputs.append(f"{input_id_link[i]}[{input_bit_positions[i][j]}]")
-        total_input_len = len(all_inputs)
-        input_len = total_input_len // num_add
-        cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1: {output_id_link};")
-        for i in range(num_add):
-            cp_declarations.append(f"array[0..{input_len - 1}] of var 0..1:pre_{output_id_link}_{i};")
-            for j in range(input_len):
-                cp_constraints.append(f"constraint pre_{output_id_link}_{i}[{j}]={all_inputs[i * input_len + j]};")
-        for i in range(num_add - 2):
-            cp_declarations.append(f"array[0..{self.output_bit_size - 1}] of var 0..1:temp_{output_id_link}_{i};")
-        if num_add == 2:
-            cp_constraints.append(f"constraint or(pre_{output_id_link}_0, pre_{output_id_link}_1, {output_id_link});")
-        elif num_add > 2:
-            cp_constraints.append(
-                f"constraint or(pre_{output_id_link}_0, pre_{output_id_link}_1, temp_{output_id_link}_0);"
-            )
-            for i in range(1, num_add - 2):
-                cp_constraints.append(
-                    f"constraint or(pre_{output_id_link}_{i + 1}, temp_{output_id_link}_{i - 1}, "
-                    f"temp_{output_id_link}_{i});"
-                )
-            cp_constraints.append(
-                f"constraint or(pre_{output_id_link}_{num_add - 1}, temp_{output_id_link}_{num_add - 3},"
-                f"{output_id_link});"
-            )
-
-        return cp_declarations, cp_constraints
+        inputs = [f"{name}[{bit}]" for name, positions in zip(
+            self.input_id_links, self.input_bit_positions
+        ) for bit in positions]
+        width = self.output_bit_size
+        declarations = [f"array[0..{width - 1}] of var 0..1: {self.id};"]
+        constraints = [
+            f"constraint {self.id}[{bit}] = max([{', '.join(inputs[bit::width])}]);"
+            for bit in range(width)
+        ]
+        return declarations, constraints
 
     def cp_xor_linear_mask_propagation_constraints(self, model):
         """

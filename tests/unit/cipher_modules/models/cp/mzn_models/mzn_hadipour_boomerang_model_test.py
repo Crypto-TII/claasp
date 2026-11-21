@@ -571,3 +571,34 @@ def test_binary_key_schedule_constants_do_not_reject_valid_twine_quartet():
         fixed_values=fixed, solver_name="gecode", timeout_in_seconds=10
     )
     assert result["status"] == "SATISFIABLE"
+
+
+def test_exact_or_feistel_quartet_replays():
+    cipher = Cipher("or_feistel", "permutation", ["plaintext"], [4], 4)
+    left = right = "plaintext"
+    left_bits, right_bits = [0, 1], [2, 3]
+    for _ in range(3):
+        cipher.add_round()
+        nonlinear = cipher.add_or_component(
+            [left, left], [left_bits, left_bits[::-1]], 2
+        ).id
+        next_left = cipher.add_xor_component(
+            [right, nonlinear], [right_bits, [0, 1]], 2
+        ).id
+        right, right_bits = left, left_bits
+        left, left_bits = next_left, [0, 1]
+        cipher.add_round_output_component([left, right], [left_bits, right_bits], 4)
+    output = cipher.add_cipher_output_component(
+        [left, right], [left_bits, right_bits], 4
+    ).id
+    model = MznHadipourBoomerangModel(
+        cipher, structure(), middle_model="exact", exclude_returning_quartets=True
+    )
+    result = model.find_one_boomerang_trail(solver_name="gecode", timeout_in_seconds=10)
+    assert result["status"] == "SATISFIABLE"
+    values = result["quartet_values"]
+    for j in range(4):
+        x = int(values[f"quartet_{j}_plaintext"]["value"], 16)
+        assert cipher.evaluate([x]) == int(values[f"quartet_{j}_{output}"]["value"], 16)
+    with pytest.raises(NotImplementedError, match="OR arms require"):
+        MznHadipourBoomerangModel(cipher, structure()).build_hadipour_boomerang_model()

@@ -19,15 +19,25 @@ def test_algebraic_polynomials():
 
 
 def test_cp_constraints():
-    or_component = Or(0, 0, ['plaintext', 'key'], [list(range(4)), list(range(4))], 4)
-    declarations, constraints = or_component.cp_constraints()
-
-    assert declarations == ['array[0..3] of var 0..1: or_0_0;', 'array[0..3] of var 0..1:pre_or_0_0_0;',
-                            'array[0..3] of var 0..1:pre_or_0_0_1;']
-
-    assert constraints[0] == 'constraint pre_or_0_0_0[0]=plaintext[0];'
-    assert constraints[-2] == 'constraint pre_or_0_0_1[3]=key[3];'
-    assert constraints[-1] == 'constraint or(pre_or_0_0_0, pre_or_0_0_1, or_0_0);'
+    from minizinc import Instance, Model, Solver
+    for operands in [2, 3]:
+        names = ["a", "b", "c"][:operands]
+        component = Or(0, 0, names, [[0, 1]] * operands, 2)
+        declarations, constraints = component.cp_constraints()
+        model = Model()
+        model.add_string("\n".join(
+            [f"array[0..1] of var 0..1: {name};" for name in names]
+            + declarations + constraints + ["solve satisfy;"]
+        ))
+        result = Instance(Solver.lookup("gecode"), model).solve(all_solutions=True)
+        assert len(result.solution) == 4 ** operands
+        for solution in result.solution:
+            words = [sum(bit << (1-i) for i, bit in enumerate(getattr(solution, name))) for name in names]
+            expected = 0
+            for word in words:
+                expected |= word
+            actual = sum(bit << (1-i) for i, bit in enumerate(solution.or_0_0))
+            assert actual == expected
 
 
 def test_cp_xor_linear_mask_propagation_constraints():
