@@ -8,6 +8,8 @@ from fractions import Fraction
 from operator import index
 from typing import Callable
 
+from claasp.cipher_modules.quadratic_feistel_fixed_key import _fixed_key_distribution
+
 
 def _affine_system(function, target, input_bits, output_bits):
     """Encode g(x)=target from zero and basis evaluations; g must be affine."""
@@ -69,11 +71,14 @@ class QuadraticFeistelBoomerangAnalyzer:
       integers of the same width, with algebraic degree at most two.
 
     OUTPUT: an analyzer; call :meth:`analyze` with the six retained boundary
-    words. Compatibility with freely chosen round keys does not imply
-    compatibility with an actual master-key schedule. An incompatible event
-    is impossible for every such schedule. Exact probabilities returned by
-    this class assume independent uniform round keys and uniform input;
-    they must not be multiplied across overlapping windows. Returning quartets
+    words. A free-key witness does not certify a specified master key or
+    extension to a surrounding characteristic. An incompatible event
+    is impossible for every such schedule. The :meth:`analyze` probability uses
+    uniform input and a marginally uniform
+    middle round key (independent uniform round keys suffice).
+    :meth:`analyze_fixed_key` instead counts the isolated event for a fixed
+    middle keyword, with a cap on the exponential overlap parameter. Counts
+    must not be multiplied across overlapping windows. Returning quartets
     are included; this analyzer does not apply a nondegeneracy filter.
 
     This uses the quadratic polar identity and Feistel boomerang closure
@@ -82,8 +87,12 @@ class QuadraticFeistelBoomerangAnalyzer:
     Lallemand, ToSC 2023(3),
     https://doi.org/10.46586/tosc.v2023.i3.101-145. The three-round affine
     projection is described in :meth:`analyze`; it is a specialization of
-    dependency-aware four-path analysis, not a fixed-master-key probability
-    estimator or a new definition of boomerang probability.
+    dependency-aware four-path analysis, not a general whole-cipher probability estimator or a new definition of
+    boomerang probability. Fixed-window counting uses standard quadratic
+    Boolean character sums and Walsh inversion; see Carlet, *Boolean Functions
+    for Cryptography and Coding Theory*, Cambridge University Press, 2021,
+    Section 5.2,
+    https://www.math.univ-paris13.fr/~carlet/book-fcts-Bool-vect-crypt-codes.pdf.
 
     EXAMPLES::
 
@@ -234,4 +243,93 @@ class QuadraticFeistelBoomerangAnalyzer:
                     next_left=y,
                 ),
             )
+        return result
+
+    def analyze_fixed_key(
+        self, alpha, beta, gamma, c, d, e, middle_round_key, max_overlap=12
+    ):
+        r"""Count the retained three-round event for a fixed middle round key.
+
+        INPUT:
+
+        - ``alpha``, ``beta``, ``gamma``, ``c``, ``d``, ``e`` -- the six
+          unsigned boundary words defined by :meth:`analyze`.
+        - ``middle_round_key`` -- unsigned ``word_bits``-bit integer: the actual
+          middle keyword. The first and last keywords may be arbitrary fixed
+          values; they cancel from these isolated-event conditions.
+        - ``max_overlap`` -- nonnegative integer (default: 12). Refuse the
+          exponential character-sum calculation if the upper/lower derivative
+          row-space intersection dimension exceeds this cap. Zero permits
+          only disjoint row spaces. The function must be quadratic.
+
+        OUTPUT: a dictionary with exact ``probability`` as Fraction and
+        ``compatible`` for this fixed keyword, with uniform unconditioned data
+        input. Returning quartets are included. The result retains the affine
+        ``systems`` and records ``key_model='fixed_middle_key'``, the keyword,
+        and ``free_key_compatible``. No free-key witness is returned as a
+        certificate for the fixed key. If the free-key event is consistent,
+        additional fields are ``overlap_rank``, ``stacked_rank``,
+        ``joint_affine_dimension``, ``common_rows``, ``target_constants``,
+        ``key_target`` and ``fiber_counts``, describing the quadratic map
+        on the joint affine left-word space. The ``key_independent`` flag means
+        that every possible middle keyword has the same probability. ``uniform_middle_key_probability``
+        and ``uniform_middle_key_rank`` describe the separate averaged event.
+        A zero fixed-key count is marked ``obstruction='fixed_middle_key'``.
+        Invalid words or an exceeded overlap cap raise ValueError.
+
+        Put A=M_alpha and C=M_c. Their row-space intersection has dimension
+        d=rank(A)+rank(C)-rank([A;C]). Eliminating the right word reduces the
+        event to d quadratic equations on the joint affine left-word space.
+        Standard quadratic character sums and Walsh inversion count every
+        target class exactly. Cost is O(w**2*T_f + 2**d*w**3 + d*2**d), with
+        w=word_bits. This is parameterized by d, not polynomial in all inputs.
+        The probability depends on at most d linear forms of the middle keyword.
+        For d=0 the averaged probability holds for every fixed key. An isolated
+        window count must not be multiplied across overlapping windows or
+        treated as the probability of an outer-conditioned full characteristic.
+        References and the degree assumption are in the class docstring.
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.quadratic_feistel_boomerang import QuadraticFeistelBoomerangAnalyzer
+            sage: def function(x):
+            ....:     a, b, c, d, e = [(x >> i) & 1 for i in range(5)]
+            ....:     return a * c + 2 * b * c + 4 * d * e
+            sage: analyzer = QuadraticFeistelBoomerangAnalyzer(5, function)
+            sage: result = analyzer.analyze_fixed_key(1, 0, 0, 2, 0, 0, middle_round_key=0)
+            sage: result['probability'], result['overlap_rank'], result['fiber_counts']
+            (Fraction(3, 8), 1, [24, 8])
+            sage: analyzer.analyze_fixed_key(1, 0, 0, 2, 0, 0, middle_round_key=4)['probability']
+            Fraction(1, 8)
+            sage: result['uniform_middle_key_probability']
+            Fraction(1, 4)
+        """
+        try:
+            keyword, limit = index(middle_round_key), index(max_overlap)
+        except TypeError as exc:
+            raise ValueError(
+                "The middle keyword and overlap cap must be integers"
+            ) from exc
+        if isinstance(middle_round_key, bool) or not 0 <= keyword < 1 << self.word_bits:
+            raise ValueError("middle_round_key must fit the word size")
+        if isinstance(max_overlap, bool) or limit < 0:
+            raise ValueError("max_overlap must be a nonnegative integer")
+        result = self.analyze(alpha, beta, gamma, c, d, e)
+        result.update(
+            key_model="fixed_middle_key",
+            middle_round_key=keyword,
+            free_key_compatible=result["compatible"],
+        )
+        if not result["compatible"]:
+            return result
+        result.pop("witness")
+        result["uniform_middle_key_rank"] = result.pop("rank")
+        result["uniform_middle_key_probability"] = result["probability"]
+        result.update(
+            _fixed_key_distribution(
+                self._evaluate, self.word_bits, result["systems"], keyword, limit
+            )
+        )
+        if not result["compatible"]:
+            result["obstruction"] = "fixed_middle_key"
         return result
