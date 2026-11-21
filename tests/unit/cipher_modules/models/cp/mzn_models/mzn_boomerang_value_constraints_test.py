@@ -11,6 +11,7 @@ from claasp.cipher_modules.models.utils import integer_to_bit_list, set_fixed_va
 from claasp.ciphers.block_ciphers.katan_block_cipher import KatanBlockCipher
 from claasp.ciphers.block_ciphers.lea_block_cipher import LeaBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+from claasp.ciphers.block_ciphers.simeck_block_cipher import SimeckBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.permutations.chacha_permutation import ChachaPermutation
 from claasp.ciphers.permutations.chaskeypi_permutation import ChaskeyPiPermutation
@@ -49,6 +50,7 @@ def replay(cipher, result):
     "factory",
     [
         lambda: SimonBlockCipher(number_of_rounds=3),
+        lambda: SimeckBlockCipher(number_of_rounds=5),
         lambda: SpeckBlockCipher(number_of_rounds=3),
         lambda: LeaBlockCipher(number_of_rounds=3),
         lambda: KatanBlockCipher(number_of_rounds=3),
@@ -56,7 +58,7 @@ def replay(cipher, result):
         lambda: ChachaPermutation(number_of_rounds=3, round_mode="half_half"),
     ],
 )
-def test_exact_graph_replays_on_six_primitive_families(factory):
+def test_exact_graph_replays_on_seven_primitive_families(factory):
     cipher = factory()
     before = deepcopy(cipher.as_python_dictionary())
     model = MznHadipourBoomerangModel(
@@ -76,7 +78,11 @@ def test_exact_graph_replays_on_six_primitive_families(factory):
         for execution, point in enumerate([2, 3, 3, 2])
     ]
     fixed += [
-        fixed_value("quartet_0_" + name, 0, size)
+        fixed_value(
+            "quartet_0_" + name,
+            0x1918111009080100 if isinstance(cipher, SimeckBlockCipher) else 0,
+            size,
+        )
         for name, size in zip(cipher.inputs[1:], cipher.inputs_bit_size[1:])
     ]
     result = model.find_one_boomerang_trail(fixed_values=fixed, timeout_in_seconds=20)
@@ -273,12 +279,16 @@ def test_exact_graph_includes_a_nonlinear_master_key_schedule():
     from claasp.cipher import Cipher
 
     cipher = Cipher(
-        "sbox_key_schedule", "block_cipher", ["plaintext", "key"], [2, 2], 2
+        "sbox_key_schedule", "block_cipher", ["plaintext", "key"], [3, 3], 3
     )
     cipher.add_round()
-    round_key = cipher.add_sbox_component(["key"], [[0, 1]], 2, [0, 2, 3, 1])
-    value = cipher.add_xor_component(["plaintext", round_key.id], [[0, 1], [0, 1]], 2)
-    cipher.add_cipher_output_component([value.id], [[0, 1]], 2)
+    table = [0, 1, 3, 2, 5, 7, 4, 6]
+    assert table[2] ^ table[4] ^ table[6] ^ table[0] != 0
+    round_key = cipher.add_sbox_component(["key"], [[0, 1, 2]], 3, table)
+    value = cipher.add_xor_component(
+        ["plaintext", round_key.id], [[0, 1, 2], [0, 1, 2]], 3
+    )
+    cipher.add_cipher_output_component([value.id], [[0, 1, 2]], 3)
     model = MznHadipourBoomerangModel(
         cipher,
         dict(
@@ -289,10 +299,10 @@ def test_exact_graph_includes_a_nonlinear_master_key_schedule():
         enforce_value_compatibility=True,
     )
     fixed = [
-        fixed_value(f"quartet_{j}_plaintext", point, 2)
+        fixed_value(f"quartet_{j}_plaintext", point, 3)
         for j, point in enumerate([0, 1, 1, 0])
     ]
-    fixed.append(fixed_value("quartet_0_key", 2, 2))
+    fixed.append(fixed_value("quartet_0_key", 6, 3))
     result = model.find_one_boomerang_trail(fixed_values=fixed, timeout_in_seconds=5)
     assert result["status"] == "SATISFIABLE"
     replay(cipher, result)
