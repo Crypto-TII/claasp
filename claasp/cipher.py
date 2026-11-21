@@ -1315,6 +1315,54 @@ class Cipher:
             print("'cipher_reference_code': None,")
         print("}")
 
+    def add_prefix(self, prefix='upper_'):
+        """Prepend ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1)
+            sage: obj.add_prefix()
+            sage: obj.inputs[0]
+            'upper_plaintext'
+            sage: obj.remove_prefix()
+            sage: obj.inputs[0]
+            'plaintext'
+        """
+        self._rounds.add_prefix(prefix)
+        self._inputs = [prefix + i for i in self._inputs]
+
+    def remove_prefix(self, prefix='upper_'):
+        """Remove one leading occurrence of ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1)
+            sage: obj.add_prefix()
+            sage: obj.inputs[0]
+            'upper_plaintext'
+            sage: obj.remove_prefix()
+            sage: obj.inputs[0]
+            'plaintext'
+        """
+        self._rounds.remove_prefix(prefix)
+        self._inputs = [i[len(prefix):] if i.startswith(prefix) else i for i in self._inputs]
+
     def print_as_python_dictionary_to_file(self, file_name=""):
         """
         Use this function to print the cipher as a python dictionary to a file.

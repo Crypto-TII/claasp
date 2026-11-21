@@ -59,7 +59,7 @@ coverage.xml
 *.pot
 
 # Django stuff:
-*.log
+# *.log
 local_settings.py
 
 # Flask stuff:
@@ -122,6 +122,9 @@ local/
 upstream/
 
 SAGE_BIN_PATH
+
+# Generated solver node directories, at any depth
+**/grbnodes*/
 
 # experiments codes
 diff_ca_kalyna.py

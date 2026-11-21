@@ -119,3 +119,15 @@ def test_toy_chacha_permutation():
 
     chacha = ChachaPermutation(number_of_rounds=16, rotations=[2, 1, 4, 3], word_size=8, round_mode=ROUND_MODE_HALF_HALF)
     assert chacha.evaluate([plaintext], verbosity=False) == output
+
+
+def test_first_quarter_stage_preserves_unmodified_input_words():
+    words = [0x1020304 * (i + 1) for i in range(16)]
+    expected = words.copy()
+    for i in range(4):
+        expected[i] = (words[i] + words[i + 4]) & 0xffffffff
+        value = words[i + 12] ^ expected[i]
+        expected[i + 12] = ((value << 16) | (value >> 16)) & 0xffffffff
+    encode = lambda values: int("".join(f"{value:08x}" for value in values), 16)
+    cipher = ChachaPermutation(number_of_rounds=1, round_mode=ROUND_MODE_HALF_HALF)
+    assert cipher.evaluate([encode(words)]) == encode(expected)

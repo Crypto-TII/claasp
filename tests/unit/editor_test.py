@@ -260,3 +260,25 @@ def test_add_components_without_round_returns_none():
         assert cipher.add_cipher_output_component(["input"], [[0, 1, 2, 3]], 4) is None
 
     assert "please run self.add_round()" in stdout.getvalue()
+
+
+def test_partial_boundary_rejects_missing_bits_instead_of_dropping_them():
+    from types import SimpleNamespace
+    import pytest
+    from claasp.editor import _remap_positions_into_output
+
+    boundary = SimpleNamespace(id="boundary", input_id_links=["source"], input_bit_positions=[[0, 2]])
+    assert _remap_positions_into_output("source", [2, 0], boundary) == [1, 0]
+    with pytest.raises(ValueError, match="does not carry all requested bits"):
+        _remap_positions_into_output("source", [0, 1, 2], boundary)
+
+
+def test_partial_threefish_preserves_tweak_as_shared_input():
+    from claasp.ciphers.block_ciphers.threefish_block_cipher import ThreefishBlockCipher
+    cipher = ThreefishBlockCipher(number_of_rounds=4)
+    for start, end in [(0, 2), (1, 3)]:
+        for keep_keys in [False, True]:
+            partial = cipher.get_partial_cipher(start, end, keep_key_schedule=keep_keys)
+            assert "input_tweak" in partial.inputs
+            available = set(partial.inputs) | set(partial.all_components_ids())
+            assert all(link in available for c in partial.all_components() for link in c.input_id_links if link)

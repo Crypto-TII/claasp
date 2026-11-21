@@ -414,6 +414,12 @@ RUN printf '%s\n' \
     && chmod +x /usr/local/bin/mallob
 
 
+# Modular boomerang probabilities require a float-capable solver. Use matching
+# Gecode binaries and MiniZinc definitions when the image has none installed.
+COPY docker/install_gecode.sh /usr/local/bin/install-gecode
+RUN bash /usr/local/bin/install-gecode
+
+
 FROM claasp-base AS claasp-lib
 
 # Create a non-root user "sage" with home directory

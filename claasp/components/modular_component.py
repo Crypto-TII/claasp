@@ -405,7 +405,7 @@ class Modular(Component):
         )
 
         return cp_declarations, cp_constraints
-
+    
     def cp_wordwise_deterministic_truncated_xor_differential_constraints(self, model):
         """
         Return lists declarations and constraints for XOR component CP wordwise deterministic truncated XOR differential model.
@@ -533,6 +533,29 @@ class Modular(Component):
         model.component_and_probability[output_id_link] = probability
 
         return cp_declarations, cp_constraints
+
+    def cp_xor_differential_propagation_constraints_boomerang(self, model):
+        """Return declarations and XOR differential constraints for one boomerang arm.
+
+        INPUT:
+
+        - ``model`` -- boomerang model with ``c_upper`` and ``c_lower`` counters.
+          The component ID must start with ``upper_`` or ``lower_``.
+
+        OUTPUT: a pair of lists (MiniZinc declarations, constraints). Weights
+        use hundredths of a bit, as in the ordinary differential model.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: model = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: component = model.cipher.component_from_id('upper_modadd_0_1')
+            sage: declarations, constraints = component.cp_xor_differential_propagation_constraints_boomerang(model)
+            sage: any('upper_p[' in constraint for constraint in constraints)
+            True
+        """
+        return model._arm_differential_constraints(self)
 
     def cp_xor_differential_propagation_constraints_arx_optimized(self, model):
         """

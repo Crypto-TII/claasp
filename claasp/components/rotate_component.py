@@ -323,6 +323,24 @@ class Rotate(Component):
     def cp_xor_differential_propagation_constraints(self, model=None):
         return self.cp_constraints()
 
+    def cp_xor_differential_propagation_constraints_boomerang(self, model=None):
+        """Return the linear XOR difference propagation constraints for one arm.
+
+        INPUT: ``model`` -- optional model, forwarded to the ordinary linear builder.
+
+        OUTPUT: a pair of MiniZinc declarations and constraints, identical to
+        ``cp_xor_differential_propagation_constraints``. The arm is determined
+        by the component's prefixed ID and input links.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: component = SpeckBlockCipher(number_of_rounds=1).component_from(0, 0)
+            sage: component.cp_xor_differential_propagation_constraints_boomerang() == component.cp_constraints()
+            True
+        """
+        return self.cp_xor_differential_propagation_constraints(model)
+    
     def cp_xor_differential_propagation_first_step_constraints(self, model):
         return self.cp_xor_differential_first_step_constraints(model)
 

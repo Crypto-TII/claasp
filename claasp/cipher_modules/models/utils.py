@@ -331,7 +331,7 @@ def join_and_sanitize_strings(l):
     return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
 
 
-def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, recency_weight_strength):
+def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile: float, recency_weight_strength):
     """Raise ``ValueError`` if the inputs of :py:func:`exponential_predict` are not valid."""
     if x.ndim != 1 or y.ndim != 1:
         raise ValueError("x_obs and y_obs must be 1-D arrays.")
@@ -343,7 +343,7 @@ def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, 
         raise ValueError("ci must be between 1 and 99.")
     if np.any(y <= 0):
         raise ValueError("All y_obs values must be strictly positive.")
-    if not (0 < prediction_quantile < 1):
+    if not 0.0 < prediction_quantile < 1.0:
         raise ValueError("prediction_quantile must be between 0 and 1.")
     if recency_weight_strength < 0:
         raise ValueError("recency_weight_strength must be >= 0.")
@@ -380,7 +380,7 @@ def exponential_predict(
     - ``window`` -- **integer** (default: `10`); only the last ``window`` observations are used for the fit; ``None``
       means all observations
     - ``seed`` -- **integer** (default: `None`); seed of the bootstrap random generator
-    - ``prediction_quantile`` -- **float** (default: `0.6`); quantile of the bootstrap predictions used as central
+    - ``prediction_quantile`` -- **float** (default: `0.6`); finite quantile strictly between 0 and 1, used as central
       prediction (0.5 is the median, larger values are more conservative)
     - ``recency_weight_strength`` -- **float** (default: `1.5`); strength of the exponential recency weighting
       (0 means no weighting, larger values adapt faster to recent growth but are more sensitive to noise)
@@ -400,6 +400,7 @@ def exponential_predict(
     y = np.asarray(y_obs, dtype=float)
     x_new = np.atleast_1d(np.asarray(x_new, dtype=float))
 
+    prediction_quantile = float(prediction_quantile)
     _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, recency_weight_strength)
     if window is not None:
         x = x[-window:]

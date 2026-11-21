@@ -781,8 +781,8 @@ class Catalog:
         sage: methods = catalog.implemented_methods_per_component()
         sage: methods['name']
         'implemented_methods_per_component'
-        sage: methods['rows'][0]['method']
-        'algebraic_polynomials'
+        sage: any(row['method'] == 'algebraic_polynomials' for row in methods['rows'])
+        True
 
         sage: # Use convenience helpers to render ciphers directly.
         sage: catalog.show_ciphers()

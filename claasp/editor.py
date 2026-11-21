@@ -2259,11 +2259,13 @@ def _remap_positions_into_output(target_link, target_bit_positions, intermediate
             intermediate_output_position_links[(input_id_link, i)] = current_bit_position
             current_bit_position += 1
 
-    return [
-        intermediate_output_position_links[(target_link, bit)]
-        for bit in target_bit_positions
-        if (target_link, bit) in intermediate_output_position_links
-    ]
+    missing = [bit for bit in target_bit_positions if (target_link, bit) not in intermediate_output_position_links]
+    if missing:
+        raise ValueError(
+            f"Boundary output {intermediate_output.id!r} does not carry all requested bits "
+            f"of {target_link!r}: {missing}"
+        )
+    return [intermediate_output_position_links[(target_link, bit)] for bit in target_bit_positions]
 
 
 def _get_most_recent_intermediate_output(target_link, intermediate_outputs):
@@ -2315,7 +2317,7 @@ def _prune_components_outside_round_range(cipher, start_round, end_round, keep_k
     discarded_rounds = cipher.rounds_as_list[:start_round] + cipher.rounds_as_list[end_round + 1 :]
     key_schedule_component_ids = get_key_schedule_component_ids(cipher)
     key_schedule_components = [
-        cipher.component_from_id(id) for id in key_schedule_component_ids if INPUT_KEY not in id
+        cipher.component_from_id(id) for id in key_schedule_component_ids if id not in cipher.inputs
     ]
 
     if not keep_key_schedule:
@@ -2328,7 +2330,10 @@ def _rewire_partial_cipher_inputs_from_start_round(
     cipher, partial_cipher, start_round, end_round, removed_components_ids, intermediate_outputs
 ):
     """Replace the partial cipher's initial inputs with the previous round output and rewire links."""
-    for input_type in {cipher_input for cipher_input in cipher.inputs if INPUT_KEY not in cipher_input}:
+    for input_type in {
+        cipher_input for cipher_input in cipher.inputs
+        if INPUT_KEY not in cipher_input and INPUT_TWEAK not in cipher_input
+    }:
         removed_components_ids.append(input_type)
         input_index = partial_cipher.inputs.index(input_type)
         partial_cipher.inputs.pop(input_index)

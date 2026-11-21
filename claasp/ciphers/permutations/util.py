@@ -17,7 +17,6 @@
 
 from claasp.cipher import Cipher
 from claasp.DTOs.component_state import ComponentState
-from claasp.name_mappings import INPUT_PLAINTEXT
 from claasp.utils.utils import get_2d_array_element_from_1d_array_index, set_2d_array_element_from_1d_array_index
 
 
@@ -39,7 +38,9 @@ def add_intermediate_output_component_latin_dances_permutations(permutation, rou
     for i in range(4):
         for j in range(4):
             lst_ids.append(internal_state[i][j].id)
-            lst_input_input_positions.append(list(range(permutation.WORD_SIZE)))
+            lst_input_input_positions.append(
+                get_input_bit_positions_latin_dances(internal_state[i][j], permutation.WORD_SIZE)[0]
+            )
     if round_i == number_of_rounds - 1:
         permutation.add_cipher_output_component(lst_ids, lst_input_input_positions, permutation.block_bit_size)
     else:
@@ -124,7 +125,7 @@ def sub_quarter_round_latin_dances(permutation, state, p1_index, p2_index, p3_in
 
 
 def get_input_bit_positions_latin_dances(component, word_size=32):
-    if component.id == INPUT_PLAINTEXT:
+    if isinstance(component, ComponentState):
         return component.input_bit_positions
     else:
         return [list(range(word_size))]
