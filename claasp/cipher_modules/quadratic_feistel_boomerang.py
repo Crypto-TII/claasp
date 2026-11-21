@@ -78,8 +78,9 @@ class QuadraticFeistelBoomerangAnalyzer:
     middle round key (independent uniform round keys suffice).
     :meth:`analyze_fixed_key` instead counts the isolated event for a fixed
     middle keyword, with a cap on the exponential overlap parameter. Counts
-    must not be multiplied across overlapping windows. Returning quartets
-    are included; this analyzer does not apply a nondegeneracy filter.
+    must not be multiplied across overlapping windows. These two methods
+    include returning quartets. :meth:`analyze_nondegenerate` instead removes
+    them exactly, for averaged or fixed middle keys.
 
     This uses the quadratic polar identity and Feistel boomerang closure
     from Boukerrou et al., ToSC 2020(1),
@@ -332,4 +333,125 @@ class QuadraticFeistelBoomerangAnalyzer:
         )
         if not result["compatible"]:
             result["obstruction"] = "fixed_middle_key"
+        return result
+
+    def _returning_event(self, full, alpha, gamma, c, d, keyword, limit):
+        """Count the affine returning subevent using the original key forms."""
+        empty = dict(compatible=False, probability=Fraction(0))
+        if not full.get("free_key_compatible", full["compatible"]) or gamma != d:
+            return empty
+        rows = full["systems"]["joint"]["rows"] + _affine_system(
+            lambda left: self._polar(gamma, left),
+            alpha ^ c ^ self._derivative(gamma, 0),
+            self.word_bits,
+            self.word_bits,
+        )
+        joint = dict(rows=rows, **_eliminate(rows))
+        systems = full["systems"] | {"joint": joint}
+        result = dict(empty, systems=systems)
+        if not joint["consistent"]:
+            return result
+        rank = sum(system["rank"] for system in systems.values())
+        result.update(compatible=True, probability=Fraction(1, 1 << rank))
+        if keyword is not None:
+            result.update(
+                _fixed_key_distribution(
+                    self._evaluate, self.word_bits, systems, keyword, limit
+                )
+            )
+        return result
+
+    def analyze_nondegenerate(
+        self, alpha, beta, gamma, c, d, e, middle_round_key=None, max_overlap=12
+    ):
+        r"""Count four-distinct-point realizations of the retained window.
+
+        INPUT:
+
+        - ``alpha``, ``beta``, ``gamma``, ``c``, ``d``, ``e`` -- unsigned
+          boundary words as in :meth:`analyze`. The external directions
+          ``(alpha,beta)`` and ``(e,c)`` must both be nonzero.
+        - ``middle_round_key`` -- optional unsigned keyword. None averages
+          over a marginally uniform middle keyword; an integer fixes it.
+          Other keywords may be arbitrary fixed words in the fixed-key case.
+        - ``max_overlap`` -- nonnegative overlap cap for fixed-key counting,
+          as in :meth:`analyze_fixed_key`; unused in the averaged case.
+
+        OUTPUT: dictionary with exact ``probability`` (Fraction), positive-
+        count ``compatible``, ``full_probability`` and ``returning_probability``.
+        ``full_event`` and ``returning_event`` contain the separate systems and
+        counts. No quartet witness is returned. ``key_model`` identifies the
+        averaging convention. Invalid boundary words, zero external directions
+        or invalid fixed-key options raise ValueError.
+
+        In the fixed-key case, a consistent free-key event also returns the
+        nondegenerate ``fiber_counts``, ``key_target``, ``common_rows``,
+        ``target_constants``, ``overlap_rank`` and ``stacked_rank``. These use
+        the original key forms; class j has probability fiber_counts[j] /
+        2**(word_bits+stacked_rank). ``key_independent`` compares all classes;
+        ``uniform_middle_key_probability`` is their exact average.
+
+        For nonzero external directions, a degenerate successful quartet is
+        returning. At the middle input it requires d=gamma and
+        M_gamma(L)=alpha XOR c XOR eta_gamma. Append this affine system to
+        the joint system, count the returning event and subtract it. Fixed-key
+        counting subtracts its quadratic fibers from the full-event fibers.
+        The derivative overlap and exponential parameter do not increase.
+        The averaged cost is O(w*T_f+w**3); fixed-key cost retains
+        O(w**2*T_f+2**rho*w**3+rho*2**rho), up to a constant factor.
+        Assumptions, references and the restriction to isolated unconditioned
+        windows are as in the class documentation and :meth:`analyze_fixed_key`.
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.quadratic_feistel_boomerang import QuadraticFeistelBoomerangAnalyzer
+            sage: analyzer = QuadraticFeistelBoomerangAnalyzer(2, lambda x: (x & 1) * ((x >> 1) & 1))
+            sage: result = analyzer.analyze_nondegenerate(0, 1, 1, 0, 1, 1)
+            sage: result['full_probability'], result['returning_probability'], result['probability']
+            (Fraction(1, 1), Fraction(1, 2), Fraction(1, 2))
+            sage: fixed = analyzer.analyze_nondegenerate(0, 1, 1, 0, 1, 1, middle_round_key=3)
+            sage: fixed['probability'], fixed['fiber_counts'], fixed['key_independent']
+            (Fraction(1, 2), [2], True)
+            sage: identity = QuadraticFeistelBoomerangAnalyzer(1, lambda x: 0)
+            sage: identity.analyze_nondegenerate(1, 0, 0, 1, 0, 0)['probability']
+            Fraction(0, 1)
+        """
+        boundary = alpha, beta, gamma, c, d, e
+        if middle_round_key is None:
+            full = self.analyze(*boundary)
+        else:
+            full = self.analyze_fixed_key(
+                *boundary, middle_round_key=middle_round_key, max_overlap=max_overlap
+            )
+        alpha, beta, gamma, c, d, e = map(index, boundary)
+        if not (alpha or beta) or not (e or c):
+            raise ValueError("Nondegenerate analysis requires nonzero external directions")
+        full.pop("witness", None)
+        returning = self._returning_event(
+            full, alpha, gamma, c, d, full.get("middle_round_key"), max_overlap
+        )
+        probability = full["probability"] - returning["probability"]
+        result = dict(
+            compatible=probability > 0,
+            probability=probability,
+            full_probability=full["probability"],
+            returning_probability=returning["probability"],
+            full_event=full,
+            returning_event=returning,
+            key_model=full.get("key_model", "uniform_middle_key"),
+            event="nondegenerate_retained_three_round_window",
+        )
+        if "fiber_counts" in full:
+            excluded = returning.get("fiber_counts", [0] * len(full["fiber_counts"]))
+            fibers = [total - removed for total, removed in zip(full["fiber_counts"], excluded)]
+            result.update(
+                fiber_counts=fibers,
+                key_independent=len(set(fibers)) == 1,
+                uniform_middle_key_probability=Fraction(
+                    sum(fibers), len(fibers) << (self.word_bits + full["stacked_rank"])
+                ),
+                **{name: full[name] for name in (
+                    "key_target", "common_rows", "target_constants", "overlap_rank", "stacked_rank"
+                )},
+            )
         return result

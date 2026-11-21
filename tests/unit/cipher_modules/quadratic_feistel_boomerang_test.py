@@ -44,7 +44,7 @@ def _verify_certificate(system):
     assert (mask, rhs) == (0, 1)
 
 
-def _count_all_retained_events(function, key_triples):
+def _count_all_retained_events(function, key_triples, nondegenerate=False):
     counts = Counter()
     for keys in key_triples:
         forward = [_trace(x, keys, function) for x in range(16)]
@@ -58,6 +58,8 @@ def _count_all_retained_events(function, key_triples):
                         inverse[first[3] ^ nabla],
                         inverse[second[3] ^ nabla],
                     )
+                    if nondegenerate and len({point, point ^ delta, third[0], fourth[0]}) != 4:
+                        continue
                     if third[0] ^ fourth[0] != delta or third[1] ^ fourth[1] != middle:
                         continue
                     lower = first[2] ^ third[2]
@@ -125,6 +127,71 @@ def test_joint_obstruction_despite_individually_feasible_arms():
     assert result["systems"]["upper"]["consistent"]
     assert result["systems"]["lower"]["consistent"]
     _verify_certificate(result["systems"]["joint"])
+
+
+@pytest.mark.parametrize("table", [[0, 0, 0, 1], [0, 0, 0, 3], [3, 2, 1, 3]])
+def test_nondegenerate_profiles_match_all_fixed_key_two_bit_windows(table):
+    function = table.__getitem__
+    analyzer = QuadraticFeistelBoomerangAnalyzer(2, function)
+    counts = [
+        _count_all_retained_events(function, [(key ^ 1, key, key ^ 2)], nondegenerate=True)
+        for key in range(4)
+    ]
+    for boundary in product(range(4), repeat=6):
+        if not (boundary[0] or boundary[1]) or not (boundary[5] or boundary[3]):
+            continue
+        probabilities = []
+        for key in range(4):
+            result = analyzer.analyze_nondegenerate(*boundary, middle_round_key=key)
+            assert result["probability"] == Fraction(counts[key][boundary], 16)
+            assert result["compatible"] == bool(counts[key][boundary])
+            assert result["full_probability"] == result["probability"] + result["returning_probability"]
+            assert "witness" not in result["full_event"]
+            if "fiber_counts" in result:
+                assert all(value >= 0 for value in result["fiber_counts"])
+                scale = 1 << (2 + result["stacked_rank"])
+                assert result["probability"] == Fraction(result["fiber_counts"][result["key_target"]], scale)
+            returning = result["returning_event"]
+            if "systems" in returning and not returning["systems"]["joint"]["consistent"]:
+                _verify_certificate(returning["systems"]["joint"])
+            probabilities.append(result["probability"])
+        averaged = analyzer.analyze_nondegenerate(*boundary)
+        assert averaged["probability"] == sum(probabilities) / 4
+        if "fiber_counts" in result:
+            assert result["uniform_middle_key_probability"] == averaged["probability"]
+            assert result["key_independent"] == (len(set(probabilities)) == 1)
+
+
+@pytest.mark.parametrize("boundary", [(0, 0, 0, 1, 0, 0), (1, 0, 0, 0, 0, 0)])
+def test_nondegenerate_requires_nonzero_external_directions(boundary):
+    analyzer = QuadraticFeistelBoomerangAnalyzer(2, lambda value: 0)
+    with pytest.raises(ValueError, match="nonzero external"):
+        analyzer.analyze_nondegenerate(*boundary)
+
+
+def test_nondegenerate_only_returning_and_half_returning_examples():
+    linear = QuadraticFeistelBoomerangAnalyzer(1, lambda value: 0)
+    returning = linear.analyze_nondegenerate(1, 0, 0, 1, 0, 0)
+    assert returning["full_probability"] == returning["returning_probability"] == 1
+    assert returning["probability"] == 0 and not returning["compatible"]
+    quadratic = QuadraticFeistelBoomerangAnalyzer(2, lambda value: (value & 1) * (value >> 1))
+    for key in (None, 0, 3):
+        result = quadratic.analyze_nondegenerate(0, 1, 1, 0, 1, 1, middle_round_key=key)
+        assert result["full_probability"] == 1
+        assert result["returning_probability"] == result["probability"] == Fraction(1, 2)
+
+
+def test_nondegenerate_eight_bit_window_against_complete_state_count():
+    def function(value):
+        return value & (((value << 1) | (value >> 7)) & 255)
+
+    analyzer = QuadraticFeistelBoomerangAnalyzer(8, function)
+    boundary = (0, 1, 1, 0, 1, 1)
+    result = analyzer.analyze_nondegenerate(*boundary, middle_round_key=0x8C)
+    actual = _fixed_event_count(boundary, [0x35, 0x8C, 0xC9], function, 8, nondegenerate=True)
+    assert result["full_probability"] == 1
+    assert result["returning_probability"] == Fraction(1, 4)
+    assert result["probability"] == Fraction(actual, 1 << 16) == Fraction(3, 4)
 
 
 @pytest.mark.parametrize("table", [[0, 0, 0, 1], [0, 0, 0, 3], [3, 2, 1, 3]])
@@ -293,6 +360,11 @@ def test_fixed_key_quadratic_variation_with_only_nondegenerate_quartets(
         boundary, [3, keyword, 7], function, 5, nondegenerate=True
     )
     assert count == nondegenerate == 1024 * probability
+    filtered = analyzer.analyze_nondegenerate(*boundary, middle_round_key=keyword)
+    assert filtered["probability"] == probability
+    assert filtered["fiber_counts"] == [24, 8]
+    assert not filtered["key_independent"]
+    assert filtered["uniform_middle_key_probability"] == Fraction(1, 4)
 
 
 def test_simon48_saved_window_is_key_independent_when_derivative_rows_are_disjoint():
