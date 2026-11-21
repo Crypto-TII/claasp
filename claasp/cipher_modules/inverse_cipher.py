@@ -53,7 +53,6 @@ from claasp.name_mappings import (
     WORD_OPERATION,
 )
 
-from claasp.editor import get_key_schedule_component_ids
 
 
 # ===========================================================================
@@ -572,17 +571,54 @@ def _get_equivalent_input_bit_from_output_bit(
     )
     link_bit_names = [f"{potential_unwanted_component.id}_{i}_output" for i in positions]
 
-    equivalent_bits = []
-    for bit_name in link_bit_names:
-        for equivalent_bit in _equivalent_bit_names(bit_name, all_equivalent_bits):
-            if _is_valid_recovered_equivalent(equivalent_bit, all_bit_names, base_component.id, available_bits, key_schedule_components):
-                if not equivalent_bits or all_bit_names[equivalent_bit]["component_id"] == all_bit_names[equivalent_bits[0]]["component_id"]:
-                    equivalent_bits.append(equivalent_bit)
-
-    if not equivalent_bits:
+    recovered = [
+        _recovered_positions_for_bit(
+            name,
+            all_bit_names,
+            base_component.id,
+            available_bits,
+            all_equivalent_bits,
+            key_schedule_components,
+        )
+        for name in link_bit_names
+    ]
+    common = (
+        set.intersection(*(set(mapping) for mapping in recovered))
+        if recovered
+        else set()
+    )
+    if not common:
         return potential_unwanted_component.id, positions
-    input_bit_positions = sorted(all_bit_names[bit]["position"] for bit in equivalent_bits)
-    return all_bit_names[equivalent_bits[0]]["component_id"], input_bit_positions
+    source = (
+        potential_unwanted_component.id
+        if potential_unwanted_component.id in common
+        else min(common)
+    )
+    # Preserve the requested sequence, including permutations and repeated bits.
+    # Sorting recovered positions changes the value of the known XOR/MODADD operand.
+    return source, [mapping[source] for mapping in recovered]
+
+
+def _recovered_positions_for_bit(
+    bit_name,
+    all_bit_names,
+    base_component_id,
+    available_bits,
+    all_equivalent_bits,
+    key_schedule_components,
+):
+    positions = {}
+    for equivalent in _equivalent_bit_names(bit_name, all_equivalent_bits):
+        if _is_valid_recovered_equivalent(
+            equivalent,
+            all_bit_names,
+            base_component_id,
+            available_bits,
+            key_schedule_components,
+        ):
+            bit = all_bit_names[equivalent]
+            positions.setdefault(bit["component_id"], bit["position"])
+    return positions
 
 
 def _links_from_known_inputs(

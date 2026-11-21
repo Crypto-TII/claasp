@@ -72,6 +72,7 @@ def test_sand_published_full_round_vectors(block, plain, key, expected):
     keys = scalar_keys(key, block // 2, cipher.number_of_rounds)
     assert scalar_apply(plain, keys, block // 2) == expected
     assert cipher.evaluate([plain, key]) == expected
+    assert cipher.cipher_inverse().evaluate([expected, key]) == plain
     assert scalar_apply(expected, list(reversed(keys)), block // 2) == plain
 
 
