@@ -127,7 +127,7 @@ def test_joint_obstruction_despite_individually_feasible_arms():
     _verify_certificate(result["systems"]["joint"])
 
 
-@pytest.mark.parametrize("table", [[0, 0, 0, 1], [0, 0, 0, 3]])
+@pytest.mark.parametrize("table", [[0, 0, 0, 1], [0, 0, 0, 3], [3, 2, 1, 3]])
 def test_all_fixed_key_two_bit_windows_match_actual_cipher_counts(table):
     function = table.__getitem__
     analyzer = QuadraticFeistelBoomerangAnalyzer(2, function)
