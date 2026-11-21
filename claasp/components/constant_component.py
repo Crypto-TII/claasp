@@ -168,7 +168,10 @@ class Constant(Component):
 
     def cp_constraints(self):
         """
-        Return lists of declarations and constraints for CONSTANT component for CP CIPHER model.
+        Return declarations and MSB-first value constraints for a CP cipher model.
+
+        Binary and hexadecimal stored constants are both accepted. The output
+        contains exactly ``output_bit_size`` bits.
 
         INPUT:
 
@@ -182,7 +185,7 @@ class Constant(Component):
             (['array[0..3] of var 0..1: constant_0_0;'], ['constraint constant_0_0[0] = 0;', 'constraint constant_0_0[1] = 0;', 'constraint constant_0_0[2] = 0;', 'constraint constant_0_0[3] = 1;'])
         """
         cp_declarations = [f"array[0..{self.output_bit_size - 1}] of var 0..1: {self.id};"]
-        value = int(self.description[0], 16)
+        value = int(self.description[0], 0)
         bits = map(int, f"{value:0{self.output_bit_size}b}")
         cp_constraints = [f"constraint {self.id}[{i}] = {bit};" for i, bit in enumerate(bits)]
 

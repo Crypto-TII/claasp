@@ -80,3 +80,10 @@ def test_smt_xor_quasidifferential_propagation_constraints():
     assert len(constraints) == 5
     assert constraints[0] == '(assert (not constant_0_26_0))'
     assert constraints[-1] == '(assert (not constant_0_26_4))'
+
+def test_cp_constraints_preserve_binary_and_hexadecimal_constants():
+    for width, value in [(1, 1), (3, 5), (6, 1), (6, 63), (8, 165)]:
+        component = Constant(0, 0, width, value)
+        _, constraints = component.cp_constraints()
+        expected = [f"constraint constant_0_0[{i}] = {bit};" for i, bit in enumerate(f"{value:0{width}b}")]
+        assert constraints == expected

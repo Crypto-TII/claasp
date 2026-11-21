@@ -539,3 +539,35 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
     assert len({point[0] for point in points}) == 1
     with pytest.raises(NotImplementedError, match="S-box arms require"):
         MznHadipourBoomerangModel(cipher, structure()).build_hadipour_boomerang_model()
+
+
+def test_binary_key_schedule_constants_do_not_reject_valid_twine_quartet():
+    from claasp.ciphers.block_ciphers.twine_block_cipher import TwineBlockCipher
+    from claasp.cipher_modules.models.utils import integer_to_bit_list
+
+    cipher = TwineBlockCipher(number_of_rounds=4)
+    points = [12, 13, 16, 17]
+    outputs = [cipher.evaluate([x, 0]) for x in points]
+    assert outputs[0] ^ outputs[1] == outputs[2] ^ outputs[3]
+    fixed = [
+        set_fixed_variables(
+            f"quartet_{j}_plaintext",
+            "equal",
+            list(range(64)),
+            integer_to_bit_list(x, 64, "big"),
+        )
+        for j, x in enumerate(points)
+    ]
+    fixed.append(
+        set_fixed_variables("quartet_0_key", "equal", list(range(80)), [0] * 80)
+    )
+    model = MznHadipourBoomerangModel(
+        cipher,
+        structure(1, 2, 1),
+        middle_model="exact",
+        exclude_returning_quartets=True,
+    )
+    result = model.find_one_boomerang_trail(
+        fixed_values=fixed, solver_name="gecode", timeout_in_seconds=10
+    )
+    assert result["status"] == "SATISFIABLE"
