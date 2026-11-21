@@ -4,9 +4,9 @@
 """Affine rank certification of retained quadratic Feistel boomerang windows."""
 
 from dataclasses import dataclass
-from typing import Callable
 from fractions import Fraction
 from operator import index
+from typing import Callable
 
 
 def _affine_system(function, target, input_bits, output_bits):
@@ -26,8 +26,8 @@ def _eliminate(rows):
     """Return rank, consistency, one solution, and an XOR contradiction mask."""
     basis = {}
     contradiction = None
-    for index, (mask, rhs) in enumerate(rows):
-        proof = 1 << index
+    for row_index, (mask, rhs) in enumerate(rows):
+        proof = 1 << row_index
         while mask:
             pivot = mask.bit_length() - 1
             if pivot not in basis:
@@ -73,7 +73,8 @@ class QuadraticFeistelBoomerangAnalyzer:
     compatibility with an actual master-key schedule. An incompatible event
     is impossible for every such schedule. Exact probabilities returned by
     this class assume independent uniform round keys and uniform input;
-    they must not be multiplied across overlapping windows.
+    they must not be multiplied across overlapping windows. Returning quartets
+    are included; this analyzer does not apply a nondegeneracy filter.
 
     This uses the quadratic polar identity and Feistel boomerang closure
     from Boukerrou et al., ToSC 2020(1),

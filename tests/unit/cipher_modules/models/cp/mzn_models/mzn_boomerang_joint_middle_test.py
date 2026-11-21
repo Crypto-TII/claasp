@@ -54,7 +54,9 @@ def test_joint_middle_recovers_cancellation_excluded_by_local_tables():
         ]
         == "UNSATISFIABLE"
     )
-    joint = MznHadipourBoomerangModel(cipher, structure(), middle_model="exact")
+    joint = MznHadipourBoomerangModel(
+        cipher, structure(), middle_model="exact", exclude_returning_quartets=True
+    )
     result = joint.find_lowest_weight_boomerang_trail(
         fixed_values=external, timeout_in_seconds=10
     )
@@ -70,6 +72,8 @@ def test_joint_middle_recovers_cancellation_excluded_by_local_tables():
     output = cipher.all_components()[-1].id
     xs = [int(values[f"quartet_{j}_plaintext"]["value"], 16) for j in range(4)]
     ys = [int(values[f"quartet_{j}_{output}"]["value"], 16) for j in range(4)]
+    assert len(set(xs)) == 4
+    assert result["exclude_returning_quartets"] is True
     assert [cipher.evaluate([x]) for x in xs] == ys
     assert xs[0] ^ xs[1] == xs[2] ^ xs[3] == delta
     assert ys[0] ^ ys[2] == ys[1] ^ ys[3] == nabla
@@ -123,4 +127,41 @@ def test_middle_mode_is_validated():
     with pytest.raises(ValueError, match="middle_model"):
         MznHadipourBoomerangModel(
             cancellation_cipher(), structure(), middle_model="invalid"
+        )
+
+
+@pytest.mark.parametrize("middle_model", ["local", "exact"])
+@pytest.mark.parametrize("exclude", [False, True])
+def test_returning_only_identity_pair_is_optional(middle_model, exclude):
+    cipher = Cipher("identity_returning", "permutation", ["state"], [4], 4)
+    cipher.add_round()
+    output = cipher.add_cipher_output_component(["state"], [[0, 1, 2, 3]], 4)
+    model = MznHadipourBoomerangModel(
+        cipher,
+        structure(),
+        middle_model=middle_model,
+        enforce_value_compatibility=not exclude,
+        exclude_returning_quartets=exclude,
+    )
+    assert model.enforce_value_compatibility
+    result = model.find_one_boomerang_trail(
+        fixed_values=[fixed("upper_state", 1, 4), fixed("lower_" + output.id, 1, 4)],
+        solver_name="gecode",
+        timeout_in_seconds=5,
+    )
+    assert result["status"] == ("UNSATISFIABLE" if exclude else "SATISFIABLE")
+    if not exclude:
+        assert result["exclude_returning_quartets"] is False
+        xs = [
+            int(result["quartet_values"][f"quartet_{i}_state"]["value"], 16)
+            for i in range(4)
+        ]
+        assert len(set(xs)) == 2
+
+
+@pytest.mark.parametrize("value", [1, None, "yes"])
+def test_nondegenerate_option_requires_boolean(value):
+    with pytest.raises(ValueError, match="exclude_returning_quartets"):
+        MznHadipourBoomerangModel(
+            cancellation_cipher(), structure(), exclude_returning_quartets=value
         )

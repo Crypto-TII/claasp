@@ -28,11 +28,11 @@ from minizinc import Instance, Model, Solver, Status
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
     get_approx_logarithm_operation,
 )
-from claasp.cipher_modules.models.cp.minizinc_utils.mzn_boomerang_value_constraints import (
-    build_boomerang_value_constraints,
-)
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_bct_predicates import (
     get_bct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_boomerang_value_constraints import (
+    build_boomerang_value_constraints,
 )
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ebct_predicates import (
     get_ebct_operations,
@@ -157,6 +157,14 @@ class MznHadipourBoomerangModel(MznModel):
       Fixing such auxiliary bits raises ValueError. Exact middle components need
       value encoders but do not need differential or connectivity encoders.
 
+    - ``exclude_returning_quartets`` -- bool (default: False). If True, enable
+      exact value compatibility and require ``X0 != X3``. Since both external
+      differences are nonzero, all four plaintexts are then distinct. This
+      excludes returning two-point quartets and certifies existence of a
+      nondegenerate quartet, not its probability. Value-mode results record
+      this option as ``exclude_returning_quartets``. Enumeration is unavailable
+      with the value layer, including when enabled through this option.
+
     OUTPUT: a model. Construction does not change ``cipher`` or write files.
 
     EXAMPLES::
@@ -177,6 +185,9 @@ class MznHadipourBoomerangModel(MznModel):
         sage: joint.build_hadipour_boomerang_model(weight=None)
         sage: joint.enforce_value_compatibility
         True
+        sage: proper = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), structure, exclude_returning_quartets=True)
+        sage: proper.enforce_value_compatibility, proper.exclude_returning_quartets
+        (True, True)
 
     """
 
@@ -186,6 +197,7 @@ class MznHadipourBoomerangModel(MznModel):
         boomerang_structure,
         enforce_value_compatibility=False,
         middle_model="local",
+        exclude_returning_quartets=False,
     ):
         if middle_model not in ("local", "exact"):
             raise ValueError("middle_model must be local or exact")
@@ -193,8 +205,13 @@ class MznHadipourBoomerangModel(MznModel):
         self._value_difference_bits = {}
         if not isinstance(enforce_value_compatibility, bool):
             raise ValueError("enforce_value_compatibility must be a boolean")
+        if not isinstance(exclude_returning_quartets, bool):
+            raise ValueError("exclude_returning_quartets must be a boolean")
+        self.exclude_returning_quartets = exclude_returning_quartets
         self.enforce_value_compatibility = (
-            enforce_value_compatibility or middle_model == "exact"
+            enforce_value_compatibility
+            or middle_model == "exact"
+            or exclude_returning_quartets
         )
         self._value_witness_names = []
         keys = (
@@ -624,6 +641,12 @@ class MznHadipourBoomerangModel(MznModel):
                 build_boomerang_value_constraints(self)
             )
             self._model_constraints.extend(value_constraints)
+            if self.exclude_returning_quartets:
+                data = self.original_cipher.inputs[0]
+                width = self.original_cipher.inputs_bit_size[0]
+                self._model_constraints.append(
+                    f"constraint exists(i in 0..{width - 1})(quartet_0_{data}[i] != quartet_3_{data}[i]);"
+                )
             if self.middle_model == "exact":
                 self._validate_retained_fixed_values(fixed_variables or [])
         self._model_constraints = (
@@ -685,6 +708,7 @@ class MznHadipourBoomerangModel(MznModel):
                 name: components.pop(name) for name in self._value_witness_names
             }
             result["value_compatibility"] = "full_cipher"
+            result["exclude_returning_quartets"] = self.exclude_returning_quartets
             result["retained_difference_bits"] = {
                 name: sorted(bits) for name, bits in self._value_difference_bits.items()
             }
