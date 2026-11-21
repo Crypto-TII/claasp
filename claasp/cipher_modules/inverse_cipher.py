@@ -36,6 +36,7 @@ from claasp.components import (
     linear_layer_component,
     modsub_component,
 )
+from claasp.editor import get_key_schedule_component_ids as get_key_schedule_component_ids
 from claasp.input import Input
 from claasp.name_mappings import (
     CIPHER_INPUT,

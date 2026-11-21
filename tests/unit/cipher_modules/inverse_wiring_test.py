@@ -20,3 +20,10 @@ def test_inverse_preserves_known_xor_operand_bit_order(wiring):
     inverse = cipher.cipher_inverse()
     for plain in range(256):
         assert inverse.evaluate([cipher.evaluate([plain])]) == plain
+
+
+def test_inverse_module_preserves_key_schedule_helper_export():
+    from claasp.cipher_modules.inverse_cipher import get_key_schedule_component_ids
+    from claasp.editor import get_key_schedule_component_ids as editor_helper
+
+    assert get_key_schedule_component_ids is editor_helper
