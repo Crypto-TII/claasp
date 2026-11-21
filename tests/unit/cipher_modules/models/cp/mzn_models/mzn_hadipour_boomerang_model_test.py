@@ -475,3 +475,67 @@ def test_reproduce_archived_katan40_weight():
     )
     assert result["status"] == "SATISFIABLE"
     assert float(result["total_weight"]) == 12
+
+
+def test_key_first_input_is_selected_without_mutating_cipher():
+    from claasp.ciphers.block_ciphers.cham_block_cipher import ChamBlockCipher
+
+    cipher = ChamBlockCipher(number_of_rounds=3)
+    before = deepcopy(cipher.as_python_dictionary())
+    model = MznHadipourBoomerangModel(cipher, structure(), middle_model="exact")
+    model.build_hadipour_boomerang_model()
+    assert cipher.as_python_dictionary() == before
+    assert model.original_cipher.inputs[0] == "plaintext"
+    assert model._external_differences.intersection({"upper_plaintext"})
+    assert "upper_key" not in model._data_inputs
+
+
+def test_exact_sbox_arms_share_ddt_and_probability_indices():
+    from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+
+    cipher = PresentBlockCipher(number_of_rounds=3)
+    model = MznHadipourBoomerangModel(cipher, structure(), middle_model="exact")
+    model.build_hadipour_boomerang_model()
+    first = model.assemble_model()
+    assert "DDT_upper_sbox" in first
+    assert all(
+        isinstance(indices, list)
+        for indices in model.component_and_probability.values()
+    )
+    assert any(
+        name.startswith("lower_sbox") for name in model.component_and_probability
+    )
+    model.build_hadipour_boomerang_model()
+    assert model.assemble_model() == first
+
+
+def test_exact_sbox_quartet_replays_with_key_first_graph():
+    cipher = Cipher("key_first_sbox", "block_cipher", ["key", "plaintext"], [3, 3], 3)
+    state = "plaintext"
+    for _ in range(3):
+        cipher.add_round()
+        state = cipher.add_xor_component([state, "key"], [list(range(3))] * 2, 3).id
+        state = cipher.add_sbox_component(
+            [state], [list(range(3))], 3, [0, 1, 2, 3, 4, 5, 7, 6]
+        ).id
+        cipher.add_round_output_component([state], [list(range(3))], 3)
+    output = cipher.add_cipher_output_component([state], [list(range(3))], 3).id
+    model = MznHadipourBoomerangModel(
+        cipher, structure(), middle_model="exact", exclude_returning_quartets=True
+    )
+    result = model.find_one_boomerang_trail(solver_name="gecode", timeout_in_seconds=10)
+    assert result["status"] == "SATISFIABLE"
+    points = []
+    for j in range(4):
+        values = result["quartet_values"]
+        point = [
+            int(values[f"quartet_{j}_{name}"]["value"], 16) for name in cipher.inputs
+        ]
+        assert cipher.evaluate(point) == int(
+            values[f"quartet_{j}_{output}"]["value"], 16
+        )
+        points.append(point)
+    assert len({point[1] for point in points}) == 4
+    assert len({point[0] for point in points}) == 1
+    with pytest.raises(NotImplementedError, match="S-box arms require"):
+        MznHadipourBoomerangModel(cipher, structure()).build_hadipour_boomerang_model()

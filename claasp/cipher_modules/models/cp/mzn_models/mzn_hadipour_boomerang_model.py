@@ -61,7 +61,7 @@ from claasp.cipher_modules.models.cp.mzn_models.mzn_xor_differential_model impor
 )
 from claasp.cipher_modules.models.cp.solvers import GECODE, SOLVER_DEFAULT
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
-from claasp.name_mappings import CONSTANT, WORD_OPERATION
+from claasp.name_mappings import CONSTANT, INPUT_PLAINTEXT, SBOX, WORD_OPERATION
 
 _UPPER = "upper"
 _LOWER = "lower"
@@ -91,6 +91,13 @@ class MznHadipourBoomerangModel(MznModel):
     Block-cipher key inputs have zero differences. For permutation models
     such as ChaCha, use ``fixed_values`` to fix the constant/key portion of
     the state when targeting a particular stream-cipher setting.
+
+    A named plaintext input is placed first in an internal copy. This supports
+    key-first descriptions such as CHAM without changing the supplied cipher.
+    The library also supports S-box differential arms in exact-middle mode.
+    Their DDT weights use CLAASP's rounded centibit scale and rank retained
+    characteristics; they are not full external probabilities. Local S-box
+    switches are unsupported.
 
     The local-middle objective is
     ``2 * upper_weight + middle_weight + 2 * lower_weight``.
@@ -124,7 +131,8 @@ class MznHadipourBoomerangModel(MznModel):
 
     - ``cipher`` -- CLAASP cipher; two-input MODADD/MODSUB and AND are the
       supported nonlinear operations in differential arms and local switches.
-      Exact-middle mode additionally supports components with exact CP encoders.
+      Exact-middle mode also supports S-box differential arms of up to eight
+      input bits and middle components with exact CP encoders.
     - ``boomerang_structure`` -- dictionary containing nonnegative integer
       ``top_part_number_of_rounds``, positive ``middle_part_number_of_rounds``,
       and nonnegative ``bottom_part_number_of_rounds``. Their sum must equal
@@ -136,8 +144,9 @@ class MznHadipourBoomerangModel(MznModel):
       be replayed with the original cipher, and ``value_compatibility`` equals
       ``'full_cipher'``. This certifies a retained quartet's existence, not its
       probability. It intersects the restricted local search space and can be
-      substantially more expensive. The first input must be the permutation
-      state; every original component must have an exact CP model. Fix actual
+      substantially more expensive. The named plaintext is the data input;
+      otherwise the first input is used as the state. Every original component
+      must have an exact CP model. Fix actual
       input values through IDs such as ``quartet_0_key`` in ``fixed_values``.
       Other executions share the same non-data inputs automatically.
       Permutation key/constant words inside the first input must be fixed
@@ -242,7 +251,16 @@ class MznHadipourBoomerangModel(MznModel):
             self.bottom_part_number_of_rounds,
         ) = counts
         self.original_cipher = deepcopy(cipher)
-        unified = self._unify_cipher(cipher)
+        if INPUT_PLAINTEXT in cipher.inputs:
+            data_index = cipher.inputs.index(INPUT_PLAINTEXT)
+            order = [data_index] + [
+                i for i in range(len(cipher.inputs)) if i != data_index
+            ]
+            self.original_cipher.inputs[:] = [cipher.inputs[i] for i in order]
+            self.original_cipher.inputs_bit_size[:] = [
+                cipher.inputs_bit_size[i] for i in order
+            ]
+        unified = self._unify_cipher(self.original_cipher)
         super().__init__(unified)
         self.c_upper = self.c_lower = 0
         self._middle_probabilities = {}
@@ -300,11 +318,17 @@ class MznHadipourBoomerangModel(MznModel):
             c=getattr(self, counter),
             modadd_twoterms_mant=self.modadd_twoterms_mant,
             component_and_probability={},
+            sbox_cache=self.sbox_cache,
         )
         declarations, constraints = (
             component.cp_xor_differential_propagation_constraints(arm)
         )
-        self.component_and_probability.update(arm.component_and_probability)
+        self.component_and_probability.update(
+            {
+                name: [indices] if isinstance(indices, int) else indices
+                for name, indices in arm.component_and_probability.items()
+            }
+        )
         setattr(self, counter, arm.c)
         # Replace only probability identifiers, preserving every component bit index.
         constraints = [
@@ -327,30 +351,36 @@ class MznHadipourBoomerangModel(MznModel):
                 ):
                     yield component
 
+    def _component_constraints(self, component):
+        operation = component.description[0]
+        if component.type == SBOX:
+            if self.middle_model != "exact":
+                raise NotImplementedError("S-box arms require middle_model='exact'")
+            if component.input_bit_size > 8:
+                raise NotImplementedError(
+                    "S-box differential tables support at most eight input bits"
+                )
+            return self._arm_differential_constraints(component)
+        if component.type == WORD_OPERATION and operation in (
+            "MODADD",
+            "MODSUB",
+            "AND",
+        ):
+            if component.description[1] != 2:
+                raise NotImplementedError(
+                    "Boomerang nonlinear components must have two operands"
+                )
+            return self._arm_differential_constraints(component)
+        method = getattr(component, "cp_xor_differential_propagation_constraints", None)
+        if method is None or operation == "OR":
+            raise NotImplementedError(
+                f"Unsupported boomerang component: {component.id}"
+            )
+        return method(self)
+
     def _build_components(self):
         for component in self._differential_components():
-            operation = component.description[0]
-            if component.type == WORD_OPERATION and operation in (
-                "MODADD",
-                "MODSUB",
-                "AND",
-            ):
-                if component.description[1] != 2:
-                    raise NotImplementedError(
-                        "Boomerang nonlinear components must have two operands"
-                    )
-                declarations, constraints = self._arm_differential_constraints(
-                    component
-                )
-            else:
-                method = getattr(
-                    component, "cp_xor_differential_propagation_constraints", None
-                )
-                if method is None or component.type == "sbox" or operation == "OR":
-                    raise NotImplementedError(
-                        f"Unsupported boomerang component: {component.id}"
-                    )
-                declarations, constraints = method(self)
+            declarations, constraints = self._component_constraints(component)
             self._variables_list.extend(declarations)
             self._model_constraints.extend(constraints)
 
