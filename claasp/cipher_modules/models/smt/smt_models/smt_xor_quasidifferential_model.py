@@ -273,7 +273,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             return positions if len(positions) == output_bit_size else None
 
         if operation == "ROTATE":
-            rotation = component.description[1]
+            rotation = component._rotation_amount()
             return positions[-rotation:] + positions[:-rotation]
 
         if operation == "SHIFT":

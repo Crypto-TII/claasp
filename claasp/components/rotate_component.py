@@ -862,6 +862,8 @@ class Rotate(Component):
         """
         Return SMT constraints for ROTATE quasidifferential propagation.
 
+        Rotation amounts are reduced modulo the word width, including negative
+        amounts and amounts larger than one word, as in the exact SMT encoder.
         A bit rotation is a permutation matrix, hence orthogonal and
         self-dual (P^{-1} = P^T): per Beyne & Rijmen, Theorem 3.2 (5)
         and Section 4.3, mask and difference propagate through the
@@ -892,9 +894,8 @@ class Rotate(Component):
              '(assert (= qdt_rot_0_0_1 qdt_plaintext_0))']
         """
 
-        # A rotation is a bit permutation, so the mask goes through the
-        # same rotation as the difference.
-        rotation = self.description[1]
+        # Use the same width-normalized permutation for masks and differences.
+        rotation = self._rotation_amount()
         positions = list(range(self.input_bit_size))
 
         return model._bit_moving_propagation_constraints(

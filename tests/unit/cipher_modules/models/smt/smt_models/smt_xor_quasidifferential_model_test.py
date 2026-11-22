@@ -585,3 +585,32 @@ def test_find_all_trails_up_to_a_weight_pass_fixed_masks_through():
     assert len(
         smt.find_all_xor_quasidifferential_trails_with_weight_at_most(0, fixed_masks=smt.boundary_masks())
     ) == 3
+
+
+@pytest.mark.parametrize("rotation", [-9, -5, -3, -2, -1, 0, 1, 2, 3, 5, 9])
+def test_rotation_masks_match_the_actual_width_normalized_permutation(rotation):
+    from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
+
+    cipher = RotateCipher(bit_size=2, rotation_amount=rotation)
+    output = cipher.all_components()[-1].id
+    expected = cipher.evaluate([1])
+    differences = [
+        set_fixed_variables(name, "equal", range(2), integer_to_bit_list(value, 2, "big"))
+        for name, value in ((INPUT_PLAINTEXT, 1), (output, expected))
+    ]
+    for target_mask, status in ((expected, "SATISFIABLE"), (expected ^ 1, "UNSATISFIABLE")):
+        model = SmtXorQuasidifferentialModel(cipher)
+        masks = [
+            {"component_id": name, "bit_positions": range(2),
+             "bit_values": integer_to_bit_list(value, 2, "big")}
+            for name, value in ((INPUT_PLAINTEXT, 1), (output, target_mask))
+        ]
+        result = model.find_one_xor_quasidifferential_trail_with_fixed_weight(
+            0, fixed_values=differences, fixed_masks=masks, solver_name=Z3_EXT
+        )
+        assert result["status"] == status
+    component = cipher.component_from_id("rot_0_0")
+    bit_map = model._difference_bit_map(component)
+    predicted = sum(((1 >> (1 - source)) & 1) << (1 - target)
+                    for target, source in enumerate(bit_map))
+    assert predicted == expected
