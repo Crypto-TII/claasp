@@ -327,3 +327,18 @@ def test_byte_vector_ROTATE():
 
     assert np.all(rotate_result==expected_result)
 
+
+
+def test_select_canonical_partial_bytes_preserves_uint8_and_input():
+    for bit_size in (10, 13, 19):
+        byte_size = get_number_of_bytes_needed_for_bit_size(bit_size)
+        source = np.arange(byte_size * 3, dtype=np.uint8).reshape(byte_size, 3)
+        source[0, :] &= (1 << (bit_size % 8)) - 1
+        before = source.copy()
+        selected = byte_vector_select_all_words(
+            [source], [[list(range(bit_size))]], [[0]], 1, byte_size, [bit_size]
+        )[0]
+        assert selected.dtype == np.uint8
+        assert np.array_equal(selected, before)
+        assert np.array_equal(source, before)
+        assert not np.shares_memory(selected, source)
