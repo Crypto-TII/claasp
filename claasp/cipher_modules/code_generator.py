@@ -287,7 +287,7 @@ def generate_bit_based_vectorized_python_code_string(cipher, store_intermediate_
         params = prepare_input_bit_based_vectorized_python_code_string(component)
         component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
-        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
+        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
@@ -358,7 +358,7 @@ def generate_byte_based_vectorized_python_code_string(cipher, store_intermediate
         output_bit_sizes[component.id] = component.output_bit_size
         component_types_allowed = ['constant', 'linear_layer', 'mix_column', 'permutation',
                                    'sbox', 'cipher_output', 'intermediate_output', 'fsr']
-        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
+        component_descriptions_allowed = ['ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT', 'NOT', 'XOR',
                                           'MODADD', 'MODMUL', 'MODSUB', 'IDEA_MODMUL', 'OR', 'AND']
         if component.type in component_types_allowed or (component.type == 'word_operation' and
                                                          component.description[0] in component_descriptions_allowed):
@@ -449,7 +449,7 @@ def get_number_of_inputs(component):
     number_of_inputs = None
     if component.type == 'word_operation':
         description = component.description[0]
-        if description in {'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'NOT'}:
+        if description in {'ROTATE', 'SHIFT', 'SHIFT_BY_VARIABLE_AMOUNT', 'ROTATE_BY_VARIABLE_AMOUNT', 'NOT'}:
             number_of_inputs = 1
         else:
             number_of_inputs = component.description[1]

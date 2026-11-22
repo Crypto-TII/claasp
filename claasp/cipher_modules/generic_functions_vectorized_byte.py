@@ -225,11 +225,13 @@ def generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits,
     for j in range(len(real_inputs[i])):
         val = unformatted_inputs[real_inputs[i][- j - 1]]
         bits_taken = len(real_bits[i][-j - 1])
+        if bits_taken == 0:
+            continue
         if actual_inputs_bits[real_inputs[i][-j - 1]] % 8 > 0:
             offset_for_first_byte = 8 - (actual_inputs_bits[real_inputs[i][-j - 1]] % 8)
         else:
             offset_for_first_byte = 0
-        b_list = np.array(real_bits[i][- j - 1]) + offset_for_first_byte
+        b_list = np.array(real_bits[i][- j - 1], dtype=np.intp) + offset_for_first_byte
         binary_version = np.unpackbits(val, axis=0)
         # print("="*10)
         # print(f"{b_list=}")
@@ -237,7 +239,7 @@ def generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits,
         # print(f"{offset_for_first_byte=}")
         # print(f"{left_zero_padding=}")
 
-        if j == 0:
+        if bits_counter == 0:
             last_bit_position = None
         else:
             last_bit_position = -bits_counter
@@ -695,3 +697,36 @@ def byte_vector_permutation(input, permutation, word_size, input_bit_size):
         output = np.vstack([np.zeros((bits_to_pad, output.shape[1]), dtype=np.uint8), output])
 
     return np.packbits(output, axis=0)
+
+
+def byte_vector_ROTATE_BY_VARIABLE_AMOUNT(inputs, input_size, direction, amount_size):
+    """Rotate packed byte samples using a separately sized unsigned amount.
+
+    INPUT:
+
+    - ``inputs`` -- one packed byte matrix; rows encode concatenated data then
+      amount bits, right aligned within the bytes, samples in columns.
+    - ``input_size`` -- positive data-word width in bits.
+    - ``direction`` -- negative for left rotation, nonnegative for right.
+    - ``amount_size`` -- positive number of amount bits, including high bits.
+
+    OUTPUT: uint8 byte matrix with the rotated data word right aligned. This
+    supports non-byte-aligned words and amounts wider than a machine integer.
+
+    EXAMPLES::
+
+        sage: import numpy as np
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_ROTATE_BY_VARIABLE_AMOUNT
+        sage: byte_vector_ROTATE_BY_VARIABLE_AMOUNT([np.array([[5]], dtype=np.uint8)], 2, 1, 1).tolist()
+        [[1]]
+    """
+    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE_BY_VARIABLE_AMOUNT
+    input_size, amount_size = int(input_size), int(amount_size)
+    if amount_size < 1:
+        raise ValueError("A positive amount width is required")
+    bits = np.unpackbits(inputs[0], axis=0)[-(input_size + amount_size):]
+    result = bit_vector_ROTATE_BY_VARIABLE_AMOUNT([bits], input_size, direction)
+    padding = (-input_size) % 8
+    if padding:
+        result = np.vstack([np.zeros((padding, result.shape[1]), dtype=np.uint8), result])
+    return np.packbits(result, axis=0)

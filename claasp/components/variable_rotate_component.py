@@ -103,9 +103,9 @@ class VariableRotate(Component):
             f"var 0..{width - 1}: {self.id}_amount;",
         ]
         constraints = [f"constraint {self.id}_amount = ({amount_expression}) mod {width};"]
-        sign = "-" if self.description[1] >= 0 else "+"
+        multiplier = int(self.description[1]) % width
         constraints.extend(
-            f"constraint {self.id}[{i}] = {self.id}_input[({i} {sign} {self.id}_amount + {width}) mod {width}];"
+            f"constraint {self.id}[{i}] = {self.id}_input[({i} - {multiplier}*{self.id}_amount + {width * width}) mod {width}];"
             for i in range(width)
         )
         return declarations, constraints
@@ -214,3 +214,40 @@ class VariableRotate(Component):
         del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
+
+
+    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+        """Return code evaluating the exact variable rotation on bit matrices.
+
+        INPUT: ``params`` is a list of selected-input code strings;
+        ``convert_output_to_bytes`` is the standard generator flag (conversion
+        remains the caller's responsibility).
+
+        OUTPUT: a one-element list of Python source lines.
+
+        EXAMPLES::
+
+            sage: from claasp.components.variable_rotate_component import VariableRotate
+            sage: c = VariableRotate(0, 0, ['x', 's'], [[0, 1], [0]], 2, 1)
+            sage: c.get_bit_based_vectorized_python_code(['x', 's'], False)
+            ['  var_rot_0_0 = bit_vector_ROTATE_BY_VARIABLE_AMOUNT([x,s], 2, 1)']
+        """
+        return [f"  {self.id} = bit_vector_ROTATE_BY_VARIABLE_AMOUNT([{','.join(params)}], {self.output_bit_size}, {self.description[1]})"]
+
+    def get_byte_based_vectorized_python_code(self, params):
+        """Return code evaluating the exact rotation on packed byte matrices.
+
+        INPUT: ``params`` is the selected-input expression produced by the
+        standard byte-vector formatter.
+
+        OUTPUT: a one-element list of Python source lines, including the actual
+        amount width so that partial-byte padding cannot become amount bits.
+
+        EXAMPLES::
+
+            sage: from claasp.components.variable_rotate_component import VariableRotate
+            sage: c = VariableRotate(0, 0, ['x', 's'], [[0, 1], [0]], 2, -1)
+            sage: c.get_byte_based_vectorized_python_code('selected')
+            ['  var_rot_0_0 = byte_vector_ROTATE_BY_VARIABLE_AMOUNT(selected, 2, -1, 1)']
+        """
+        return [f"  {self.id} = byte_vector_ROTATE_BY_VARIABLE_AMOUNT({params}, {self.output_bit_size}, {self.description[1]}, {self.input_bit_size - self.output_bit_size})"]
