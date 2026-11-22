@@ -25,6 +25,8 @@ from types import SimpleNamespace
 
 from minizinc import Instance, Model, Solver, Status
 
+from claasp.cipher_modules.graph_normalization import binary_modadd_copy
+
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
     get_approx_logarithm_operation,
 )
@@ -175,6 +177,14 @@ class MznHadipourBoomerangModel(MznModel):
       this option as ``exclude_returning_quartets``. Enumeration is unavailable
       with the value layer, including when enabled through this option.
 
+    - ``fixed_parameters`` -- optional dictionary of actual non-data input
+      values, for example ``{'key': 0}``. Names refer to the original graph.
+      Values must fit their input widths; plaintext cannot be fixed here. This
+      enables the exact value layer and holds these parameters equal to the
+      specified values in all four executions. Difference constraints still
+      describe XOR differences. A result for a chosen key does not establish
+      an all-key or uniformly averaged probability.
+
     OUTPUT: a model. Construction does not change ``cipher`` or write files.
 
     EXAMPLES::
@@ -198,6 +208,9 @@ class MznHadipourBoomerangModel(MznModel):
         sage: proper = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), structure, exclude_returning_quartets=True)
         sage: proper.enforce_value_compatibility, proper.exclude_returning_quartets
         (True, True)
+        sage: fixed = MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3), structure, middle_model='exact', fixed_parameters={'key': 0})
+        sage: fixed.fixed_parameters
+        {'key': 0}
 
     """
 
@@ -208,10 +221,12 @@ class MznHadipourBoomerangModel(MznModel):
         enforce_value_compatibility=False,
         middle_model="local",
         exclude_returning_quartets=False,
+        fixed_parameters=None,
     ):
         if middle_model not in ("local", "exact"):
             raise ValueError("middle_model must be local or exact")
         self.middle_model = middle_model
+        self.fixed_parameters = self._validate_fixed_parameters(cipher, fixed_parameters)
         self._value_difference_bits = {}
         if not isinstance(enforce_value_compatibility, bool):
             raise ValueError("enforce_value_compatibility must be a boolean")
@@ -222,6 +237,7 @@ class MznHadipourBoomerangModel(MznModel):
             enforce_value_compatibility
             or middle_model == "exact"
             or exclude_returning_quartets
+            or bool(self.fixed_parameters)
         )
         self._value_witness_names = []
         keys = (
@@ -258,8 +274,29 @@ class MznHadipourBoomerangModel(MznModel):
         self._middle_probabilities = {}
 
     @staticmethod
+    def _validate_fixed_parameters(cipher, fixed_parameters):
+        if fixed_parameters is None:
+            return {}
+        if not isinstance(fixed_parameters, dict):
+            raise ValueError("fixed_parameters must map non-data input names to integers")
+        data = INPUT_PLAINTEXT if INPUT_PLAINTEXT in cipher.inputs else cipher.inputs[0]
+        widths = dict(zip(cipher.inputs, cipher.inputs_bit_size))
+        result = {}
+        for name, value in fixed_parameters.items():
+            if name not in widths or name == data or isinstance(value, bool):
+                raise ValueError("Only named non-data parameters can be fixed")
+            try:
+                value = index(value)
+            except TypeError as exc:
+                raise ValueError("Fixed parameters must be nonnegative width-sized integers") from exc
+            if not 0 <= value < 1 << widths[name]:
+                raise ValueError("Fixed parameter does not fit its input width")
+            result[name] = value
+        return result
+
+    @staticmethod
     def _data_first_copy(cipher):
-        result = deepcopy(cipher)
+        result = binary_modadd_copy(cipher)
         if INPUT_PLAINTEXT in cipher.inputs:
             data_index = cipher.inputs.index(INPUT_PLAINTEXT)
             order = [data_index] + [

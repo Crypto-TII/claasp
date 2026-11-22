@@ -163,6 +163,12 @@ def build_boomerang_value_constraints(model):
             for execution in range(1, 4)
             for bit in range(size)
         )
+    for name, value in model.fixed_parameters.items():
+        size = cipher.inputs_bit_size[cipher.inputs.index(name)]
+        constraints.extend(
+            f"constraint quartet_0_{name}[{bit}] = {(value >> (size - bit - 1)) & 1};"
+            for bit in range(size)
+        )
     retained = _retained_bits(model)
     retained["upper"].update(
         ("upper_" + cipher.inputs[0], bit) for bit in range(cipher.inputs_bit_size[0])

@@ -602,3 +602,27 @@ def test_exact_or_feistel_quartet_replays():
         assert cipher.evaluate([x]) == int(values[f"quartet_{j}_{output}"]["value"], 16)
     with pytest.raises(NotImplementedError, match="OR arms require"):
         MznHadipourBoomerangModel(cipher, structure()).build_hadipour_boomerang_model()
+
+
+@pytest.mark.parametrize('parameters',[
+    {'plaintext':0},{'unknown':0},{'key':-1},{'key':1<<64},
+    {'key':True},{'key':0.5},[('key',0)],
+])
+def test_fixed_parameters_reject_invalid_values(parameters):
+    with pytest.raises(ValueError):
+        MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3),structure(),
+                                 fixed_parameters=parameters)
+
+
+def test_fixed_parameter_values_are_not_xor_differences():
+    parameters={'key':0xa5}
+    cipher=SpeckBlockCipher(number_of_rounds=3)
+    model=MznHadipourBoomerangModel(cipher,structure(),fixed_parameters=parameters)
+    parameters['key']=0
+    assert model.fixed_parameters=={'key':0xa5}
+    assert model.enforce_value_compatibility
+    model.build_hadipour_boomerang_model()
+    text=model.assemble_model()
+    assert 'constraint quartet_0_key[63] = 1;' in text
+    assert 'constraint quartet_0_key[62] = 0;' in text
+    assert 'constraint quartet_1_key[63] = quartet_0_key[63];' in text

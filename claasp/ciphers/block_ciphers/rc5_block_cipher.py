@@ -295,6 +295,9 @@ class RC5BlockCipher(Cipher):
 
         B = S_2i_1_modadd
 
+        self.add_round_output_component(
+            [A.id, B.id], [list(range(word_size)), list(range(word_size))], 2 * word_size
+        )
         if k != self.nrounds - 1:
             self.add_round()
 

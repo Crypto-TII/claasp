@@ -39,3 +39,31 @@ def test_get_word_operation_sign_updates_solution():
     assert "var_rot_0_0_o" not in solution["components_values"]
     assert solution["components_values"]["var_rot_0_0"]["value"] == "ff"
     assert solution["components_values"]["var_rot_0_0"]["sign"] == 1
+
+
+def test_cp_variable_rotation_exhaustive_values():
+    """All words and amounts, both directions, including non-power-of-two width."""
+    from minizinc import Instance, Model, Solver
+    for width in (4,5):
+        for direction in (-1,1):
+            component=VariableRotate(0,0,['word','amount'],[list(range(width)),[0,1,2]],width,direction)
+            declarations,equations=component.cp_constraints()
+            model=Model()
+            model.add_string('\n'.join([
+                f'array[0..{width-1}] of var 0..1: word;',
+                'array[0..2] of var 0..1: amount;',
+                f'array[0..{width-1}] of var 0..1: var_rot_0_0;',
+                *declarations,*equations,'solve satisfy;']))
+            result=Instance(Solver.lookup('gecode'),model).solve(all_solutions=True)
+            assert len(result.solution)==(1<<width)*8
+            for solution in result.solution:
+                value=lambda bits:int(''.join(map(str,bits)),2)
+                word,amount=value(solution.word),value(solution.amount)%width
+                expected=((word>>amount)|(word<<(width-amount))) if direction==1 else ((word<<amount)|(word>>(width-amount)))
+                assert value(solution.var_rot_0_0)==expected&((1<<width)-1)
+
+
+def test_cp_variable_rotation_refuses_difference_as_value_fallback():
+    import pytest
+    with pytest.raises(NotImplementedError,match='differential weights'):
+        make_variable_rotate_component().cp_xor_differential_propagation_constraints()

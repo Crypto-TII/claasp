@@ -540,7 +540,7 @@ class Cipher:
             f"{self.family_name}_partial_{start_round}_to_{end_round}",
             f"{self.type}",
             inputs,
-            self._inputs_bit_size,
+            deepcopy(self._inputs_bit_size),
             self.output_bit_size,
         )
         for round in self.rounds_as_list:

@@ -744,6 +744,18 @@ def _are_there_enough_available_inputs_to_perform_inversion(component, available
         if bit in available_bits
     ]
 
+    if component.type == WORD_OPERATION and component.description[0] == "ROTATE_BY_VARIABLE_AMOUNT":
+        wires = [bit for group in _component_input_bits(component) for bit in group]
+        amount_known = all(
+            _input_bit_value_is_recovered(bit["component_id"], bit["position"], available_bits, all_equivalent_bits)
+            for bit in wires[component.output_bit_size:]
+        )
+        output_known = all(
+            _input_bit_value_is_recovered(component.id, bit, available_bits, all_equivalent_bits)
+            for bit in range(component.output_bit_size)
+        )
+        return amount_known and output_known
+
     # Determine which input links are usable (directly available or sourceable via outputs).
     input_bits = _component_input_bits(component)
     usable = [_are_these_bits_available(bits, available_bits) for bits in input_bits]
@@ -772,7 +784,7 @@ _ALWAYS_INVERTIBLE_TYPES = frozenset({
     LINEAR_LAYER, PERMUTATION_COMPONENT, MIX_COLUMN, CONSTANT,
     CIPHER_INPUT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT,
 })
-_INVERTIBLE_WORD_OPS = frozenset({"ROTATE", "XOR", "SIGMA", "MODADD", "NOT"})
+_INVERTIBLE_WORD_OPS = frozenset({"ROTATE", "XOR", "SIGMA", "MODADD", "NOT", "ROTATE_BY_VARIABLE_AMOUNT"})
 
 
 def _is_possibly_invertible_component(component):
@@ -981,6 +993,30 @@ def _invert_rotate(component, available_bits, all_equivalent_bits, key_schedule_
     )
 
 
+def _invert_variable_rotate(component, available_bits, all_equivalent_bits, key_schedule_components, self, oc, aoc):
+    links, positions = _links_from_outputs(component, aoc, all_equivalent_bits, self)
+    offset = 0
+    for read_index, (source, source_positions) in enumerate(zip(component.input_id_links, component.input_bit_positions)):
+        amount_positions = source_positions[max(0, component.output_bit_size - offset):]
+        offset += len(source_positions)
+        if not amount_positions:
+            continue
+        recovered_source, recovered_positions = _get_equivalent_input_bit_from_output_bit(
+            _component_from_id(source, self), component, available_bits, all_equivalent_bits,
+            key_schedule_components, self, base_component_input_index=read_index,
+            override_positions=amount_positions,
+        )
+        links.append(recovered_source)
+        positions.append(recovered_positions)
+    inverse_component = Component(
+        component.id, component.type, Input(component.input_bit_size, links, positions),
+        component.output_bit_size, [component.description[0], -component.description[1]],
+    )
+    return _finalize_inverse(
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
+    )
+
+
 def _invert_not(component, available_bits, all_equivalent_bits, key_schedule_components, self, oc, aoc):
     input_id_links, input_bit_positions = _links_from_outputs(component, aoc, all_equivalent_bits, self)
     inverse_component = Component(
@@ -1093,6 +1129,7 @@ _INVERSION_RULES = {
     (WORD_OPERATION, "SIGMA"): _invert_sigma,
     (WORD_OPERATION, "XOR"): _invert_xor,
     (WORD_OPERATION, "ROTATE"): _invert_rotate,
+    (WORD_OPERATION, "ROTATE_BY_VARIABLE_AMOUNT"): _invert_variable_rotate,
     (WORD_OPERATION, "NOT"): _invert_not,
     (WORD_OPERATION, "MODADD"): _invert_modadd,
     CONSTANT: _invert_constant,
