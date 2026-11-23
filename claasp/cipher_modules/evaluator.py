@@ -76,13 +76,18 @@ def evaluate_using_c(cipher, inputs, intermediate_output, verbosity):
     return function_output
 
 
-def evaluate_vectorized(
+def create_vectorized_evaluator(
     cipher,
-    cipher_input,
     intermediate_output=False,
     verbosity=False,
     evaluate_api=False,
 ):
+    """Compile and return a reusable vectorized evaluator for ``cipher``.
+
+    This is useful for statistical tests that evaluate the same cipher graph
+    on many independently generated batches.  ``evaluate_vectorized`` remains
+    the one-shot convenience API and delegates to this function.
+    """
     python_code_string = (
         code_generator.generate_byte_based_vectorized_python_code_string(
             cipher,
@@ -93,8 +98,27 @@ def evaluate_vectorized(
     )
     f_module = ModuleType("evaluate")
     exec(python_code_string, f_module.__dict__)
-    cipher_output = f_module.evaluate(cipher_input, intermediate_output)
-    return cipher_output
+
+    def compiled_evaluator(cipher_input):
+        return f_module.evaluate(cipher_input, intermediate_output)
+
+    return compiled_evaluator
+
+
+def evaluate_vectorized(
+    cipher,
+    cipher_input,
+    intermediate_output=False,
+    verbosity=False,
+    evaluate_api=False,
+):
+    compiled_evaluator = create_vectorized_evaluator(
+        cipher,
+        intermediate_output=intermediate_output,
+        verbosity=verbosity,
+        evaluate_api=evaluate_api,
+    )
+    return compiled_evaluator(cipher_input)
 
 
 def evaluate_with_intermediate_outputs_continuous_diffusion_analysis(
