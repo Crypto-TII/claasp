@@ -1,5 +1,5 @@
 def get_evaluation_ubct_operations(nbit):
-    """Return MiniZinc source for modular-addition boomerang connectivity.
+    """Return MiniZinc source for modular-addition boomerang probability evaluation.
 
     The transition tables follow Wang, Wang and Sun, *SAT-aided Automatic
     Search of Boomerang Distinguishers for ARX Ciphers*, ToSC 2023(1),
@@ -10,13 +10,21 @@ def get_evaluation_ubct_operations(nbit):
     INPUT: ``nbit`` -- integer word size, at least 2.
 
     OUTPUT: string of MiniZinc declarations and predicates; include it once
-    in the model. These helpers generate source and do not invoke a solver.
+    in the model after ``get_approx_logarithm_operation()``. The helper
+    generates source and does not invoke a solver.
 
     EXAMPLES::
 
         sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicate import get_evaluation_ubct_operations
-        sage: isinstance(get_evaluation_ubct_operations(4), str)
-        True
+        sage: import minizinc  # optional - minizinc
+        sage: model = minizinc.Model()  # optional - minizinc
+        sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import get_approx_logarithm_operation
+        sage: model.add_string(get_approx_logarithm_operation())  # optional - minizinc
+        sage: model.add_string(get_evaluation_ubct_operations(4))  # optional - minizinc
+        sage: model.add_string('solve satisfy;')  # optional - minizinc
+        sage: result = minizinc.Instance(minizinc.Solver.lookup('gecode'), model).solve()  # optional - minizinc
+        sage: str(result.status)  # optional - minizinc
+        'SATISFIED'
     """
     ubct_string = f"""
         array[0..31, 0..3, 0..3] of 0..4: tables_ubct = array3d(0..31, 0..3, 0..3, 
@@ -189,38 +197,38 @@ array[0..3,0..1] of 0..1: valid_state_ubct = array2d(0..3,0..1,
 ]);
 
 predicate ubct_compute(
-    array[0..{nbit-1}] of var 0..1: dL,
-    array[0..{nbit-1}] of var 0..1: dR,
-    array[0..{nbit-1}] of var 0..1: nL,
-    array[0..{nbit-1}] of var 0..1: nR,
-    array[0..{nbit-1}] of var 0..1: dLL,
-    int: branchSize,
+    array[0..{nbit-1}] of var 0..1: d_l,
+    array[0..{nbit-1}] of var 0..1: d_r,
+    array[0..{nbit-1}] of var 0..1: n_l,
+    array[0..{nbit-1}] of var 0..1: n_r,
+    array[0..{nbit-1}] of var 0..1: d_ll,
+    int: branch_size,
     var 0..3200: ubct_minus_log_2
 ) =
 let {{
-    array[1..branchSize-1,0..3] of var 0.0..1.0: dp_ubct;
-    array[1..branchSize-1] of var 0..31: tmp0;
+    array[1..branch_size-1,0..3] of var 0.0..1.0: dp_ubct;
+    array[1..branch_size-1] of var 0..31: tmp0;
     var 0.0..1.0: ubct_value;
 }} in
 (
     ( 
-        tmp0[1] == dLL[branchSize-1]*16 + nR[branchSize-1]*8 + nL[branchSize-1]*4 + dR[branchSize-1]*2 + dL[branchSize-1]*1
+        tmp0[1] == d_ll[branch_size-1]*16 + n_r[branch_size-1]*8 + n_l[branch_size-1]*4 + d_r[branch_size-1]*2 + d_l[branch_size-1]*1
     ) /\\
     forall(j in 0..3)(
         dp_ubct[1,j] == int2float(tables_ubct[tmp0[1],j,0]) / 4.0
     ) /\\
-    forall(i in 2..branchSize-1)(
-        tmp0[i] == dLL[branchSize-i]*16 + nR[branchSize-i]*8 + nL[branchSize-i]*4 + dR[branchSize-i]*2 + dL[branchSize-i]*1
+    forall(i in 2..branch_size-1)(
+        tmp0[i] == d_ll[branch_size-i]*16 + n_r[branch_size-i]*8 + n_l[branch_size-i]*4 + d_r[branch_size-i]*2 + d_l[branch_size-i]*1
     ) /\\
-    forall(i in 2..branchSize-1, j in 0..3)(
+    forall(i in 2..branch_size-1, j in 0..3)(
             dp_ubct[i,j] == sum(k in 0..3)(
                  dp_ubct[i-1,k] * int2float(tables_ubct[tmp0[i],j,k]) 
             ) / 4.0
     ) /\\
     (
         ubct_value == sum(state in 0..3)( 
-                                if (((valid_state_ubct[state,0] + valid_state_ubct[state,1] + dLL[1] + nR[1] + nL[1]) mod 2) == 0)
-                                    then dp_ubct[branchSize-1,state]
+                                if (((valid_state_ubct[state,0] + valid_state_ubct[state,1] + d_ll[1] + n_r[1] + n_l[1]) mod 2) == 0)
+                                    then dp_ubct[branch_size-1,state]
                                 else 0
                                 endif
         )

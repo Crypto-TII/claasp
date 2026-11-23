@@ -53,7 +53,7 @@ RUN set -eux; \
 
 ENV GUROBI_HOME=/opt/gurobi
 ENV PATH="/opt/gurobi/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/opt/gurobi/lib"
 
 # Installing Soplex (for SCIP)
 RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-716.tar.gz \

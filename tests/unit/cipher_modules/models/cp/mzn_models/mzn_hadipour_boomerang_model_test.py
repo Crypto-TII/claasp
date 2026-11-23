@@ -111,7 +111,7 @@ def test_switch_variants(factory, middle):
             else ["UBCT", "LBCT"] + (["EBCT"] if middle == 3 else [])
         )
         for kind in kinds:
-            assert "onlyLargeSwitch_" + kind + "_enum" in model.assemble_model()
+            assert "only_large_switch_" + kind.lower() + "_enum" in model.assemble_model()
 
 
 def test_fixed_values_and_export(tmp_path):

@@ -1,7 +1,12 @@
-"""Published SAND vectors and an independent scalar bitslice implementation.
+"""SAND tests against the designers' published vectors and reference code.
 
-The scalar oracle follows Appendix B of https://eprint.iacr.org/2021/1560;
-the graph instead wires bit planes and uses the permutation tables explicitly.
+The two full-round plaintext, key and ciphertext triples below are copied from
+Appendix A of Chen et al., *SAND: an AND-RX Feistel lightweight block cipher
+supporting S-box-based security evaluations*, Designs, Codes and Cryptography
+90, 155--198 (2022), https://doi.org/10.1007/s10623-021-00970-9
+(open version: https://eprint.iacr.org/2021/1560). The independent scalar oracle
+follows the bitslice reference code in Appendix B of that open version; the
+CLAASP graph instead wires bit planes and permutation tables explicitly.
 """
 
 import random
@@ -28,7 +33,8 @@ def scalar_keys(master, width, rounds):
 
 def scalar_round_function(x, width):
     mask = (1 << width) - 1
-    repeat = lambda nibble: sum(nibble << i for i in range(0, width, 4))
+    def repeat(nibble):
+        return sum(nibble << i for i in range(0, width, 4))
     a = x ^ ((x >> 3) & (x >> 2) & repeat(1))
     a ^= (a << 3) & (a << 2) & repeat(8)
     b = ((x << 4) | (x >> (width - 4))) & mask
@@ -37,7 +43,8 @@ def scalar_round_function(x, width):
     combined = a ^ b
     chunk = width // 8
     low = sum(((1 << chunk) - 1) << i for i in range(0, width, 2 * chunk))
-    rotate = lambda v, r: ((v << r) | (v >> (width - r))) & mask
+    def rotate(value, amount):
+        return ((value << amount) | (value >> (width - amount))) & mask
     return rotate(combined & low, width - chunk) | rotate(
         combined & (mask ^ low), 3 * chunk
     )
@@ -127,9 +134,10 @@ def test_sand_exact_boomerang_graph_uses_actual_expanded_key(block):
         ),
         middle_model="exact",
     )
-    fix = lambda name, value, size: set_fixed_variables(
-        name, "equal", list(range(size)), integer_to_bit_list(value, size, "big")
-    )
+    def fix(name, value, size):
+        return set_fixed_variables(
+            name, "equal", list(range(size)), integer_to_bit_list(value, size, "big")
+        )
     # Returning-pair calibration only: this is not a cryptanalytic distinguisher.
     inputs = [2, 3, 3, 2]
     key = 0x0F1F2F3F4F5F6F7F8F9FAFBFCFDFEFFF

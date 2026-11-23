@@ -566,7 +566,7 @@ class MznHadipourBoomerangModel(MznModel):
         ]
         if index is None:
             suffix = f", {size // 2}, {size}) = true;"
-            predicate = f"onlyLargeSwitch_{kind.upper()}_enum"
+            predicate = f"only_large_switch_{kind}_enum"
         else:
             suffix = f", {size}, middle_p[{index}]);"
             predicate = kind + "_compute"

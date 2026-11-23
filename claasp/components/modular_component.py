@@ -1933,7 +1933,7 @@ class Modular(Component):
         nabla_right = f"array1d(0..{branch_size}-1, [{nabla_right_str}])"
 
         constraint = (
-            f"constraint onlyLargeSwitch_BCT_enum({delta_left}, {delta_right}, "
+            f"constraint only_large_switch_bct_enum({delta_left}, {delta_right}, "
             f"{nabla_left}, {nabla_right}, 1, {branch_size}) = true;\n"
         )
         return constraint

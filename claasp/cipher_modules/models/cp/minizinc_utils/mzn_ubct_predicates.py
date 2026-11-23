@@ -15,8 +15,13 @@ def get_ubct_operations():
     EXAMPLES::
 
         sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ubct_predicates import get_ubct_operations
-        sage: isinstance(get_ubct_operations(), str)
-        True
+        sage: import minizinc  # optional - minizinc
+        sage: model = minizinc.Model()  # optional - minizinc
+        sage: model.add_string(get_ubct_operations())  # optional - minizinc
+        sage: model.add_string('solve satisfy;')  # optional - minizinc
+        sage: result = minizinc.Instance(minizinc.Solver.lookup('gecode'), model).solve()  # optional - minizinc
+        sage: str(result.status)  # optional - minizinc
+        'SATISFIED'
     """
     ubct_string = """
     include \"table.mzn\";
@@ -172,54 +177,54 @@ def get_ubct_operations():
       ]);
     
     
-    predicate onlyLargeSwitch_UBCT_enum(
-      array[int] of var 0..1: dL,
-      array[int] of var 0..1:dR,
-      array[int] of var 0..1: nL,
-      array[int] of var 0..1:nR,
-      array[int] of var 0..1:dLL,
-      int: halfNum,
-      int: branchSize,
+    predicate only_large_switch_ubct_enum(
+      array[int] of var 0..1: d_l,
+      array[int] of var 0..1:d_r,
+      array[int] of var 0..1: n_l,
+      array[int] of var 0..1:n_r,
+      array[int] of var 0..1:d_ll,
+      int: half_num,
+      int: branch_size,
     ) = 
         let {
-            array[0..branchSize - 1, 0..3] of var bool: dp ,
-            array[0..branchSize - 2] of var bool: isHalf ;
-            array[0..branchSize-2, 0..15] of var bool: matrix;
-            array[0..branchSize-2, 0..3] of var bool: halfSize;
-            array[0..branchSize-2] of var bool: ifEnforced;
-            array[0..branchSize-2, 0..3] of var bool: enforcedLiterals;
-            array[0..branchSize-2, 0..15] of var bool: literals;
-            array[0..3] of var bool: lastLiterals;
-            array[0..6] of var bool: isValid;
+            array[0..branch_size - 1, 0..3] of var bool: dp ,
+            array[0..branch_size - 2] of var bool: is_half ;
+            array[0..branch_size-2, 0..15] of var bool: matrix;
+            array[0..branch_size-2, 0..3] of var bool: half_size;
+            array[0..branch_size-2] of var bool: if_enforced;
+            array[0..branch_size-2, 0..3] of var bool: enforced_literals;
+            array[0..branch_size-2, 0..15] of var bool: literals;
+            array[0..3] of var bool: last_literals;
+            array[0..6] of var bool: is_valid;
         } in
-        (sum(isHalf) <= halfNum) /\\
+        (sum(is_half) <= half_num) /\\
         (dp[0, 0] == true) /\\
         (dp[0, 1] == false) /\\
         (dp[0, 2] == false) /\\
         (dp[0, 3] == false) /\\
-        forall(i in 0..branchSize-2) (
+        forall(i in 0..branch_size-2) (
             forall(cn in 0..3) (
                  let {
-                    array[0..9] of var 0..1: column = array1d(0..9, [dL[i], dR[i], nL[i], nR[i], dLL[i], matrix[i, 0*4+cn], matrix[i, 1*4+cn], matrix[i,2*4+cn], matrix[i, 3*4+cn], halfSize[i, cn]])
+                    array[0..9] of var 0..1: column = array1d(0..9, [d_l[i], d_r[i], n_l[i], n_r[i], d_ll[i], matrix[i, 0*4+cn], matrix[i, 1*4+cn], matrix[i,2*4+cn], matrix[i, 3*4+cn], half_size[i, cn]])
                 } in
-                BVAssign_ubct(column, cn)
+                bv_assign_ubct(column, cn)
             ) /\\
             (
                 dp[i + 1, 0] \\/ dp[i + 1, 1] \\/ dp[i + 1, 2] \\/ dp[i + 1, 3]
             ) /\\
-            (ifEnforced[i] == not(isHalf[i])) /\\
+            (if_enforced[i] == not(is_half[i])) /\\
             forall(j in 0..3) (
-                (not(ifEnforced[i]) \\/ not(dp[i,j]) \\/ matrix[i, j*4+j]) /\\
-                (not(ifEnforced[i]) \\/ not(dp[i,j]) \\/ dp[i+1,j]) /\\
-                sum([not(ifEnforced[i]), not(dp[i,j]), matrix[i, j * 4 + j]]) >= 1 /\\
-                sum([not(ifEnforced[i]), not(dp[i,j]), dp[i + 1,j]]) >= 1
+                (not(if_enforced[i]) \\/ not(dp[i,j]) \\/ matrix[i, j*4+j]) /\\
+                (not(if_enforced[i]) \\/ not(dp[i,j]) \\/ dp[i+1,j]) /\\
+                sum([not(if_enforced[i]), not(dp[i,j]), matrix[i, j * 4 + j]]) >= 1 /\\
+                sum([not(if_enforced[i]), not(dp[i,j]), dp[i + 1,j]]) >= 1
             ) /\\
             forall(j in 0..3) (
-                (enforcedLiterals[i,j] -> (not(matrix[i,j * 4 + j]) /\\ dp[i,j])) /\\
-                (not(enforcedLiterals[i,j]) -> (matrix[i,j * 4 + j] \\/ not(dp[i,j])))
+                (enforced_literals[i,j] -> (not(matrix[i,j * 4 + j]) /\\ dp[i,j])) /\\
+                (not(enforced_literals[i,j]) -> (matrix[i,j * 4 + j] \\/ not(dp[i,j])))
             ) /\\ 
             (
-                ifEnforced[i] \\/ enforcedLiterals[i,0] \\/ enforcedLiterals[i,1] \\/ enforcedLiterals[i,2] \\/ enforcedLiterals[i,3]
+                if_enforced[i] \\/ enforced_literals[i,0] \\/ enforced_literals[i,1] \\/ enforced_literals[i,2] \\/ enforced_literals[i,3]
             ) /\\
             forall(r in 0..3) (
                 forall(cc in 0..3) (
@@ -244,33 +249,33 @@ def get_ubct_operations():
             )
         ) /\\
         (
-            isValid[0] == dL[branchSize - 1] /\\
-            isValid[1] == dR[branchSize - 1] /\\
-            isValid[2] == dLL[branchSize -1] 
+            is_valid[0] == d_l[branch_size - 1] /\\
+            is_valid[1] == d_r[branch_size - 1] /\\
+            is_valid[2] == d_ll[branch_size -1]
         ) /\\
-            (BVAssign_last_table_ubct(isValid))
+            (bv_assign_last_table_ubct(is_valid))
         /\\
         forall(i in 0..3) (
             (
-                lastLiterals[i] -> (dp[branchSize-1,i] /\\ isValid[3 + i])
+                last_literals[i] -> (dp[branch_size-1,i] /\\ is_valid[3 + i])
             ) /\\
             (
-                not(lastLiterals[i]) -> (not(dp[branchSize-1,i]) \\/ not(isValid[3 + i]))
+                not(last_literals[i]) -> (not(dp[branch_size-1,i]) \\/ not(is_valid[3 + i]))
             )
         ) /\\
         (
-            lastLiterals[0] \\/ lastLiterals[1] \\/ lastLiterals[2] \\/ lastLiterals[3]
+            last_literals[0] \\/ last_literals[1] \\/ last_literals[2] \\/ last_literals[3]
         );         
 
-        predicate BVAssign_ubct(array[0..num_cols_ubct-1] of var 0..1: column, int: index) =
+        predicate bv_assign_ubct(array[0..num_cols_ubct-1] of var 0..1: column, int: index) =
         let {
             array[int] of set of int: indices = [index..index, 0..num_rows_ubct-1, 0..num_cols_ubct-1];
-            array[int,int] of int: extractedFromTable = slice_2d(ubct_table, indices, 0..num_rows_ubct-1, 0..num_cols_ubct-1);
+            array[int,int] of int: extracted_from_table = slice_2d(ubct_table, indices, 0..num_rows_ubct-1, 0..num_cols_ubct-1);
         } in
-        table(column, extractedFromTable);
+        table(column, extracted_from_table);
 
-        predicate BVAssign_last_table_ubct(
-            array[0..num_cols_last_table_ubct-1] of var bool: isValid
-        ) =  table(isValid, last_table_ubct);  
+        predicate bv_assign_last_table_ubct(
+            array[0..num_cols_last_table_ubct-1] of var bool: is_valid
+        ) =  table(is_valid, last_table_ubct);
     """
     return ubct_string

@@ -11,14 +11,23 @@ def get_approx_logarithm_operation():
 
     INPUT: None.
 
-    OUTPUT: string of MiniZinc declarations and predicates; include it once
-    in the model. These helpers generate source and do not invoke a solver.
+    OUTPUT: MiniZinc source defining ``approx_prob_log``. Add it to a model
+    before constraining a weight with that predicate. This helper itself does
+    not invoke a solver.
 
     EXAMPLES::
 
         sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import get_approx_logarithm_operation
-        sage: isinstance(get_approx_logarithm_operation(), str)
-        True
+        sage: import minizinc  # optional - minizinc
+        sage: model = minizinc.Model()  # optional - minizinc
+        sage: model.add_string(get_approx_logarithm_operation())  # optional - minizinc
+        sage: model.add_string('var 0..3200: weight; constraint approx_prob_log(0.5, weight); solve satisfy;')  # optional - minizinc
+        sage: result = minizinc.Instance(minizinc.Solver.lookup('gecode'), model).solve()  # optional - minizinc
+        sage: result['weight']  # optional - minizinc
+        94
+
+    The value 94 is a weight of 0.94 bits, illustrating the approximation
+    rather than the exact value of one bit for probability 1/2.
     """
     string = """
 predicate approx_prob_log(

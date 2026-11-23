@@ -31,10 +31,13 @@ class SandBlockCipher(Cipher):
 
     REFERENCES:
 
-    Chen et al., *SAND: an AND-RX Feistel lightweight block cipher supporting
-    S-box-based security evaluations*, Designs, Codes and Cryptography 90,
-    155--198 (2022), https://doi.org/10.1007/s10623-021-00970-9;
-    https://eprint.iacr.org/2021/1560, Sections 2.1--2.2 and Appendices A--B.
+    Shiyao Chen, Yanhong Fan, Ling Sun, Yong Fu, Haibo Zhou, Yongqing Li,
+    Meiqin Wang, Weijia Wang and Chun Guo, *SAND: an AND-RX Feistel
+    lightweight block cipher supporting S-box-based security evaluations*,
+    Designs, Codes and Cryptography 90, 155--198 (2022),
+    https://doi.org/10.1007/s10623-021-00970-9. The open version at
+    https://eprint.iacr.org/2021/1560 gives the specification in Section 2,
+    full-round test vectors in Appendix A and reference code in Appendix B.
 
     INPUT:
 

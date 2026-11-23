@@ -15,8 +15,13 @@ def get_lbct_operations():
     EXAMPLES::
 
         sage: from claasp.cipher_modules.models.cp.minizinc_utils.mzn_lbct_predicates import get_lbct_operations
-        sage: isinstance(get_lbct_operations(), str)
-        True
+        sage: import minizinc  # optional - minizinc
+        sage: model = minizinc.Model()  # optional - minizinc
+        sage: model.add_string(get_lbct_operations())  # optional - minizinc
+        sage: model.add_string('solve satisfy;')  # optional - minizinc
+        sage: result = minizinc.Instance(minizinc.Solver.lookup('gecode'), model).solve()  # optional - minizinc
+        sage: str(result.status)  # optional - minizinc
+        'SATISFIED'
     """
     lbct_string = """
     include \"table.mzn\";
@@ -302,28 +307,28 @@ def get_lbct_operations():
       ]);
     
     
-    predicate onlyLargeSwitch_LBCT_enum(
-      array[int] of var 0..1: dL,
-      array[int] of var 0..1:dR,
-      array[int] of var 0..1: nL,
-      array[int] of var 0..1:nR,
-      array[int] of var 0..1:nLL,
-      int: halfNum,
-      int: branchSize,
+    predicate only_large_switch_lbct_enum(
+      array[int] of var 0..1: d_l,
+      array[int] of var 0..1:d_r,
+      array[int] of var 0..1: n_l,
+      array[int] of var 0..1:n_r,
+      array[int] of var 0..1:n_ll,
+      int: half_num,
+      int: branch_size,
     ) = 
         let {
-            array[0..branchSize - 1, 0..7] of var bool: dp ,
-            array[0..branchSize - 2] of var bool: isHalf ;
-            array[0..branchSize-2, 0..63] of var bool: matrix;
-            array[0..branchSize-2, 0..7] of var bool: halfSize0;
-            array[0..branchSize-2, 0..7] of var bool: halfSize1;
-            array[0..branchSize-2] of var bool: ifEnforced;
-            array[0..branchSize-2, 0..7] of var bool: enforcedLiterals;
-            array[0..branchSize-2, 0..63] of var bool: literals;
-            array[0..7] of var bool: lastLiterals;
-            array[0..10] of var bool: isValid;
+            array[0..branch_size - 1, 0..7] of var bool: dp ,
+            array[0..branch_size - 2] of var bool: is_half ;
+            array[0..branch_size-2, 0..63] of var bool: matrix;
+            array[0..branch_size-2, 0..7] of var bool: half_size_0;
+            array[0..branch_size-2, 0..7] of var bool: half_size_1;
+            array[0..branch_size-2] of var bool: if_enforced;
+            array[0..branch_size-2, 0..7] of var bool: enforced_literals;
+            array[0..branch_size-2, 0..63] of var bool: literals;
+            array[0..7] of var bool: last_literals;
+            array[0..10] of var bool: is_valid;
         } in
-        (sum(isHalf) <= halfNum) /\\
+        (sum(is_half) <= half_num) /\\
         (dp[0, 0] == true) /\\
         (dp[0, 1] == false) /\\
         (dp[0, 2] == false) /\\
@@ -332,29 +337,29 @@ def get_lbct_operations():
         (dp[0, 5] == false) /\\
         (dp[0, 6] == false) /\\
         (dp[0, 7] == false) /\\
-        forall(i in 0..branchSize-2) (
+        forall(i in 0..branch_size-2) (
             forall(cn in 0..7) (
                  let {
-                    array[0..14] of var 0..1: column = array1d(0..14, [dL[i], dR[i], nL[i], nR[i], nLL[i], matrix[i, 0*8+cn], matrix[i, 1*8+cn], matrix[i, 2*8+cn], matrix[i, 3*8+cn], matrix[i, 4*8+cn], matrix[i, 5*8+cn], matrix[i, 6*8+cn], matrix[i, 7*8+cn], halfSize0[i, cn], halfSize1[i, cn]])
+                    array[0..14] of var 0..1: column = array1d(0..14, [d_l[i], d_r[i], n_l[i], n_r[i], n_ll[i], matrix[i, 0*8+cn], matrix[i, 1*8+cn], matrix[i, 2*8+cn], matrix[i, 3*8+cn], matrix[i, 4*8+cn], matrix[i, 5*8+cn], matrix[i, 6*8+cn], matrix[i, 7*8+cn], half_size_0[i, cn], half_size_1[i, cn]])
                 } in
-                BVAssign_lbct(column, cn)
+                bv_assign_lbct(column, cn)
             ) /\\
             (
                 dp[i + 1, 0] \\/ dp[i + 1, 1] \\/ dp[i + 1, 2] \\/ dp[i + 1, 3] \\/ dp[i + 1, 4] \\/ dp[i + 1, 5] \\/ dp[i + 1, 6] \\/ dp[i + 1, 7]
             ) /\\
-            (ifEnforced[i] == not(isHalf[i])) /\\
+            (if_enforced[i] == not(is_half[i])) /\\
             forall(j in 0..7) (
-                (not(ifEnforced[i]) \\/ not(dp[i,j]) \\/ matrix[i, j*8+j]) /\\
-                (not(ifEnforced[i]) \\/ not(dp[i,j]) \\/ dp[i+1,j]) /\\
-                sum([not(ifEnforced[i]), not(dp[i,j]), matrix[i, j * 8 + j]]) >= 1 /\\
-                sum([not(ifEnforced[i]), not(dp[i,j]), dp[i + 1,j]]) >= 1
+                (not(if_enforced[i]) \\/ not(dp[i,j]) \\/ matrix[i, j*8+j]) /\\
+                (not(if_enforced[i]) \\/ not(dp[i,j]) \\/ dp[i+1,j]) /\\
+                sum([not(if_enforced[i]), not(dp[i,j]), matrix[i, j * 8 + j]]) >= 1 /\\
+                sum([not(if_enforced[i]), not(dp[i,j]), dp[i + 1,j]]) >= 1
             ) /\\
             forall(j in 0..7) (
-                (enforcedLiterals[i,j] -> (not(matrix[i,j * 8 + j]) /\\ dp[i,j])) /\\
-                (not(enforcedLiterals[i,j]) -> (matrix[i,j * 8 + j] \\/ not(dp[i,j])))
+                (enforced_literals[i,j] -> (not(matrix[i,j * 8 + j]) /\\ dp[i,j])) /\\
+                (not(enforced_literals[i,j]) -> (matrix[i,j * 8 + j] \\/ not(dp[i,j])))
             ) /\\ 
             (
-                ifEnforced[i] \\/ enforcedLiterals[i,0] \\/ enforcedLiterals[i,1] \\/ enforcedLiterals[i,2] \\/ enforcedLiterals[i,3] \\/ enforcedLiterals[i,4] \\/ enforcedLiterals[i,5] \\/ enforcedLiterals[i,6] \\/ enforcedLiterals[i,7]
+                if_enforced[i] \\/ enforced_literals[i,0] \\/ enforced_literals[i,1] \\/ enforced_literals[i,2] \\/ enforced_literals[i,3] \\/ enforced_literals[i,4] \\/ enforced_literals[i,5] \\/ enforced_literals[i,6] \\/ enforced_literals[i,7]
             ) /\\
             forall(r in 0..7) (
                 forall(cc in 0..7) (
@@ -379,33 +384,33 @@ def get_lbct_operations():
             )
         ) /\\
         (
-            isValid[0] == nL[branchSize - 1] /\\
-            isValid[1] == nR[branchSize - 1] /\\
-            isValid[2] == nLL[branchSize -1] 
+            is_valid[0] == n_l[branch_size - 1] /\\
+            is_valid[1] == n_r[branch_size - 1] /\\
+            is_valid[2] == n_ll[branch_size -1]
         ) /\\
-            (BVAssign_last_table_lbct(isValid))
+            (bv_assign_last_table_lbct(is_valid))
         /\\
         forall(i in 0..7) (
             (
-                lastLiterals[i] -> (dp[branchSize-1,i] /\\ isValid[3 + i])
+                last_literals[i] -> (dp[branch_size-1,i] /\\ is_valid[3 + i])
             ) /\\
             (
-                not(lastLiterals[i]) -> (not(dp[branchSize-1,i]) \\/ not(isValid[3 + i]))
+                not(last_literals[i]) -> (not(dp[branch_size-1,i]) \\/ not(is_valid[3 + i]))
             )
         ) /\\
         (
-            lastLiterals[0] \\/ lastLiterals[1] \\/ lastLiterals[2] \\/ lastLiterals[3] \\/ lastLiterals[4] \\/ lastLiterals[5] \\/ lastLiterals[6] \\/ lastLiterals[7]
+            last_literals[0] \\/ last_literals[1] \\/ last_literals[2] \\/ last_literals[3] \\/ last_literals[4] \\/ last_literals[5] \\/ last_literals[6] \\/ last_literals[7]
         );         
 
-        predicate BVAssign_lbct(array[0..num_cols_lbct-1] of var 0..1: column, int: index) =
+        predicate bv_assign_lbct(array[0..num_cols_lbct-1] of var 0..1: column, int: index) =
         let {
             array[int] of set of int: indices = [index..index, 0..num_rows_lbct-1, 0..num_cols_lbct-1];
-            array[int,int] of int: extractedFromTable = slice_2d(lbct_table, indices, 0..num_rows_lbct-1, 0..num_cols_lbct-1);
+            array[int,int] of int: extracted_from_table = slice_2d(lbct_table, indices, 0..num_rows_lbct-1, 0..num_cols_lbct-1);
         } in
-        table(column, extractedFromTable);
+        table(column, extracted_from_table);
 
-        predicate BVAssign_last_table_lbct(
-            array[0..num_cols_last_table_lbct-1] of var bool: isValid
-        ) =  table(isValid, last_table_lbct);  
+        predicate bv_assign_last_table_lbct(
+            array[0..num_cols_last_table_lbct-1] of var bool: is_valid
+        ) =  table(is_valid, last_table_lbct);
     """
     return lbct_string

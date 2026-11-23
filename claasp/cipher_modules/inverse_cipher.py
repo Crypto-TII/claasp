@@ -36,7 +36,7 @@ from claasp.components import (
     linear_layer_component,
     modsub_component,
 )
-from claasp.editor import get_key_schedule_component_ids as get_key_schedule_component_ids
+from claasp.editor import get_key_schedule_component_ids  # noqa: F401 - re-exported for Cipher's legacy import
 from claasp.input import Input
 from claasp.name_mappings import (
     CIPHER_INPUT,
@@ -1353,8 +1353,8 @@ def _try_wire_via_candidate(candidate, link, needed_positions, link_bit_names, a
     if _is_bit_adjacent_to_list_of_bits(probe_bit, link_bit_names, all_equivalent_bits):
         if set(needed_positions) < set(candidate.input_bit_positions[link_index]):
             offset += needed_positions[0] - candidate.input_bit_positions[link_index][0]
-        l = list(range(offset, offset + len(needed_positions)))
-        ordered = _find_correct_order(link, needed_positions, candidate.id, l, all_equivalent_bits)
+        bit_positions = list(range(offset, offset + len(needed_positions)))
+        ordered = _find_correct_order(link, needed_positions, candidate.id, bit_positions, all_equivalent_bits)
         return candidate.id, ordered, False
 
     out_positions = _find_equivalent_output_updated_positions(link, needed_positions, candidate, all_equivalent_bits)
@@ -1386,7 +1386,7 @@ def _wire_input_link_for_evaluation(
 
     ids = []
     positions = []
-    link_bit_names = [f"{link}_{l}_output" for l in range(source.output_bit_size)]
+    link_bit_names = [f"{link}_{bit_index}_output" for bit_index in range(source.output_bit_size)]
     for candidate in _get_available_output_components(source, available_bits, self):
         if candidate.id in component.input_id_links or candidate.id == component.id:
             continue

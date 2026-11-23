@@ -66,7 +66,12 @@ with Path(SOURCE_ROOT_FOLDER, "index.rst").open(mode="w") as index_rst_file:
                     file_without_extension = os.path.splitext(file)[0]
                     file_path = os.path.join(root, file_without_extension)
                     index_rst_file.write(f"    {file_path.replace(ROOT_FOLDER, '')}\n")
-                    with Path(rst_folder, file_name + ".rst").open(mode="w") as rst_file:
+                    destination = Path(rst_folder, file_name + ".rst")
+                    curated = Path("ciphers", "block_ciphers", file_name + ".rst")
+                    if curated.is_file():
+                        copyfile(curated, destination)
+                        continue
+                    with destination.open(mode="w") as rst_file:
                         file_header = file_name.replace("_", " ").capitalize()
                         adornment = "=" * len(file_header)
                         link = file_path.replace("../claasp/", "").replace("/", ".")

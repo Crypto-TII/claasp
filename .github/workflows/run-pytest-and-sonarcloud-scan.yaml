@@ -25,7 +25,7 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Install Gecode for modular boomerang tests
+    - name: Install Gecode
       run: sudo bash docker/install_gecode.sh
 
     - name: Fix Directory Structure
@@ -57,7 +57,7 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
-    - name: Install Gecode for modular boomerang tests
+    - name: Install Gecode
       run: sudo bash docker/install_gecode.sh
 
     - name: Run pytest
