@@ -142,6 +142,9 @@ class GlucoseSolver(_DimacsExternalSolver):
 class GlucoseSyrupSolver(_DimacsExternalSolver):
     """Run parallel Glucose Syrup with model output enabled.
 
+    Silence verbose statistics because Glucose Syrup 4.1 divides by zero
+    when printing statistics for formulas solved without conflicts.
+
     EXAMPLES::
 
         >>> GlucoseSyrupSolver().executable
@@ -149,7 +152,7 @@ class GlucoseSyrupSolver(_DimacsExternalSolver):
     """
 
     executable_name = "glucose-syrup"
-    options = ("-model",)
+    options = ("-model", "-verb=0")
 
 
 class ParKissatSolver(_DimacsExternalSolver):
