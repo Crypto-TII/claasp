@@ -723,18 +723,18 @@ def _link_is_sourceable_via_outputs(index, component, input_bits, available_bits
 
 def _available_input_credits(input_bits, usable, available_bits, all_equivalent_bits):
     """Count full usable links and individually recovered bits of other links."""
-    credits = []
+    available_credits = []
     for index, bits in enumerate(input_bits):
         if usable[index]:
-            credits.extend(bits)
+            available_credits.extend(bits)
         else:
-            credits.extend(
+            available_credits.extend(
                 bit for bit in bits
                 if _input_bit_value_is_recovered(
                     bit["component_id"], bit["position"], available_bits, all_equivalent_bits
                 )
             )
-    return credits
+    return available_credits
 
 
 def _are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
