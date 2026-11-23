@@ -91,7 +91,6 @@ jobs:
       uses: SonarSource/sonarqube-scan-action@master
       with:
         args: >
-          -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
           -Dsonar.python.coverage.reportPaths=coverage.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
