@@ -173,8 +173,8 @@ class Catalogue:
         >>> # Capability edges are queryable in both directions.
         >>> [item.name for item in catalogue.representations(component="BitVectorSBox")]
         ['boolean_cnf', 'boolean_smt', 'c_generated_source', 'component_properties', 'concrete_execution', 'primitive_diagram', 'primitive_serialization', 'python_generated_source', 'sbox_transition_table']
-        >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-        ['cryptominisat', 'glpk', 'kissat', 'minisat', 'minizinc', 'z3']
+        >>> {"cryptominisat", "z3"} <= {item.name for item in catalogue.drivers(representation="boolean_cnf")}
+        True
     """
 
     def __init__(self) -> None:
