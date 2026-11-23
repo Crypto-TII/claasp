@@ -191,11 +191,23 @@
     },
     {
       "drivers": [
+        "cadical",
+        "coin_bc",
         "cryptominisat",
+        "glucose",
+        "glucose_syrup",
         "glpk",
+        "highs",
         "kissat",
+        "mathsat",
         "minisat",
         "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
         "z3"
       ],
       "entry_point": "Primitive.analysis.enumerate_solutions",
@@ -211,6 +223,8 @@
     },
     {
       "drivers": [
+        "mathsat",
+        "yices",
         "z3"
       ],
       "entry_point": "Primitive.analysis.enumerate_xor_differential_trails",
@@ -226,6 +240,8 @@
     },
     {
       "drivers": [
+        "mathsat",
+        "yices",
         "z3"
       ],
       "entry_point": "Primitive.analysis.enumerate_xor_linear_trails",
@@ -340,7 +356,24 @@
     },
     {
       "drivers": [
-        "minisat"
+        "cadical",
+        "coin_bc",
+        "cryptominisat",
+        "glucose",
+        "glucose_syrup",
+        "glpk",
+        "highs",
+        "kissat",
+        "mathsat",
+        "minisat",
+        "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
+        "z3"
       ],
       "entry_point": "Primitive.analysis.find_lowest_weight_xor_differential_trail",
       "evidence": "exact",
@@ -355,7 +388,24 @@
     },
     {
       "drivers": [
-        "minisat"
+        "cadical",
+        "coin_bc",
+        "cryptominisat",
+        "glucose",
+        "glucose_syrup",
+        "glpk",
+        "highs",
+        "kissat",
+        "mathsat",
+        "minisat",
+        "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
+        "z3"
       ],
       "entry_point": "Primitive.analysis.find_lowest_weight_xor_linear_trail",
       "evidence": "exact",
@@ -458,7 +508,24 @@
     },
     {
       "drivers": [
-        "minisat"
+        "cadical",
+        "coin_bc",
+        "cryptominisat",
+        "glucose",
+        "glucose_syrup",
+        "glpk",
+        "highs",
+        "kissat",
+        "mathsat",
+        "minisat",
+        "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
+        "z3"
       ],
       "entry_point": "Primitive.analysis.find_optimal_trail",
       "evidence": "exact",
@@ -593,11 +660,23 @@
     },
     {
       "drivers": [
+        "cadical",
+        "coin_bc",
         "cryptominisat",
+        "glucose",
+        "glucose_syrup",
         "glpk",
+        "highs",
         "kissat",
+        "mathsat",
         "minisat",
         "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
         "z3"
       ],
       "entry_point": "Primitive.analysis.recover_input",
@@ -646,11 +725,23 @@
     },
     {
       "drivers": [
+        "cadical",
+        "coin_bc",
         "cryptominisat",
+        "glucose",
+        "glucose_syrup",
         "glpk",
+        "highs",
         "kissat",
+        "mathsat",
         "minisat",
         "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
         "z3"
       ],
       "entry_point": "Primitive.analysis.solve",
@@ -848,6 +939,31 @@
       "target": null
     },
     {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.dimacs_external:CadicalSolver",
+      "kind": "solver",
+      "name": "cadical",
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "cadical"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.milp_external:CbcSolver",
+      "kind": "solver",
+      "name": "coin_bc",
+      "representations": [
+        "boolean_cnf",
+        "boolean_monomial_milp",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "cbc"
+    },
+    {
       "availability": "builtin",
       "implementation": "claasp.drivers.analysis:BoundedBranchNumberDriver",
       "kind": "analysis_driver",
@@ -873,7 +989,9 @@
       "kind": "solver",
       "name": "cryptominisat",
       "representations": [
-        "boolean_cnf"
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
       "target": "cryptominisat5"
     },
@@ -892,9 +1010,35 @@
       "name": "glpk",
       "representations": [
         "boolean_cnf",
-        "boolean_monomial_milp"
+        "boolean_monomial_milp",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
       "target": "glpsol"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.dimacs_external:GlucoseSolver",
+      "kind": "solver",
+      "name": "glucose",
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "glucose"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.dimacs_external:GlucoseSyrupSolver",
+      "kind": "solver",
+      "name": "glucose_syrup",
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "glucose-syrup"
     },
     {
       "availability": "python_module",
@@ -910,7 +1054,10 @@
       "kind": "solver",
       "name": "highs",
       "representations": [
-        "boolean_monomial_milp"
+        "boolean_cnf",
+        "boolean_monomial_milp",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
       "target": "scipy"
     },
@@ -920,7 +1067,9 @@
       "kind": "solver",
       "name": "kissat",
       "representations": [
-        "boolean_cnf"
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
       "target": "kissat"
     },
@@ -933,6 +1082,21 @@
         "primitive_diagram"
       ],
       "target": "pdflatex"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.smt_external:MathSatSolver",
+      "kind": "solver",
+      "name": "mathsat",
+      "representations": [
+        "boolean_cnf",
+        "boolean_smt",
+        "word_differential_sat",
+        "word_differential_smt",
+        "word_linear_sat",
+        "word_linear_smt"
+      ],
+      "target": "mathsat"
     },
     {
       "availability": "python_module",
@@ -962,7 +1126,9 @@
       "kind": "solver",
       "name": "minizinc",
       "representations": [
-        "boolean_cnf"
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
       ],
       "target": "minizinc"
     },
@@ -970,8 +1136,24 @@
       "availability": "minizinc_solver",
       "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
       "kind": "solver",
+      "name": "minizinc_choco",
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "minizinc:choco"
+    },
+    {
+      "availability": "minizinc_solver",
+      "implementation": "claasp.drivers.solvers.minizinc:MiniZincSolver",
+      "kind": "solver",
       "name": "minizinc_chuffed",
-      "representations": [],
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
       "target": "minizinc:chuffed"
     },
     {
@@ -1001,6 +1183,18 @@
       "name": "nist_sts",
       "representations": [],
       "target": "niststs"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.dimacs_external:ParKissatSolver",
+      "kind": "solver",
+      "name": "parkissat",
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "parkissat"
     },
     {
       "availability": "builtin",
@@ -1054,6 +1248,19 @@
     },
     {
       "availability": "executable",
+      "implementation": "claasp.drivers.solvers.milp_external:ScipSolver",
+      "kind": "solver",
+      "name": "scip",
+      "representations": [
+        "boolean_cnf",
+        "boolean_monomial_milp",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "scip"
+    },
+    {
+      "availability": "executable",
       "implementation": "claasp.drivers.algebra.singular:SingularDriver",
       "kind": "solver",
       "name": "singular",
@@ -1069,6 +1276,14 @@
       "name": "sklearn_mlp",
       "representations": [],
       "target": "sklearn"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.milp_external:SoplexSolver",
+      "kind": "solver",
+      "name": "soplex",
+      "representations": [],
+      "target": "soplex"
     },
     {
       "availability": "python_module",
@@ -1100,13 +1315,42 @@
     },
     {
       "availability": "executable",
+      "implementation": "claasp.drivers.solvers.smt_external:YicesSolver",
+      "kind": "solver",
+      "name": "yices",
+      "representations": [
+        "boolean_cnf",
+        "boolean_smt",
+        "word_differential_sat",
+        "word_differential_smt",
+        "word_linear_sat",
+        "word_linear_smt"
+      ],
+      "target": "yices-smt2"
+    },
+    {
+      "availability": "executable",
+      "implementation": "claasp.drivers.solvers.dimacs_external:YicesSatSolver",
+      "kind": "solver",
+      "name": "yices_sat",
+      "representations": [
+        "boolean_cnf",
+        "word_differential_sat",
+        "word_linear_sat"
+      ],
+      "target": "yices-sat"
+    },
+    {
+      "availability": "executable",
       "implementation": "claasp.drivers.solvers.z3:Z3Solver",
       "kind": "solver",
       "name": "z3",
       "representations": [
         "boolean_cnf",
         "boolean_smt",
+        "word_differential_sat",
         "word_differential_smt",
+        "word_linear_sat",
         "word_linear_smt"
       ],
       "target": "z3"
@@ -14188,11 +14432,23 @@
         "Word"
       ],
       "drivers": [
+        "cadical",
+        "coin_bc",
         "cryptominisat",
+        "glucose",
+        "glucose_syrup",
         "glpk",
+        "highs",
         "kissat",
+        "mathsat",
         "minisat",
         "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
         "z3"
       ],
       "implementation": "claasp.representations.constraints.sat:BooleanCNFModel",
@@ -14232,8 +14488,10 @@
         "Word"
       ],
       "drivers": [
+        "coin_bc",
         "glpk",
-        "highs"
+        "highs",
+        "scip"
       ],
       "implementation": "claasp.representations.constraints.milp:BooleanMonomialGraphMILPModel",
       "kind": "constraint",
@@ -14257,6 +14515,8 @@
         "Word"
       ],
       "drivers": [
+        "mathsat",
+        "yices",
         "z3"
       ],
       "implementation": "claasp.representations.constraints.smt:BooleanSMTModel",
@@ -14626,7 +14886,24 @@
         "Word"
       ],
       "drivers": [
-        "minisat"
+        "cadical",
+        "coin_bc",
+        "cryptominisat",
+        "glucose",
+        "glucose_syrup",
+        "glpk",
+        "highs",
+        "kissat",
+        "mathsat",
+        "minisat",
+        "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
+        "z3"
       ],
       "implementation": "claasp.representations.constraints.sat:WordXorDifferentialSATModel",
       "kind": "constraint",
@@ -14651,6 +14928,8 @@
         "Word"
       ],
       "drivers": [
+        "mathsat",
+        "yices",
         "z3"
       ],
       "implementation": "claasp.representations.constraints.smt:WordXorDifferentialSMTModel",
@@ -14676,7 +14955,24 @@
         "Word"
       ],
       "drivers": [
-        "minisat"
+        "cadical",
+        "coin_bc",
+        "cryptominisat",
+        "glucose",
+        "glucose_syrup",
+        "glpk",
+        "highs",
+        "kissat",
+        "mathsat",
+        "minisat",
+        "minizinc",
+        "minizinc_choco",
+        "minizinc_chuffed",
+        "parkissat",
+        "scip",
+        "yices",
+        "yices_sat",
+        "z3"
       ],
       "implementation": "claasp.representations.constraints.sat:WordXorLinearSATModel",
       "kind": "constraint",
@@ -14701,6 +14997,8 @@
         "Word"
       ],
       "drivers": [
+        "mathsat",
+        "yices",
         "z3"
       ],
       "implementation": "claasp.representations.constraints.smt:WordXorLinearSMTModel",

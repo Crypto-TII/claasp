@@ -11474,6 +11474,18 @@
       "qualified_name": "claasp.drivers.solvers.CPStatus"
     },
     {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.CadicalSolver",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.CadicalSolver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.milp_external.CbcSolver",
+      "defined_in": "claasp.drivers.solvers.milp_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.CbcSolver"
+    },
+    {
       "canonical_name": "claasp.drivers.solvers.cryptominisat.CryptoMiniSatSolver",
       "defined_in": "claasp.drivers.solvers.cryptominisat",
       "kind": "class",
@@ -11484,6 +11496,18 @@
       "defined_in": "claasp.drivers.solvers.glpk",
       "kind": "class",
       "qualified_name": "claasp.drivers.solvers.GLPKSolver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.GlucoseSolver",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.GlucoseSolver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.GlucoseSyrupSolver",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.GlucoseSyrupSolver"
     },
     {
       "canonical_name": "claasp.drivers.solvers.gurobi.GurobiSolutionPoolResult",
@@ -11534,6 +11558,12 @@
       "qualified_name": "claasp.drivers.solvers.MILPStatus"
     },
     {
+      "canonical_name": "claasp.drivers.solvers.smt_external.MathSatSolver",
+      "defined_in": "claasp.drivers.solvers.smt_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.MathSatSolver"
+    },
+    {
       "canonical_name": "claasp.drivers.solvers.minizinc.MiniZincSolver",
       "defined_in": "claasp.drivers.solvers.minizinc",
       "kind": "class",
@@ -11546,6 +11576,12 @@
       "qualified_name": "claasp.drivers.solvers.MinisatSolver"
     },
     {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.ParKissatSolver",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.ParKissatSolver"
+    },
+    {
       "canonical_name": "claasp.drivers.solvers.base.SatResult",
       "defined_in": "claasp.drivers.solvers.base",
       "kind": "dataclass",
@@ -11556,6 +11592,30 @@
       "defined_in": "claasp.drivers.solvers.base",
       "kind": "enum",
       "qualified_name": "claasp.drivers.solvers.SatStatus"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.milp_external.ScipSolver",
+      "defined_in": "claasp.drivers.solvers.milp_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.ScipSolver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.milp_external.SoplexSolver",
+      "defined_in": "claasp.drivers.solvers.milp_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.SoplexSolver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.YicesSatSolver",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.YicesSatSolver"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.smt_external.YicesSolver",
+      "defined_in": "claasp.drivers.solvers.smt_external",
+      "kind": "class",
+      "qualified_name": "claasp.drivers.solvers.YicesSolver"
     },
     {
       "canonical_name": "claasp.drivers.solvers.z3.Z3Solver",
@@ -11657,6 +11717,41 @@
       "defined_in": "claasp.drivers.solvers.cryptominisat",
       "kind": "method",
       "qualified_name": "claasp.drivers.solvers.cryptominisat.CryptoMiniSatSolver.version"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.CadicalSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "documented_by": "claasp.drivers.solvers.dimacs_external.CadicalSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.dimacs_external.CadicalSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.GlucoseSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "documented_by": "claasp.drivers.solvers.dimacs_external.GlucoseSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.dimacs_external.GlucoseSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.GlucoseSyrupSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "documented_by": "claasp.drivers.solvers.dimacs_external.GlucoseSyrupSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.dimacs_external.GlucoseSyrupSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.ParKissatSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "documented_by": "claasp.drivers.solvers.dimacs_external.ParKissatSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.dimacs_external.ParKissatSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.dimacs_external.YicesSatSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.dimacs_external",
+      "documented_by": "claasp.drivers.solvers.dimacs_external.YicesSatSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.dimacs_external.YicesSatSolver.__init__"
     },
     {
       "canonical_name": "claasp.drivers.solvers.glpk.GLPKSolver.__init__",
@@ -11805,6 +11900,27 @@
       "defined_in": "claasp.drivers.solvers.kissat",
       "kind": "method",
       "qualified_name": "claasp.drivers.solvers.kissat.KissatSolver.version"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.milp_external.CbcSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.milp_external",
+      "documented_by": "claasp.drivers.solvers.milp_external.CbcSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.milp_external.CbcSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.milp_external.ScipSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.milp_external",
+      "documented_by": "claasp.drivers.solvers.milp_external.ScipSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.milp_external.ScipSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.milp_external.SoplexSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.milp_external",
+      "documented_by": "claasp.drivers.solvers.milp_external.SoplexSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.milp_external.SoplexSolver.__init__"
     },
     {
       "canonical_name": "claasp.drivers.solvers.milp_results.MILPResult.__init__",
@@ -12181,6 +12297,20 @@
       "documented_by": "claasp.drivers.solvers.progress.MILPProgressSnapshot",
       "kind": "dataclass_field",
       "qualified_name": "claasp.drivers.solvers.progress.MILPProgressSnapshot.tree_percent"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.smt_external.MathSatSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.smt_external",
+      "documented_by": "claasp.drivers.solvers.smt_external.MathSatSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.smt_external.MathSatSolver.__init__"
+    },
+    {
+      "canonical_name": "claasp.drivers.solvers.smt_external.YicesSolver.__init__",
+      "defined_in": "claasp.drivers.solvers.smt_external",
+      "documented_by": "claasp.drivers.solvers.smt_external.YicesSolver",
+      "kind": "constructor",
+      "qualified_name": "claasp.drivers.solvers.smt_external.YicesSolver.__init__"
     },
     {
       "canonical_name": "claasp.drivers.solvers.z3.Z3Solver.__init__",

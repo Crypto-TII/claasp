@@ -323,4 +323,12 @@ __catalogue__ = (
         availability="minizinc_solver",
         target="chuffed",
     ),
+    _entry(
+        "driver",
+        MiniZincSolver,
+        name="minizinc_choco",
+        kind="solver",
+        availability="minizinc_solver",
+        target="choco",
+    ),
 )

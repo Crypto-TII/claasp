@@ -2,6 +2,13 @@
 
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.drivers.solvers.cryptominisat import CryptoMiniSatSolver
+from claasp.drivers.solvers.dimacs_external import (
+    CadicalSolver,
+    GlucoseSolver,
+    GlucoseSyrupSolver,
+    ParKissatSolver,
+    YicesSatSolver,
+)
 from claasp.drivers.solvers.kissat import KissatSolver
 from claasp.drivers.solvers.milp_results import MILPResult, MILPStatus
 from claasp.drivers.solvers.minisat import MinisatSolver
@@ -12,6 +19,7 @@ from claasp.drivers.solvers.minizinc import (
     MiniZincSolver,
 )
 from claasp.drivers.solvers.progress import MILPProgressLog, MILPProgressSnapshot
+from claasp.drivers.solvers.smt_external import MathSatSolver, YicesSolver
 
 __all__ = [
     "MILPProgressLog",
@@ -20,6 +28,10 @@ __all__ = [
     "CPResult",
     "CPStatus",
     "CryptoMiniSatSolver",
+    "CadicalSolver",
+    "CbcSolver",
+    "GlucoseSolver",
+    "GlucoseSyrupSolver",
     "GLPKSolver",
     "HighsSolver",
     "GurobiSolver",
@@ -27,17 +39,29 @@ __all__ = [
     "KissatSolver",
     "MILPResult",
     "MILPStatus",
+    "MathSatSolver",
     "MiniZincSolver",
     "MinisatSolver",
+    "ParKissatSolver",
     "SatResult",
     "SatStatus",
+    "ScipSolver",
+    "SoplexSolver",
     "Z3Solver",
+    "YicesSatSolver",
+    "YicesSolver",
 ]
 
 
 def __getattr__(name: str):
     """Load representation-specific drivers without creating import cycles."""
 
+    if name in ("CbcSolver", "ScipSolver", "SoplexSolver"):
+        from claasp.drivers.solvers.milp_external import CbcSolver, ScipSolver, SoplexSolver
+
+        return {"CbcSolver": CbcSolver, "ScipSolver": ScipSolver, "SoplexSolver": SoplexSolver}[
+            name
+        ]
     if name == "Z3Solver":
         from claasp.drivers.solvers.z3 import Z3Solver
 
