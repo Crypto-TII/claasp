@@ -85,9 +85,9 @@ class MznHadipourBoomerangModel(MznModel):
 
     The cipher is split into E0, Em, E1. Upper differences propagate through
     E0 and Em; lower differences are constrained by their output through E1 and Em.
-    Both arms use forward component equations: fixing the lower output is
+    The upper and lower characteristics use forward component equations: fixing the lower output is
     equivalent to backward propagation, without constructing an inverse graph.
-    BCT/UBCT/LBCT/EBCT constraints connect the two arms in Em.
+    BCT/UBCT/LBCT/EBCT constraints connect the two characteristics in Em.
     Exact-middle mode replaces local middle tables by four complete executions;
     its score contains only the outer differential weights.
     Block-cipher key inputs have zero differences. For permutation models
@@ -96,8 +96,9 @@ class MznHadipourBoomerangModel(MznModel):
 
     A named plaintext input is placed first in an internal copy. This supports
     key-first descriptions such as CHAM without changing the supplied cipher.
-    Exact-middle mode also supports two-input OR differential arms, using the
-    same DDT as AND. The library also supports S-box differential arms in that mode.
+    Exact-middle mode also supports two-input OR differential constraints, using the
+    same DDT as AND. It also supports S-box differential constraints in the upper
+    and lower characteristics.
     Their DDT weights use CLAASP's rounded centibit scale and rank retained
     characteristics; they are not full external probabilities. Local S-box
     switches are unsupported.
@@ -106,7 +107,7 @@ class MznHadipourBoomerangModel(MznModel):
     ``2 * upper_weight + middle_weight + 2 * lower_weight``.
     It is a characteristic estimate under the usual independence assumptions,
     not the sum of all characteristics with the same external differences.
-    Component ``weight`` entries are raw differential weights in each arm;
+    Component ``weight`` entries are raw differential weights in each characteristic;
     the overlap is accounted for by ``middle_weight``, so summing component
     weights does not give the objective.
     Local-middle switch compatibility is imposed component by component. Valid boomerangs
@@ -133,13 +134,14 @@ class MznHadipourBoomerangModel(MznModel):
     INPUT:
 
     - ``cipher`` -- CLAASP cipher; two-input MODADD/MODSUB and AND are the
-      supported nonlinear operations in differential arms and local switches.
-      Exact-middle mode also supports two-input OR and S-box differential arms of up to eight
-      input bits and middle components with exact CP encoders.
+      supported nonlinear operations in the upper and lower characteristics and local switches.
+      Exact-middle mode also supports two-input OR constraints, S-box differential
+      constraints for S-boxes of up to eight input bits, and middle components
+      with exact CP encoders.
     - ``boomerang_structure`` -- dictionary containing nonnegative integer
       ``top_part_number_of_rounds``, positive ``middle_part_number_of_rounds``,
       and nonnegative ``bottom_part_number_of_rounds``. Their sum must equal
-      ``cipher.number_of_rounds``. Zero-length outer arms are supported.
+      ``cipher.number_of_rounds``. The upper and lower characteristics may have zero rounds.
 
     - ``enforce_value_compatibility`` -- bool (default: False). If True, add
       four exact forward executions sharing the actual master key and all other
@@ -354,25 +356,25 @@ class MznHadipourBoomerangModel(MznModel):
             raise ValueError("Weight must be a finite nonnegative multiple of 0.01")
         return int(scaled)
 
-    def _arm_differential_constraints(self, component):
+    def _characteristic_differential_constraints(self, component):
         side = _UPPER if component.id.startswith(_UPPER_PREFIX) else _LOWER
         counter = "c_" + side
-        arm = SimpleNamespace(
+        characteristic_model = SimpleNamespace(
             c=getattr(self, counter),
             modadd_twoterms_mant=self.modadd_twoterms_mant,
             component_and_probability={},
             sbox_cache=self.sbox_cache,
         )
         declarations, constraints = (
-            component.cp_xor_differential_propagation_constraints(arm)
+            component.cp_xor_differential_propagation_constraints(characteristic_model)
         )
         self.component_and_probability.update(
             {
                 name: [indices] if isinstance(indices, int) else indices
-                for name, indices in arm.component_and_probability.items()
+                for name, indices in characteristic_model.component_and_probability.items()
             }
         )
-        setattr(self, counter, arm.c)
+        setattr(self, counter, characteristic_model.c)
         # Replace only probability identifiers, preserving every component bit index.
         constraints = [
             line.replace("p[", side + "_p[").replace(
@@ -398,14 +400,14 @@ class MznHadipourBoomerangModel(MznModel):
         operation = component.description[0]
         if component.type == SBOX:
             if self.middle_model != "exact":
-                raise NotImplementedError("S-box arms require middle_model='exact'")
+                raise NotImplementedError("S-box differential constraints require middle_model='exact'")
             if component.input_bit_size > 8:
                 raise NotImplementedError(
                     "S-box differential tables support at most eight input bits"
                 )
-            return self._arm_differential_constraints(component)
+            return self._characteristic_differential_constraints(component)
         if operation == "OR" and self.middle_model != "exact":
-            raise NotImplementedError("OR arms require middle_model='exact'")
+            raise NotImplementedError("OR differential constraints require middle_model='exact'")
         if component.type == WORD_OPERATION and operation in (
             "OR",
             "MODADD",
@@ -416,7 +418,7 @@ class MznHadipourBoomerangModel(MznModel):
                 raise NotImplementedError(
                     "Boomerang nonlinear components must have two operands"
                 )
-            return self._arm_differential_constraints(component)
+            return self._characteristic_differential_constraints(component)
         method = getattr(component, "cp_xor_differential_propagation_constraints", None)
         if method is None:
             raise NotImplementedError(
@@ -430,7 +432,7 @@ class MznHadipourBoomerangModel(MznModel):
             self._variables_list.extend(declarations)
             self._model_constraints.extend(constraints)
 
-    def _declare_bits_and_arm_weights(self):
+    def _declare_bits_and_characteristic_weights(self):
         declarations = [
             f"array[0..{size - 1}] of var 0..1: {name};"
             for name, size in zip(self._cipher.inputs, self._cipher.inputs_bit_size)
@@ -663,7 +665,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- local estimated weight, or outer-arm score in exact-middle
+        - ``weight`` -- local estimated weight, or outer-characteristic score in exact-middle
           mode; -1 minimizes the weight,
           None finds any trail; otherwise fixes it to a nonnegative multiple
           of 0.01 bits.
@@ -692,7 +694,7 @@ class MznHadipourBoomerangModel(MznModel):
         self.c_upper = self.c_lower = 0
         self._middle_probabilities = {}
         self._build_components()
-        self._variables_list.extend(self._declare_bits_and_arm_weights())
+        self._variables_list.extend(self._declare_bits_and_characteristic_weights())
         middle_keys = self._build_switches()
         self._weight_constraints(middle_keys)
         self._model_constraints.extend(
@@ -1043,7 +1045,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- estimated weight (outer-arm score for exact middle), a nonnegative
+        - ``weight`` -- estimated weight (outer-characteristic score for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
           component IDs include ``upper_`` or ``lower_``. Defaults to the
@@ -1136,7 +1138,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- estimated weight (outer-arm score for exact middle), a nonnegative
+        - ``weight`` -- estimated weight (outer-characteristic score for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
           component IDs include ``upper_`` or ``lower_``. Defaults to the
@@ -1183,7 +1185,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``max_weight`` -- estimated weight (outer-arm score for exact middle), a nonnegative
+        - ``max_weight`` -- estimated weight (outer-characteristic score for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``min_weight`` -- nonnegative lower weight bound in bits (default: 0).
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;

@@ -498,7 +498,7 @@ def test_key_first_input_is_selected_without_mutating_cipher():
     assert "upper_key" not in model._data_inputs
 
 
-def test_exact_sbox_arms_share_ddt_and_probability_indices():
+def test_exact_sbox_differential_constraints_share_ddt_and_probability_indices():
     from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
 
     cipher = PresentBlockCipher(number_of_rounds=3)
@@ -546,7 +546,7 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
     assert len({point[1] for point in points}) == 4
     assert len({point[0] for point in points}) == 1
     local_model = MznHadipourBoomerangModel(cipher, structure())
-    with pytest.raises(NotImplementedError, match="S-box arms require"):
+    with pytest.raises(NotImplementedError, match="S-box differential constraints require"):
         local_model.build_hadipour_boomerang_model()
 
 
@@ -610,7 +610,7 @@ def test_exact_or_feistel_quartet_replays():
         x = int(values[f"quartet_{j}_plaintext"]["value"], 16)
         assert cipher.evaluate([x]) == int(values[f"quartet_{j}_{output}"]["value"], 16)
     local_model = MznHadipourBoomerangModel(cipher, structure())
-    with pytest.raises(NotImplementedError, match="OR arms require"):
+    with pytest.raises(NotImplementedError, match="OR differential constraints require"):
         local_model.build_hadipour_boomerang_model()
 
 
