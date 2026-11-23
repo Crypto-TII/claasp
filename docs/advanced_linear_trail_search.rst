@@ -425,3 +425,6 @@ the following command finds the lowest-weight trail with CryptoMiniSat:
    from claasp.drivers.solvers import CryptoMiniSatSolver
 
    trail = speck.analysis.find_lowest_weight_xor_linear_trail(solver=CryptoMiniSatSolver())
+
+The CLAASP v5 release image includes CryptoMiniSat. For a local installation, put the
+``cryptominisat5`` executable on your ``PATH`` before running this example.
