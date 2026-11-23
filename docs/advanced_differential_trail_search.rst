@@ -93,6 +93,18 @@ in the current environment.
 
    catalogue.solvers(view="both").to_terminal()
 
+An example output is:
+
+.. code-block:: text
+
+   Solver           | Driver              | Dependency       | Available | Detection evidence
+   -----------------+---------------------+------------------+-----------+------------------------
+   cryptominisat    | CryptoMiniSatSolver | cryptominisat5   | yes       | /usr/bin/cryptominisat5
+   glpk             | GLPKSolver          | glpsol           | yes       | /usr/bin/glpsol
+   ...
+
+The availability status depends on the current environment.
+
 The catalogue displays the registered solvers, their drivers,
 dependencies, and availability status.
 
@@ -226,12 +238,96 @@ Find a trail of a given weight
 It is also possible to search for a differential trail with
 a fixed weight.
 
-In this example, we use three-round SPECK and search for a
-related-key differential trail with total weight 7.
+In this example, we use three-round SPECK and search for
+a differential trail with total weight 7 in a single-key setting.
 
 .. code-block:: python
 
    speck3 = Speck(number_of_rounds=3)
+
+   fixed_weight_trail = speck3.analysis.find_one_xor_differential_trail_with_fixed_weight(
+       7
+   )
+
+   print("Total weight:", fixed_weight_trail.total_weight)
+   print("Input differences:", dict(fixed_weight_trail.input_differences))
+   print("Output difference:", hex(fixed_weight_trail.output_difference))
+
+An example output is:
+
+.. code-block:: text
+
+   Total weight: 7.0
+   Input differences: {'plaintext': 16777218, 'key': 0}
+   Output difference: 0x10e81048
+
+A total weight of 7 corresponds to a trail probability
+of :math:`2^{-7}`, or 1/128.
+
+By default, the search uses a single-key setting, where
+the key difference is zero and the plaintext difference
+is nonzero.
+
+The ``input_differences`` attribute contains the plaintext
+and key differences, while ``output_difference`` contains
+the resulting output difference.
+
+
+Find a trail starting from a fixed difference
+---------------------------------------------
+
+It is also possible to search for a differential trail
+starting from a fixed input difference.
+
+In this example, we use three-round SPECK and fix the
+plaintext difference to ``0x82c08101``.
+
+We search for a differential trail with total weight 7
+in a single-key setting.
+
+.. code-block:: python
+
+   trail_fixed_input = speck3.analysis.find_one_xor_differential_trail_with_fixed_weight(
+       7,
+       fixed_input_differences={"plaintext": 0x82c08101}
+   )
+
+   inputs = dict(trail_fixed_input.input_differences)
+
+   print("Input differences:", inputs)
+   print("Output difference:", hex(trail_fixed_input.output_difference))
+   print("Total weight:", trail_fixed_input.total_weight)
+
+An example output is:
+
+.. code-block:: text
+
+   Input differences: {'plaintext': 2193654017, 'key': 0}
+   Output difference: 0x10005000
+   Total weight: 7.0
+
+The ``fixed_input_differences`` parameter specifies the
+differences to impose on the primitive inputs.
+
+The search returns a trail with total weight 7 and the
+specified plaintext difference.
+
+In this example, the resulting output difference is
+``0x10005000``.
+
+Related-key differential trails
+-------------------------------
+
+CLAASP also supports related-key differential trail searches.
+
+In a single-key setting, the key difference is zero.
+In a related-key setting, the key difference is nonzero,
+allowing the search to consider differences in the key.
+
+In this example, we use three-round SPECK and search for
+a related-key differential trail with total weight 7.
+
+.. code-block:: python
 
    related_key_trail = speck3.analysis.find_one_xor_differential_trail_with_fixed_weight(
        7, nonzero_input="key"
@@ -249,62 +345,10 @@ An example output is:
    Input differences: {'plaintext': 131072, 'key': 18446462599270630400}
    Output difference: 0x81008000
 
-A total weight of 7 corresponds to a trail probability
-of :math:`2^{-7}`, or 1/128.
-
 The ``nonzero_input="key"`` parameter requires a nonzero
-key difference, allowing a related-key differential search.
+key difference, but does not fix its value.
 
-The plaintext difference is not constrained to zero and
-may also be nonzero.
+The search returns a trail with total weight 7,
+corresponding to a probability of :math:`2^{-7}`.
 
-The ``input_differences`` attribute contains the plaintext
-and key differences, while ``output_difference`` contains
-the resulting output difference.
-
-
-Find a trail starting from a fixed difference
----------------------------------------------
-
-It is also possible to search for a differential trail
-starting from a fixed input difference.
-
-In this example, we use three-round SPECK and fix the
-plaintext difference to ``0x82c08101``.
-
-We search for a related-key differential trail with
-total weight 7.
-
-.. code-block:: python
-
-   trail_fixed_input = speck3.analysis.find_one_xor_differential_trail_with_fixed_weight(
-       7,
-       nonzero_input="key",
-       fixed_input_differences={"plaintext": 0x82c08101}
-   )
-
-   inputs = dict(trail_fixed_input.input_differences)
-
-   print("Input differences:", inputs)
-   print("Output difference:", hex(trail_fixed_input.output_difference))
-   print("Total weight:", trail_fixed_input.total_weight)
-
-An example output is:
-
-.. code-block:: text
-
-   Input differences: {'plaintext': 2193654017, 'key': 281474976710656}
-   Output difference: 0x10005000
-   Total weight: 7.0
-
-The ``fixed_input_differences`` parameter specifies the
-differences to impose on the primitive inputs.
-
-The ``nonzero_input="key"`` parameter requires a nonzero
-key difference, allowing a related-key differential search.
-
-The search returns a trail with total weight 7 and the
-specified plaintext difference.
-
-In this example, the resulting output difference is
-``0x10005000``.
+The plaintext difference may also be nonzero.
