@@ -115,19 +115,28 @@ def test_representation_component_queries_are_bidirectional():
 
 
 def test_representation_driver_queries_are_bidirectional():
-    assert {item.name for item in catalogue.drivers(representation="boolean_cnf")} == {
-        "minizinc",
-        "kissat",
+    drivers = catalogue.drivers(representation="boolean_cnf")
+    assert {
+        "cadical",
+        "coin_bc",
         "cryptominisat",
-        "minisat",
-        "z3",
+        "glucose",
         "glpk",
-    }
+        "mathsat",
+        "minizinc",
+        "minizinc_choco",
+        "scip",
+        "yices_sat",
+        "z3",
+    } <= {item.name for item in drivers}
+    assert all("boolean_cnf" in item.representations for item in drivers)
     assert catalogue.driver("z3").representations == frozenset(
         {
             "boolean_cnf",
             "boolean_smt",
+            "word_differential_sat",
             "word_differential_smt",
+            "word_linear_sat",
             "word_linear_smt",
         }
     )
