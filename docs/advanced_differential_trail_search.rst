@@ -149,6 +149,69 @@ Different solvers may return different optimal trails with
 the same total weight.
 
 
+Using Matsui bounds
+-------------------
+
+CLAASP supports Matsui-bound constraints to improve
+the efficiency of differential trail searches.
+
+These constraints provide certified lower bounds on
+the weights of consecutive round windows, potentially
+reducing the search space.
+
+For example, we can use three-round ToySpeck with
+the SAT backend.
+
+.. code-block:: python
+
+   from claasp.primitives import ToySpeck
+
+   result = ToySpeck(3).analysis.find_optimal_trail(
+       backend="sat",
+       matsui_bounds=[0, 0],
+       log_file="search.jsonl"
+   )
+
+   result.to_terminal()
+
+An example output is:
+
+.. code-block:: text
+
+   Trail
+
+   Round trail
+
+   Round | Difference | Relative probability | Cumulative probability
+   ------+------------+----------------------+-----------------------
+   input | 0x91       |                  1/1 |                    1/1
+       1 | 0x80       |                  1/2 |                    1/2
+       2 | 0x88       |                  1/1 |                    1/2
+       3 | 0x04       |                  1/1 |                    1/2
+
+   Proved optimal.
+
+   Total weight: 1.
+
+The ``matsui_bounds`` parameter specifies certified lower
+bounds for consecutive round windows of different lengths.
+
+For three-round ToySpeck, the two values correspond to
+windows of one and two rounds. Here, both bounds are zero,
+which is always safe but does not further restrict the search.
+
+The ``log_file`` parameter records information about
+the search in a JSON Lines file.
+
+Each entry contains information such as the queried
+objective, solver status, runtime, and any proved
+strict lower bound.
+
+In this example, the search finds an optimal differential
+trail with total weight 1, corresponding to a probability
+of 1/2.
+
+
 Further usages of to_terminal()
 -------------------------------
 
@@ -180,6 +243,30 @@ the ``file`` parameter.
 
    with open("trail_report.txt", "w", encoding="utf-8") as f:
        trail.to_terminal(details=True, file=f)
+
+
+Weight plot
+-----------
+
+The ``plot()`` method can be used to visualize
+the weight distribution of a differential trail.
+
+.. plot::
+   :context: reset
+   :include-source:
+
+   from claasp.primitives import Speck
+
+   speck = Speck(number_of_rounds=2)
+   trail = speck.analysis.find_lowest_weight_xor_differential_trail()
+   trail.plot()
+
+The plot shows the relative weight contributed by
+each round and the cumulative weight of the trail.
+
+The final cumulative weight corresponds to the
+total weight of the trail.
+
 
 Trail enumeration
 -----------------
