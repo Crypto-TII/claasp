@@ -61,7 +61,7 @@ def test_joint_middle_recovers_cancellation_excluded_by_local_tables():
         fixed_values=external, timeout_in_seconds=10
     )
     assert result["status"] == "SATISFIABLE"
-    assert result["score_type"] == "outer_arm_weight"
+    assert result["score_type"] == "outer_characteristic_score"
     assert result["middle_weight"] is None
     assert float(result["total_weight"]) == 0
     assert set(result["components_values"]) == {

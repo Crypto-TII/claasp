@@ -165,7 +165,7 @@ class MznHadipourBoomerangModel(MznModel):
       components. Only the outer characteristics and external differences are
       retained. The objective is twice the sum of outer differential weights,
       an ordering heuristic, not a probability estimate. Results identify it as
-      ``score_type='outer_arm_weight'`` and set ``middle_weight=None``. Returned
+      ``score_type='outer_characteristic_score'`` and set ``middle_weight=None``. Returned
       ``retained_difference_bits`` identifies physically anchored component bits;
       unretained auxiliary differences are omitted from ``components_values``.
       Fixing such auxiliary bits raises ValueError. Exact middle components need
@@ -356,7 +356,7 @@ class MznHadipourBoomerangModel(MznModel):
             raise ValueError("Weight must be a finite nonnegative multiple of 0.01")
         return int(scaled)
 
-    def _characteristic_differential_constraints(self, component):
+    def _arm_differential_constraints(self, component):
         side = _UPPER if component.id.startswith(_UPPER_PREFIX) else _LOWER
         counter = "c_" + side
         characteristic_model = SimpleNamespace(
@@ -405,7 +405,7 @@ class MznHadipourBoomerangModel(MznModel):
                 raise NotImplementedError(
                     "S-box differential tables support at most eight input bits"
                 )
-            return self._characteristic_differential_constraints(component)
+            return self._arm_differential_constraints(component)
         if operation == "OR" and self.middle_model != "exact":
             raise NotImplementedError("OR differential constraints require middle_model='exact'")
         if component.type == WORD_OPERATION and operation in (
@@ -418,7 +418,7 @@ class MznHadipourBoomerangModel(MznModel):
                 raise NotImplementedError(
                     "Boomerang nonlinear components must have two operands"
                 )
-            return self._characteristic_differential_constraints(component)
+            return self._arm_differential_constraints(component)
         method = getattr(component, "cp_xor_differential_propagation_constraints", None)
         if method is None:
             raise NotImplementedError(
@@ -793,7 +793,7 @@ class MznHadipourBoomerangModel(MznModel):
         if self.middle_model == "exact":
             self._retain_exact_components(components)
             result["middle_weight"] = None
-            result["score_type"] = "outer_arm_weight"
+            result["score_type"] = "outer_characteristic_score"
         else:
             result["score_type"] = "local_characteristic_estimate"
         return result
