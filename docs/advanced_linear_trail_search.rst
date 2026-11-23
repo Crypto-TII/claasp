@@ -417,10 +417,7 @@ driver. This tells you what to import:
 Import the solver class and pass an instance of it as the ``solver`` parameter. For example,
 the following command finds the lowest-weight trail with CryptoMiniSat:
 
-.. plot::
-   :context:
-   :nofigs:
-   :include-source:
+.. code-block:: python
 
    from claasp.drivers.solvers import CryptoMiniSatSolver
 
