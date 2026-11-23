@@ -193,3 +193,20 @@ def test_glpk_solves_and_independently_checks_semi_differential_linear_trail():
     trail = model.decode_trail(solved.assignment)
     assert trail.linear.output_mask != 0
     assert trail.middle_weight >= 0
+
+
+def test_glpk_direct_linear_wrapper_enforces_output_mask():
+    from claasp.primitives import BitVectorSBox
+
+    p = BitVectorSBox(2, (0, 1, 2, 3))
+    for mask, possible in ((0b01, True), (0b10, False)):
+        model = WordXorLinearMILPModel(
+            p, maximum_weight=0, fixed_input_masks={"input": 0b01}, output_mask=mask
+        )
+        solved = GLPKSolver(timeout_seconds=10).solve(model.milp_model())
+        assert (solved.status is MILPStatus.OPTIMAL) == possible
+        if possible:
+            trail = model.decode_characteristic(solved.assignment)
+            assert trail.output_mask == mask and model.check_characteristic(trail)
+        else:
+            assert solved.status is MILPStatus.INFEASIBLE

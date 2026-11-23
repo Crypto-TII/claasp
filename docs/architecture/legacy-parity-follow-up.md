@@ -1,12 +1,12 @@
 # Legacy-to-v5 parity follow-up
 
-Pinned legacy: `1136c49f8b68fdc1839eb9df04132c99a2e05387` (`develop`). Updated 3 November 2026.
+Pinned legacy: `078f29ee9aae0f33a987520d6eab86c99c6eb4ed` (`develop`). Updated 15 November 2026.
 
 This table records scoped replacement contracts and executable evidence. It is not an exhaustive equivalence proof. The reviewed user guide and external tutorials are unchanged. PRs are stacked; review each PR against its immediate parent.
 
 | ID | Capability | Follow-up and evidence | PR |
 | --- | --- | --- | --- |
-| C01 | Inventory completeness | 610 tracked Python files, 600 core inventory entries (581 frozen + 19 explicit deltas), 10 tooling files and 1,667 resources accounted for. Pinned-source drift fails CI. [`evidence`](../../tools/legacy_parity_gate.py) | [#701](https://github.com/Crypto-TII/claasp/pull/701) |
+| C01 | Inventory completeness | 614 tracked Python files, 604 core inventory entries (581 frozen + 23 explicit deltas), 10 tooling files and 1,667 resources accounted for. Pinned-source drift fails CI. [`evidence`](../../tools/legacy_parity_gate.py) | [#701](https://github.com/Crypto-TII/claasp/pull/701) |
 | C02 | Scalar primitive evaluation — fixed vectors | 364 current-legacy scalar vectors retained as executable fixtures across 94 constructors. This is fixed-vector coverage, not exhaustive input equivalence. [`evidence`](../../tests/unit/primitives/test_package__current_legacy_vectors.py) | [#701](https://github.com/Crypto-TII/claasp/pull/701) |
 | C03 | Blowfish | Standalone typed Blowfish restored, including key/block validation and known-answer vectors. [`evidence`](../../tests/unit/primitives/test_package__missing_legacy_primitives.py) | [#689](https://github.com/Crypto-TII/claasp/pull/689) |
 | C04 | CRAX | Standalone typed CRAX restored with known-answer vectors. [`evidence`](../../tests/unit/primitives/test_package__missing_legacy_primitives.py) | [#689](https://github.com/Crypto-TII/claasp/pull/689) |
@@ -51,8 +51,26 @@ This table records scoped replacement contracts and executable evidence. It is n
 
 ## Validation boundaries
 
-The committed manifests cover 610 Python files, 207 superseded modules, eight architecture replacements, 149 constructor contracts and 1,667 resources. Numerical fixtures and solver witnesses are separate from source/resource hash guards. The capability matrix labels construction separately from solving.
+The committed manifests cover 614 Python files, 207 superseded modules, eight architecture replacements, 149 constructor contracts and 1,667 resources. Numerical fixtures and solver witnesses are separate from source/resource hash guards. The capability matrix labels construction separately from solving.
 
 Local validation: the default run passed 2,495 tests and exposed one stale CI job-count assertion. After updating that assertion, its rerun and all five routing checks pass. Another 115 changed-path checks (including the five new GLPK status cases), all 1,039 source doctests, static-quality gates and the warning-free developer HTML build pass. Required PR CI is still pending; these are draft PRs. TensorFlow numerical architecture checks require the dedicated Linux CI job; the local macOS native runtime is unavailable. Large licensed solver performance is not certified by portable small-instance tests.
 
 The separate weekly workflow PR targets `develop`, following repository policy, and becomes active after develop is merged into the default branch, `main`. It checks `claasp-v5` against `develop`; merge it after the parity-gate tools. No live repository settings are changed.
+
+## Develop synchronization, 15 November 2026
+
+The sync reviews all 29 changed paths in the six merged develop PRs since the
+previous `1136c49f` snapshot. File-level contracts and evidence are recorded in
+`tools/data/develop_sync_review.json`; this advances provenance without claiming
+blanket semantic or legacy string-API equivalence.
+
+| Develop PR | V5 disposition | Evidence |
+| --- | --- | --- |
+| #546 search logging | Shared JSON query logs for exact differential, linear and differential-linear optimizers, proved bounds and separately labelled empirical runtime estimates. V5 retains its exact optimum proof rather than treating an unproved resume weight as an optimum. | `test__search_progress.py`, `test_matsui_trail_search.py` |
+| #704, #706 SAT Matsui | Caller-certified consecutive-window bounds for integral differential and linear SAT weights, including key-schedule contributions. Propagation is reused across queries. | `test__matsui_bounds.py`, `test_matsui_trail_search.py` |
+| #710 QDT feasibility | Already supported by exact rational tables; the new GIFT regression covers impossible, power-of-two and 3/8 blocks independently. | `test_quasidifferential.py` |
+| #725 emulated HiGHS build | Not applicable: v5 obtains HiGHS through its pinned SciPy package and does not compile native HiGHS. Its existing amd64/arm64 release checks exercise that installation. | `test_develop_sync_review.py`, `docker/v5/Dockerfile` |
+| #726 SPN structure | Typed full-state S-box/chi extraction and structural GF(2) matrix composition, integrated with division-property detection. V5 AES reduced rounds retain MixColumns as prefixes of standard AES; the standard final round omits it. | `test_spn_structure.py`, `test_division_property.py` |
+
+The frozen v4 inventory is unchanged. All four newly added source/test modules
+have explicit delta records. No external notebooks or new RST pages are added.

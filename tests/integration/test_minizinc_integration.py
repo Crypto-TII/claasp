@@ -1035,3 +1035,21 @@ def test_minizinc_optimizes_nonintegral_heys_correlations_exactly():
     )
     assert correlation == Fraction(3, 4)
     assert result.is_optimal
+
+
+def test_minizinc_direct_linear_wrapper_enforces_output_mask():
+    from claasp.primitives import BitVectorSBox
+
+    p = BitVectorSBox(2, (0, 1, 2, 3))
+    driver = MiniZincSolver(solver=_test_solver(), timeout_seconds=10)
+    for mask, possible in ((0b01, True), (0b10, False)):
+        model = WordXorLinearCPModel(
+            p, maximum_weight=0, fixed_input_masks={"input": 0b01}, output_mask=mask
+        )
+        solved = driver.solve(model.cp_model())
+        assert (solved.status is CPStatus.SATISFIED) == possible
+        if possible:
+            trail = model.decode_characteristic(solved.assignment)
+            assert trail.output_mask == mask and model.check_characteristic(trail)
+        else:
+            assert solved.status is CPStatus.UNSATISFIABLE

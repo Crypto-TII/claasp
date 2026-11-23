@@ -1878,55 +1878,55 @@
     {
       "doctests": [
         {
-          "line": 37,
+          "line": 38,
           "owner": "spn_division_property_trail",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 99,
+          "line": 100,
           "owner": "feistel_division_property_trail",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 143,
+          "line": 144,
           "owner": "DivisionPropertyPathSearch",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 199,
+          "line": 200,
           "owner": "DivisionPropertyPathSearch.find_division_property_trail",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 221,
+          "line": 222,
           "owner": "DivisionPropertyPathSearch.find_number_of_balanced_rounds",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 242,
+          "line": 243,
           "owner": "DivisionPropertyPathSearch.todo_input",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 274,
+          "line": 275,
           "owner": "DivisionPropertyPathSearch.optimal_input",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 307,
+          "line": 308,
           "owner": "DivisionPropertyPathSearch.find_minimum_data_for_rounds",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 337,
+          "line": 338,
           "owner": "DivisionPropertyPathSearch.find_integral_distinguishers",
           "python_prompts": 0,
           "sage_prompts": 4
@@ -1934,79 +1934,145 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/division_property_path_search.py",
-      "sha256": "a0c7923828de80877394347e718a622a0cb61b8c5fab0a10c71ddce25d8ef553",
+      "sha256": "56d3d92d9871202f884a15a7a6a4f175a8fcd083a0184a2d8e734bed4a5b2acb",
       "symbols": [
         {
           "kind": "function",
-          "line": 37,
+          "line": 38,
           "name": "spn_division_property_trail",
           "signature": "sbox_bit_size, sbox_degree, number_of_sboxes, active_bits_per_sbox"
         },
         {
           "kind": "function",
-          "line": 99,
+          "line": 78,
+          "name": "_feistel_function_evaluation",
+          "signature": "branch_bit_size, function_degree, bijective_function, function_input_bits, other_bits"
+        },
+        {
+          "kind": "function",
+          "line": 92,
+          "name": "_minimal_vectors",
+          "signature": "vectors"
+        },
+        {
+          "kind": "function",
+          "line": 100,
           "name": "feistel_division_property_trail",
           "signature": "branch_bit_size, function_degree, active_bits, bijective_function=False"
         },
         {
           "kind": "class",
-          "line": 143,
+          "line": 144,
           "name": "DivisionPropertyPathSearch",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 174,
+          "line": 175,
           "name": "DivisionPropertyPathSearch.__init__",
           "signature": "self, cipher, structure=None, bijective_function=False"
         },
         {
           "kind": "method",
-          "line": 187,
+          "line": 188,
           "name": "DivisionPropertyPathSearch.structure",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 195,
+          "line": 196,
           "name": "DivisionPropertyPathSearch.state_bit_size",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 199,
+          "line": 200,
           "name": "DivisionPropertyPathSearch.find_division_property_trail",
           "signature": "self, input_division_property"
         },
         {
           "kind": "method",
-          "line": 221,
+          "line": 222,
           "name": "DivisionPropertyPathSearch.find_number_of_balanced_rounds",
           "signature": "self, input_division_property"
         },
         {
           "kind": "method",
-          "line": 242,
+          "line": 243,
           "name": "DivisionPropertyPathSearch.todo_input",
           "signature": "self, data_bit_size"
         },
         {
           "kind": "method",
-          "line": 274,
+          "line": 275,
           "name": "DivisionPropertyPathSearch.optimal_input",
           "signature": "self, data_bit_size"
         },
         {
           "kind": "method",
-          "line": 307,
+          "line": 308,
           "name": "DivisionPropertyPathSearch.find_minimum_data_for_rounds",
           "signature": "self, number_of_rounds, input_pattern='todo'"
         },
         {
           "kind": "method",
-          "line": 337,
+          "line": 338,
           "name": "DivisionPropertyPathSearch.find_integral_distinguishers",
           "signature": "self, max_number_of_rounds=None, input_pattern='todo'"
+        },
+        {
+          "kind": "method",
+          "line": 374,
+          "name": "DivisionPropertyPathSearch._check_data_bit_size",
+          "signature": "self, data_bit_size"
+        },
+        {
+          "kind": "method",
+          "line": 378,
+          "name": "DivisionPropertyPathSearch._first_sbox_layer_choices",
+          "signature": "self"
+        },
+        {
+          "kind": "function",
+          "line": 398,
+          "name": "_detect_structure",
+          "signature": "cipher, bijective_function"
+        },
+        {
+          "kind": "function",
+          "line": 409,
+          "name": "_spn_parameters",
+          "signature": "cipher"
+        },
+        {
+          "kind": "function",
+          "line": 431,
+          "name": "_feistel_parameters",
+          "signature": "cipher, bijective_function"
+        },
+        {
+          "kind": "function",
+          "line": 446,
+          "name": "_nonlinear_layers",
+          "signature": "cipher"
+        },
+        {
+          "kind": "function",
+          "line": 463,
+          "name": "_nonlinear_degree",
+          "signature": "component, sbox_degrees"
+        },
+        {
+          "kind": "function",
+          "line": 481,
+          "name": "_check_nonlinear_layer",
+          "signature": "round_id, layer"
+        },
+        {
+          "kind": "function",
+          "line": 490,
+          "name": "_check_two_branch_structure",
+          "signature": "cipher, number_of_samples=3"
         }
       ],
       "tests": []
@@ -7957,7 +8023,7 @@
     {
       "doctests": [
         {
-          "line": 72,
+          "line": 78,
           "owner": "CmsSatXorDifferentialModel.build_xor_differential_trail_model",
           "python_prompts": 0,
           "sage_prompts": 5
@@ -7965,7 +8031,7 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/cms_models/cms_xor_differential_model.py",
-      "sha256": "8d25b0812b4e0e98145ba9e4d5211de24c1fff6f57434abe70185ee27f40c878",
+      "sha256": "70f9c0b77544edee75572d8247026011b4b65ea0e375ef57b3b1bcaf2404d1e9",
       "symbols": [
         {
           "kind": "class",
@@ -7981,7 +8047,19 @@
         },
         {
           "kind": "method",
+          "line": 64,
+          "name": "CmsSatXorDifferentialModel._add_clauses_to_solver",
+          "signature": "self, numerical_cnf, solver"
+        },
+        {
+          "kind": "method",
           "line": 72,
+          "name": "CmsSatXorDifferentialModel._component_propagation_variables",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 78,
           "name": "CmsSatXorDifferentialModel.build_xor_differential_trail_model",
           "signature": "self, weight=-1, fixed_variables=[]"
         }
@@ -7991,13 +8069,13 @@
     {
       "doctests": [
         {
-          "line": 75,
+          "line": 81,
           "owner": "CmsSatXorLinearModel.branch_xor_linear_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 109,
+          "line": 115,
           "owner": "CmsSatXorLinearModel.build_xor_linear_trail_model",
           "python_prompts": 0,
           "sage_prompts": 5
@@ -8005,7 +8083,7 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/cms_models/cms_xor_linear_model.py",
-      "sha256": "70a18c31440a4138d85f4aa079b0d6efb0e5b4254912eb653506de9258946fbc",
+      "sha256": "61a8663f30b305921000de35335ba4dd8d8ea5684c1a911a33a0395c138ea8b6",
       "symbols": [
         {
           "kind": "class",
@@ -8021,13 +8099,25 @@
         },
         {
           "kind": "method",
-          "line": 75,
+          "line": 66,
+          "name": "CmsSatXorLinearModel._add_clauses_to_solver",
+          "signature": "self, numerical_cnf, solver"
+        },
+        {
+          "kind": "method",
+          "line": 74,
+          "name": "CmsSatXorLinearModel._component_propagation_variables",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 81,
           "name": "CmsSatXorLinearModel.branch_xor_linear_constraints",
           "signature": "bit_bindings"
         },
         {
           "kind": "method",
-          "line": 109,
+          "line": 115,
           "name": "CmsSatXorLinearModel.build_xor_linear_trail_model",
           "signature": "self, weight=-1, fixed_variables=[]"
         }
@@ -8037,31 +8127,31 @@
     {
       "doctests": [
         {
-          "line": 386,
+          "line": 470,
           "owner": "SatModel.fix_variables_value_constraints",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 477,
+          "line": 561,
           "owner": "SatModel.solver_names",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 518,
+          "line": 602,
           "owner": "SatModel.solve",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 570,
+          "line": 654,
           "owner": "SatModel.weight_constraints",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 640,
+          "line": 724,
           "owner": "SatModel.model_constraints",
           "python_prompts": 0,
           "sage_prompts": 15
@@ -8069,77 +8159,167 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_model.py",
-      "sha256": "5dff3b430ab0014f670b2417868acfd7c7fbd823eea967a708268f290271ff48",
+      "sha256": "9c13ec9cba3d2b2a32ee2343f9d56ce87f492c8758750a453306c6c6d06cefc5",
       "symbols": [
         {
           "kind": "class",
-          "line": 80,
+          "line": 85,
           "name": "SatModel",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 81,
+          "line": 86,
           "name": "SatModel.__init__",
           "signature": "self, cipher, counter='sequential', compact=False"
         },
         {
           "kind": "method",
-          "line": 386,
+          "line": 118,
+          "name": "SatModel._add_clauses_to_solver",
+          "signature": "self, numerical_cnf, solver"
+        },
+        {
+          "kind": "method",
+          "line": 128,
+          "name": "SatModel._component_propagation_variables",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 136,
+          "name": "SatModel._find_lowest_weight_trail_with_matsui_bounds",
+          "signature": "self, matsui_bounds, build_propagation_model, model_type, log_file_name, solver_name, options, start_weight, log"
+        },
+        {
+          "kind": "method",
+          "line": 184,
+          "name": "SatModel._get_cipher_inputs_components_solutions",
+          "signature": "self, out_suffix, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 199,
+          "name": "SatModel._get_cipher_inputs_components_solutions_double_ids",
+          "signature": "self, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 215,
+          "name": "SatModel._get_component_hex_value",
+          "signature": "self, component, out_suffix, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 227,
+          "name": "SatModel._get_component_value_double_ids",
+          "signature": "self, component, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 241,
+          "name": "SatModel._get_solver_solution_parsed",
+          "signature": "self, variables, values"
+        },
+        {
+          "kind": "method",
+          "line": 246,
+          "name": "SatModel._hw_variables_by_round",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 269,
+          "name": "SatModel._parallel_counter",
+          "signature": "self, hw_list, weight"
+        },
+        {
+          "kind": "method",
+          "line": 355,
+          "name": "SatModel._sequential_counter_algorithm",
+          "signature": "self, hw_list, weight, dummy_id, greater_or_equal=False"
+        },
+        {
+          "kind": "method",
+          "line": 381,
+          "name": "SatModel._sequential_counter",
+          "signature": "self, hw_list, weight, dummy_id='dummy_hw_0'"
+        },
+        {
+          "kind": "method",
+          "line": 384,
+          "name": "SatModel._sequential_counter_greater_or_equal",
+          "signature": "self, weight, dummy_id"
+        },
+        {
+          "kind": "method",
+          "line": 390,
+          "name": "SatModel._solve_with_external_sat_solver",
+          "signature": "self, model_type, solver_name, options, host=None, env_vars_string=''"
+        },
+        {
+          "kind": "method",
+          "line": 442,
+          "name": "SatModel._solve_with_sage_sat_solver",
+          "signature": "self, model_type, solver_name"
+        },
+        {
+          "kind": "method",
+          "line": 470,
           "name": "SatModel.fix_variables_value_constraints",
           "signature": "fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 463,
+          "line": 547,
           "name": "SatModel.calculate_component_weight",
           "signature": "self, component, out_suffix, output_values_dict"
         },
         {
           "kind": "method",
-          "line": 477,
+          "line": 561,
           "name": "SatModel.solver_names",
           "signature": "self, verbose=False"
         },
         {
           "kind": "method",
-          "line": 518,
+          "line": 602,
           "name": "SatModel.solve",
           "signature": "self, model_type, solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 570,
+          "line": 654,
           "name": "SatModel.weight_constraints",
           "signature": "self, weight"
         },
         {
           "kind": "method",
-          "line": 600,
+          "line": 684,
           "name": "SatModel.build_generic_sat_model_from_dictionary",
           "signature": "self, component_and_model_types"
         },
         {
           "kind": "method",
-          "line": 636,
+          "line": 720,
           "name": "SatModel.cipher_id",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 640,
+          "line": 724,
           "name": "SatModel.model_constraints",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 696,
+          "line": 780,
           "name": "SatModel.sboxes_ddt_templates",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 700,
+          "line": 784,
           "name": "SatModel.sboxes_lat_templates",
           "signature": "self"
         }
@@ -8349,13 +8529,13 @@
     {
       "doctests": [
         {
-          "line": 250,
+          "line": 255,
           "owner": "SatDifferentialLinearModel.build_xor_differential_linear_model",
           "python_prompts": 0,
           "sage_prompts": 11
         },
         {
-          "line": 406,
+          "line": 411,
           "owner": "SatDifferentialLinearModel.find_one_differential_linear_trail_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 20
@@ -8363,47 +8543,95 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_differential_linear_model.py",
-      "sha256": "9174f18994ac99589ff4274ab235d2b9a7e405ca07ee5a5cb5de7437ac3786b3",
+      "sha256": "03c56a64ca427476d12ba1280e573d12ef100e11094589e8f8f77819a14b10e6",
       "symbols": [
         {
           "kind": "class",
-          "line": 40,
+          "line": 45,
           "name": "SatDifferentialLinearModel",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 46,
+          "line": 51,
           "name": "SatDifferentialLinearModel.__init__",
           "signature": "self, cipher, list_of_components, middle_part_model='sat_bitwise_deterministic_truncated_xor_differential_constraints'"
         },
         {
           "kind": "method",
-          "line": 250,
+          "line": 110,
+          "name": "SatDifferentialLinearModel._get_components_by_type",
+          "signature": "self, model_type"
+        },
+        {
+          "kind": "method",
+          "line": 122,
+          "name": "SatDifferentialLinearModel._get_regular_xor_differential_components_in_border",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 140,
+          "name": "SatDifferentialLinearModel._get_truncated_xor_differential_components_in_border",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 157,
+          "name": "SatDifferentialLinearModel._get_connecting_constraints",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 211,
+          "name": "SatDifferentialLinearModel._build_weight_constraints",
+          "signature": "self, weight"
+        },
+        {
+          "kind": "method",
+          "line": 236,
+          "name": "SatDifferentialLinearModel._build_unknown_variable_constraints",
+          "signature": "self, num_unknowns"
+        },
+        {
+          "kind": "method",
+          "line": 255,
           "name": "SatDifferentialLinearModel.build_xor_differential_linear_model",
           "signature": "self, weight=-1, num_unknown_vars=None, unknown_window_size_configuration=None"
         },
         {
           "kind": "method",
-          "line": 315,
+          "line": 320,
           "name": "SatDifferentialLinearModel.fix_variables_value_constraints",
           "signature": "fixed_variables, regular_components=None, truncated_components=None, linear_components=None"
         },
         {
           "kind": "method",
-          "line": 406,
+          "line": 362,
+          "name": "SatDifferentialLinearModel._parse_solver_output",
+          "signature": "self, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 397,
+          "name": "SatDifferentialLinearModel._sequential_counter_greater_or_equal",
+          "signature": "self, weight, dummy_id"
+        },
+        {
+          "kind": "method",
+          "line": 411,
           "name": "SatDifferentialLinearModel.find_one_differential_linear_trail_with_fixed_weight",
           "signature": "self, weight, num_unknown_vars=None, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, unknown_window_size_configuration=None, options=None"
         },
         {
           "kind": "method",
-          "line": 495,
+          "line": 500,
           "name": "SatDifferentialLinearModel.find_lowest_weight_xor_differential_linear_trail",
-          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, num_unknown_vars=1, options=None"
+          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, num_unknown_vars=1, options=None, start_weight=0, log=False"
         },
         {
           "kind": "method",
-          "line": 536,
+          "line": 566,
           "name": "SatDifferentialLinearModel.cipher",
           "signature": "self"
         }
@@ -8679,43 +8907,49 @@
     {
       "doctests": [
         {
-          "line": 57,
+          "line": 58,
           "owner": "SatXorDifferentialModel.build_xor_differential_trail_model",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 157,
+          "line": 158,
           "owner": "SatXorDifferentialModel.build_xor_differential_trail_and_checker_model_at_intermediate_output_level",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 217,
+          "line": 218,
           "owner": "SatXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 285,
+          "line": 286,
           "owner": "SatXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 391,
+          "line": 392,
           "owner": "SatXorDifferentialModel.compute_xor_differential_weight",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 513,
+          "line": 514,
           "owner": "SatXorDifferentialModel.find_lowest_weight_xor_differential_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 585,
+          "line": 601,
+          "owner": "SatXorDifferentialModel.find_lowest_weight_xor_differential_trail_with_matsui_bounds",
+          "python_prompts": 0,
+          "sage_prompts": 10
+        },
+        {
+          "line": 704,
           "owner": "SatXorDifferentialModel.find_one_xor_differential_trail",
           "python_prompts": 0,
           "sage_prompts": 14
@@ -8723,113 +8957,143 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_xor_differential_model.py",
-      "sha256": "edc3bc126d9c74d558089f71ee3b08a32c0f537c06615c8e61e7053b127540fd",
+      "sha256": "494604fe9fd9fe63c5a4775f43e0ffd227ee6cbb927198caa5c9cddec2f74d5d",
       "symbols": [
         {
           "kind": "class",
-          "line": 47,
+          "line": 48,
           "name": "SatXorDifferentialModel",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 48,
+          "line": 49,
           "name": "SatXorDifferentialModel.__init__",
           "signature": "self, cipher, counter='sequential', compact=False"
         },
         {
           "kind": "method",
-          "line": 57,
+          "line": 58,
           "name": "SatXorDifferentialModel.build_xor_differential_trail_model",
           "signature": "self, weight=-1, fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 157,
+          "line": 158,
           "name": "SatXorDifferentialModel.build_xor_differential_trail_and_checker_model_at_intermediate_output_level",
           "signature": "self, weight=-1, fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 217,
+          "line": 193,
+          "name": "SatXorDifferentialModel._constraints_to_negate_solution",
+          "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 218,
           "name": "SatXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight",
           "signature": "self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 285,
+          "line": 286,
           "name": "SatXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most",
           "signature": "self, max_weight, min_weight=0, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 391,
+          "line": 346,
+          "name": "SatXorDifferentialModel._fixed_component_constraints",
+          "signature": "self, plaintext, ciphertext"
+        },
+        {
+          "kind": "method",
+          "line": 392,
           "name": "SatXorDifferentialModel.compute_xor_differential_weight",
           "signature": "self, plaintext, ciphertext, upper_weight, lower_weight=None, solver_name=solvers.SOLVER_DEFAULT, options=None, log=False"
         },
         {
           "kind": "method",
-          "line": 513,
+          "line": 514,
           "name": "SatXorDifferentialModel.find_lowest_weight_xor_differential_trail",
-          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None"
+          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False"
         },
         {
           "kind": "method",
-          "line": 585,
+          "line": 601,
+          "name": "SatXorDifferentialModel.find_lowest_weight_xor_differential_trail_with_matsui_bounds",
+          "signature": "self, matsui_bounds, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False"
+        },
+        {
+          "kind": "method",
+          "line": 698,
+          "name": "SatXorDifferentialModel._component_propagation_variables",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 704,
           "name": "SatXorDifferentialModel.find_one_xor_differential_trail",
           "signature": "self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 670,
+          "line": 776,
+          "name": "SatXorDifferentialModel._parse_solver_output",
+          "signature": "self, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 789,
           "name": "SatXorDifferentialModel.set_window_size_heuristic_by_round",
           "signature": "self, window_size_by_round_values, number_of_full_windows=None, full_window_operator='at_least'"
         },
         {
           "kind": "method",
-          "line": 681,
+          "line": 800,
           "name": "SatXorDifferentialModel.set_window_size_heuristic_by_component_id",
           "signature": "self, window_size_by_component_id_values, number_of_full_windows=None, full_window_operator='at_least'"
         },
         {
           "kind": "method",
-          "line": 693,
+          "line": 812,
           "name": "SatXorDifferentialModel.window_size_weight_pr_vars",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 697,
+          "line": 816,
           "name": "SatXorDifferentialModel.window_size_weight_pr_vars",
           "signature": "self, window_size_weight_pr_vars"
         },
         {
           "kind": "method",
-          "line": 701,
+          "line": 820,
           "name": "SatXorDifferentialModel.window_size_number_of_full_window",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 705,
+          "line": 824,
           "name": "SatXorDifferentialModel.window_size_full_window_vars",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 709,
+          "line": 828,
           "name": "SatXorDifferentialModel.window_size_by_round_values",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 713,
+          "line": 832,
           "name": "SatXorDifferentialModel.window_size_by_round_values",
           "signature": "self, window_size_by_round_values"
         },
         {
           "kind": "method",
-          "line": 717,
+          "line": 836,
           "name": "SatXorDifferentialModel.window_size_by_component_id_values",
           "signature": "self"
         }
@@ -8839,43 +9103,49 @@
     {
       "doctests": [
         {
-          "line": 49,
+          "line": 51,
           "owner": "SatXorLinearModel.branch_xor_linear_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 83,
+          "line": 85,
           "owner": "SatXorLinearModel.build_xor_linear_trail_model",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 144,
+          "line": 146,
           "owner": "SatXorLinearModel.find_all_xor_linear_trails_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 215,
+          "line": 217,
           "owner": "SatXorLinearModel.find_all_xor_linear_trails_with_weight_at_most",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 268,
+          "line": 270,
           "owner": "SatXorLinearModel.find_lowest_weight_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 333,
+          "line": 352,
+          "owner": "SatXorLinearModel.find_lowest_weight_xor_linear_trail_with_matsui_bounds",
+          "python_prompts": 0,
+          "sage_prompts": 10
+        },
+        {
+          "line": 457,
           "owner": "SatXorLinearModel.find_one_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 402,
+          "line": 526,
           "owner": "SatXorLinearModel.fix_variables_value_xor_linear_constraints",
           "python_prompts": 0,
           "sage_prompts": 6
@@ -8883,67 +9153,85 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/sat/sat_models/sat_xor_linear_model.py",
-      "sha256": "9da3b4d81480b76c9ce34412c9c36311459997dc4b1fdce9309ab2ad4645e53a",
+      "sha256": "f2170cc913f408fc4d65683be161e919a75eb25485850f1f29b546f1b2973ba8",
       "symbols": [
         {
           "kind": "class",
-          "line": 43,
+          "line": 45,
           "name": "SatXorLinearModel",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 44,
+          "line": 46,
           "name": "SatXorLinearModel.__init__",
           "signature": "self, cipher, counter='sequential', compact=False"
         },
         {
           "kind": "method",
-          "line": 49,
+          "line": 51,
           "name": "SatXorLinearModel.branch_xor_linear_constraints",
           "signature": "bindings"
         },
         {
           "kind": "method",
-          "line": 83,
+          "line": 85,
           "name": "SatXorLinearModel.build_xor_linear_trail_model",
           "signature": "self, weight=-1, fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 144,
+          "line": 146,
           "name": "SatXorLinearModel.find_all_xor_linear_trails_with_fixed_weight",
           "signature": "self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 215,
+          "line": 217,
           "name": "SatXorLinearModel.find_all_xor_linear_trails_with_weight_at_most",
           "signature": "self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 268,
+          "line": 270,
           "name": "SatXorLinearModel.find_lowest_weight_xor_linear_trail",
-          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None"
+          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False"
         },
         {
           "kind": "method",
-          "line": 333,
+          "line": 352,
+          "name": "SatXorLinearModel.find_lowest_weight_xor_linear_trail_with_matsui_bounds",
+          "signature": "self, matsui_bounds, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False"
+        },
+        {
+          "kind": "method",
+          "line": 451,
+          "name": "SatXorLinearModel._component_propagation_variables",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 457,
           "name": "SatXorLinearModel.find_one_xor_linear_trail",
           "signature": "self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT, options=None"
         },
         {
           "kind": "method",
-          "line": 402,
+          "line": 526,
           "name": "SatXorLinearModel.fix_variables_value_xor_linear_constraints",
           "signature": "fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 456,
+          "line": 580,
           "name": "SatXorLinearModel.weight_xor_linear_constraints",
           "signature": "self, weight"
+        },
+        {
+          "kind": "method",
+          "line": 583,
+          "name": "SatXorLinearModel._parse_solver_output",
+          "signature": "self, variable2value"
         }
       ],
       "tests": []
@@ -8970,6 +9258,64 @@
       "path": "claasp/cipher_modules/models/sat/utils/constants.py",
       "sha256": "a56d28dba42427ee91748ec5da351f83284ea56457996db39769c2febaf7d872",
       "symbols": [],
+      "tests": []
+    },
+    {
+      "doctests": [
+        {
+          "line": 132,
+          "owner": "sequential_counter_with_all_prefixes",
+          "python_prompts": 0,
+          "sage_prompts": 2
+        },
+        {
+          "line": 171,
+          "owner": "matsui_bounds_with_zero",
+          "python_prompts": 0,
+          "sage_prompts": 2
+        },
+        {
+          "line": 195,
+          "owner": "matsui_lower_bound",
+          "python_prompts": 0,
+          "sage_prompts": 3
+        },
+        {
+          "line": 221,
+          "owner": "matsui_weight_constraints",
+          "python_prompts": 0,
+          "sage_prompts": 5
+        }
+      ],
+      "kind": "source",
+      "path": "claasp/cipher_modules/models/sat/utils/matsui_bounds.py",
+      "sha256": "27319acf16d05e0918030ee94c0c67921ac95abc0746d66ffd43e299b41bde76",
+      "symbols": [
+        {
+          "kind": "function",
+          "line": 132,
+          "name": "sequential_counter_with_all_prefixes",
+          "signature": "variables, weight, prefix"
+        },
+        {
+          "kind": "function",
+          "line": 171,
+          "name": "matsui_bounds_with_zero",
+          "signature": "matsui_bounds, number_of_rounds"
+        },
+        {
+          "kind": "function",
+          "line": 195,
+          "name": "matsui_lower_bound",
+          "signature": "matsui_bounds, number_of_rounds"
+        },
+        {
+          "kind": "function",
+          "line": 221,
+          "name": "matsui_weight_constraints",
+          "signature": "hw_variables_by_round, weight, matsui_bounds, prefix='matsui'"
+        }
+      ],
       "tests": []
     },
     {
@@ -9619,37 +9965,37 @@
     {
       "doctests": [
         {
-          "line": 41,
+          "line": 45,
           "owner": "SmtXorDifferentialModel.build_xor_differential_trail_model",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 101,
+          "line": 105,
           "owner": "SmtXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 174,
+          "line": 178,
           "owner": "SmtXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 230,
+          "line": 234,
           "owner": "SmtXorDifferentialModel.find_lowest_weight_xor_differential_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 297,
+          "line": 316,
           "owner": "SmtXorDifferentialModel.find_one_xor_differential_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 366,
+          "line": 385,
           "owner": "SmtXorDifferentialModel.get_operands",
           "python_prompts": 0,
           "sage_prompts": 6
@@ -9657,55 +10003,67 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_differential_model.py",
-      "sha256": "0c320abff71aae3efdc9195e9c3bd64cc3f3764efb83074695549b5457e97cee",
+      "sha256": "8278327bda8d5f5d88964c83eb91e6a3127a60dc38da6299d0230fc1a4b7a6a5",
       "symbols": [
         {
           "kind": "class",
-          "line": 37,
+          "line": 41,
           "name": "SmtXorDifferentialModel",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 38,
+          "line": 42,
           "name": "SmtXorDifferentialModel.__init__",
           "signature": "self, cipher, counter='sequential'"
         },
         {
           "kind": "method",
-          "line": 41,
+          "line": 45,
           "name": "SmtXorDifferentialModel.build_xor_differential_trail_model",
           "signature": "self, weight=-1, fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 101,
+          "line": 105,
           "name": "SmtXorDifferentialModel.find_all_xor_differential_trails_with_fixed_weight",
           "signature": "self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 174,
+          "line": 178,
           "name": "SmtXorDifferentialModel.find_all_xor_differential_trails_with_weight_at_most",
           "signature": "self, max_weight, min_weight=0, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 230,
+          "line": 234,
           "name": "SmtXorDifferentialModel.find_lowest_weight_xor_differential_trail",
-          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT"
+          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, start_weight=0, log=False"
         },
         {
           "kind": "method",
-          "line": 297,
+          "line": 316,
           "name": "SmtXorDifferentialModel.find_one_xor_differential_trail",
           "signature": "self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 366,
+          "line": 385,
           "name": "SmtXorDifferentialModel.get_operands",
           "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 418,
+          "name": "SmtXorDifferentialModel._get_solution_exclusion_operands",
+          "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 453,
+          "name": "SmtXorDifferentialModel._parse_solver_output",
+          "signature": "self, variable2value"
         }
       ],
       "tests": []
@@ -9713,55 +10071,55 @@
     {
       "doctests": [
         {
-          "line": 59,
+          "line": 60,
           "owner": "SmtXorLinearModel.branch_xor_linear_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 85,
+          "line": 86,
           "owner": "SmtXorLinearModel.build_xor_linear_trail_model",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 149,
+          "line": 150,
           "owner": "SmtXorLinearModel.cipher_input_xor_linear_variables",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 179,
+          "line": 180,
           "owner": "SmtXorLinearModel.find_all_xor_linear_trails_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 260,
+          "line": 261,
           "owner": "SmtXorLinearModel.find_all_xor_linear_trails_with_weight_at_most",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 311,
+          "line": 312,
           "owner": "SmtXorLinearModel.find_lowest_weight_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 374,
+          "line": 388,
           "owner": "SmtXorLinearModel.find_one_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 14
         },
         {
-          "line": 439,
+          "line": 453,
           "owner": "SmtXorLinearModel.fix_variables_value_xor_linear_constraints",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 488,
+          "line": 502,
           "owner": "SmtXorLinearModel.weight_xor_linear_constraints",
           "python_prompts": 0,
           "sage_prompts": 7
@@ -9769,73 +10127,79 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_linear_model.py",
-      "sha256": "96c224f6b332bed206574c0dfd452f570948cbc52d63744489245b66986ec2ce",
+      "sha256": "1c7f8a4087772d010a1866c02a461e9ad42e010e85e1ac2bc2e4118fb4d344c9",
       "symbols": [
         {
           "kind": "class",
-          "line": 43,
+          "line": 44,
           "name": "SmtXorLinearModel",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 44,
+          "line": 45,
           "name": "SmtXorLinearModel.__init__",
           "signature": "self, cipher, counter='sequential'"
         },
         {
           "kind": "method",
-          "line": 59,
+          "line": 60,
           "name": "SmtXorLinearModel.branch_xor_linear_constraints",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 85,
+          "line": 86,
           "name": "SmtXorLinearModel.build_xor_linear_trail_model",
           "signature": "self, weight=-1, fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 149,
+          "line": 150,
           "name": "SmtXorLinearModel.cipher_input_xor_linear_variables",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 179,
+          "line": 180,
           "name": "SmtXorLinearModel.find_all_xor_linear_trails_with_fixed_weight",
           "signature": "self, fixed_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 260,
+          "line": 261,
           "name": "SmtXorLinearModel.find_all_xor_linear_trails_with_weight_at_most",
           "signature": "self, min_weight, max_weight, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 311,
+          "line": 312,
           "name": "SmtXorLinearModel.find_lowest_weight_xor_linear_trail",
-          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT"
+          "signature": "self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, start_weight=0, log=False"
         },
         {
           "kind": "method",
-          "line": 374,
+          "line": 388,
           "name": "SmtXorLinearModel.find_one_xor_linear_trail",
           "signature": "self, fixed_values=[], lower_bound=None, upper_bound=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 439,
+          "line": 453,
           "name": "SmtXorLinearModel.fix_variables_value_xor_linear_constraints",
           "signature": "self, fixed_variables=[]"
         },
         {
           "kind": "method",
-          "line": 488,
+          "line": 502,
           "name": "SmtXorLinearModel.weight_xor_linear_constraints",
           "signature": "self, weight"
+        },
+        {
+          "kind": "method",
+          "line": 527,
+          "name": "SmtXorLinearModel._parse_solver_output",
+          "signature": "self, variable2value"
         }
       ],
       "tests": []
@@ -9951,289 +10315,289 @@
           "sage_prompts": 3
         },
         {
-          "line": 774,
+          "line": 778,
           "owner": "SmtXorQuasidifferentialModel._component_wire_reads",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 811,
+          "line": 815,
           "owner": "SmtXorQuasidifferentialModel._branch_mask_id",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 839,
+          "line": 843,
           "owner": "SmtXorQuasidifferentialModel.qdt_input_bit_id",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 884,
+          "line": 888,
           "owner": "SmtXorQuasidifferentialModel._fork_constraints",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 931,
+          "line": 935,
           "owner": "SmtXorQuasidifferentialModel._unread_input_mask_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 966,
+          "line": 970,
           "owner": "SmtXorQuasidifferentialModel._terminal_tap_mask_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 1013,
+          "line": 1017,
           "owner": "SmtXorQuasidifferentialModel._qdt_input_bit_ids",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 1037,
+          "line": 1041,
           "owner": "SmtXorQuasidifferentialModel._bit_moving_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 1088,
+          "line": 1092,
           "owner": "SmtXorQuasidifferentialModel._constrain_weight_exactly",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 1141,
+          "line": 1145,
           "owner": "SmtXorQuasidifferentialModel.find_one_xor_quasidifferential_trail",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 1180,
+          "line": 1184,
           "owner": "SmtXorQuasidifferentialModel.find_one_xor_quasidifferential_trail_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1216,
+          "line": 1220,
           "owner": "SmtXorQuasidifferentialModel.find_lowest_weight_xor_quasidifferential_trail",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1274,
+          "line": 1278,
           "owner": "SmtXorQuasidifferentialModel._qdt_get_operands",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1308,
+          "line": 1312,
           "owner": "SmtXorQuasidifferentialModel._excluding_literals",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 1344,
+          "line": 1348,
           "owner": "SmtXorQuasidifferentialModel._value_literals",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 1365,
+          "line": 1369,
           "owner": "SmtXorQuasidifferentialModel._is_nonlinear_component",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1400,
+          "line": 1404,
           "owner": "SmtXorQuasidifferentialModel._blocking_clause_operands",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1436,
+          "line": 1440,
           "owner": "SmtXorQuasidifferentialModel.find_all_xor_quasidifferential_trails_with_fixed_weight",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1480,
+          "line": 1484,
           "owner": "SmtXorQuasidifferentialModel.find_all_xor_quasidifferential_trails_with_weight_at_most",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1523,
+          "line": 1527,
           "owner": "SmtXorQuasidifferentialModel.estimate_fixed_key_probability",
           "python_prompts": 0,
           "sage_prompts": 11
         },
         {
-          "line": 1711,
+          "line": 1715,
           "owner": "SmtXorQuasidifferentialModel.boundary_masks",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 1762,
+          "line": 1766,
           "owner": "SmtXorQuasidifferentialModel._apply_fixed_masks",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 1791,
+          "line": 1795,
           "owner": "SmtXorQuasidifferentialModel._solutions_at_weight",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 1856,
+          "line": 1860,
           "owner": "SmtXorQuasidifferentialModel._key_inputs",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 1880,
+          "line": 1884,
           "owner": "SmtXorQuasidifferentialModel._trail_record",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 1938,
+          "line": 1942,
           "owner": "SmtXorQuasidifferentialModel._build_fixed_mask_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 1980,
+          "line": 1984,
           "owner": "SmtXorQuasidifferentialModel.solve",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2021,
+          "line": 2025,
           "owner": "SmtXorQuasidifferentialModel._parse_solver_output",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2076,
+          "line": 2080,
           "owner": "SmtXorQuasidifferentialModel._mask_hex_value",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 2120,
+          "line": 2124,
           "owner": "SmtXorQuasidifferentialModel.compute_trail_sign",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2161,
+          "line": 2165,
           "owner": "SmtXorQuasidifferentialModel._compute_trail_sign",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 2192,
+          "line": 2196,
           "owner": "SmtXorQuasidifferentialModel._local_sign_rule",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 2231,
+          "line": 2235,
           "owner": "SmtXorQuasidifferentialModel._parity",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 2247,
+          "line": 2251,
           "owner": "SmtXorQuasidifferentialModel._bit_size_of",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 2274,
+          "line": 2278,
           "owner": "SmtXorQuasidifferentialModel._read_component_input_integer",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 2325,
+          "line": 2329,
           "owner": "SmtXorQuasidifferentialModel._read_component_input_mask",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 2364,
+          "line": 2368,
           "owner": "SmtXorQuasidifferentialModel._read_component_input_operands",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 2399,
+          "line": 2403,
           "owner": "SmtXorQuasidifferentialModel._sbox_local_sign",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2453,
+          "line": 2457,
           "owner": "SmtXorQuasidifferentialModel._two_operand_values",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2490,
+          "line": 2494,
           "owner": "SmtXorQuasidifferentialModel._and_local_sign",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2515,
+          "line": 2519,
           "owner": "SmtXorQuasidifferentialModel._modadd_local_sign",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2540,
+          "line": 2544,
           "owner": "SmtXorQuasidifferentialModel._not_local_sign",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2570,
+          "line": 2574,
           "owner": "SmtXorQuasidifferentialModel._or_local_sign",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2597,
+          "line": 2601,
           "owner": "SmtXorQuasidifferentialModel._modsub_local_sign",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 2626,
+          "line": 2630,
           "owner": "SmtXorQuasidifferentialModel._or_sign_word",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 2666,
+          "line": 2670,
           "owner": "SmtXorQuasidifferentialModel._constant_local_sign",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2707,
+          "line": 2711,
           "owner": "SmtXorQuasidifferentialModel._and_sign_word",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 2748,
+          "line": 2752,
           "owner": "SmtXorQuasidifferentialModel._modadd_sign_word",
           "python_prompts": 0,
           "sage_prompts": 2
@@ -10241,7 +10605,7 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/smt_models/smt_xor_quasidifferential_model.py",
-      "sha256": "b320386331fa0d64ecf44bf07496606e905ce3f2fb75c87d1f4fe00631eb832d",
+      "sha256": "2ee9c1bd1379d5515f2201012d379ba0498e1574902edb54d54fbf2369cff2af",
       "symbols": [
         {
           "kind": "class",
@@ -10263,6 +10627,84 @@
         },
         {
           "kind": "method",
+          "line": 197,
+          "name": "SmtXorQuasidifferentialModel._input_wires",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 218,
+          "name": "SmtXorQuasidifferentialModel._difference_bit_map",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 285,
+          "name": "SmtXorQuasidifferentialModel._shift_bit_map",
+          "signature": "output_bit_size, shift_amount"
+        },
+        {
+          "kind": "method",
+          "line": 317,
+          "name": "SmtXorQuasidifferentialModel._wire_bit",
+          "signature": "self, known, source_id, position"
+        },
+        {
+          "kind": "method",
+          "line": 340,
+          "name": "SmtXorQuasidifferentialModel._learn",
+          "signature": "self, known, id_, positions_and_bits"
+        },
+        {
+          "kind": "method",
+          "line": 383,
+          "name": "SmtXorQuasidifferentialModel._propagate_forward",
+          "signature": "self, component, known"
+        },
+        {
+          "kind": "method",
+          "line": 439,
+          "name": "SmtXorQuasidifferentialModel._propagate_backward",
+          "signature": "self, component, known"
+        },
+        {
+          "kind": "method",
+          "line": 492,
+          "name": "SmtXorQuasidifferentialModel._xor_backward",
+          "signature": "self, component, wires, output_bits, known"
+        },
+        {
+          "kind": "method",
+          "line": 545,
+          "name": "SmtXorQuasidifferentialModel._known_differences",
+          "signature": "self, fixed_variables"
+        },
+        {
+          "kind": "method",
+          "line": 602,
+          "name": "SmtXorQuasidifferentialModel._sbox_differences_from",
+          "signature": "self, known"
+        },
+        {
+          "kind": "method",
+          "line": 651,
+          "name": "SmtXorQuasidifferentialModel._bits_to_integer",
+          "signature": "bits"
+        },
+        {
+          "kind": "method",
+          "line": 672,
+          "name": "SmtXorQuasidifferentialModel._qdt_local_weight_variables",
+          "signature": "self, component, max_weight"
+        },
+        {
+          "kind": "method",
+          "line": 692,
+          "name": "SmtXorQuasidifferentialModel._qdt_weight_constraints",
+          "signature": "self, weight_variables, weight"
+        },
+        {
+          "kind": "method",
           "line": 712,
           "name": "SmtXorQuasidifferentialModel.calculate_component_weight",
           "signature": "self, component, out_suffix, output_values_dict"
@@ -10275,63 +10717,291 @@
         },
         {
           "kind": "method",
-          "line": 839,
+          "line": 778,
+          "name": "SmtXorQuasidifferentialModel._component_wire_reads",
+          "signature": "component"
+        },
+        {
+          "kind": "method",
+          "line": 815,
+          "name": "SmtXorQuasidifferentialModel._branch_mask_id",
+          "signature": "source_id, position, consumer_id, read_index"
+        },
+        {
+          "kind": "method",
+          "line": 843,
           "name": "SmtXorQuasidifferentialModel.qdt_input_bit_id",
           "signature": "self, component, source_id, position, read_index=0"
         },
         {
           "kind": "method",
-          "line": 1141,
+          "line": 888,
+          "name": "SmtXorQuasidifferentialModel._fork_constraints",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 935,
+          "name": "SmtXorQuasidifferentialModel._unread_input_mask_constraints",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 970,
+          "name": "SmtXorQuasidifferentialModel._terminal_tap_mask_constraints",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 1017,
+          "name": "SmtXorQuasidifferentialModel._qdt_input_bit_ids",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 1041,
+          "name": "SmtXorQuasidifferentialModel._bit_moving_propagation_constraints",
+          "signature": "self, component, mask_pairs"
+        },
+        {
+          "kind": "method",
+          "line": 1092,
+          "name": "SmtXorQuasidifferentialModel._constrain_weight_exactly",
+          "signature": "self, weight"
+        },
+        {
+          "kind": "method",
+          "line": 1145,
           "name": "SmtXorQuasidifferentialModel.find_one_xor_quasidifferential_trail",
           "signature": "self, fixed_values=[], fixed_masks=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 1180,
+          "line": 1184,
           "name": "SmtXorQuasidifferentialModel.find_one_xor_quasidifferential_trail_with_fixed_weight",
           "signature": "self, fixed_weight, fixed_values=[], fixed_masks=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 1216,
+          "line": 1220,
           "name": "SmtXorQuasidifferentialModel.find_lowest_weight_xor_quasidifferential_trail",
           "signature": "self, fixed_values=[], fixed_masks=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 1436,
+          "line": 1278,
+          "name": "SmtXorQuasidifferentialModel._qdt_get_operands",
+          "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 1312,
+          "name": "SmtXorQuasidifferentialModel._excluding_literals",
+          "signature": "variable_prefix, values, bit_len"
+        },
+        {
+          "kind": "method",
+          "line": 1348,
+          "name": "SmtXorQuasidifferentialModel._value_literals",
+          "signature": "bit_ids, value"
+        },
+        {
+          "kind": "method",
+          "line": 1369,
+          "name": "SmtXorQuasidifferentialModel._is_nonlinear_component",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 1404,
+          "name": "SmtXorQuasidifferentialModel._blocking_clause_operands",
+          "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 1440,
           "name": "SmtXorQuasidifferentialModel.find_all_xor_quasidifferential_trails_with_fixed_weight",
           "signature": "self, fixed_weight, fixed_values=[], fixed_masks=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 1480,
+          "line": 1484,
           "name": "SmtXorQuasidifferentialModel.find_all_xor_quasidifferential_trails_with_weight_at_most",
           "signature": "self, max_weight, min_weight=0, fixed_values=[], fixed_masks=None, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 1523,
+          "line": 1527,
           "name": "SmtXorQuasidifferentialModel.estimate_fixed_key_probability",
           "signature": "self, max_weight, min_weight=0, fixed_values=[], fixed_masks=None, solver_name=solvers.SOLVER_DEFAULT, key=None, max_trails_per_weight=None, timeout_per_weight=None"
         },
         {
           "kind": "method",
-          "line": 1711,
+          "line": 1715,
           "name": "SmtXorQuasidifferentialModel.boundary_masks",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 1980,
+          "line": 1766,
+          "name": "SmtXorQuasidifferentialModel._apply_fixed_masks",
+          "signature": "self, fixed_masks"
+        },
+        {
+          "kind": "method",
+          "line": 1795,
+          "name": "SmtXorQuasidifferentialModel._solutions_at_weight",
+          "signature": "self, weight, fixed_values, fixed_masks, solver_name, max_trails_per_weight, timeout_per_weight"
+        },
+        {
+          "kind": "method",
+          "line": 1860,
+          "name": "SmtXorQuasidifferentialModel._key_inputs",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 1884,
+          "name": "SmtXorQuasidifferentialModel._trail_record",
+          "signature": "self, solution, key_input_names, key"
+        },
+        {
+          "kind": "method",
+          "line": 1942,
+          "name": "SmtXorQuasidifferentialModel._build_fixed_mask_constraints",
+          "signature": "self, fixed_masks"
+        },
+        {
+          "kind": "method",
+          "line": 1984,
           "name": "SmtXorQuasidifferentialModel.solve",
           "signature": "self, model_type, solver_name=solvers.SOLVER_DEFAULT"
         },
         {
           "kind": "method",
-          "line": 2120,
+          "line": 2025,
+          "name": "SmtXorQuasidifferentialModel._parse_solver_output",
+          "signature": "self, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 2080,
+          "name": "SmtXorQuasidifferentialModel._mask_hex_value",
+          "signature": "identifier, bit_size, variable2value"
+        },
+        {
+          "kind": "method",
+          "line": 2124,
           "name": "SmtXorQuasidifferentialModel.compute_trail_sign",
           "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 2165,
+          "name": "SmtXorQuasidifferentialModel._compute_trail_sign",
+          "signature": "self, solution"
+        },
+        {
+          "kind": "method",
+          "line": 2196,
+          "name": "SmtXorQuasidifferentialModel._local_sign_rule",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 2235,
+          "name": "SmtXorQuasidifferentialModel._parity",
+          "signature": "value"
+        },
+        {
+          "kind": "method",
+          "line": 2251,
+          "name": "SmtXorQuasidifferentialModel._bit_size_of",
+          "signature": "self, id_"
+        },
+        {
+          "kind": "method",
+          "line": 2278,
+          "name": "SmtXorQuasidifferentialModel._read_component_input_integer",
+          "signature": "self, component, field, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2329,
+          "name": "SmtXorQuasidifferentialModel._read_component_input_mask",
+          "signature": "self, component"
+        },
+        {
+          "kind": "method",
+          "line": 2368,
+          "name": "SmtXorQuasidifferentialModel._read_component_input_operands",
+          "signature": "self, component, field, components_solutions, num_operands, word_size"
+        },
+        {
+          "kind": "method",
+          "line": 2403,
+          "name": "SmtXorQuasidifferentialModel._sbox_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2457,
+          "name": "SmtXorQuasidifferentialModel._two_operand_values",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2494,
+          "name": "SmtXorQuasidifferentialModel._and_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2519,
+          "name": "SmtXorQuasidifferentialModel._modadd_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2544,
+          "name": "SmtXorQuasidifferentialModel._not_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2574,
+          "name": "SmtXorQuasidifferentialModel._or_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2601,
+          "name": "SmtXorQuasidifferentialModel._modsub_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2630,
+          "name": "SmtXorQuasidifferentialModel._or_sign_word",
+          "signature": "a, b, c, u, v, w, word_size"
+        },
+        {
+          "kind": "method",
+          "line": 2670,
+          "name": "SmtXorQuasidifferentialModel._constant_local_sign",
+          "signature": "self, component, components_solutions"
+        },
+        {
+          "kind": "method",
+          "line": 2711,
+          "name": "SmtXorQuasidifferentialModel._and_sign_word",
+          "signature": "a, b, c, u, v, word_size"
+        },
+        {
+          "kind": "method",
+          "line": 2752,
+          "name": "SmtXorQuasidifferentialModel._modadd_sign_word",
+          "signature": "a, b, c, u, v, w, word_size"
         }
       ],
       "tests": []
@@ -10478,18 +11148,24 @@
         },
         {
           "line": 503,
+          "owner": "_non_power_of_two_magnitudes",
+          "python_prompts": 0,
+          "sage_prompts": 4
+        },
+        {
+          "line": 532,
           "owner": "check_qdt_feasibility",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 548,
+          "line": 581,
           "owner": "_weight_table_for_differential",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 589,
+          "line": 622,
           "owner": "generate_weight_tables",
           "python_prompts": 0,
           "sage_prompts": 3
@@ -10497,7 +11173,7 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/smt/utils/utils.py",
-      "sha256": "c6e6590d7a2b5a15bc724573451d9011077ebba947ebcad5437647c42e844e80",
+      "sha256": "3cc81af3d996933776d8b65476edfa44b771a1f720404446ae4ad9e5032872a4",
       "symbols": [
         {
           "kind": "function",
@@ -10597,6 +11273,24 @@
         },
         {
           "kind": "function",
+          "line": 373,
+          "name": "_diff_target_indices",
+          "signature": "n, m, a, b, u, v"
+        },
+        {
+          "kind": "function",
+          "line": 395,
+          "name": "_mask_target_indices",
+          "signature": "n, m, a, b, u, v"
+        },
+        {
+          "kind": "function",
+          "line": 417,
+          "name": "_fill_deinterleaved_block",
+          "signature": "deinterleaved_matrix, qdt_matrix, n, m, u, v, target_indices"
+        },
+        {
+          "kind": "function",
           "line": 456,
           "name": "deinterleave_qdt_matrix",
           "signature": "qdt_matrix, n, m, primary: str='diff'"
@@ -10604,12 +11298,24 @@
         {
           "kind": "function",
           "line": 503,
+          "name": "_non_power_of_two_magnitudes",
+          "signature": "qdt_matrix"
+        },
+        {
+          "kind": "function",
+          "line": 532,
           "name": "check_qdt_feasibility",
           "signature": "qdt_matrix"
         },
         {
           "kind": "function",
-          "line": 589,
+          "line": 581,
+          "name": "_weight_table_for_differential",
+          "signature": "qdt_matrix, n, m, b, a"
+        },
+        {
+          "kind": "function",
+          "line": 622,
           "name": "generate_weight_tables",
           "signature": "qdt_matrix, n, m"
         }
@@ -10619,115 +11325,127 @@
     {
       "doctests": [
         {
-          "line": 74,
+          "line": 77,
           "owner": "convert_solver_solution_to_dictionary",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 128,
+          "line": 131,
           "owner": "integer_to_bit_list",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 154,
+          "line": 157,
           "owner": "print_components_values",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 214,
+          "line": 217,
           "owner": "set_component_value_weight_sign",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 235,
+          "line": 238,
           "owner": "set_component_solution",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 260,
+          "line": 263,
           "owner": "set_fixed_variables",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 296,
+          "line": 299,
           "owner": "join_and_sanitize_strings",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 330,
+          "line": 354,
+          "owner": "exponential_predict",
+          "python_prompts": 0,
+          "sage_prompts": 3
+        },
+        {
+          "line": 437,
+          "owner": "save_trail_lower_bounds_and_time_estimates",
+          "python_prompts": 0,
+          "sage_prompts": 8
+        },
+        {
+          "line": 522,
           "owner": "write_model_to_file",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 360,
+          "line": 552,
           "owner": "write_solution_to_file",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 401,
+          "line": 593,
           "owner": "to_bias_for_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 471,
+          "line": 663,
           "owner": "to_probability_for_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 548,
+          "line": 740,
           "owner": "to_correlation_for_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 624,
+          "line": 816,
           "owner": "find_sign_for_one_xor_linear_trail",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 670,
+          "line": 862,
           "owner": "find_sign_for_xor_linear_trails",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 701,
+          "line": 893,
           "owner": "get_bit_bindings",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 750,
+          "line": 942,
           "owner": "get_single_key_scenario_format_for_fixed_values",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 785,
+          "line": 977,
           "owner": "get_related_key_scenario_format_for_fixed_values",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 1116,
+          "line": 1308,
           "owner": "linear_checker_permutation",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 1217,
+          "line": 1409,
           "owner": "boomerang_checker_for_block_cipher_single_key",
           "python_prompts": 0,
           "sage_prompts": 6
@@ -10735,233 +11453,371 @@
       ],
       "kind": "source",
       "path": "claasp/cipher_modules/models/utils.py",
-      "sha256": "a4af80c371e8e07042cc31809aa6a6cb8e2ff94187a82e8ec9cfa2fe896bd55b",
+      "sha256": "9ebc38921305c67f436fde2f5115907970ac7e3e5ccf6a8a0797c8fae99eed67",
       "symbols": [
         {
           "kind": "function",
-          "line": 46,
+          "line": 49,
           "name": "hex_to_bitlist",
           "signature": "hex_str"
         },
         {
           "kind": "function",
-          "line": 53,
+          "line": 56,
           "name": "add_arcs",
           "signature": "arcs, component, curr_input_bit_ids, input_bit_size, intermediate_output_arcs, previous_output_bit_ids"
         },
         {
           "kind": "function",
-          "line": 64,
+          "line": 67,
           "name": "check_if_implemented_component",
           "signature": "component"
         },
         {
           "kind": "function",
-          "line": 74,
+          "line": 77,
           "name": "convert_solver_solution_to_dictionary",
           "signature": "cipher, model_type, solver_name, solve_time, memory, components_values, total_weight"
         },
         {
           "kind": "function",
-          "line": 120,
+          "line": 123,
           "name": "get_previous_output_bit_ids",
           "signature": "input_bit_positions, input_id_links, format_func"
         },
         {
           "kind": "function",
-          "line": 128,
+          "line": 131,
           "name": "integer_to_bit_list",
           "signature": "int_value, list_length, endianness='little'"
         },
         {
           "kind": "function",
-          "line": 154,
+          "line": 157,
           "name": "print_components_values",
           "signature": "solution"
         },
         {
           "kind": "function",
-          "line": 214,
+          "line": 217,
           "name": "set_component_value_weight_sign",
           "signature": "value, weight=0, sign=1"
         },
         {
           "kind": "function",
-          "line": 235,
+          "line": 238,
           "name": "set_component_solution",
           "signature": "value, weight=None, sign=None"
         },
         {
           "kind": "function",
-          "line": 260,
+          "line": 263,
           "name": "set_fixed_variables",
           "signature": "component_id, constraint_type, bit_positions, bit_values"
         },
         {
           "kind": "function",
-          "line": 296,
+          "line": 299,
           "name": "join_and_sanitize_strings",
           "signature": "l"
         },
         {
           "kind": "function",
-          "line": 330,
+          "line": 334,
+          "name": "_validate_exponential_predict_inputs",
+          "signature": "x, y, ci, window, prediction_quantile, recency_weight_strength"
+        },
+        {
+          "kind": "function",
+          "line": 354,
+          "name": "exponential_predict",
+          "signature": "x_obs, y_obs, x_new, ci=95, n_bootstrap=400, window=10, seed=None, prediction_quantile=0.6, recency_weight_strength=1.5"
+        },
+        {
+          "kind": "function",
+          "line": 437,
+          "name": "save_trail_lower_bounds_and_time_estimates",
+          "signature": "file_name, solution, searched_weights, search_times"
+        },
+        {
+          "kind": "function",
+          "line": 522,
           "name": "write_model_to_file",
           "signature": "model_to_write, file_name"
         },
         {
           "kind": "function",
-          "line": 360,
+          "line": 552,
           "name": "write_solution_to_file",
           "signature": "solution, file_path"
         },
         {
           "kind": "function",
-          "line": 401,
+          "line": 593,
           "name": "to_bias_for_xor_linear_trail",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 440,
+          "line": 632,
           "name": "to_bias_for_correlation_measure",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 453,
+          "line": 645,
           "name": "to_bias_for_probability_measure",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 471,
+          "line": 663,
           "name": "to_probability_for_xor_linear_trail",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 510,
+          "line": 702,
           "name": "to_probability_for_correlation_measure",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 530,
+          "line": 722,
           "name": "to_probability_for_bias_measure",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 548,
+          "line": 740,
           "name": "to_correlation_for_xor_linear_trail",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 590,
+          "line": 782,
           "name": "to_correlation_for_bias_measure",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 603,
+          "line": 795,
           "name": "to_correlation_for_probability_measure",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 624,
+          "line": 816,
           "name": "find_sign_for_one_xor_linear_trail",
           "signature": "cipher, solution"
         },
         {
           "kind": "function",
-          "line": 670,
+          "line": 862,
           "name": "find_sign_for_xor_linear_trails",
           "signature": "cipher, solutions"
         },
         {
           "kind": "function",
-          "line": 701,
+          "line": 893,
           "name": "get_bit_bindings",
           "signature": "cipher, format_func=lambda x: x"
         },
         {
           "kind": "function",
-          "line": 750,
+          "line": 942,
           "name": "get_single_key_scenario_format_for_fixed_values",
           "signature": "_cipher"
         },
         {
           "kind": "function",
-          "line": 785,
+          "line": 977,
           "name": "get_related_key_scenario_format_for_fixed_values",
           "signature": "_cipher"
         },
         {
           "kind": "function",
-          "line": 1014,
+          "line": 1005,
+          "name": "_number_to_n_bit_binary_string",
+          "signature": "number, n_bits"
+        },
+        {
+          "kind": "function",
+          "line": 1010,
+          "name": "_extract_bit_positions_msb",
+          "signature": "binary_str, bits_to_consider=('0', '1')"
+        },
+        {
+          "kind": "function",
+          "line": 1015,
+          "name": "_extract_bits_msb",
+          "signature": "columns, positions"
+        },
+        {
+          "kind": "function",
+          "line": 1026,
+          "name": "_repeat_input_difference_msb",
+          "signature": "input_difference, num_samples, num_bytes"
+        },
+        {
+          "kind": "function",
+          "line": 1031,
+          "name": "_repeat_input_difference",
+          "signature": "input_difference, num_samples, num_bytes"
+        },
+        {
+          "kind": "function",
+          "line": 1043,
+          "name": "_w_diff_linear_sk",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1059,
+          "name": "_w_linear_sk",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1067,
+          "name": "_linear_parity_count",
+          "signature": "cipher, inputs, input_mask, output_mask"
+        },
+        {
+          "kind": "function",
+          "line": 1079,
+          "name": "_w_diff_perm",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1091,
+          "name": "_w_diff_trunc_perm",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1106,
+          "name": "_w_diff_trunc_sk",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1122,
+          "name": "_w_sdpi_diff_perm",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1138,
+          "name": "_w_sdpi_diff_linear_perm",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1159,
+          "name": "_w_diff_trunc_perm_io",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1176,
+          "name": "_w_trunc_diff_linear_perm",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1191,
+          "name": "_parallel_dispatch",
+          "signature": "worker_func, fixed_args, number_of_samples, num_workers, seed"
+        },
+        {
+          "kind": "function",
+          "line": 1206,
           "name": "differential_linear_checker_for_block_cipher_single_key",
           "signature": "cipher, input_difference, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1066,
+          "line": 1258,
           "name": "linear_checker_for_block_cipher_single_key",
           "signature": "cipher, input_mask, output_mask, number_of_samples, block_size, key_size, fixed_key, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1116,
+          "line": 1308,
           "name": "linear_checker_permutation",
           "signature": "cipher, input_mask, output_mask, number_of_samples, state_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1217,
+          "line": 1371,
+          "name": "_mask_as_binary_string",
+          "signature": "mask, size, label"
+        },
+        {
+          "kind": "function",
+          "line": 1384,
+          "name": "_w_linear_perm",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1391,
+          "name": "_w_boomerang_sk",
+          "signature": "args"
+        },
+        {
+          "kind": "function",
+          "line": 1409,
           "name": "boomerang_checker_for_block_cipher_single_key",
           "signature": "cipher, input_difference, output_difference, number_of_samples, block_size, key_size, fixed_key, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1288,
+          "line": 1480,
           "name": "differential_checker_permutation",
           "signature": "cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1335,
+          "line": 1527,
           "name": "differential_truncated_checker_permutation",
           "signature": "cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1395,
+          "line": 1587,
           "name": "differential_truncated_checker_single_key",
           "signature": "cipher, input_difference, output_difference, number_of_samples, state_size, fixed_key, key_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1455,
+          "line": 1647,
           "name": "shared_difference_paired_input_differential_checker_permutation",
           "signature": "cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1511,
+          "line": 1703,
           "name": "shared_difference_paired_input_differential_linear_checker_permutation",
           "signature": "cipher, input_difference, output_mask, number_of_samples, state_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1610,
+          "line": 1760,
+          "name": "_sample_truncated_difference_from_string",
+          "signature": "pattern, num_samples, state_size, rng"
+        },
+        {
+          "kind": "function",
+          "line": 1802,
           "name": "differential_truncated_checker_permutation_input_and_output_truncated",
           "signature": "cipher, input_trunc_diff, output_trunc_diff, number_of_samples, state_size, seed=None, num_workers=1"
         },
         {
           "kind": "function",
-          "line": 1679,
+          "line": 1871,
           "name": "truncated_differential_linear_checker_permutation",
           "signature": "cipher, input_trunc_diff, output_mask, number_of_samples, state_size, seed=None, num_workers=1"
         }
@@ -11146,6 +12002,250 @@
           "line": 959,
           "name": "Report.clean_reports",
           "signature": "self, output_dir=None"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "doctests": [
+        {
+          "line": 425,
+          "owner": "SpnStructure",
+          "python_prompts": 0,
+          "sage_prompts": 14
+        },
+        {
+          "line": 534,
+          "owner": "SpnStructure.linear_layers",
+          "python_prompts": 0,
+          "sage_prompts": 6
+        }
+      ],
+      "kind": "source",
+      "path": "claasp/cipher_modules/spn_structure.py",
+      "sha256": "2a11beaebbd4c0f10935feb091e54973de66dd8200c17fc944eb8589eb9248ad",
+      "symbols": [
+        {
+          "kind": "class",
+          "line": 51,
+          "name": "UnsupportedCipherError",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 57,
+          "name": "_bits_text",
+          "signature": "links, positions"
+        },
+        {
+          "kind": "class",
+          "line": 66,
+          "name": "Sbox",
+          "signature": ""
+        },
+        {
+          "kind": "method",
+          "line": 83,
+          "name": "Sbox.__repr__",
+          "signature": "self"
+        },
+        {
+          "kind": "function",
+          "line": 89,
+          "name": "_sbox",
+          "signature": "positions, table, inputs, outputs"
+        },
+        {
+          "kind": "class",
+          "line": 98,
+          "name": "SubstitutionLayer",
+          "signature": ""
+        },
+        {
+          "kind": "method",
+          "line": 122,
+          "name": "SubstitutionLayer.size",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 125,
+          "name": "SubstitutionLayer.__repr__",
+          "signature": "self"
+        },
+        {
+          "kind": "function",
+          "line": 132,
+          "name": "_operation",
+          "signature": "component"
+        },
+        {
+          "kind": "function",
+          "line": 137,
+          "name": "_operands",
+          "signature": "component"
+        },
+        {
+          "kind": "function",
+          "line": 144,
+          "name": "_check_wiring",
+          "signature": "cipher"
+        },
+        {
+          "kind": "function",
+          "line": 155,
+          "name": "_check_supported_components",
+          "signature": "components"
+        },
+        {
+          "kind": "function",
+          "line": 167,
+          "name": "_sbox_layer",
+          "signature": "round_number, sboxes"
+        },
+        {
+          "kind": "function",
+          "line": 179,
+          "name": "_split_chi_xor",
+          "signature": "component, ands"
+        },
+        {
+          "kind": "function",
+          "line": 191,
+          "name": "_literal",
+          "signature": "bit, nots, index, round_number"
+        },
+        {
+          "kind": "function",
+          "line": 203,
+          "name": "_chi_sbox_table",
+          "signature": "positions, formulas"
+        },
+        {
+          "kind": "function",
+          "line": 220,
+          "name": "_chi_sboxes",
+          "signature": "formulas, round_number, sources, outputs"
+        },
+        {
+          "kind": "function",
+          "line": 236,
+          "name": "_chi_layer",
+          "signature": "round_number, components"
+        },
+        {
+          "kind": "function",
+          "line": 264,
+          "name": "_round_layer",
+          "signature": "round_number, components"
+        },
+        {
+          "kind": "function",
+          "line": 279,
+          "name": "_check_and_outputs_feed_chi_xors",
+          "signature": "components, chi_xors"
+        },
+        {
+          "kind": "function",
+          "line": 286,
+          "name": "_state_input",
+          "signature": "cipher, key_schedule_ids"
+        },
+        {
+          "kind": "function",
+          "line": 295,
+          "name": "_check_layer_sizes",
+          "signature": "cipher, layers, state_index"
+        },
+        {
+          "kind": "function",
+          "line": 308,
+          "name": "_cipher_output",
+          "signature": "cipher"
+        },
+        {
+          "kind": "function",
+          "line": 312,
+          "name": "_reached",
+          "signature": "by_id, start, stop"
+        },
+        {
+          "kind": "function",
+          "line": 323,
+          "name": "_check_layer_boundaries",
+          "signature": "cipher, found, state_input"
+        },
+        {
+          "kind": "function",
+          "line": 347,
+          "name": "_component_matrix",
+          "signature": "component"
+        },
+        {
+          "kind": "function",
+          "line": 355,
+          "name": "_is_ignored",
+          "signature": "component, key_schedule_ids, linear_only"
+        },
+        {
+          "kind": "function",
+          "line": 365,
+          "name": "_component_forms",
+          "signature": "component, forms, width, matrices"
+        },
+        {
+          "kind": "function",
+          "line": 390,
+          "name": "_affine_forms",
+          "signature": "cipher, layers, key_schedule_ids, key_indices=None"
+        },
+        {
+          "kind": "class",
+          "line": 425,
+          "name": "SpnStructure",
+          "signature": ""
+        },
+        {
+          "kind": "method",
+          "line": 482,
+          "name": "SpnStructure.__init__",
+          "signature": "self, cipher"
+        },
+        {
+          "kind": "method",
+          "line": 503,
+          "name": "SpnStructure.__repr__",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 514,
+          "name": "SpnStructure.substitution_layers",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 519,
+          "name": "SpnStructure.state_input",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 524,
+          "name": "SpnStructure.state_size",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 529,
+          "name": "SpnStructure.key_size",
+          "signature": "self"
+        },
+        {
+          "kind": "method",
+          "line": 534,
+          "name": "SpnStructure.linear_layers",
+          "signature": "self"
         }
       ],
       "tests": []
@@ -23434,271 +24534,271 @@
     {
       "doctests": [
         {
-          "line": 56,
+          "line": 57,
           "owner": "check_table_feasibility",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 90,
+          "line": 91,
           "owner": "cp_update_ddt_valid_probabilities",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 158,
+          "line": 159,
           "owner": "cp_update_lat_valid_probabilities",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 202,
+          "line": 203,
           "owner": "milp_set_constraints_from_dictionnary_for_large_sbox",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 291,
+          "line": 292,
           "owner": "milp_large_xor_probability_constraint_for_inequality",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 341,
+          "line": 342,
           "owner": "sat_build_table_template",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 394,
+          "line": 395,
           "owner": "smt_build_table_template",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 422,
+          "line": 423,
           "owner": "smt_get_sbox_probability_constraints",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 454,
+          "line": 455,
           "owner": "_combine_truncated",
           "python_prompts": 0,
           "sage_prompts": 2
         },
         {
-          "line": 476,
+          "line": 477,
           "owner": "_get_truncated_output_difference",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 560,
+          "line": 561,
           "owner": "Sbox",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 626,
+          "line": 627,
           "owner": "Sbox.algebraic_polynomials",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 662,
+          "line": 663,
           "owner": "Sbox.get_ddt_with_undisturbed_transitions",
           "python_prompts": 0,
           "sage_prompts": 10
         },
         {
-          "line": 741,
+          "line": 742,
           "owner": "Sbox.cms_constraints",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 775,
+          "line": 776,
           "owner": "Sbox.cp_constraints",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 826,
+          "line": 827,
           "owner": "Sbox.cp_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 887,
+          "line": 888,
           "owner": "Sbox.cp_deterministic_truncated_xor_differential_trail_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 915,
+          "line": 916,
           "owner": "Sbox.cp_hybrid_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 1013,
+          "line": 1014,
           "owner": "Sbox.cp_wordwise_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 5
         },
         {
-          "line": 1048,
+          "line": 1049,
           "owner": "Sbox.cp_xor_differential_first_step_constraints",
           "python_prompts": 0,
           "sage_prompts": 7
         },
         {
-          "line": 1092,
+          "line": 1093,
           "owner": "Sbox.cp_xor_differential_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 1158,
+          "line": 1159,
           "owner": "Sbox.cp_xor_linear_mask_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 1225,
+          "line": 1226,
           "owner": "Sbox.generate_sbox_sign_lat",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 1258,
+          "line": 1259,
           "owner": "Sbox.get_bit_based_c_code",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 1297,
+          "line": 1298,
           "owner": "Sbox.get_bit_based_vectorized_python_code",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 1327,
+          "line": 1328,
           "owner": "Sbox.get_byte_based_vectorized_python_code",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 1348,
+          "line": 1349,
           "owner": "Sbox.get_word_based_c_code",
           "python_prompts": 0,
           "sage_prompts": 3
         },
         {
-          "line": 1372,
+          "line": 1373,
           "owner": "Sbox.milp_large_xor_differential_probability_constraints",
           "python_prompts": 0,
           "sage_prompts": 11
         },
         {
-          "line": 1442,
+          "line": 1443,
           "owner": "Sbox.milp_large_xor_linear_probability_constraints",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 1515,
+          "line": 1516,
           "owner": "Sbox.milp_small_xor_differential_probability_constraints",
           "python_prompts": 0,
           "sage_prompts": 10
         },
         {
-          "line": 1606,
+          "line": 1607,
           "owner": "Sbox.milp_small_xor_linear_probability_constraints",
           "python_prompts": 0,
           "sage_prompts": 10
         },
         {
-          "line": 1706,
+          "line": 1707,
           "owner": "Sbox.milp_xor_differential_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 10
         },
         {
-          "line": 1749,
+          "line": 1750,
           "owner": "Sbox.milp_xor_linear_mask_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 10
         },
         {
-          "line": 1800,
+          "line": 1801,
           "owner": "Sbox.milp_wordwise_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 18
         },
         {
-          "line": 1898,
+          "line": 1899,
           "owner": "Sbox.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 1951,
+          "line": 1952,
           "owner": "Sbox.milp_bitwise_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 2007,
+          "line": 2008,
           "owner": "Sbox.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 9
         },
         {
-          "line": 2092,
+          "line": 2093,
           "owner": "Sbox.sat_constraints",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 2142,
+          "line": 2143,
           "owner": "Sbox.sat_bitwise_deterministic_truncated_xor_differential_constraints",
           "python_prompts": 0,
           "sage_prompts": 4
         },
         {
-          "line": 2204,
+          "line": 2205,
           "owner": "Sbox.sat_xor_differential_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2276,
+          "line": 2277,
           "owner": "Sbox.sat_xor_linear_mask_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2349,
+          "line": 2350,
           "owner": "Sbox.smt_constraints",
           "python_prompts": 0,
           "sage_prompts": 6
         },
         {
-          "line": 2400,
+          "line": 2401,
           "owner": "Sbox.smt_xor_differential_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2464,
+          "line": 2465,
           "owner": "Sbox.smt_xor_linear_mask_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 8
         },
         {
-          "line": 2521,
+          "line": 2522,
           "owner": "Sbox.smt_xor_quasidifferential_propagation_constraints",
           "python_prompts": 0,
           "sage_prompts": 7
@@ -23706,299 +24806,317 @@
       ],
       "kind": "source",
       "path": "claasp/components/sbox_component.py",
-      "sha256": "1cf03c0642bb36c62fa7b44fe87c49bf3c454ec51eea71045a60d0fd196c34b2",
+      "sha256": "e3e9f647605d26461c7226571ea90e7c10f19581c153b3ebaf3f3967175d42dc",
       "symbols": [
         {
           "kind": "function",
-          "line": 56,
+          "line": 57,
           "name": "check_table_feasibility",
           "signature": "table, table_type, solver"
         },
         {
           "kind": "function",
-          "line": 90,
+          "line": 91,
           "name": "cp_update_ddt_valid_probabilities",
           "signature": "cipher, component, word_size, cp_declarations, table_items, valid_probabilities, sbox_cache"
         },
         {
           "kind": "function",
-          "line": 158,
+          "line": 159,
           "name": "cp_update_lat_valid_probabilities",
           "signature": "component, valid_probabilities, sbox_cache"
         },
         {
           "kind": "function",
-          "line": 202,
+          "line": 203,
           "name": "milp_set_constraints_from_dictionnary_for_large_sbox",
           "signature": "component_id, input_vars, output_vars, sbox_input_size, sbox_output_size, x, p, probability_dictionary, analysis, weight_precision"
         },
         {
           "kind": "function",
-          "line": 291,
+          "line": 292,
           "name": "milp_large_xor_probability_constraint_for_inequality",
           "signature": "M, component_id, ineq, input_vars, output_vars, proba, sbox_input_size, sbox_output_size, x"
         },
         {
           "kind": "function",
-          "line": 341,
+          "line": 342,
           "name": "sat_build_table_template",
           "signature": "table, get_hamming_weight_function, input_bit_len, output_bit_size"
         },
         {
           "kind": "function",
-          "line": 394,
+          "line": 395,
           "name": "smt_build_table_template",
           "signature": "table, get_hamming_weight_function, input_bit_len, output_bit_size"
         },
         {
           "kind": "function",
-          "line": 422,
+          "line": 423,
           "name": "smt_get_sbox_probability_constraints",
           "signature": "bit_ids, template"
         },
         {
+          "kind": "function",
+          "line": 455,
+          "name": "_combine_truncated",
+          "signature": "input_1, input_2"
+        },
+        {
+          "kind": "function",
+          "line": 477,
+          "name": "_get_truncated_output_difference",
+          "signature": "ddt_row, n"
+        },
+        {
+          "kind": "function",
+          "line": 509,
+          "name": "_mzn_update_sbox_cache_for_deterministic_truncated_xor_differential",
+          "signature": "inv_output_id_link, undisturbed_bits, sbox_cache, inverse"
+        },
+        {
           "kind": "class",
-          "line": 560,
+          "line": 561,
           "name": "Sbox",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 610,
+          "line": 611,
           "name": "Sbox.__init__",
           "signature": "self, current_round_number, current_round_number_of_components, input_id_links, input_bit_positions, output_bit_size, s_box_description"
         },
         {
           "kind": "method",
-          "line": 626,
+          "line": 627,
           "name": "Sbox.algebraic_polynomials",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 662,
+          "line": 663,
           "name": "Sbox.get_ddt_with_undisturbed_transitions",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 741,
+          "line": 742,
           "name": "Sbox.cms_constraints",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 769,
+          "line": 770,
           "name": "Sbox.cms_xor_differential_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 772,
+          "line": 773,
           "name": "Sbox.cms_xor_linear_mask_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 775,
+          "line": 776,
           "name": "Sbox.cp_constraints",
           "signature": "self, sbox_cache, second=False"
         },
         {
           "kind": "method",
-          "line": 826,
+          "line": 827,
           "name": "Sbox.cp_deterministic_truncated_xor_differential_constraints",
           "signature": "self, sbox_cache=None, inverse=False"
         },
         {
           "kind": "method",
-          "line": 887,
+          "line": 888,
           "name": "Sbox.cp_deterministic_truncated_xor_differential_trail_constraints",
           "signature": "self, sbox_cache=None, inverse=False"
         },
         {
           "kind": "method",
-          "line": 912,
+          "line": 913,
           "name": "Sbox.cp_semi_deterministic_truncated_xor_differential_constraints",
           "signature": "self, sbox_cache=None, inverse=False"
         },
         {
           "kind": "method",
-          "line": 915,
+          "line": 916,
           "name": "Sbox.cp_hybrid_deterministic_truncated_xor_differential_constraints",
           "signature": "self, sbox_cache, inverse=False, list_of_component_number=[]"
         },
         {
           "kind": "method",
-          "line": 1013,
+          "line": 1014,
           "name": "Sbox.cp_wordwise_deterministic_truncated_xor_differential_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1048,
+          "line": 1049,
           "name": "Sbox.cp_xor_differential_first_step_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1089,
+          "line": 1090,
           "name": "Sbox.cp_xor_differential_propagation_first_step_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1092,
+          "line": 1093,
           "name": "Sbox.cp_xor_differential_propagation_constraints",
           "signature": "self, model, inverse=False"
         },
         {
           "kind": "method",
-          "line": 1158,
+          "line": 1159,
           "name": "Sbox.cp_xor_linear_mask_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1225,
+          "line": 1226,
           "name": "Sbox.generate_sbox_sign_lat",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 1258,
+          "line": 1259,
           "name": "Sbox.get_bit_based_c_code",
           "signature": "self, verbosity"
         },
         {
           "kind": "method",
-          "line": 1297,
+          "line": 1298,
           "name": "Sbox.get_bit_based_vectorized_python_code",
           "signature": "self, params, convert_output_to_bytes"
         },
         {
           "kind": "method",
-          "line": 1327,
+          "line": 1328,
           "name": "Sbox.get_byte_based_vectorized_python_code",
           "signature": "self, params"
         },
         {
           "kind": "method",
-          "line": 1348,
+          "line": 1349,
           "name": "Sbox.get_word_based_c_code",
           "signature": "self, verbosity, word_size, wordstring_variables"
         },
         {
           "kind": "method",
-          "line": 1372,
+          "line": 1373,
           "name": "Sbox.milp_large_xor_differential_probability_constraints",
           "signature": "self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION"
         },
         {
           "kind": "method",
-          "line": 1442,
+          "line": 1443,
           "name": "Sbox.milp_large_xor_linear_probability_constraints",
           "signature": "self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION"
         },
         {
           "kind": "method",
-          "line": 1515,
+          "line": 1516,
           "name": "Sbox.milp_small_xor_differential_probability_constraints",
           "signature": "self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION"
         },
         {
           "kind": "method",
-          "line": 1606,
+          "line": 1607,
           "name": "Sbox.milp_small_xor_linear_probability_constraints",
           "signature": "self, binary_variable, integer_variable, non_linear_component_id, weight_precision=MILP_DEFAULT_WEIGHT_PRECISION"
         },
         {
           "kind": "method",
-          "line": 1706,
+          "line": 1707,
           "name": "Sbox.milp_xor_differential_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1749,
+          "line": 1750,
           "name": "Sbox.milp_xor_linear_mask_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1791,
+          "line": 1792,
           "name": "Sbox.milp_wordwise_branch_number_number_of_active_sboxes_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1800,
+          "line": 1801,
           "name": "Sbox.milp_wordwise_deterministic_truncated_xor_differential_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1898,
+          "line": 1899,
           "name": "Sbox.milp_wordwise_deterministic_truncated_xor_differential_simple_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 1951,
+          "line": 1952,
           "name": "Sbox.milp_bitwise_deterministic_truncated_xor_differential_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 2007,
+          "line": 2008,
           "name": "Sbox.milp_undisturbed_bits_bitwise_deterministic_truncated_xor_differential_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 2092,
+          "line": 2093,
           "name": "Sbox.sat_constraints",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 2142,
+          "line": 2143,
           "name": "Sbox.sat_bitwise_deterministic_truncated_xor_differential_constraints",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 2204,
+          "line": 2205,
           "name": "Sbox.sat_xor_differential_propagation_constraints",
           "signature": "self, model=None"
         },
         {
           "kind": "method",
-          "line": 2276,
+          "line": 2277,
           "name": "Sbox.sat_xor_linear_mask_propagation_constraints",
           "signature": "self, model=None"
         },
         {
           "kind": "method",
-          "line": 2349,
+          "line": 2350,
           "name": "Sbox.smt_constraints",
           "signature": "self"
         },
         {
           "kind": "method",
-          "line": 2400,
+          "line": 2401,
           "name": "Sbox.smt_xor_differential_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 2464,
+          "line": 2465,
           "name": "Sbox.smt_xor_linear_mask_propagation_constraints",
           "signature": "self, model"
         },
         {
           "kind": "method",
-          "line": 2521,
+          "line": 2522,
           "name": "Sbox.smt_xor_quasidifferential_propagation_constraints",
           "signature": "self, model"
         }
@@ -28942,171 +30060,120 @@
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/division_property_path_search_test.py",
-      "sha256": "b4555122e95e1a5e1ec30e4097be8798df3b783fc0f511041d07a21097086341",
+      "sha256": "cce4de72da8ac2f2c6f84969df008409782120a6e53d88212376c36ed87f3477",
       "symbols": [
         {
           "kind": "function",
-          "line": 33,
+          "line": 34,
           "name": "spn_rounds",
           "signature": "sbox_bit_size, sbox_degree, number_of_sboxes, data_bit_size"
         },
         {
           "kind": "function",
-          "line": 40,
+          "line": 41,
           "name": "feistel_rounds",
           "signature": "branch_bit_size, function_degree, bijective_function, data_bit_size"
         },
         {
           "kind": "function",
-          "line": 45,
+          "line": 46,
           "name": "test_spn_division_property_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 57,
+          "line": 58,
           "name": "test_spn_division_property_trail_on_todo_tables",
           "signature": "parameters, table"
         },
         {
           "kind": "function",
-          "line": 63,
+          "line": 64,
           "name": "test_feistel_division_property_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 79,
+          "line": 80,
           "name": "test_feistel_division_property_trail_on_todo_tables",
           "signature": "parameters, table"
         },
         {
           "kind": "function",
-          "line": 90,
+          "line": 91,
           "name": "test_structure",
           "signature": "cipher, structure"
         },
         {
           "kind": "function",
-          "line": 94,
+          "line": 95,
+          "name": "test_keccak_circuit_form",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 101,
           "name": "test_structure_given_by_the_caller",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 111,
+          "line": 118,
           "name": "test_unsupported_cipher",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 118,
+          "line": 125,
           "name": "test_find_division_property_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 126,
+          "line": 133,
           "name": "test_find_number_of_balanced_rounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 139,
+          "line": 146,
           "name": "test_todo_input",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 150,
+          "line": 157,
           "name": "test_optimal_input",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 162,
+          "line": 169,
           "name": "test_find_minimum_data_for_rounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 181,
+          "line": 188,
           "name": "test_find_integral_distinguishers",
           "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 45,
-          "name": "test_spn_division_property_trail"
-        },
-        {
-          "decorators": [
-            "pytest.mark.parametrize('parameters, table', TODO_SPN_TABLES.values(), ids=TODO_SPN_TABLES.keys())"
-          ],
-          "line": 57,
-          "name": "test_spn_division_property_trail_on_todo_tables"
-        },
-        {
-          "decorators": [],
-          "line": 63,
-          "name": "test_feistel_division_property_trail"
-        },
-        {
-          "decorators": [
-            "pytest.mark.parametrize('parameters, table', TODO_FEISTEL_TABLES.values(), ids=TODO_FEISTEL_TABLES.keys())"
-          ],
-          "line": 79,
-          "name": "test_feistel_division_property_trail_on_todo_tables"
-        },
-        {
-          "decorators": [
-            "pytest.mark.parametrize('cipher, structure', [(AESBlockCipher(number_of_rounds=2), '(8, 7, 16)-SPN'), (SerpentBlockCipher(number_of_rounds=2), '(4, 3, 32)-SPN'), (SimonBlockCipher(block_bit_size=48, key_bit_size=72, number_of_rounds=4), '(24, 2)-Feistel')], ids=['aes', 'serpent', 'simon48'])"
-          ],
-          "line": 90,
-          "name": "test_structure"
-        },
-        {
-          "decorators": [],
-          "line": 94,
-          "name": "test_structure_given_by_the_caller"
-        },
-        {
-          "decorators": [],
-          "line": 111,
-          "name": "test_unsupported_cipher"
-        },
-        {
-          "decorators": [],
-          "line": 118,
-          "name": "test_find_division_property_trail"
-        },
-        {
-          "decorators": [],
-          "line": 126,
-          "name": "test_find_number_of_balanced_rounds"
-        },
-        {
-          "decorators": [],
-          "line": 139,
-          "name": "test_todo_input"
-        },
-        {
-          "decorators": [],
-          "line": 150,
-          "name": "test_optimal_input"
-        },
-        {
-          "decorators": [],
-          "line": 162,
-          "name": "test_find_minimum_data_for_rounds"
-        },
-        {
-          "decorators": [],
-          "line": 181,
-          "name": "test_find_integral_distinguishers"
-        }
+        "test_spn_division_property_trail",
+        "test_spn_division_property_trail_on_todo_tables",
+        "test_feistel_division_property_trail",
+        "test_feistel_division_property_trail_on_todo_tables",
+        "test_structure",
+        "test_keccak_circuit_form",
+        "test_structure_given_by_the_caller",
+        "test_unsupported_cipher",
+        "test_find_division_property_trail",
+        "test_find_number_of_balanced_rounds",
+        "test_todo_input",
+        "test_optimal_input",
+        "test_find_minimum_data_for_rounds",
+        "test_find_integral_distinguishers"
       ]
     },
     {
@@ -33087,426 +34154,311 @@
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/models_utils_test.py",
-      "sha256": "635969e28ecbdae69b37248241ef406018fbde8bd4a08b85214481b9943a4c49",
+      "sha256": "3bcf0be4b444cad686723512f7bf0c23a279c2c602306c5e00dc075c3e9681bb",
       "symbols": [
         {
           "kind": "class",
-          "line": 60,
+          "line": 62,
           "name": "DummyIdentityBlockCipher",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 61,
+          "line": 63,
           "name": "DummyIdentityBlockCipher.evaluate_vectorized",
           "signature": "self, inputs"
         },
         {
           "kind": "class",
-          "line": 65,
+          "line": 67,
           "name": "DummyComponent",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 66,
+          "line": 68,
           "name": "DummyComponent.__init__",
           "signature": "self, component_id, component_type, description=None, suffixes=None"
         },
         {
           "kind": "class",
-          "line": 73,
+          "line": 75,
           "name": "DummyCipherForMeasures",
           "signature": ""
         },
         {
           "kind": "method",
-          "line": 74,
+          "line": 76,
           "name": "DummyCipherForMeasures.__init__",
           "signature": "self, components"
         },
         {
           "kind": "method",
-          "line": 77,
+          "line": 79,
           "name": "DummyCipherForMeasures.all_components",
           "signature": "self"
         },
         {
           "kind": "function",
-          "line": 81,
+          "line": 83,
           "name": "test_hex_to_bitlist",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 86,
+          "line": 88,
           "name": "test_hex_to_bitlist_invalid_prefix_raises",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 91,
+          "line": 93,
           "name": "test_check_if_implemented_component_invalid_word_operation",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 99,
+          "line": 101,
           "name": "test_join_and_sanitize_strings_and_write_model_to_file",
           "signature": "tmp_path"
         },
         {
           "kind": "function",
-          "line": 107,
+          "line": 109,
           "name": "test_to_bias_and_probability_measure_conversion_branches",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 127,
+          "line": 129,
           "name": "test_set_component_solution_helpers",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 133,
+          "line": 135,
           "name": "test_sample_truncated_difference_from_string_validation_and_bits",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 146,
+          "line": 148,
           "name": "test_parallel_and_validation_paths_for_checker_helpers",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 178,
+          "line": 180,
           "name": "test_boomerang_checker_for_block_cipher_single_key",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 205,
+          "line": 207,
           "name": "test_print_components_values",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 227,
+          "line": 229,
           "name": "test_write_solution_to_file",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 236,
+          "line": 238,
           "name": "test_to_bias_for_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 249,
+          "line": 251,
           "name": "test_to_probability_for_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 262,
+          "line": 264,
           "name": "test_to_correlation_for_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 275,
+          "line": 277,
           "name": "test_find_sign_for_xor_linear_trails",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 286,
+          "line": 288,
           "name": "test_get_related_key_scenario_format_for_fixed_values",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 292,
+          "line": 294,
           "name": "test_get_single_key_scenario_format_for_fixed_values",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 299,
+          "line": 301,
           "name": "test_differential_checker_permutation",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 310,
+          "line": 312,
           "name": "test_differential_truncated_checker_permutation",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 321,
+          "line": 323,
           "name": "test_differential_truncated_checker_permutation_input_and_output_truncated_inv",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 369,
+          "line": 371,
           "name": "test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 419,
+          "line": 421,
           "name": "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 468,
+          "line": 470,
           "name": "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated_2_rounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 507,
+          "line": 509,
           "name": "test_truncated_differential_linear_checker_permutation",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 589,
+          "line": 591,
           "name": "test_linear_checker_for_block_cipher_single_key_zero_masks",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 607,
+          "line": 609,
           "name": "test_differential_linear_continuous_checker_speck_block_cipher",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 664,
+          "line": 666,
           "name": "test_to_correlation_measure_branches",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 699,
+          "line": 701,
           "name": "test_worker_functions_direct",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 739,
+          "line": 741,
           "name": "test_sample_truncated_difference_all_wildcard",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 746,
+          "line": 748,
           "name": "test_sequential_shared_difference_and_truncated_sk_checkers",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 775,
+          "line": 777,
           "name": "test_linear_checker_permutation_keccak_p200_one_round",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 786,
+          "line": 788,
           "name": "test_linear_checker_permutation_keccak_p200_two_rounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 796,
+          "line": 798,
           "name": "test_linear_checker_permutation_rejects_invalid_arguments",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 809,
+          "line": 811,
           "name": "test_linear_checker_for_block_cipher_single_key_speck32_64_trails",
           "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 822,
+          "name": "test_exponential_predict",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 839,
+          "name": "test_exponential_predict_invalid_inputs",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 852,
+          "name": "test_save_trail_lower_bounds_and_time_estimates",
+          "signature": "tmp_path"
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 81,
-          "name": "test_hex_to_bitlist"
-        },
-        {
-          "decorators": [],
-          "line": 86,
-          "name": "test_hex_to_bitlist_invalid_prefix_raises"
-        },
-        {
-          "decorators": [],
-          "line": 91,
-          "name": "test_check_if_implemented_component_invalid_word_operation"
-        },
-        {
-          "decorators": [],
-          "line": 99,
-          "name": "test_join_and_sanitize_strings_and_write_model_to_file"
-        },
-        {
-          "decorators": [],
-          "line": 107,
-          "name": "test_to_bias_and_probability_measure_conversion_branches"
-        },
-        {
-          "decorators": [],
-          "line": 127,
-          "name": "test_set_component_solution_helpers"
-        },
-        {
-          "decorators": [],
-          "line": 133,
-          "name": "test_sample_truncated_difference_from_string_validation_and_bits"
-        },
-        {
-          "decorators": [],
-          "line": 146,
-          "name": "test_parallel_and_validation_paths_for_checker_helpers"
-        },
-        {
-          "decorators": [],
-          "line": 178,
-          "name": "test_boomerang_checker_for_block_cipher_single_key"
-        },
-        {
-          "decorators": [],
-          "line": 205,
-          "name": "test_print_components_values"
-        },
-        {
-          "decorators": [],
-          "line": 227,
-          "name": "test_write_solution_to_file"
-        },
-        {
-          "decorators": [],
-          "line": 236,
-          "name": "test_to_bias_for_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 249,
-          "name": "test_to_probability_for_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 262,
-          "name": "test_to_correlation_for_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 275,
-          "name": "test_find_sign_for_xor_linear_trails"
-        },
-        {
-          "decorators": [],
-          "line": 286,
-          "name": "test_get_related_key_scenario_format_for_fixed_values"
-        },
-        {
-          "decorators": [],
-          "line": 292,
-          "name": "test_get_single_key_scenario_format_for_fixed_values"
-        },
-        {
-          "decorators": [],
-          "line": 299,
-          "name": "test_differential_checker_permutation"
-        },
-        {
-          "decorators": [],
-          "line": 310,
-          "name": "test_differential_truncated_checker_permutation"
-        },
-        {
-          "decorators": [],
-          "line": 321,
-          "name": "test_differential_truncated_checker_permutation_input_and_output_truncated_inv"
-        },
-        {
-          "decorators": [],
-          "line": 369,
-          "name": "test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated"
-        },
-        {
-          "decorators": [],
-          "line": 419,
-          "name": "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated"
-        },
-        {
-          "decorators": [],
-          "line": 468,
-          "name": "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated_2_rounds"
-        },
-        {
-          "decorators": [],
-          "line": 507,
-          "name": "test_truncated_differential_linear_checker_permutation"
-        },
-        {
-          "decorators": [],
-          "line": 589,
-          "name": "test_linear_checker_for_block_cipher_single_key_zero_masks"
-        },
-        {
-          "decorators": [],
-          "line": 607,
-          "name": "test_differential_linear_continuous_checker_speck_block_cipher"
-        },
-        {
-          "decorators": [],
-          "line": 664,
-          "name": "test_to_correlation_measure_branches"
-        },
-        {
-          "decorators": [],
-          "line": 699,
-          "name": "test_worker_functions_direct"
-        },
-        {
-          "decorators": [],
-          "line": 739,
-          "name": "test_sample_truncated_difference_all_wildcard"
-        },
-        {
-          "decorators": [],
-          "line": 746,
-          "name": "test_sequential_shared_difference_and_truncated_sk_checkers"
-        },
-        {
-          "decorators": [],
-          "line": 775,
-          "name": "test_linear_checker_permutation_keccak_p200_one_round"
-        },
-        {
-          "decorators": [],
-          "line": 786,
-          "name": "test_linear_checker_permutation_keccak_p200_two_rounds"
-        },
-        {
-          "decorators": [],
-          "line": 796,
-          "name": "test_linear_checker_permutation_rejects_invalid_arguments"
-        },
-        {
-          "decorators": [],
-          "line": 809,
-          "name": "test_linear_checker_for_block_cipher_single_key_speck32_64_trails"
-        }
+        "test_hex_to_bitlist",
+        "test_hex_to_bitlist_invalid_prefix_raises",
+        "test_check_if_implemented_component_invalid_word_operation",
+        "test_join_and_sanitize_strings_and_write_model_to_file",
+        "test_to_bias_and_probability_measure_conversion_branches",
+        "test_set_component_solution_helpers",
+        "test_sample_truncated_difference_from_string_validation_and_bits",
+        "test_parallel_and_validation_paths_for_checker_helpers",
+        "test_boomerang_checker_for_block_cipher_single_key",
+        "test_print_components_values",
+        "test_write_solution_to_file",
+        "test_to_bias_for_xor_linear_trail",
+        "test_to_probability_for_xor_linear_trail",
+        "test_to_correlation_for_xor_linear_trail",
+        "test_find_sign_for_xor_linear_trails",
+        "test_get_related_key_scenario_format_for_fixed_values",
+        "test_get_single_key_scenario_format_for_fixed_values",
+        "test_differential_checker_permutation",
+        "test_differential_truncated_checker_permutation",
+        "test_differential_truncated_checker_permutation_input_and_output_truncated_inv",
+        "test_differential_truncated_checker_salsa_permutation_input_fixed_and_output_truncated",
+        "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated",
+        "test_differential_truncated_checker_salsa_permutation_input_and_output_truncated_2_rounds",
+        "test_truncated_differential_linear_checker_permutation",
+        "test_linear_checker_for_block_cipher_single_key_zero_masks",
+        "test_differential_linear_continuous_checker_speck_block_cipher",
+        "test_to_correlation_measure_branches",
+        "test_worker_functions_direct",
+        "test_sample_truncated_difference_all_wildcard",
+        "test_sequential_shared_difference_and_truncated_sk_checkers",
+        "test_linear_checker_permutation_keccak_p200_one_round",
+        "test_linear_checker_permutation_keccak_p200_two_rounds",
+        "test_linear_checker_permutation_rejects_invalid_arguments",
+        "test_linear_checker_for_block_cipher_single_key_speck32_64_trails",
+        "test_exponential_predict",
+        "test_exponential_predict_invalid_inputs",
+        "test_save_trail_lower_bounds_and_time_estimates"
       ]
     },
     {
@@ -33555,7 +34507,7 @@
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_xor_differential_model_test.py",
-      "sha256": "f814460e7d204ec32b304a480708a2a862ee090b9874b3285ca0d488d0371a23",
+      "sha256": "a18f926f228337f2d9053f02d4e7e17334f36b8ec3a9a1dd6dd1549b2df8e44d",
       "symbols": [
         {
           "kind": "function",
@@ -33568,40 +34520,42 @@
           "line": 16,
           "name": "test_build_xor_differential_trail_model_with_weight_adds_constraints",
           "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 29,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds",
+          "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 5,
-          "name": "test_build_xor_differential_trail_model"
-        },
-        {
-          "decorators": [],
-          "line": 16,
-          "name": "test_build_xor_differential_trail_model_with_weight_adds_constraints"
-        }
+        "test_build_xor_differential_trail_model",
+        "test_build_xor_differential_trail_model_with_weight_adds_constraints",
+        "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds"
       ]
     },
     {
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/cms_models/cms_xor_linear_model_test.py",
-      "sha256": "60b19e9ca40276bcb21bc748fc1dd367d94337b658191ec0f5de88e4b0a61253",
+      "sha256": "3d5b841cc17c00f8d21e3e73840c520a58259c00312081f264097bd8165206a0",
       "symbols": [
         {
           "kind": "function",
           "line": 5,
           "name": "test_find_lowest_weight_xor_linear_trail",
           "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 14,
+          "name": "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds",
+          "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 5,
-          "name": "test_find_lowest_weight_xor_linear_trail"
-        }
+        "test_find_lowest_weight_xor_linear_trail",
+        "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds"
       ]
     },
     {
@@ -33824,144 +34778,101 @@
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_differential_linear_test.py",
-      "sha256": "9e63f3c9ae8ab7bcf736ab38aa6209628751b6fb42115f208220186c5be738b0",
+      "sha256": "4bbfa08324cf4a297a2add4b272c93388ac84f81cd132f986fbaf1e1a40627fb",
       "symbols": [
         {
           "kind": "function",
-          "line": 21,
+          "line": 22,
           "name": "test_differential_linear_trail_with_fixed_weight_6_rounds_speck",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 68,
+          "line": 69,
           "name": "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 109,
+          "line": 111,
+          "name": "test_lowest_differential_linear_trail_with_log_6_rounds_speck",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 181,
           "name": "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 171,
+          "line": 243,
           "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_aradi",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 228,
+          "line": 300,
           "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 276,
+          "line": 348,
           "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 324,
+          "line": 396,
           "name": "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 412,
+          "line": 484,
           "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 467,
+          "line": 539,
           "name": "test_diff_lin_chacha",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 486,
+          "line": 558,
           "name": "test_diff_lin_chacha_8",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 505,
+          "line": 577,
           "name": "test_diff_lin_speck",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 525,
+          "line": 597,
           "name": "test_diff_lin_aradi",
           "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 21,
-          "name": "test_differential_linear_trail_with_fixed_weight_6_rounds_speck"
-        },
-        {
-          "decorators": [],
-          "line": 68,
-          "name": "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck"
-        },
-        {
-          "decorators": [],
-          "line": 109,
-          "name": "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha"
-        },
-        {
-          "decorators": [],
-          "line": 171,
-          "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_aradi"
-        },
-        {
-          "decorators": [],
-          "line": 228,
-          "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha"
-        },
-        {
-          "decorators": [],
-          "line": 276,
-          "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case"
-        },
-        {
-          "decorators": [],
-          "line": 324,
-          "name": "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case"
-        },
-        {
-          "decorators": [
-            "pytest.mark.skipif(platform.machine() in ('aarch64', 'arm64'), reason='SAT solve exceeds isolate-timeout on slower ARM runners')"
-          ],
-          "line": 412,
-          "name": "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden"
-        },
-        {
-          "decorators": [],
-          "line": 467,
-          "name": "test_diff_lin_chacha"
-        },
-        {
-          "decorators": [],
-          "line": 486,
-          "name": "test_diff_lin_chacha_8"
-        },
-        {
-          "decorators": [],
-          "line": 505,
-          "name": "test_diff_lin_speck"
-        },
-        {
-          "decorators": [],
-          "line": 525,
-          "name": "test_diff_lin_aradi"
-        }
+        "test_differential_linear_trail_with_fixed_weight_6_rounds_speck",
+        "test_lowest_differential_linear_trail_with_fixed_weight_6_rounds_speck",
+        "test_lowest_differential_linear_trail_with_log_6_rounds_speck",
+        "test_differential_linear_trail_with_fixed_weight_3_rounds_chacha",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_aradi",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_second_case",
+        "test_differential_linear_trail_with_fixed_weight_8_rounds_chacha_one_case",
+        "test_differential_linear_trail_with_fixed_weight_4_rounds_chacha_golden",
+        "test_diff_lin_chacha",
+        "test_diff_lin_chacha_8",
+        "test_diff_lin_speck",
+        "test_diff_lin_aradi"
       ]
     },
     {
@@ -34197,296 +35108,366 @@
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_differential_model_test.py",
-      "sha256": "d133c35329d146a2ef5abdf8aa72c01016a631c4c316ae1a0cfa733416acc38f",
+      "sha256": "6f8229eb1cc5b288b947621c787b560ab42ff46367bec202ddd00565134f4a93",
       "symbols": [
         {
           "kind": "function",
-          "line": 18,
+          "line": 26,
           "name": "count_sequences_of_ones",
           "signature": "data, full_window_size"
         },
         {
           "kind": "function",
-          "line": 30,
+          "line": 38,
           "name": "binary_list_to_int",
           "signature": "binary_list"
         },
         {
           "kind": "function",
-          "line": 37,
+          "line": 45,
           "name": "extract_bits_from_hex",
           "signature": "hex_value, bit_positions"
         },
         {
           "kind": "function",
-          "line": 50,
+          "line": 58,
           "name": "compute_modadd_xor",
           "signature": "modadd_objects, component_values"
         },
         {
           "kind": "function",
-          "line": 78,
+          "line": 86,
           "name": "test_find_all_xor_differential_trails_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 85,
+          "line": 93,
           "name": "test_find_all_xor_differential_trails_with_weight_at_most",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 93,
+          "line": 101,
           "name": "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 109,
+          "line": 117,
           "name": "test_find_lowest_weight_xor_differential_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 118,
+          "line": 125,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_log",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 170,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_start_weight",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 193,
           "name": "test_find_lowest_weight_xor_differential_trail_with_mallob",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 126,
+          "line": 201,
           "name": "test_find_one_xor_differential_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 146,
+          "line": 221,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 155,
+          "line": 230,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_2_window",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 164,
+          "line": 239,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_three_full_2_window",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 183,
+          "line": 258,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_full_3_window",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 213,
+          "line": 288,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_9_rounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 223,
+          "line": 298,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 242,
+          "line": 317,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 255,
+          "line": 330,
           "name": "test_build_xor_differential_trail_model_fixed_weight_and_parkissat",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 266,
+          "line": 341,
           "name": "test_build_xor_differential_trail_model_fixed_weight_and_mallob",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 276,
+          "line": 351,
           "name": "repeat_input_difference",
           "signature": "input_difference_, number_of_samples_, number_of_bytes_"
         },
         {
           "kind": "function",
-          "line": 283,
+          "line": 358,
           "name": "test_compute_xor_differential_weight",
           "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 420,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds",
+          "signature": "cipher, matsui_bounds, lowest_weight"
+        },
+        {
+          "kind": "function",
+          "line": 439,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weight_and_log",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 457,
+          "name": "test_hw_variables_by_round",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 480,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_round_by_round",
+          "signature": "cipher_class, lowest_weights"
+        },
+        {
+          "kind": "function",
+          "line": 499,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_related_key",
+          "signature": "cipher_class, lowest_weights"
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 78,
-          "name": "test_find_all_xor_differential_trails_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 85,
-          "name": "test_find_all_xor_differential_trails_with_weight_at_most"
-        },
-        {
-          "decorators": [],
-          "line": 93,
-          "name": "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash"
-        },
-        {
-          "decorators": [],
-          "line": 109,
-          "name": "test_find_lowest_weight_xor_differential_trail"
-        },
-        {
-          "decorators": [
-            "requires_mallob"
-          ],
-          "line": 118,
-          "name": "test_find_lowest_weight_xor_differential_trail_with_mallob"
-        },
-        {
-          "decorators": [],
-          "line": 126,
-          "name": "test_find_one_xor_differential_trail"
-        },
-        {
-          "decorators": [],
-          "line": 146,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 155,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_2_window"
-        },
-        {
-          "decorators": [],
-          "line": 164,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_three_full_2_window"
-        },
-        {
-          "decorators": [],
-          "line": 183,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_full_3_window"
-        },
-        {
-          "decorators": [],
-          "line": 213,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_9_rounds"
-        },
-        {
-          "decorators": [],
-          "line": 223,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel"
-        },
-        {
-          "decorators": [],
-          "line": 242,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component"
-        },
-        {
-          "decorators": [],
-          "line": 255,
-          "name": "test_build_xor_differential_trail_model_fixed_weight_and_parkissat"
-        },
-        {
-          "decorators": [
-            "requires_mallob"
-          ],
-          "line": 266,
-          "name": "test_build_xor_differential_trail_model_fixed_weight_and_mallob"
-        },
-        {
-          "decorators": [],
-          "line": 283,
-          "name": "test_compute_xor_differential_weight"
-        }
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_find_all_xor_differential_trails_with_weight_at_most",
+        "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_lowest_weight_xor_differential_trail_with_log",
+        "test_find_lowest_weight_xor_differential_trail_with_start_weight",
+        "test_find_lowest_weight_xor_differential_trail_with_mallob",
+        "test_find_one_xor_differential_trail",
+        "test_find_one_xor_differential_trail_with_fixed_weight",
+        "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_2_window",
+        "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_three_full_2_window",
+        "test_find_one_xor_differential_trail_with_fixed_weight_and_with_exactly_one_full_3_window",
+        "test_find_one_xor_differential_trail_with_fixed_weight_9_rounds",
+        "test_find_one_xor_differential_trail_with_fixed_weight_with_at_least_one_full_window_parallel",
+        "test_find_one_xor_differential_trail_with_fixed_weight_and_window_heuristic_per_component",
+        "test_build_xor_differential_trail_model_fixed_weight_and_parkissat",
+        "test_build_xor_differential_trail_model_fixed_weight_and_mallob",
+        "test_compute_xor_differential_weight",
+        "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds",
+        "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_start_weight_and_log",
+        "test_hw_variables_by_round",
+        "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_round_by_round",
+        "test_find_lowest_weight_xor_differential_trail_with_matsui_bounds_related_key"
       ]
     },
     {
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/sat/sat_models/sat_xor_linear_model_test.py",
-      "sha256": "9987c4641ecaafa496e813c9ffc0e3b37e4c30d47f943fcb227413892343bf63",
+      "sha256": "96ee31e670b76dc29baaa7c799f771a5c848ce8d8390e15e0559612babbc9d9e",
       "symbols": [
         {
           "kind": "function",
-          "line": 8,
+          "line": 15,
           "name": "test_branch_xor_linear_constraints",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 22,
+          "line": 29,
           "name": "test_find_all_xor_linear_trails_with_weight_at_most",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 31,
+          "line": 38,
           "name": "test_find_lowest_weight_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 57,
+          "line": 64,
+          "name": "test_find_lowest_weight_xor_linear_trail_with_log",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 108,
           "name": "test_find_one_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 67,
+          "line": 118,
           "name": "test_find_one_xor_linear_trail_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 75,
+          "line": 126,
           "name": "test_fix_variables_value_xor_linear_constraints",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 162,
+          "name": "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds",
+          "signature": "cipher, matsui_bounds, lowest_weight"
+        },
+        {
+          "kind": "function",
+          "line": 182,
+          "name": "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds_start_weight_and_log",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 200,
+          "name": "test_hw_variables_by_round_xor_linear",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 223,
+          "name": "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds_round_by_round",
+          "signature": "cipher_class, lowest_weights"
+        }
+      ],
+      "tests": [
+        "test_branch_xor_linear_constraints",
+        "test_find_all_xor_linear_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_linear_trail",
+        "test_find_lowest_weight_xor_linear_trail_with_log",
+        "test_find_one_xor_linear_trail",
+        "test_find_one_xor_linear_trail_with_fixed_weight",
+        "test_fix_variables_value_xor_linear_constraints",
+        "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds",
+        "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds_start_weight_and_log",
+        "test_hw_variables_by_round_xor_linear",
+        "test_find_lowest_weight_xor_linear_trail_with_matsui_bounds_round_by_round"
+      ]
+    },
+    {
+      "doctests": [],
+      "kind": "test",
+      "path": "tests/unit/cipher_modules/models/sat/utils/matsui_bounds_test.py",
+      "sha256": "5b7e0098d7b25229ec4db20204d6512c0517675db528e26826526afeea27d1a4",
+      "symbols": [
+        {
+          "kind": "function",
+          "line": 13,
+          "name": "is_satisfiable",
+          "signature": "clauses, assignment=None"
+        },
+        {
+          "kind": "function",
+          "line": 48,
+          "name": "all_assignments",
+          "signature": "variables"
+        },
+        {
+          "kind": "function",
+          "line": 54,
+          "name": "test_sequential_counter_with_all_prefixes",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 72,
+          "name": "test_sequential_counter_with_all_prefixes_rejects_zero_weight",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 90,
+          "name": "test_matsui_weight_constraints_are_exactly_the_window_bounds",
+          "signature": "round_sizes, weight, matsui_bounds"
+        },
+        {
+          "kind": "function",
+          "line": 113,
+          "name": "test_matsui_weight_constraints_below_the_lower_bound",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 121,
+          "name": "test_matsui_weight_constraints_with_zero_weight",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 126,
+          "name": "test_matsui_weight_constraints_prefix",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 133,
+          "name": "test_matsui_bounds_with_zero",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 143,
+          "name": "test_matsui_lower_bound",
           "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 8,
-          "name": "test_branch_xor_linear_constraints"
-        },
-        {
-          "decorators": [],
-          "line": 22,
-          "name": "test_find_all_xor_linear_trails_with_weight_at_most"
-        },
-        {
-          "decorators": [],
-          "line": 31,
-          "name": "test_find_lowest_weight_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 57,
-          "name": "test_find_one_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 67,
-          "name": "test_find_one_xor_linear_trail_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 75,
-          "name": "test_fix_variables_value_xor_linear_constraints"
-        }
+        "test_sequential_counter_with_all_prefixes",
+        "test_sequential_counter_with_all_prefixes_rejects_zero_weight",
+        "test_matsui_weight_constraints_are_exactly_the_window_bounds",
+        "test_matsui_weight_constraints_below_the_lower_bound",
+        "test_matsui_weight_constraints_with_zero_weight",
+        "test_matsui_weight_constraints_prefix",
+        "test_matsui_bounds_with_zero",
+        "test_matsui_lower_bound"
       ]
     },
     {
@@ -34755,595 +35736,438 @@
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_differential_model_test.py",
-      "sha256": "fd1bdfc019858df1dae8c845f9f4253cd889076191145ec0cfe211f70287e141",
+      "sha256": "3687d1eb6725cecbcd91c2301ba78ae8e792ec103499c453d318f4c6c769964b",
       "symbols": [
         {
           "kind": "function",
-          "line": 17,
+          "line": 18,
           "name": "test_build_xor_differential_trail_model",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 29,
+          "line": 30,
           "name": "test_find_all_xor_differential_trails_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 38,
+          "line": 39,
           "name": "test_find_all_xor_differential_trails_with_fixed_weight_parallel",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 46,
+          "line": 47,
           "name": "test_find_all_xor_differential_trails_with_weight_at_most",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 55,
+          "line": 56,
           "name": "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 71,
+          "line": 72,
           "name": "test_find_lowest_weight_xor_differential_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 80,
+          "line": 81,
           "name": "test_find_lowest_weight_xor_differential_trail_parallel",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 88,
+          "line": 89,
+          "name": "test_find_lowest_weight_xor_differential_trail_with_log",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 133,
           "name": "test_find_one_xor_differential_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 111,
+          "line": 156,
           "name": "test_find_one_xor_differential_trail_with_other_solvers",
           "signature": "solver_name"
         },
         {
           "kind": "function",
-          "line": 127,
+          "line": 172,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 135,
+          "line": 180,
           "name": "test_find_one_xor_differential_trail_with_fixed_weight_parallel",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 143,
+          "line": 188,
           "name": "test_find_one_xor_differential_trail_with_wrong_bounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 157,
+          "line": 202,
           "name": "test_build_xor_differential_trail_model_fixed_weight_and_mathsat",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 167,
+          "line": 212,
           "name": "test_get_operands",
           "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 17,
-          "name": "test_build_xor_differential_trail_model"
-        },
-        {
-          "decorators": [],
-          "line": 29,
-          "name": "test_find_all_xor_differential_trails_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 38,
-          "name": "test_find_all_xor_differential_trails_with_fixed_weight_parallel"
-        },
-        {
-          "decorators": [],
-          "line": 46,
-          "name": "test_find_all_xor_differential_trails_with_weight_at_most"
-        },
-        {
-          "decorators": [],
-          "line": 55,
-          "name": "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash"
-        },
-        {
-          "decorators": [],
-          "line": 71,
-          "name": "test_find_lowest_weight_xor_differential_trail"
-        },
-        {
-          "decorators": [],
-          "line": 80,
-          "name": "test_find_lowest_weight_xor_differential_trail_parallel"
-        },
-        {
-          "decorators": [],
-          "line": 88,
-          "name": "test_find_one_xor_differential_trail"
-        },
-        {
-          "decorators": [
-            "pytest.mark.parametrize('solver_name', [pytest.param(MATHSAT_EXT, marks=requires_mathsat), YICES_EXT])"
-          ],
-          "line": 111,
-          "name": "test_find_one_xor_differential_trail_with_other_solvers"
-        },
-        {
-          "decorators": [],
-          "line": 127,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 135,
-          "name": "test_find_one_xor_differential_trail_with_fixed_weight_parallel"
-        },
-        {
-          "decorators": [],
-          "line": 143,
-          "name": "test_find_one_xor_differential_trail_with_wrong_bounds"
-        },
-        {
-          "decorators": [
-            "requires_mathsat"
-          ],
-          "line": 157,
-          "name": "test_build_xor_differential_trail_model_fixed_weight_and_mathsat"
-        },
-        {
-          "decorators": [],
-          "line": 167,
-          "name": "test_get_operands"
-        }
+        "test_build_xor_differential_trail_model",
+        "test_find_all_xor_differential_trails_with_fixed_weight",
+        "test_find_all_xor_differential_trails_with_fixed_weight_parallel",
+        "test_find_all_xor_differential_trails_with_weight_at_most",
+        "test_find_all_xor_differential_trails_with_weight_at_most_accepts_default_min_weight_and_no_crash",
+        "test_find_lowest_weight_xor_differential_trail",
+        "test_find_lowest_weight_xor_differential_trail_parallel",
+        "test_find_lowest_weight_xor_differential_trail_with_log",
+        "test_find_one_xor_differential_trail",
+        "test_find_one_xor_differential_trail_with_other_solvers",
+        "test_find_one_xor_differential_trail_with_fixed_weight",
+        "test_find_one_xor_differential_trail_with_fixed_weight_parallel",
+        "test_find_one_xor_differential_trail_with_wrong_bounds",
+        "test_build_xor_differential_trail_model_fixed_weight_and_mathsat",
+        "test_get_operands"
       ]
     },
     {
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_linear_model_test.py",
-      "sha256": "8ab36c3d807e9e27082b2084043e783bb7f5a469c847686f7f7e585f97a8b722",
+      "sha256": "1810a37be53c907947495065d48704a5de6e0cc7f90d1d2e0f15dbb3315121d8",
       "symbols": [
         {
           "kind": "function",
-          "line": 16,
+          "line": 17,
           "name": "test_branch_xor_linear_constraints",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 28,
+          "line": 29,
           "name": "test_build_xor_linear_trail_model",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 40,
+          "line": 41,
           "name": "test_cipher_input_xor_linear_variables",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 50,
+          "line": 51,
           "name": "test_find_all_xor_linear_trails_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 60,
+          "line": 61,
           "name": "test_find_all_xor_linear_trails_with_fixed_weight_parallel",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 69,
+          "line": 70,
           "name": "test_find_all_xor_linear_trails_with_weight_at_most",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 79,
+          "line": 80,
           "name": "test_find_lowest_weight_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 106,
+          "line": 107,
+          "name": "test_find_lowest_weight_xor_linear_trail_with_log",
+          "signature": "tmp_path, monkeypatch"
+        },
+        {
+          "kind": "function",
+          "line": 150,
           "name": "test_find_one_xor_linear_trail",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 124,
+          "line": 168,
           "name": "test_find_one_xor_linear_trail_with_fixed_weight",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 132,
+          "line": 176,
           "name": "test_find_one_xor_linear_trail_with_wrong_bounds",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 145,
+          "line": 189,
           "name": "test_fix_variables_value_xor_linear_constraints",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 181,
+          "line": 225,
           "name": "test_fix_variables_value_xor_linear_constraints_with_wrong_constraint_type",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 191,
+          "line": 235,
           "name": "test_weight_xor_linear_constraints",
           "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 16,
-          "name": "test_branch_xor_linear_constraints"
-        },
-        {
-          "decorators": [],
-          "line": 28,
-          "name": "test_build_xor_linear_trail_model"
-        },
-        {
-          "decorators": [],
-          "line": 40,
-          "name": "test_cipher_input_xor_linear_variables"
-        },
-        {
-          "decorators": [],
-          "line": 50,
-          "name": "test_find_all_xor_linear_trails_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 60,
-          "name": "test_find_all_xor_linear_trails_with_fixed_weight_parallel"
-        },
-        {
-          "decorators": [],
-          "line": 69,
-          "name": "test_find_all_xor_linear_trails_with_weight_at_most"
-        },
-        {
-          "decorators": [],
-          "line": 79,
-          "name": "test_find_lowest_weight_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 106,
-          "name": "test_find_one_xor_linear_trail"
-        },
-        {
-          "decorators": [],
-          "line": 124,
-          "name": "test_find_one_xor_linear_trail_with_fixed_weight"
-        },
-        {
-          "decorators": [],
-          "line": 132,
-          "name": "test_find_one_xor_linear_trail_with_wrong_bounds"
-        },
-        {
-          "decorators": [],
-          "line": 145,
-          "name": "test_fix_variables_value_xor_linear_constraints"
-        },
-        {
-          "decorators": [],
-          "line": 181,
-          "name": "test_fix_variables_value_xor_linear_constraints_with_wrong_constraint_type"
-        },
-        {
-          "decorators": [],
-          "line": 191,
-          "name": "test_weight_xor_linear_constraints"
-        }
+        "test_branch_xor_linear_constraints",
+        "test_build_xor_linear_trail_model",
+        "test_cipher_input_xor_linear_variables",
+        "test_find_all_xor_linear_trails_with_fixed_weight",
+        "test_find_all_xor_linear_trails_with_fixed_weight_parallel",
+        "test_find_all_xor_linear_trails_with_weight_at_most",
+        "test_find_lowest_weight_xor_linear_trail",
+        "test_find_lowest_weight_xor_linear_trail_with_log",
+        "test_find_one_xor_linear_trail",
+        "test_find_one_xor_linear_trail_with_fixed_weight",
+        "test_find_one_xor_linear_trail_with_wrong_bounds",
+        "test_fix_variables_value_xor_linear_constraints",
+        "test_fix_variables_value_xor_linear_constraints_with_wrong_constraint_type",
+        "test_weight_xor_linear_constraints"
       ]
     },
     {
       "doctests": [],
       "kind": "test",
       "path": "tests/unit/cipher_modules/models/smt/smt_models/smt_xor_quasidifferential_model_test.py",
-      "sha256": "f2473eb6aab375b8716cbaa0d0880d605b3834fe4d2867733d0a35c415c8f236",
+      "sha256": "705a9b19455986f16b605d7533be99347a8b5ded9e582b12107ed603830666bd",
       "symbols": [
         {
           "kind": "function",
-          "line": 20,
+          "line": 21,
           "name": "test_find_lowest_weight_xor_quasidifferential_trail_on_rectangle",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 28,
+          "line": 29,
           "name": "test_find_one_xor_quasidifferential_trail_on_simon",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 37,
+          "line": 38,
           "name": "test_compute_trail_sign",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 47,
+          "line": 48,
           "name": "test_estimate_fixed_key_probability",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 66,
+          "line": 67,
           "name": "test_fork_constraints_tie_branch_masks_by_xor",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 85,
+          "line": 86,
           "name": "test_forked_wires_use_one_mask_variable_per_consumer",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 96,
+          "line": 97,
           "name": "test_each_read_of_a_wire_gets_its_own_branch",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 124,
+          "line": 125,
           "name": "test_masks_of_unread_cipher_input_bits_are_zero",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 137,
+          "line": 138,
           "name": "test_masks_of_terminal_output_taps_are_zero",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 152,
+          "line": 153,
           "name": "test_sbox_with_a_non_power_of_two_qdt_is_refused",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 163,
+          "line": 164,
+          "name": "test_gift_is_modelled_when_the_characteristic_avoids_the_unencodable_differentials",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 194,
           "name": "test_model_admits_the_masks_of_equation_4",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 180,
+          "line": 211,
           "name": "test_model_rejects_the_masks_outside_equation_4",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 247,
+          "line": 225,
+          "name": "_solve_speck8_with_masks",
+          "signature": "input_mask, output_mask, weight"
+        },
+        {
+          "kind": "function",
+          "line": 253,
+          "name": "_simon_six_round_characteristic",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 278,
           "name": "test_estimate_fixed_key_probability_applies_the_key_factor",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 278,
+          "line": 309,
           "name": "test_trail_sign_does_not_depend_on_solve_order",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 301,
+          "line": 332,
           "name": "test_weights_the_sequential_counter_cannot_express",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 319,
+          "line": 350,
           "name": "test_fixed_key_probability_matches_brute_force_on_an_spn",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 380,
+          "line": 411,
           "name": "test_enumeration_bounds_report_truncation",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 468,
+          "line": 452,
+          "name": "_speck_six_round_characteristic",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 470,
+          "name": "_rectangle_three_round_key_alternating",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 499,
           "name": "test_sbox_differences_are_derived_from_the_characteristic",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 480,
+          "line": 511,
           "name": "test_sbox_constraints_are_restricted_to_the_derived_differences",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 495,
+          "line": 526,
           "name": "test_averaged_probability_agrees_with_the_differential_model",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 515,
+          "line": 546,
           "name": "test_fixed_key_probability_on_a_key_alternating_cipher",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 536,
+          "line": 562,
+          "name": "_speck8_one_round",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 567,
           "name": "test_find_one_trail_honours_fixed_masks",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 543,
+          "line": 574,
           "name": "test_find_all_trails_at_a_weight_honour_fixed_masks",
           "signature": ""
         },
         {
           "kind": "function",
-          "line": 551,
+          "line": 582,
           "name": "test_find_all_trails_up_to_a_weight_pass_fixed_masks_through",
           "signature": ""
         }
       ],
       "tests": [
-        {
-          "decorators": [],
-          "line": 20,
-          "name": "test_find_lowest_weight_xor_quasidifferential_trail_on_rectangle"
-        },
-        {
-          "decorators": [],
-          "line": 28,
-          "name": "test_find_one_xor_quasidifferential_trail_on_simon"
-        },
-        {
-          "decorators": [],
-          "line": 37,
-          "name": "test_compute_trail_sign"
-        },
-        {
-          "decorators": [],
-          "line": 47,
-          "name": "test_estimate_fixed_key_probability"
-        },
-        {
-          "decorators": [],
-          "line": 66,
-          "name": "test_fork_constraints_tie_branch_masks_by_xor"
-        },
-        {
-          "decorators": [],
-          "line": 85,
-          "name": "test_forked_wires_use_one_mask_variable_per_consumer"
-        },
-        {
-          "decorators": [],
-          "line": 96,
-          "name": "test_each_read_of_a_wire_gets_its_own_branch"
-        },
-        {
-          "decorators": [],
-          "line": 124,
-          "name": "test_masks_of_unread_cipher_input_bits_are_zero"
-        },
-        {
-          "decorators": [],
-          "line": 137,
-          "name": "test_masks_of_terminal_output_taps_are_zero"
-        },
-        {
-          "decorators": [],
-          "line": 152,
-          "name": "test_sbox_with_a_non_power_of_two_qdt_is_refused"
-        },
-        {
-          "decorators": [],
-          "line": 163,
-          "name": "test_model_admits_the_masks_of_equation_4"
-        },
-        {
-          "decorators": [],
-          "line": 180,
-          "name": "test_model_rejects_the_masks_outside_equation_4"
-        },
-        {
-          "decorators": [],
-          "line": 247,
-          "name": "test_estimate_fixed_key_probability_applies_the_key_factor"
-        },
-        {
-          "decorators": [],
-          "line": 278,
-          "name": "test_trail_sign_does_not_depend_on_solve_order"
-        },
-        {
-          "decorators": [],
-          "line": 301,
-          "name": "test_weights_the_sequential_counter_cannot_express"
-        },
-        {
-          "decorators": [],
-          "line": 319,
-          "name": "test_fixed_key_probability_matches_brute_force_on_an_spn"
-        },
-        {
-          "decorators": [],
-          "line": 380,
-          "name": "test_enumeration_bounds_report_truncation"
-        },
-        {
-          "decorators": [],
-          "line": 468,
-          "name": "test_sbox_differences_are_derived_from_the_characteristic"
-        },
-        {
-          "decorators": [],
-          "line": 480,
-          "name": "test_sbox_constraints_are_restricted_to_the_derived_differences"
-        },
-        {
-          "decorators": [],
-          "line": 495,
-          "name": "test_averaged_probability_agrees_with_the_differential_model"
-        },
-        {
-          "decorators": [],
-          "line": 515,
-          "name": "test_fixed_key_probability_on_a_key_alternating_cipher"
-        },
-        {
-          "decorators": [],
-          "line": 536,
-          "name": "test_find_one_trail_honours_fixed_masks"
-        },
-        {
-          "decorators": [],
-          "line": 543,
-          "name": "test_find_all_trails_at_a_weight_honour_fixed_masks"
-        },
-        {
-          "decorators": [],
-          "line": 551,
-          "name": "test_find_all_trails_up_to_a_weight_pass_fixed_masks_through"
-        }
+        "test_find_lowest_weight_xor_quasidifferential_trail_on_rectangle",
+        "test_find_one_xor_quasidifferential_trail_on_simon",
+        "test_compute_trail_sign",
+        "test_estimate_fixed_key_probability",
+        "test_fork_constraints_tie_branch_masks_by_xor",
+        "test_forked_wires_use_one_mask_variable_per_consumer",
+        "test_each_read_of_a_wire_gets_its_own_branch",
+        "test_masks_of_unread_cipher_input_bits_are_zero",
+        "test_masks_of_terminal_output_taps_are_zero",
+        "test_sbox_with_a_non_power_of_two_qdt_is_refused",
+        "test_gift_is_modelled_when_the_characteristic_avoids_the_unencodable_differentials",
+        "test_model_admits_the_masks_of_equation_4",
+        "test_model_rejects_the_masks_outside_equation_4",
+        "test_estimate_fixed_key_probability_applies_the_key_factor",
+        "test_trail_sign_does_not_depend_on_solve_order",
+        "test_weights_the_sequential_counter_cannot_express",
+        "test_fixed_key_probability_matches_brute_force_on_an_spn",
+        "test_enumeration_bounds_report_truncation",
+        "test_sbox_differences_are_derived_from_the_characteristic",
+        "test_sbox_constraints_are_restricted_to_the_derived_differences",
+        "test_averaged_probability_agrees_with_the_differential_model",
+        "test_fixed_key_probability_on_a_key_alternating_cipher",
+        "test_find_one_trail_honours_fixed_masks",
+        "test_find_all_trails_at_a_weight_honour_fixed_masks",
+        "test_find_all_trails_up_to_a_weight_pass_fixed_masks_through"
       ]
     },
     {
@@ -36078,6 +36902,223 @@
           "line": 399,
           "name": "test_show_rejects_invalid_hex_word_size"
         }
+      ]
+    },
+    {
+      "doctests": [],
+      "kind": "test",
+      "path": "tests/unit/cipher_modules/spn_structure_test.py",
+      "sha256": "f36bdae4151243ea6a6a1fb55664c08ceace35758a50ee5b25a019d5d8eb54ee",
+      "symbols": [
+        {
+          "kind": "function",
+          "line": 43,
+          "name": "structures",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 55,
+          "name": "_bits",
+          "signature": "value, size"
+        },
+        {
+          "kind": "function",
+          "line": 59,
+          "name": "_bit_values",
+          "signature": "cipher, bits, components_io, inputs"
+        },
+        {
+          "kind": "function",
+          "line": 72,
+          "name": "_output_bits",
+          "signature": "cipher"
+        },
+        {
+          "kind": "function",
+          "line": 77,
+          "name": "_covers_the_state",
+          "signature": "layer"
+        },
+        {
+          "kind": "function",
+          "line": 83,
+          "name": "test_keccak_layers_are_the_chi_rows_in_both_forms",
+          "signature": "keccak, kind, word_size"
+        },
+        {
+          "kind": "function",
+          "line": 95,
+          "name": "test_chi_layer_bits",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 105,
+          "name": "test_midori_layers",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 114,
+          "name": "test_summaries",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 124,
+          "name": "test_unsupported_components_raise",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 130,
+          "name": "test_and_outside_a_chi_layer_raises",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 137,
+          "name": "test_structure_sizes",
+          "signature": "structures, name"
+        },
+        {
+          "kind": "function",
+          "line": 153,
+          "name": "_compiled_evaluation",
+          "signature": "cipher"
+        },
+        {
+          "kind": "function",
+          "line": 160,
+          "name": "_random_inputs_and_components",
+          "signature": "cipher, number_of_samples"
+        },
+        {
+          "kind": "function",
+          "line": 168,
+          "name": "_apply_sbox_layer",
+          "signature": "points, sboxes"
+        },
+        {
+          "kind": "function",
+          "line": 184,
+          "name": "test_sbox_tables_match_real_cipher",
+          "signature": "structures, name"
+        },
+        {
+          "kind": "function",
+          "line": 199,
+          "name": "test_linear_layers_on_real_cipher",
+          "signature": "build"
+        },
+        {
+          "kind": "function",
+          "line": 226,
+          "name": "test_keccak_sbox_and_circuit_forms_agree",
+          "signature": "word_size"
+        },
+        {
+          "kind": "function",
+          "line": 243,
+          "name": "test_key_schedule_sboxes_are_not_part_of_the_layers",
+          "signature": "build, sbox_bit_size, number_of_sboxes"
+        },
+        {
+          "kind": "function",
+          "line": 254,
+          "name": "_is_permutation_matrix",
+          "signature": "linear"
+        },
+        {
+          "kind": "function",
+          "line": 258,
+          "name": "test_last_linear_layer_goes_to_the_output",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 272,
+          "name": "_toy_cipher",
+          "signature": "bypass"
+        },
+        {
+          "kind": "function",
+          "line": 288,
+          "name": "test_bypassing_a_substitution_layer_raises",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 295,
+          "name": "test_bypassing_the_last_substitution_layer_raises",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 306,
+          "name": "test_reading_a_missing_bit_raises",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 316,
+          "name": "test_sequential_sboxes_in_one_layer_raise",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 332,
+          "name": "test_layer_input_not_depending_on_the_state_raises",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 348,
+          "name": "test_changes_to_the_cipher_after_construction_are_not_seen",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 356,
+          "name": "test_state_reading_a_bit_twice",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 368,
+          "name": "test_singular_linear_layer",
+          "signature": ""
+        },
+        {
+          "kind": "function",
+          "line": 380,
+          "name": "test_layer_inputs_prepared_after_some_of_its_sboxes",
+          "signature": ""
+        }
+      ],
+      "tests": [
+        "test_keccak_layers_are_the_chi_rows_in_both_forms",
+        "test_chi_layer_bits",
+        "test_midori_layers",
+        "test_summaries",
+        "test_unsupported_components_raise",
+        "test_and_outside_a_chi_layer_raises",
+        "test_structure_sizes",
+        "test_sbox_tables_match_real_cipher",
+        "test_linear_layers_on_real_cipher",
+        "test_keccak_sbox_and_circuit_forms_agree",
+        "test_key_schedule_sboxes_are_not_part_of_the_layers",
+        "test_last_linear_layer_goes_to_the_output",
+        "test_bypassing_a_substitution_layer_raises",
+        "test_bypassing_the_last_substitution_layer_raises",
+        "test_reading_a_missing_bit_raises",
+        "test_sequential_sboxes_in_one_layer_raise",
+        "test_layer_input_not_depending_on_the_state_raises",
+        "test_changes_to_the_cipher_after_construction_are_not_seen",
+        "test_state_reading_a_bit_twice",
+        "test_singular_linear_layer",
+        "test_layer_inputs_prepared_after_some_of_its_sboxes"
       ]
     },
     {
@@ -46657,9 +47698,9 @@
       "symlink": null
     },
     {
-      "bytes": 15650,
+      "bytes": 16032,
       "path": "docker/Dockerfile",
-      "sha256": "50bc42767c4e7e864576f241cc70b0f2b4bbf4afc76cd7f51ea8b585e8337f4f",
+      "sha256": "2c855fc01420cf7479aaf2d0a34c959c299eea7da3e3ba4c092834aa07c524a4",
       "symlink": null
     },
     {
@@ -49879,9 +50920,9 @@
       "symlink": null
     },
     {
-      "bytes": 21090,
+      "bytes": 21365,
       "path": "docs/references.rst",
-      "sha256": "b6efda3e49db2bb69f2cddb70782d17958f37fa539fd6b42ca1a58fd9df623f2",
+      "sha256": "ed599dad8a5a6e4047c613ab0d602cdc652e3b717292335c321b9eb701108b61",
       "symlink": null
     },
     {
@@ -51265,7 +52306,7 @@
       "symlink": null
     },
     {
-      "bytes": 33,
+      "bytes": 41,
       "path": "tests/unit/cipher_modules/statistical_tests/test_data/assess_output/alternating_128-bits-blocks_binary_10240bits.bin/templates",
       "sha256": "e3e90e811970670e1a86f28ec282fd22658fe5ef0e5d6844344aa5c119aacf4a",
       "symlink": "/opt/sts-2.1.2-modified/templates"
@@ -52531,7 +53572,7 @@
       "symlink": null
     },
     {
-      "bytes": 33,
+      "bytes": 41,
       "path": "tests/unit/cipher_modules/statistical_tests/test_data/assess_output/alternating_bits_binary_10240bits.bin/templates",
       "sha256": "e3e90e811970670e1a86f28ec282fd22658fe5ef0e5d6844344aa5c119aacf4a",
       "symlink": "/opt/sts-2.1.2-modified/templates"
@@ -53797,7 +54838,7 @@
       "symlink": null
     },
     {
-      "bytes": 33,
+      "bytes": 41,
       "path": "tests/unit/cipher_modules/statistical_tests/test_data/assess_output/random_binary_10240bits.bin/templates",
       "sha256": "e3e90e811970670e1a86f28ec282fd22658fe5ef0e5d6844344aa5c119aacf4a",
       "symlink": "/opt/sts-2.1.2-modified/templates"
@@ -55063,7 +56104,7 @@
       "symlink": null
     },
     {
-      "bytes": 33,
+      "bytes": 41,
       "path": "tests/unit/cipher_modules/statistical_tests/test_data/assess_output/random_binary_10240bits.txt/templates",
       "sha256": "e3e90e811970670e1a86f28ec282fd22658fe5ef0e5d6844344aa5c119aacf4a",
       "symlink": "/opt/sts-2.1.2-modified/templates"
@@ -56329,7 +57370,7 @@
       "symlink": null
     },
     {
-      "bytes": 33,
+      "bytes": 41,
       "path": "tests/unit/cipher_modules/statistical_tests/test_data/assess_output/random_binary_400000bits.bin/templates",
       "sha256": "e3e90e811970670e1a86f28ec282fd22658fe5ef0e5d6844344aa5c119aacf4a",
       "symlink": "/opt/sts-2.1.2-modified/templates"
@@ -56367,5 +57408,5 @@
   ],
   "schema_version": 1,
   "scope": "All tracked legacy Python files and non-Python resources; provenance and discovery only, not a semantic-parity claim. External tutorial notebooks excluded by user instruction.",
-  "source_commit": "1136c49f8b68fdc1839eb9df04132c99a2e05387"
+  "source_commit": "078f29ee9aae0f33a987520d6eab86c99c6eb4ed"
 }

@@ -466,19 +466,41 @@ class Analysis:
 
         return MinimaxDifferentialAnalysis(self.primitive).find_lowest_weight_trail(**options)
 
+    def spn_structure(self):
+        """Return full substitution layers and structurally composed binary maps.
+
+        EXAMPLES::
+
+            >>> from claasp.primitives import Present
+            >>> structure = Present(number_of_rounds=2).analysis.spn_structure()
+            >>> len(structure.substitution_layers), len(structure.linear_layers)
+            (2, 2)
+        """
+        from claasp.analysis.spn_structure import SpnStructure
+
+        return SpnStructure(self.primitive)
+
     def find_lowest_weight_xor_differential_trail(
         self,
         *,
         solver=None,
         constraints=None,
+        matsui_bounds=None,
+        log_file=None,
         nonzero_input=None,
         fixed_input_differences=None,
     ) -> TrailSearchResult:
-        """Find an exact minimum-weight XOR-differential characteristic."""
+        """Find an exact minimum-weight XOR-differential characteristic.
+
+        ``matsui_bounds`` and ``log_file`` have the same meaning as in
+        :meth:`find_optimal_trail`.
+        """
 
         return self.find_optimal_trail(
             solver=solver,
             constraints=constraints,
+            matsui_bounds=matsui_bounds,
+            log_file=log_file,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
         )
@@ -490,12 +512,37 @@ class Analysis:
         backend: TrailSearchBackend | str = TrailSearchBackend.AUTO,
         solver: object | None = None,
         constraints=None,
+        matsui_bounds=None,
+        log_file=None,
         nonzero_input=None,
         fixed_input_differences=None,
         fixed_input_masks=None,
         fixed_inputs=None,
     ) -> TrailSearchResult:
-        """Find a proved optimum using graph capabilities, not a family fallback."""
+        """Find a proved optimum using graph capabilities.
+
+        ``matsui_bounds=[B1, ..., B(r-1)]`` supplies certified lower bounds
+        for every consecutive window of each length, under the same key
+        setting. These are mathematical assumptions supplied by the caller;
+        zero bounds are always safe. Integral SAT weights are required.
+        ``log_file`` appends JSON lines with each queried objective, solver
+        status, runtime, and any proved strict lower bound. Fractional-weight
+        searches log exact probability numerators instead of rounded weights.
+
+        EXAMPLES::
+
+            >>> from tempfile import TemporaryDirectory
+            >>> from pathlib import Path
+            >>> import json
+            >>> from claasp.primitives import ToySpeck
+            >>> with TemporaryDirectory() as directory:
+            ...     path = Path(directory) / 'search.jsonl'
+            ...     result = ToySpeck(2).analysis.find_optimal_trail(
+            ...         backend='sat', matsui_bounds=[0], log_file=path)
+            ...     attempts = [json.loads(line) for line in path.read_text().splitlines()]
+            >>> result.is_optimal and bool(attempts)
+            True
+        """
 
         try:
             selected_kind = kind if isinstance(kind, TrailKind) else TrailKind(kind)
@@ -517,6 +564,10 @@ class Analysis:
         from claasp.analysis.constraints import _trail_constraints
 
         constraints = _trail_constraints(constraints, self.primitive)
+        if selected_backend is TrailSearchBackend.DEPENDENCY_FREE and (
+            matsui_bounds is not None or log_file is not None
+        ):
+            raise NotImplementedError("Matsui SAT bounds and search logs require a solver backend")
         specialized = self._dependency_free_trail_search(selected_kind)
         if constraints._items and selected_backend is TrailSearchBackend.DEPENDENCY_FREE:
             raise NotImplementedError("constraints require a solver-backed trail backend")
@@ -535,6 +586,8 @@ class Analysis:
             and solver is None
             and automatic is not None
             and not constraints._items
+            and matsui_bounds is None
+            and log_file is None
         ):
             return automatic()
         from claasp.analysis.trail_search import optimize_word_characteristic
@@ -545,6 +598,8 @@ class Analysis:
             backend=selected_backend.value,
             solver=solver,
             constraints=constraints,
+            matsui_bounds=matsui_bounds,
+            log_file=log_file,
             nonzero_input=nonzero_input,
             fixed_input_differences=fixed_input_differences,
             fixed_input_masks=fixed_input_masks,
@@ -991,6 +1046,7 @@ class Analysis:
         input_difference=None,
         output_mask=None,
         solver=None,
+        log_file=None,
     ):
         """Optimize the declared differential/truncated/linear characteristic model.
 
@@ -1014,6 +1070,7 @@ class Analysis:
             input_difference=input_difference,
             output_mask=output_mask,
             solver=solver,
+            log_file=log_file,
         )
 
     def find_impossible_xor_differential(
@@ -1561,12 +1618,16 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         """Find one checked characteristic without minimizing its weight.
 
         Return None only after proved UNSAT. Solver errors and interruptions
         propagate; they never mean that no characteristic exists.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1593,6 +1654,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return first_characteristic(model, solver)
@@ -1606,12 +1668,16 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         """Find one characteristic at a physical weight, with optional tolerance.
 
         Non-integral weights use the same exact-probability interval checks
         as enumeration. None means proved UNSAT, not a solver interruption.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1635,6 +1701,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return first_characteristic(model, solver)
@@ -1648,6 +1715,7 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
         limit=1000,
     ):
@@ -1655,6 +1723,9 @@ class Analysis:
 
         A finite limit can leave undiscovered trails. Call require_complete()
         before treating the returned trails as an exhaustive collection.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1680,6 +1751,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
             limit=limit,
         )
@@ -1796,6 +1868,7 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
         limit=1000,
     ):
@@ -1808,6 +1881,9 @@ class Analysis:
         A finite limit can return a useful witness without exhausting the
         interval. Check complete before claiming that every trail was found.
         Requires Z3; these examples run in the Z3 integration job.
+
+        ``output_mask`` fixes the packed MSB-first mask at the complete graph
+        output; None leaves it unrestricted and zero explicitly fixes every bit.
 
         Queries use portable Boolean CNF. Supplied SAT drivers such as
         ``KissatSolver`` and ``MinisatSolver`` receive CNF, as do portable
@@ -1835,6 +1911,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return model.enumerate_trails(Z3Solver() if solver is None else solver, limit=limit)
@@ -1849,6 +1926,7 @@ class Analysis:
         constraints=None,
         nonzero_input=None,
         fixed_input_masks=None,
+        output_mask=None,
         fixed_inputs=None,
     ):
         from claasp.analysis.constraints import _trail_constraints
@@ -1880,6 +1958,7 @@ class Analysis:
             constraints=constraints,
             nonzero_input=policy.nonzero_input,
             fixed_input_masks=policy.fixed_patterns,
+            output_mask=output_mask,
             fixed_inputs=fixed_inputs,
         )
         return model
@@ -1889,6 +1968,8 @@ class Analysis:
         *,
         solver=None,
         constraints=None,
+        matsui_bounds=None,
+        log_file=None,
         nonzero_input=None,
         fixed_input_masks=None,
         fixed_inputs=None,
@@ -1898,6 +1979,7 @@ class Analysis:
         ``constraints`` combines solver-independent restrictions on any named
         input mask, component output mask, or the external output mask. Use
         ``fixed_inputs`` separately when concrete key values should be fixed.
+        ``matsui_bounds`` and ``log_file`` follow :meth:`find_optimal_trail`.
         The following example requires Kissat.
 
         EXAMPLES::
@@ -1915,6 +1997,8 @@ class Analysis:
             TrailKind.XOR_LINEAR,
             solver=solver,
             constraints=constraints,
+            matsui_bounds=matsui_bounds,
+            log_file=log_file,
             nonzero_input=nonzero_input,
             fixed_input_masks=fixed_input_masks,
             fixed_inputs=fixed_inputs,

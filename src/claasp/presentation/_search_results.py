@@ -706,12 +706,9 @@ def _to_terminal(result, *, details=False, value_format="hex", file=None):
 
         return impossible_terminal(result, details=details, value_format=value_format, file=file)
     if isinstance(result, Trail):
-        from claasp.presentation._terminal import to_terminal
-        from claasp.presentation.adapters import trail_section
+        from claasp.presentation._terminal import _trail_to_terminal
 
-        return to_terminal(
-            trail_section(result, details=details, value_format=value_format), file=file
-        )
+        return _trail_to_terminal(result, details=details, value_format=value_format, file=file)
     if details or value_format != "hex":
         raise ValueError("details and value_format are supported for exact trail reports")
 

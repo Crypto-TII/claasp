@@ -293,3 +293,16 @@ def test_fractional_query_api_doctests():
             example.options[doctest.SKIP] = False
         runner.run(test)
     assert runner.summarize().failed == 0
+
+
+def test_z3_direct_linear_smt_formula_enforces_output_mask():
+    p = BitVectorSBox(2, (0, 1, 2, 3))
+    for mask, possible in ((0b01, True), (0b10, False)):
+        model = WordXorLinearSMTModel(
+            p, maximum_weight=0, fixed_input_masks={"input": 0b01}, output_mask=mask
+        )
+        solved = Z3Solver(timeout_seconds=10).solve(model.smt_formula())
+        assert (solved.status is SatStatus.SATISFIABLE) == possible
+        if possible:
+            trail = model.decode_characteristic(solved.assignment)
+            assert trail.output_mask == mask and model.check_characteristic(trail)

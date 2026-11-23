@@ -26,7 +26,7 @@ class PlotMixin:
 
         EXAMPLES::
 
-            >>> from claasp.analysis import ImpossibleSearchResult
+            >>> from claasp.analysis.composed_search import ImpossibleSearchResult
             >>> result = ImpossibleSearchResult((), (1,), False, 'solver unknown')
             >>> artifact = result.plot(show=False)
             >>> artifact.kind, artifact.series
@@ -50,7 +50,8 @@ class TerminalMixin:
 
         For exact trails, ``details=True`` includes component values and
         ``value_format`` selects ``hex``, ``binary`` (``0b`` prefix), or
-        ``underscore_one`` (zero as ``_``, one as ``1``), MSB first.
+        ``underscore_one`` (zero as ``_``), or ``dot_one`` (zero as ``.``),
+        with one as ``1``, MSB first.
         Output goes to standard output unless ``file`` is supplied. No plotting
         dependency is required. See the result class for its evidence-specific
         interpretation and examples.
@@ -58,7 +59,7 @@ class TerminalMixin:
         EXAMPLES::
 
             >>> from io import StringIO
-            >>> from claasp.analysis import ImpossibleSearchResult
+            >>> from claasp.analysis.composed_search import ImpossibleSearchResult
             >>> stream = StringIO()
             >>> result = ImpossibleSearchResult((), (1,), False, 'solver unknown')
             >>> result.to_terminal(file=stream)
@@ -76,13 +77,16 @@ class ImpossibleTerminalMixin(TerminalMixin):
     __slots__ = ()
     __public_api_methods__ = ("to_terminal",)
 
-    def to_terminal(self, *, details=False, value_format="binary", file=None):
+    def to_terminal(self, *, details=False, value_format="binary", include_key=False, file=None):
         """Print impossible evidence as MSB-first binary patterns by default.
 
         Both exact and partial patterns preserve their bit widths. ``?`` and
         abstract nonzero words ``*`` retain their meanings. ``details=True``
         includes component states in the same notation. Explicit ``hex`` and
-        ``underscore_one`` formats remain available.
+        ``underscore_one`` and ``dot_one`` formats remain available. One
+        contradiction-marker row lies between the two meeting differences.
+        Named key inputs are hidden unless ``include_key=True``; this also
+        applies to nonzero key differences. Retained evidence is unchanged.
 
         EXAMPLES::
 
@@ -100,7 +104,56 @@ class ImpossibleTerminalMixin(TerminalMixin):
             False
             >>> output = StringIO()
             >>> boundary.to_terminal(value_format='hex', file=output)
-            >>> '0x2' in output.getvalue()
+            >>> '0b0010' in output.getvalue()  # Partial meeting pairs stay aligned in binary.
             True
+            >>> output = StringIO()
+            >>> boundary.to_terminal(value_format='dot_one', file=output)
+            >>> '..1.' in output.getvalue(), '..?1' in output.getvalue()
+            (True, True)
         """
-        return super().to_terminal(details=details, value_format=value_format, file=file)
+        from claasp.presentation._impossible import _to_terminal
+
+        return _to_terminal(
+            self, details=details, value_format=value_format, include_key=include_key, file=file
+        )
+
+
+class ImpossiblePlotMixin(PlotMixin):
+    """Specialize impossible-trail plots without exposing key options elsewhere."""
+
+    __slots__ = ()
+    __public_api_methods__ = ("plot",)
+
+    def plot(
+        self, *, details=False, value_format="hex", include_key=False, show=True, save_to=None
+    ):
+        """Plot retained impossible evidence, hiding named key inputs by default.
+
+        ``include_key=True`` shows key input differences, including zeros.
+        ``details=True`` adds retained component states. ``value_format`` selects
+        exact word annotations; ``dot_one`` uses dots for zeros and ``1`` for ones.
+        Requires the optional ``presentation`` extra.
+        No search is repeated and retained differences are never modified.
+
+        EXAMPLES::
+
+            >>> from claasp.semantics.cryptanalysis import (
+            ...     ImpossiblePropagationBoundary, TruncatedXorDifference)
+            >>> boundary = ImpossiblePropagationBoundary(
+            ...     TruncatedXorDifference.parse('01'), TruncatedXorDifference.parse('00'))
+            >>> artifact = boundary.plot(include_key=True, show=False)
+            >>> artifact.kind
+            'search_evidence'
+            >>> import matplotlib.pyplot as plt
+            >>> plt.close(artifact.figure)
+        """
+        from claasp.drivers.renderers._impossible import _plot
+
+        return _plot(
+            self,
+            details=details,
+            value_format=value_format,
+            include_key=include_key,
+            show=show,
+            save_to=save_to,
+        )

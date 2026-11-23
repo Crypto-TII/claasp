@@ -225,7 +225,7 @@ def test_constraints_are_enforced_by_each_exact_backend(backend, executable):
 
     output = StringIO()
     result.to_terminal(file=output)
-    assert "External input patterns" in output.getvalue() and "key" in output.getvalue()
+    assert "External input patterns" not in output.getvalue()
     # The optimum is independently checked by the backend's decoded characteristic.
     assert result.trail.total_weight == 0
 

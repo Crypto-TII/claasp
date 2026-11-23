@@ -172,6 +172,7 @@ from claasp.analysis.quasidifferential import (
     QuasidifferentialEnumeration,
     QuasidifferentialTrail,
 )
+from claasp.analysis.spn_structure import SpnStructure, SubstitutionBox, SubstitutionLayer
 from claasp.analysis.statistical import (
     StatisticalCampaignResult,
     StatisticalRoundResult,
@@ -232,6 +233,9 @@ def __getattr__(name):
 
 
 __all__ = [
+    "SpnStructure",
+    "SubstitutionBox",
+    "SubstitutionLayer",
     "Constraints",
     "ActiveSBoxResult",
     "WordwiseActivityAnalysis",

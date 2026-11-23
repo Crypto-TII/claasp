@@ -141,3 +141,33 @@ def test_binary_affine_map_repeats_bit_matrix_and_offset_per_field_unit():
             assert (witness is not None) == bool(expected)
             if witness is not None:
                 assert model.decode(witness)[1] == expected
+
+
+def test_gift_selected_differentials_are_not_rejected_by_other_fractional_blocks():
+    # Develop #710: a non-dyadic coefficient elsewhere in the GIFT QDT
+    # must not make a selected differential infeasible. V5 also supports
+    # the 3/8 block exactly, without an integer-weight approximation.
+    from claasp.primitives.block_ciphers.gift.sbox import S_BOX
+
+    primitive = BitVectorSBox(4, S_BOX)
+    name = next(iter(primitive.graph.input_arrays))
+    counts = {
+        (a, b): sum(S_BOX[x] ^ S_BOX[x ^ a] == b for x in range(16))
+        for a in range(1, 16)
+        for b in range(16)
+    }
+    pairs = [next(pair for pair, count in counts.items() if count == size) for size in (0, 2, 6)]
+    for a, b in pairs:
+        model = QuasidifferentialSATModel(
+            primitive,
+            fixed_differences={name: a},
+            output_difference=b,
+            fixed_masks={name: 0},
+            output_mask=0,
+            nonzero_input=False,
+        )
+        witness = _unit_witness(model.cnf_formula())
+        expected = Fraction(counts[a, b], 16)
+        assert (witness is not None) == bool(expected)
+        if witness is not None:
+            assert model.decode(witness)[1] == expected

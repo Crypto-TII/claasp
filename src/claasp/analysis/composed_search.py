@@ -3,6 +3,7 @@
 from dataclasses import dataclass, replace
 from fractions import Fraction
 
+from claasp._result_presentation import ImpossiblePlotMixin as _ImpossiblePlotMixin
 from claasp._result_presentation import ImpossibleTerminalMixin as _ImpossibleTerminalMixin
 from claasp._result_presentation import PlotMixin as _PlotMixin
 from claasp.drivers.solvers import KissatSolver, SatStatus
@@ -24,7 +25,7 @@ class ImpossibleCandidate:
 
 
 @dataclass(frozen=True, slots=True)
-class ImpossibleSearchResult(_ImpossibleTerminalMixin, _PlotMixin):
+class ImpossibleSearchResult(_ImpossibleTerminalMixin, _ImpossiblePlotMixin):
     """Candidates and explicit exhaustion status for the selected split search.
 
     EXAMPLES::
@@ -37,10 +38,12 @@ class ImpossibleSearchResult(_ImpossibleTerminalMixin, _PlotMixin):
 
     Print the full retained forward/backward round trail in a single difference
     column. The middle boundary appears twice, once per direction; ``!`` marks
-    contradictory bit/word positions in both rows. ``details=True`` adds component
+    contradictory bit/word positions in a row between them. ``details=True`` adds component
     evidence. The default ``value_format="binary"`` uses MSB-first ``0b``
     patterns for both exact and partial values. Explicit ``"hex"`` formats known
-    values in hexadecimal; ``"underscore_one"`` prints zero as ``_``. Unknown
+    values in hexadecimal; ``"underscore_one"`` prints zero as ``_`` and
+    ``"dot_one"`` as ``.``. Named key inputs are hidden in text and plots unless
+    ``include_key=True``. Unknown
     ``?`` and abstract nonzero words ``*`` remain distinct from exact values. Graph boundary labels match
     ``middle_round`` (for AES these include the initial key/round graph offset).
 
@@ -63,7 +66,7 @@ class ImpossibleSearchResult(_ImpossibleTerminalMixin, _PlotMixin):
         >>> output = StringIO()
         >>> result.to_terminal(value_format="underscore_one", file=output)
         >>> '_1?' in output.getvalue(), output.getvalue().count('.!.')
-        (True, 2)
+        (True, 1)
         >>> artifact = result.plot(show=False)
         >>> artifact.series[-1][1]
         (0.0, 1.0, 0.0)
@@ -398,11 +401,13 @@ def find_optimal_xor_differential_linear_trail(
     input_difference=None,
     output_mask=None,
     solver=None,
+    log_file=None,
 ) -> XorDifferentialLinearSearchResult:
     """Optimize all valid partitions using exact integer probability products.
 
     Specify prefix_rounds/middle_rounds to restrict the declared model search.
     Default execution uses the optional Kissat executable. No sampled or
+    ``log_file`` appends exact probability-bound queries as JSON lines. No
     whole-primitive correlation is inferred from the characteristic score.
 
     Requires Kissat; these examples run in its integration job. The score is
@@ -416,6 +421,7 @@ def find_optimal_xor_differential_linear_trail(
         >>> result.partition, result.score  # doctest: +SKIP
         ((1, 1, 1), Fraction(1, 1))
     """
+    from claasp.analysis._search_progress import _SearchLog
     from claasp.representations.constraints.sat import (
         WordDeterministicXorDifferentialLinearSATModel,
     )
@@ -424,6 +430,7 @@ def find_optimal_xor_differential_linear_trail(
         _probability,
     )
 
+    log = _SearchLog(log_file, primitive.family_name, "xor_differential_linear")
     count = len(primitive.graph.rounds)
     for value in (prefix_rounds, middle_rounds):
         if value is not None and (type(value) is not int or value <= 0):
@@ -441,6 +448,7 @@ def find_optimal_xor_differential_linear_trail(
     best, best_partition, best_score, attempted = None, None, None, []
     for prefix, middle, suffix in partitions:
         attempted.append((prefix, middle, suffix))
+        log.context["partition"] = (prefix, middle, suffix)
         model = WordDeterministicXorDifferentialLinearSATModel(
             primitive,
             prefix_rounds=prefix,
@@ -463,6 +471,7 @@ def find_optimal_xor_differential_linear_trail(
                 provenance=formula.provenance + ("composed_probability_bound",) * len(extra),
             )
             run = solver.solve(query)
+            log.record(threshold, run, objective="probability_numerator_at_least")
             if run.status is SatStatus.UNSATISFIABLE:
                 upper = threshold - 1
                 continue
