@@ -45,12 +45,12 @@ def _eliminate(rows):
     for pivot in sorted(basis):
         mask, rhs, _ = basis[pivot]
         solution |= (rhs ^ ((mask & solution).bit_count() & 1)) << pivot
-    return dict(
-        rank=len(basis),
-        consistent=contradiction is None,
-        solution=solution if contradiction is None else None,
-        contradiction=contradiction,
-    )
+    return {
+        "rank": len(basis),
+        "consistent": contradiction is None,
+        "solution": solution if contradiction is None else None,
+        "contradiction": contradiction,
+    }
 
 
 @dataclass(frozen=True)
@@ -198,20 +198,20 @@ class QuadraticFeistelBoomerangAnalyzer:
             raise ValueError("Differences must fit the word size")
         closure = self._polar(gamma, d)
         if closure:
-            return dict(
-                compatible=False,
-                obstruction="middle_second_derivative",
-                nonzero_word=closure,
-                probability=Fraction(0),
-            )
+            return {
+                "compatible": False,
+                "obstruction": "middle_second_derivative",
+                "nonzero_word": closure,
+                "probability": Fraction(0),
+            }
         functions = [
             ("upper", lambda r: self._derivative(alpha, r), gamma ^ beta, w),
             ("lower", lambda y: self._derivative(c, y), e ^ d, w),
             (
                 "joint",
-                lambda l: (
-                    self._polar(alpha, c ^ self._derivative(d, l))
-                    | (self._polar(c, alpha ^ self._derivative(gamma, l)) << w)
+                lambda left: (
+                    self._polar(alpha, c ^ self._derivative(d, left))
+                    | (self._polar(c, alpha ^ self._derivative(gamma, left)) << w)
                 ),
                 0,
                 2 * w,
@@ -222,27 +222,27 @@ class QuadraticFeistelBoomerangAnalyzer:
             rows = _affine_system(function, target, w, width)
             systems[name] = dict(rows=rows, **_eliminate(rows))
         compatible = all(s["consistent"] for s in systems.values())
-        result = dict(
-            compatible=compatible,
-            systems=systems,
-            probability=Fraction(0),
-            event="retained_three_round_window",
-        )
+        result = {
+            "compatible": compatible,
+            "systems": systems,
+            "probability": Fraction(0),
+            "event": "retained_three_round_window",
+        }
         if compatible:
             rank = sum(s["rank"] for s in systems.values())
-            l, r, y = [
+            left, right, next_left = [
                 systems[name]["solution"] for name in ("joint", "upper", "lower")
             ]
             result.update(
                 rank=rank,
                 probability=Fraction(1, 1 << rank),
-                witness=dict(
-                    input=(r << w) | (l ^ self._evaluate(r)),
-                    keys=[0, y ^ r ^ self._evaluate(l), 0],
-                    middle_left=l,
-                    middle_right=r,
-                    next_left=y,
-                ),
+                witness={
+                    "input": (right << w) | (left ^ self._evaluate(right)),
+                    "keys": [0, next_left ^ right ^ self._evaluate(left), 0],
+                    "middle_left": left,
+                    "middle_right": right,
+                    "next_left": next_left,
+                },
             )
         return result
 
@@ -337,7 +337,7 @@ class QuadraticFeistelBoomerangAnalyzer:
 
     def _returning_event(self, full, alpha, gamma, c, d, keyword, limit):
         """Count the affine returning subevent using the original key forms."""
-        empty = dict(compatible=False, probability=Fraction(0))
+        empty = {"compatible": False, "probability": Fraction(0)}
         if not full.get("free_key_compatible", full["compatible"]) or gamma != d:
             return empty
         rows = full["systems"]["joint"]["rows"] + _affine_system(
@@ -431,16 +431,16 @@ class QuadraticFeistelBoomerangAnalyzer:
             full, alpha, gamma, c, d, full.get("middle_round_key"), max_overlap
         )
         probability = full["probability"] - returning["probability"]
-        result = dict(
-            compatible=probability > 0,
-            probability=probability,
-            full_probability=full["probability"],
-            returning_probability=returning["probability"],
-            full_event=full,
-            returning_event=returning,
-            key_model=full.get("key_model", "uniform_middle_key"),
-            event="nondegenerate_retained_three_round_window",
-        )
+        result = {
+            "compatible": probability > 0,
+            "probability": probability,
+            "full_probability": full["probability"],
+            "returning_probability": returning["probability"],
+            "full_event": full,
+            "returning_event": returning,
+            "key_model": full.get("key_model", "uniform_middle_key"),
+            "event": "nondegenerate_retained_three_round_window",
+        }
         if "fiber_counts" in full:
             excluded = returning.get("fiber_counts", [0] * len(full["fiber_counts"]))
             fibers = [total - removed for total, removed in zip(full["fiber_counts"], excluded)]

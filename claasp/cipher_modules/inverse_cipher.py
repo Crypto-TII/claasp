@@ -721,6 +721,22 @@ def _link_is_sourceable_via_outputs(index, component, input_bits, available_bits
     return False
 
 
+def _available_input_credits(input_bits, usable, available_bits, all_equivalent_bits):
+    """Count full usable links and individually recovered bits of other links."""
+    credits = []
+    for index, bits in enumerate(input_bits):
+        if usable[index]:
+            credits.extend(bits)
+        else:
+            credits.extend(
+                bit for bit in bits
+                if _input_bit_value_is_recovered(
+                    bit["component_id"], bit["position"], available_bits, all_equivalent_bits
+                )
+            )
+    return credits
+
+
 def _are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
     """Return True if the currently recovered bits are sufficient to invert ``component``.
 
@@ -764,17 +780,9 @@ def _are_there_enough_available_inputs_to_perform_inversion(component, available
             usable[index] = _link_is_sourceable_via_outputs(index, component, input_bits, available_bits, all_equivalent_bits, self)
 
     # Merge credits: full link bits for usable links, individually known bits for unusable ones.
-    total_available = list(available_from_output)
-    for index, bits in enumerate(input_bits):
-        if usable[index]:
-            total_available += bits
-        else:
-            # A partially-available link still contributes the bits whose value is individually
-            # known (directly or via the equivalence map).
-            total_available += [
-                b for b in bits
-                if _input_bit_value_is_recovered(b["component_id"], b["position"], available_bits, all_equivalent_bits)
-            ]
+    total_available = available_from_output + _available_input_credits(
+        input_bits, usable, available_bits, all_equivalent_bits
+    )
 
     threshold = component.output_bit_size if (component.id == INPUT_PLAINTEXT or INTERMEDIATE_OUTPUT in component.id) else component.input_bit_size
     return len(total_available) >= threshold

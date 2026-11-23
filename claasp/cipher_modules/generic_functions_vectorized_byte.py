@@ -105,13 +105,13 @@ def byte_vector_print_as_hex_values(name, x):
             print(name, j, " : ", hex(int.from_bytes(x[:, j].tobytes(), byteorder='big')))
 
 
-def byte_vector_is_consecutive(l):
+def byte_vector_is_consecutive(bit_positions):
     """
     Return True if the bits in the list are consecutive.
 
     INPUT:
 
-    - ``l`` -- **list**; a list of bit positions, in reverse order
+    - ``bit_positions`` -- **list**; bit positions in reverse order
 
     EXAMPLES::
 
@@ -120,7 +120,7 @@ def byte_vector_is_consecutive(l):
         sage: byte_vector_is_consecutive(L) == True
         True
     """
-    return np.all(l[::-1] == np.arange(l[-1], l[0] + 1).tolist())
+    return np.all(bit_positions[::-1] == np.arange(bit_positions[-1], bit_positions[0] + 1).tolist())
 
 
 def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, number_of_inputs, words_per_input,
@@ -185,13 +185,13 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
     return output
 
 
-def get_number_of_consecutive_bits(l):
+def get_number_of_consecutive_bits(bit_positions):
     """
-    Return the number of consecutive numbers from the start of list l, in decreasing order.
+    Return the number of consecutive positions at the start of the list.
 
     INPUT:
 
-    - ``l`` -- **list**; a list of bit positions, in reverse order
+    - ``bit_positions`` -- **list**; bit positions in reverse order
 
     EXAMPLES::
 
@@ -202,10 +202,10 @@ def get_number_of_consecutive_bits(l):
     """
 
     number_of_consecutive_bits = 0
-    pred = l[0]
-    for i in range(1, len(l)):
-        if l[i] == pred - 1:
-            pred = l[i]
+    pred = bit_positions[0]
+    for i in range(1, len(bit_positions)):
+        if bit_positions[i] == pred - 1:
+            pred = bit_positions[i]
             number_of_consecutive_bits += 1
         else:
             break
@@ -355,13 +355,10 @@ def byte_vector_MODADD(input):
 
     - ``input`` -- **list**; A list of numpy byte matrices to be added, each with one row per byte, and one column per sample.
     """
+    c = input[0].copy()
     for i in range(len(input) - 1):
-        if i == 0:
-            a = input[0].copy()
-            b = input[1].copy()
-        else:
-            a = c.copy()
-            b = input[i + 1].copy()
+        a = c.copy()
+        b = input[i + 1].copy()
         if a.shape[1] < b.shape[1]:
             carry = np.zeros_like(b)
         else:
@@ -699,7 +696,7 @@ def byte_vector_permutation(input, permutation, word_size, input_bit_size):
     return np.packbits(output, axis=0)
 
 
-def byte_vector_ROTATE_BY_VARIABLE_AMOUNT(inputs, input_size, direction, amount_size):
+def byte_vector_rotate_by_variable_amount(inputs, input_size, direction, amount_size):
     """Rotate packed byte samples using a separately sized unsigned amount.
 
     INPUT:
@@ -716,17 +713,21 @@ def byte_vector_ROTATE_BY_VARIABLE_AMOUNT(inputs, input_size, direction, amount_
     EXAMPLES::
 
         sage: import numpy as np
-        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_ROTATE_BY_VARIABLE_AMOUNT
-        sage: byte_vector_ROTATE_BY_VARIABLE_AMOUNT([np.array([[5]], dtype=np.uint8)], 2, 1, 1).tolist()
+        sage: from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_rotate_by_variable_amount
+        sage: byte_vector_rotate_by_variable_amount([np.array([[5]], dtype=np.uint8)], 2, 1, 1).tolist()
         [[1]]
     """
-    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE_BY_VARIABLE_AMOUNT
+    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_rotate_by_variable_amount
     input_size, amount_size = int(input_size), int(amount_size)
     if amount_size < 1:
         raise ValueError("A positive amount width is required")
     bits = np.unpackbits(inputs[0], axis=0)[-(input_size + amount_size):]
-    result = bit_vector_ROTATE_BY_VARIABLE_AMOUNT([bits], input_size, direction)
+    result = bit_vector_rotate_by_variable_amount([bits], input_size, direction)
     padding = (-input_size) % 8
     if padding:
         result = np.vstack([np.zeros((padding, result.shape[1]), dtype=np.uint8), result])
     return np.packbits(result, axis=0)
+
+
+# Preserve imports used by code generated with the previous public name.
+byte_vector_ROTATE_BY_VARIABLE_AMOUNT = byte_vector_rotate_by_variable_amount

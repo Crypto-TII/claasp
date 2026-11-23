@@ -789,18 +789,22 @@ class MznHadipourBoomerangModel(MznModel):
                 name: sorted(bits) for name, bits in self._value_difference_bits.items()
             }
         if self.middle_model == "exact":
-            for name in list(components):
-                if name not in self._value_difference_bits:
-                    del components[name]
-                else:
-                    components[name]["retained_bit_positions"] = sorted(
-                        self._value_difference_bits[name]
-                    )
+            self._retain_exact_components(components)
             result["middle_weight"] = None
             result["score_type"] = "outer_arm_weight"
         else:
             result["score_type"] = "local_characteristic_estimate"
         return result
+
+    def _retain_exact_components(self, components):
+        """Keep only differences constrained by the exact quartet values."""
+        for name in [*components]:
+            if name not in self._value_difference_bits:
+                del components[name]
+            else:
+                components[name]["retained_bit_positions"] = sorted(
+                    self._value_difference_bits[name]
+                )
 
     def _search(
         self,

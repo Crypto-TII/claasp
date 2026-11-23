@@ -172,15 +172,15 @@ def _fixed_key_distribution(function, width, systems, middle_key, max_overlap):
     )
     stacked_rank = len(upper[0]) + len(lower[0]) - overlap
     probability = Fraction(counts[target], 1 << (width + stacked_rank))
-    return dict(
-        compatible=probability > 0,
-        key_independent=len(set(counts)) == 1,
-        probability=probability,
-        overlap_rank=overlap,
-        stacked_rank=stacked_rank,
-        joint_affine_dimension=len(joint[2]),
-        key_target=target,
-        common_rows=[row for row, _ in intersection],
-        target_constants=[rhs for _, rhs in intersection],
-        fiber_counts=counts,
-    )
+    return {
+        "compatible": probability > 0,
+        "key_independent": len(set(counts)) == 1,
+        "probability": probability,
+        "overlap_rank": overlap,
+        "stacked_rank": stacked_rank,
+        "joint_affine_dimension": len(joint[2]),
+        "key_target": target,
+        "common_rows": [row for row, _ in intersection],
+        "target_constants": [rhs for _, rhs in intersection],
+        "fiber_counts": counts,
+    }

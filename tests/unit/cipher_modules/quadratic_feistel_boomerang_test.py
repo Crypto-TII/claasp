@@ -123,7 +123,8 @@ def test_round_function_output_is_checked_beyond_zero():
 def test_joint_obstruction_despite_individually_feasible_arms():
     analyzer = QuadraticFeistelBoomerangAnalyzer(2, lambda x: (x & 1) * ((x >> 1) & 1))
     result = analyzer.analyze(1, 0, 0, 2, 0, 0)
-    assert not result["compatible"] and result["probability"] == 0
+    assert not result["compatible"]
+    assert result["probability"] == 0
     assert result["systems"]["upper"]["consistent"]
     assert result["systems"]["lower"]["consistent"]
     _verify_certificate(result["systems"]["joint"])
@@ -173,7 +174,8 @@ def test_nondegenerate_only_returning_and_half_returning_examples():
     linear = QuadraticFeistelBoomerangAnalyzer(1, lambda value: 0)
     returning = linear.analyze_nondegenerate(1, 0, 0, 1, 0, 0)
     assert returning["full_probability"] == returning["returning_probability"] == 1
-    assert returning["probability"] == 0 and not returning["compatible"]
+    assert returning["probability"] == 0
+    assert not returning["compatible"]
     quadratic = QuadraticFeistelBoomerangAnalyzer(2, lambda value: (value & 1) * (value >> 1))
     for key in (None, 0, 3):
         result = quadratic.analyze_nondegenerate(0, 1, 1, 0, 1, 1, middle_round_key=key)

@@ -708,7 +708,7 @@ def bit_vector_permutation(input, permutation, word_size=1, verbosity=False):
     return output
 
 
-def bit_vector_ROTATE_BY_VARIABLE_AMOUNT(inputs, input_size, direction):
+def bit_vector_rotate_by_variable_amount(inputs, input_size, direction):
     """Rotate each bit-vector sample by its unsigned amount modulo the width.
 
     INPUT:
@@ -724,9 +724,9 @@ def bit_vector_ROTATE_BY_VARIABLE_AMOUNT(inputs, input_size, direction):
     EXAMPLES::
 
         sage: import numpy as np
-        sage: from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE_BY_VARIABLE_AMOUNT
+        sage: from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_rotate_by_variable_amount
         sage: bits = np.array([[1], [0], [1]], dtype=np.uint8)
-        sage: bit_vector_ROTATE_BY_VARIABLE_AMOUNT([bits], 2, 1).ravel().tolist()
+        sage: bit_vector_rotate_by_variable_amount([bits], 2, 1).ravel().tolist()
         [0, 1]
     """
     input_size = int(input_size)
@@ -739,3 +739,7 @@ def bit_vector_ROTATE_BY_VARIABLE_AMOUNT(inputs, input_size, direction):
     signed = amount * (int(direction) % input_size)
     positions = (np.arange(input_size)[:, None] - signed[None, :]) % input_size
     return np.take_along_axis(bits[:input_size], positions, axis=0)
+
+
+# Preserve imports used by code generated with the previous public name.
+bit_vector_ROTATE_BY_VARIABLE_AMOUNT = bit_vector_rotate_by_variable_amount

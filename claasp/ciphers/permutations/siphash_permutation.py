@@ -10,6 +10,9 @@ from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import INPUT_PLAINTEXT, PERMUTATION
 
 
+_POSITIVE_ROUNDS_ERROR = "number_of_rounds must be a positive integer"
+
+
 class SipHashPermutation(SiphashMAC):
     """Construct an iteration of the 256-bit SipRound permutation.
 
@@ -42,13 +45,13 @@ class SipHashPermutation(SiphashMAC):
 
     def __init__(self, number_of_rounds=4):
         if isinstance(number_of_rounds, bool):
-            raise ValueError("number_of_rounds must be a positive integer")
+            raise ValueError(_POSITIVE_ROUNDS_ERROR)
         try:
             number_of_rounds = index(number_of_rounds)
         except TypeError as exc:
-            raise ValueError("number_of_rounds must be a positive integer") from exc
+            raise ValueError(_POSITIVE_ROUNDS_ERROR) from exc
         if number_of_rounds < 1:
-            raise ValueError("number_of_rounds must be a positive integer")
+            raise ValueError(_POSITIVE_ROUNDS_ERROR)
         Cipher.__init__(self, "siphash", PERMUTATION, [INPUT_PLAINTEXT], [256], 256)
         words = [
             ComponentState(INPUT_PLAINTEXT, [list(range(64 * i, 64 * (i + 1)))])

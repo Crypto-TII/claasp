@@ -95,10 +95,9 @@ def test_joint_middle_supports_sbox_values_without_local_switch_encoder():
     )
     assert result["status"] == "SATISFIABLE"
     assert int(result["quartet_values"]["quartet_1_" + output.id]["value"], 16) == 2
+    fixed_values = [fixed("upper_" + box.id, 0, 3)]
     with pytest.raises(ValueError, match="unretained"):
-        model.build_hadipour_boomerang_model(
-            fixed_variables=[fixed("upper_" + box.id, 0, 3)]
-        )
+        model.build_hadipour_boomerang_model(fixed_variables=fixed_values)
 
 
 def test_joint_modular_middle_uses_integer_backend_and_preserves_outer_scores():
@@ -107,7 +106,8 @@ def test_joint_modular_middle_uses_integer_backend_and_preserves_outer_scores():
     )
     model.build_hadipour_boomerang_model(weight=None)
     assert model._middle_keys() == []
-    assert model.c_upper > 0 and model.c_lower > 0
+    assert model.c_upper > 0
+    assert model.c_lower > 0
     assert model._default_solver(None) != "gecode"
     controls = [
         fixed(f"quartet_{j}_plaintext", x, 32) for j, x in enumerate([2, 3, 3, 2])
@@ -124,10 +124,10 @@ def test_joint_modular_middle_uses_integer_backend_and_preserves_outer_scores():
 
 
 def test_middle_mode_is_validated():
+    cipher = cancellation_cipher()
+    split = structure()
     with pytest.raises(ValueError, match="middle_model"):
-        MznHadipourBoomerangModel(
-            cancellation_cipher(), structure(), middle_model="invalid"
-        )
+        MznHadipourBoomerangModel(cipher, split, middle_model="invalid")
 
 
 @pytest.mark.parametrize("middle_model", ["local", "exact"])
@@ -161,7 +161,7 @@ def test_returning_only_identity_pair_is_optional(middle_model, exclude):
 
 @pytest.mark.parametrize("value", [1, None, "yes"])
 def test_nondegenerate_option_requires_boolean(value):
+    cipher = cancellation_cipher()
+    split = structure()
     with pytest.raises(ValueError, match="exclude_returning_quartets"):
-        MznHadipourBoomerangModel(
-            cancellation_cipher(), structure(), exclude_returning_quartets=value
-        )
+        MznHadipourBoomerangModel(cipher, split, exclude_returning_quartets=value)

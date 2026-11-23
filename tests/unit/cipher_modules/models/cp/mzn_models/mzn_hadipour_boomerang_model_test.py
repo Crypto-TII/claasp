@@ -545,8 +545,9 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
         points.append(point)
     assert len({point[1] for point in points}) == 4
     assert len({point[0] for point in points}) == 1
+    local_model = MznHadipourBoomerangModel(cipher, structure())
     with pytest.raises(NotImplementedError, match="S-box arms require"):
-        MznHadipourBoomerangModel(cipher, structure()).build_hadipour_boomerang_model()
+        local_model.build_hadipour_boomerang_model()
 
 
 def test_binary_key_schedule_constants_do_not_reject_valid_twine_quartet():
@@ -608,8 +609,9 @@ def test_exact_or_feistel_quartet_replays():
     for j in range(4):
         x = int(values[f"quartet_{j}_plaintext"]["value"], 16)
         assert cipher.evaluate([x]) == int(values[f"quartet_{j}_{output}"]["value"], 16)
+    local_model = MznHadipourBoomerangModel(cipher, structure())
     with pytest.raises(NotImplementedError, match="OR arms require"):
-        MznHadipourBoomerangModel(cipher, structure()).build_hadipour_boomerang_model()
+        local_model.build_hadipour_boomerang_model()
 
 
 @pytest.mark.parametrize('parameters',[
@@ -617,9 +619,10 @@ def test_exact_or_feistel_quartet_replays():
     {'key':True},{'key':0.5},[('key',0)],
 ])
 def test_fixed_parameters_reject_invalid_values(parameters):
+    cipher = SpeckBlockCipher(number_of_rounds=3)
+    split = structure()
     with pytest.raises(ValueError):
-        MznHadipourBoomerangModel(SpeckBlockCipher(number_of_rounds=3),structure(),
-                                 fixed_parameters=parameters)
+        MznHadipourBoomerangModel(cipher, split, fixed_parameters=parameters)
 
 
 def test_fixed_parameter_values_are_not_xor_differences():

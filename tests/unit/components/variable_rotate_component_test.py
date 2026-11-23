@@ -57,7 +57,8 @@ def test_cp_variable_rotation_exhaustive_values():
             result=Instance(Solver.lookup('gecode'),model).solve(all_solutions=True)
             assert len(result.solution)==(1<<width)*8
             for solution in result.solution:
-                value=lambda bits:int(''.join(map(str,bits)),2)
+                def value(bits):
+                    return int(''.join(map(str,bits)),2)
                 word,amount=value(solution.word),value(solution.amount)%width
                 amount=(direction*amount)%width
                 expected=(word>>amount)|(word<<(width-amount))
@@ -66,14 +67,15 @@ def test_cp_variable_rotation_exhaustive_values():
 
 def test_cp_variable_rotation_refuses_difference_as_value_fallback():
     import pytest
+    component = make_variable_rotate_component()
     with pytest.raises(NotImplementedError,match='differential weights'):
-        make_variable_rotate_component().cp_xor_differential_propagation_constraints()
+        component.cp_xor_differential_propagation_constraints()
 
 
 def test_vectorized_variable_rotation_matches_full_integer_amounts():
     import numpy as np
     from claasp.cipher import Cipher
-    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE_BY_VARIABLE_AMOUNT
+    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_rotate_by_variable_amount
     for width,amount_width in [(4,3),(5,3),(5,70)]:
         words=list(range(1<<width))
         amounts=list(range(8)) if amount_width==3 else [0,(1<<69)+3,(1<<64)+7]
@@ -87,7 +89,7 @@ def test_vectorized_variable_rotation_matches_full_integer_amounts():
             rotated=cipher.add_variable_rotate_component(['plaintext','key'],[list(range(width)),list(range(amount_width))],width,direction)
             cipher.add_cipher_output_component([rotated.id],[list(range(width))],width)
             byte_output=cipher.evaluate_vectorized(matrices)[-1]
-            bit_output=bit_vector_ROTATE_BY_VARIABLE_AMOUNT(bit_inputs,width,direction)
+            bit_output=bit_vector_rotate_by_variable_amount(bit_inputs,width,direction)
             for i,(word,amount) in enumerate(pairs):
                 shift=(direction*amount)%width
                 expected=((word>>shift)|(word<<(width-shift)))&((1<<width)-1)
@@ -109,18 +111,18 @@ def test_rc5_vectorized_empty_wires_and_variable_rotations():
 def test_vectorized_variable_rotation_rejects_missing_amount():
     import numpy as np
     import pytest
-    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE_BY_VARIABLE_AMOUNT
-    from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_ROTATE_BY_VARIABLE_AMOUNT
+    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_rotate_by_variable_amount
+    from claasp.cipher_modules.generic_functions_vectorized_byte import byte_vector_rotate_by_variable_amount
     with pytest.raises(ValueError,match='data and amount'):
-        bit_vector_ROTATE_BY_VARIABLE_AMOUNT([np.zeros((4,1),dtype=np.uint8)],4,1)
+        bit_vector_rotate_by_variable_amount([np.zeros((4,1),dtype=np.uint8)],4,1)
     with pytest.raises(ValueError,match='positive amount'):
-        byte_vector_ROTATE_BY_VARIABLE_AMOUNT([np.zeros((1,1),dtype=np.uint8)],4,1,0)
+        byte_vector_rotate_by_variable_amount([np.zeros((1,1),dtype=np.uint8)],4,1,0)
 
 
 def test_variable_rotation_broadcasts_constant_operand():
     import numpy as np
-    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_ROTATE_BY_VARIABLE_AMOUNT
+    from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_rotate_by_variable_amount
     word=np.array([[1],[0],[0],[0]],dtype=np.uint8)
     amounts=np.array([[0,0,1,1],[0,1,0,1]],dtype=np.uint8)
-    output=bit_vector_ROTATE_BY_VARIABLE_AMOUNT([word,amounts],4,1)
+    output=bit_vector_rotate_by_variable_amount([word,amounts],4,1)
     assert [int(''.join(map(str,output[:,i])),2) for i in range(4)]==[8,4,2,1]
