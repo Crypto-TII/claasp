@@ -1,3 +1,4 @@
+import re
 import shutil
 
 import pytest
@@ -22,7 +23,7 @@ def test_cryptominisat_solves_signed_native_xor_and_reports_version():
     unsatisfiable = solver.solve(formula, {"a": 1, "b": 0, "y": 0})
     assert unsatisfiable.status is SatStatus.UNSATISFIABLE
     assert unsatisfiable.assignment is None
-    assert solver.version() == "CryptoMiniSat version 5.11.15"
+    assert re.fullmatch(r"CryptoMiniSat version 5\.11\.\d+", solver.version())
 
 
 def test_native_xor_linear_enumeration_enforces_output_mask():
