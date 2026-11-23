@@ -332,6 +332,14 @@ def test_timeout_status_and_solver_options(monkeypatch):
     )
 
 
+@pytest.mark.parametrize("multiple", [False, True])
+def test_solver_error_is_not_reported_as_unknown(multiple):
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    result = SimpleNamespace(solution=None, status=Status.ERROR, statistics={})
+    with pytest.raises(RuntimeError, match="MiniZinc solver gecode reported ERROR"):
+        model._solver_result(result, "gecode", multiple=multiple, intermediate=False)
+
+
 def test_invalid_weight_range():
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
     with pytest.raises(ValueError, match="min_weight"):

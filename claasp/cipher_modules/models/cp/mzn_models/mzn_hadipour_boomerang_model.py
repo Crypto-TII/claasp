@@ -863,6 +863,8 @@ class MznHadipourBoomerangModel(MznModel):
         return GECODE if modular and self.middle_model == "local" else SOLVER_DEFAULT
 
     def _solver_result(self, result, solver_name, multiple, intermediate):
+        if result.status == Status.ERROR:
+            raise RuntimeError(f"MiniZinc solver {solver_name} reported ERROR")
         no_solution = result.solution is None or (
             isinstance(result.solution, list) and not result.solution
         )
@@ -935,7 +937,8 @@ class MznHadipourBoomerangModel(MznModel):
         solutions, enumerating, or requesting optimization incumbents. Weights are in bits. Check ``status``
         and ``solver_status`` for satisfiability and completion. A timeout without
         a solution is UNKNOWN; list searches return an empty list if none were
-        found. Solver options depend on the selected backend's capabilities.
+        found. A solver-reported ERROR raises RuntimeError rather than being
+        reported as UNKNOWN. Solver options depend on the selected backend's capabilities.
         Call ``build_hadipour_boomerang_model`` first. See the class documentation
         for probability assumptions and references.
 
