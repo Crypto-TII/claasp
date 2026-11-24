@@ -211,6 +211,37 @@ def test_arx_differential_candidate_is_measured_over_all_inputs():
     assert result["baseline_probability"] == pytest.approx(1 / 255)
 
 
+def test_two_round_arx_boomerang_counts_nondegenerate_returns():
+    cipher = ToyArxPermutation(number_of_rounds=2)
+    output = next(
+        component.id
+        for component in cipher.all_components()
+        if component.type == "cipher_output"
+    )
+    model = MznHadipourBoomerangModel(
+        cipher,
+        {
+            "top_part_number_of_rounds": 0,
+            "middle_part_number_of_rounds": 2,
+            "bottom_part_number_of_rounds": 0,
+        },
+        middle_model="exact",
+    )
+    candidate = {
+        "model_type": "boomerang",
+        "components_values": {
+            "upper_plaintext": {"value": "0xfa"},
+            f"lower_{output}": {"value": "0xf0"},
+        },
+    }
+    result = model.validate_boomerang_candidate(
+        candidate, "exhaustive", exclude_returning_quartets=True
+    )
+    assert result["successes"] == 16
+    assert result["trials"] == 256
+    assert result["observed_probability"] == 1 / 16
+
+
 def test_explicit_truncated_checker_runs_on_byte_aligned_cipher():
     cipher = ToyArxPermutation()
     output = next(
