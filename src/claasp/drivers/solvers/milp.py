@@ -17,7 +17,7 @@ from claasp.representations.constraints.sat import CNFFormula
 _NUMBER = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?"
 
 
-class _ExternalLinearSolver:
+class _LinearSolver:
     executable_name = ""
     supports_integrality = True
 
@@ -107,7 +107,7 @@ class _ExternalLinearSolver:
         raise NotImplementedError
 
 
-class CbcSolver(_ExternalLinearSolver):
+class CbcSolver(_LinearSolver):
     """Solve portable MILP models with COIN-BC.
 
     EXAMPLES::
@@ -144,7 +144,7 @@ class CbcSolver(_ExternalLinearSolver):
         return MILPStatus.OPTIMAL, assignment, float(match.group(1))
 
 
-class ScipSolver(_ExternalLinearSolver):
+class ScipSolver(_LinearSolver):
     """Solve portable MILP models with SCIP.
 
     EXAMPLES::
@@ -188,7 +188,7 @@ class ScipSolver(_ExternalLinearSolver):
         return MILPStatus.OPTIMAL, assignment, objective
 
 
-class SoplexSolver(_ExternalLinearSolver):
+class SoplexSolver(_LinearSolver):
     """Solve continuous LP models with SoPlex; integer models are rejected.
 
     EXAMPLES::

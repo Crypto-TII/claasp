@@ -14,7 +14,7 @@ from claasp.representations.constraints.smt.exporter import SMTLibExporter
 from claasp.representations.constraints.smt.formula import SMTFormula
 
 
-class _SMTExternalSolver:
+class _SMTSolver:
     executable_name = ""
     options: tuple[str, ...] = ()
 
@@ -77,7 +77,7 @@ class _SMTExternalSolver:
         return SatResult(SatStatus.SATISFIABLE, values, elapsed, completed.stdout, completed.stderr)
 
 
-class MathSatSolver(_SMTExternalSolver):
+class MathSatSolver(_SMTSolver):
     """Run MathSAT on a Boolean SMT or CNF formula.
 
     EXAMPLES::
@@ -90,7 +90,7 @@ class MathSatSolver(_SMTExternalSolver):
     options = ("-model",)
 
 
-class YicesSolver(_SMTExternalSolver):
+class YicesSolver(_SMTSolver):
     """Run Yices' SMT-LIB frontend on a Boolean SMT or CNF formula.
 
     EXAMPLES::

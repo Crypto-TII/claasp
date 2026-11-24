@@ -2,7 +2,7 @@
 
 from claasp.drivers.solvers.base import SatResult, SatStatus
 from claasp.drivers.solvers.cryptominisat import CryptoMiniSatSolver
-from claasp.drivers.solvers.dimacs_external import (
+from claasp.drivers.solvers.dimacs import (
     CadicalSolver,
     GlucoseSolver,
     GlucoseSyrupSolver,
@@ -19,7 +19,7 @@ from claasp.drivers.solvers.minizinc import (
     MiniZincSolver,
 )
 from claasp.drivers.solvers.progress import MILPProgressLog, MILPProgressSnapshot
-from claasp.drivers.solvers.smt_external import MathSatSolver, YicesSolver
+from claasp.drivers.solvers.smt import MathSatSolver, YicesSolver
 
 __all__ = [
     "MILPProgressLog",
@@ -57,7 +57,7 @@ def __getattr__(name: str):
     """Load representation-specific drivers without creating import cycles."""
 
     if name in ("CbcSolver", "ScipSolver", "SoplexSolver"):
-        from claasp.drivers.solvers.milp_external import CbcSolver, ScipSolver, SoplexSolver
+        from claasp.drivers.solvers.milp import CbcSolver, ScipSolver, SoplexSolver
 
         return {"CbcSolver": CbcSolver, "ScipSolver": ScipSolver, "SoplexSolver": SoplexSolver}[
             name

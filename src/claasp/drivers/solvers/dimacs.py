@@ -13,7 +13,7 @@ from claasp.representations.constraints.sat.exporters import DimacsExporter
 from claasp.representations.constraints.sat.model import CNFFormula, _require_plain_cnf
 
 
-class _DimacsExternalSolver:
+class _DimacsSolver:
     executable_name = ""
     options: tuple[str, ...] = ()
     status_exit_codes: tuple[int, int] = (10, 20)
@@ -114,7 +114,7 @@ class _DimacsExternalSolver:
         }
 
 
-class CadicalSolver(_DimacsExternalSolver):
+class CadicalSolver(_DimacsSolver):
     """Run CaDiCaL on a portable CNF formula.
 
     EXAMPLES::
@@ -126,7 +126,7 @@ class CadicalSolver(_DimacsExternalSolver):
     executable_name = "cadical"
 
 
-class GlucoseSolver(_DimacsExternalSolver):
+class GlucoseSolver(_DimacsSolver):
     """Run Glucose with model output enabled.
 
     EXAMPLES::
@@ -139,7 +139,7 @@ class GlucoseSolver(_DimacsExternalSolver):
     options = ("-model",)
 
 
-class GlucoseSyrupSolver(_DimacsExternalSolver):
+class GlucoseSyrupSolver(_DimacsSolver):
     """Run parallel Glucose Syrup with model output enabled.
 
     Silence verbose statistics because Glucose Syrup 4.1 divides by zero
@@ -155,7 +155,7 @@ class GlucoseSyrupSolver(_DimacsExternalSolver):
     options = ("-model", "-verb=0")
 
 
-class ParKissatSolver(_DimacsExternalSolver):
+class ParKissatSolver(_DimacsSolver):
     """Run ParKissat on a portable CNF formula.
 
     EXAMPLES::
@@ -169,7 +169,7 @@ class ParKissatSolver(_DimacsExternalSolver):
     status_exit_codes = (0, 0)
 
 
-class YicesSatSolver(_DimacsExternalSolver):
+class YicesSatSolver(_DimacsSolver):
     """Run Yices' DIMACS SAT frontend.
 
     EXAMPLES::
