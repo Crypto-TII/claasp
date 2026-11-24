@@ -531,7 +531,7 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
     model = MznHadipourBoomerangModel(
         cipher, structure(), middle_model="exact", exclude_returning_quartets=True
     )
-    result = model.find_one_boomerang_trail(solver_name="coinbc", timeout_in_seconds=10)
+    result = model.find_one_boomerang_trail(solver_name="gecode", timeout_in_seconds=10)
     assert result["status"] == "SATISFIABLE"
     points = []
     for j in range(4):
