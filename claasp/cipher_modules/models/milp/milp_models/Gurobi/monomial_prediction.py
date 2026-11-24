@@ -24,9 +24,8 @@ from copy import deepcopy
 
 import numpy as np
 from gurobipy import GRB, Env, Model
-from sage.all import GF, Polyhedron
+from sage.all import BooleanPolynomialRing, GF, Polyhedron
 from sage.crypto.sbox import SBox
-from sage.rings.polynomial.pbori.pbori import BooleanPolynomialRing
 
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
 from claasp.cipher_modules.graph_generator import _get_predecessors_subgraph, create_networkx_graph_from_input_ids
