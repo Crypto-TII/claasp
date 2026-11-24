@@ -23,10 +23,10 @@ def test_review_accounts_for_changed_sources_and_evidence():
     assert {item["path"] for item in additions} <= {item["path"] for item in rows}
 
 
-def test_legacy_highs_cmake_emulation_fix_is_not_needed_by_v5():
+def test_legacy_highs_cli_and_scipy_backend_are_both_present():
     dockerfile = Path("docker/v5/Dockerfile").read_text()
     lock = Path("docker/v5/requirements.lock").read_text()
     assert "COPY docker/v5/requirements.lock" in dockerfile
     assert "scipy==" in lock
-    assert "highs-" not in dockerfile.lower()
-    assert "chuffed-" in dockerfile  # The remaining native CMake build is Chuffed.
+    assert "HIGHS_SHA256=" in dockerfile
+    assert "command -v highs" in dockerfile

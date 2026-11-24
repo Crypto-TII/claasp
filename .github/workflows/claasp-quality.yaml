@@ -65,10 +65,11 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
-      - name: Install Z3 and GLPK for analysis doctests
+      - name: Install CryptoMiniSat, Z3 and GLPK for analysis doctests
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3 glpk-utils
+          sudo apt-get install --yes cryptominisat z3 glpk-utils
+          cryptominisat5 --version
 
       - name: Run dependency-free tests
         run: python -m pytest
@@ -124,10 +125,11 @@ jobs:
       - name: Install solver for executable documentation examples
         uses: ./.github/actions/install-kissat
 
-      - name: Install Z3 and GLPK for analysis doctests
+      - name: Install CryptoMiniSat, Z3 and GLPK for analysis doctests
         run: |
           sudo apt-get update
-          sudo apt-get install --yes z3 glpk-utils
+          sudo apt-get install --yes cryptominisat z3 glpk-utils
+          cryptominisat5 --version
 
       - name: Run Python and guide doctests
         run: |
@@ -264,14 +266,14 @@ jobs:
       - name: Install Kissat
         uses: ./.github/actions/install-kissat
 
-      - name: Install MiniSat
-        run: sudo apt-get install --yes minisat
+      - name: Install MiniSat and CryptoMiniSat
+        run: sudo apt-get install --yes minisat cryptominisat
 
       - name: Install test dependencies
         run: python -m pip install -e '.[dev]'
 
       - name: Execute SAT integration
-        run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py tests/integration/test_fractional_trail_weights.py -q
+        run: python -m pytest -m external tests/integration/test_kissat_integration.py tests/integration/test_minisat_integration.py tests/integration/test_cryptominisat_integration.py tests/integration/test_fractional_trail_weights.py -q
 
       - name: Prove complete small-component functional parity
         run: CLAASP_PARITY_BACKEND=minisat python -m pytest -m external tests/integration/test_component_backend_parity.py tests/integration/test_boomerang_search.py::test_portable_backend_preserves_restricted_boomerang_search tests/integration/test_minimax_differential.py::test_portable_backend_keeps_related_key_minimax_objective -q
