@@ -6,7 +6,8 @@ and uses scalar evaluation for small, non-byte-aligned ciphers.
 """
 
 import math
-import random
+
+import numpy as np
 
 from claasp.cipher_modules.models import utils
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY, INPUT_PLAINTEXT
@@ -38,6 +39,43 @@ def _data_input(cipher):
     return candidates[0]
 
 
+def _candidate_value(components, overrides, names, label):
+    if label in overrides:
+        return overrides[label]
+    for name in names:
+        if name in components:
+            return components[name]["value"]
+    raise ValueError(f"Candidate has no {label}; supply it explicitly")
+
+
+def _endpoint_names(data, output, checker):
+    if checker.startswith("boomerang_"):
+        return [f"upper_{data}"], [f"lower_{output}"]
+    if checker.startswith("linear_checker_"):
+        input_names = [f"{data}_o", data]
+    else:
+        input_names = [data, f"{data}_o"]
+    if "linear" in checker:
+        output_names = [f"{output}_o", output]
+    else:
+        output_names = [output, f"{output}_o"]
+    return input_names, output_names
+
+
+def _endpoint_labels(checker):
+    input_label = "input_difference"
+    if "input_and_output_truncated" in checker or checker.startswith("truncated_"):
+        input_label = "input_trunc_diff"
+    if checker.startswith("linear_checker_"):
+        input_label = "input_mask"
+    output_label = "output_difference"
+    if "linear" in checker and not checker.startswith("boomerang_"):
+        output_label = "output_mask"
+    if "input_and_output_truncated" in checker:
+        output_label = "output_trunc_diff"
+    return input_label, output_label
+
+
 def _endpoints(cipher, candidate, checker, overrides):
     components = candidate.get("components_values") or {}
     data = _data_input(cipher)
@@ -51,64 +89,21 @@ def _endpoints(cipher, candidate, checker, overrides):
     )
     if output is None:
         raise ValueError("Cipher has no cipher output component")
-    boomerang = checker.startswith("boomerang_")
-    linear = "linear" in checker and not checker.startswith("boomerang_")
-    input_names = (
-        [f"upper_{data}"]
-        if boomerang
-        else [f"{data}_o", data]
-        if checker.startswith("linear_checker_")
-        else [data, f"{data}_o"]
-    )
-    output_names = (
-        [f"lower_{output}"]
-        if boomerang
-        else [f"{output}_o", output]
-        if linear
-        else [output, f"{output}_o"]
-    )
-
-    def value(names, label):
-        if label in overrides:
-            return overrides[label]
-        for name in names:
-            if name in components:
-                return components[name]["value"]
-        raise ValueError(f"Candidate has no {label}; supply it explicitly")
-
-    input_label = (
-        "input_trunc_diff"
-        if "input_and_output_truncated" in checker or checker.startswith("truncated_")
-        else "input_difference"
-    )
-    if checker.startswith("linear_checker_"):
-        input_label = "input_mask"
-    output_label = "output_mask" if linear else "output_difference"
-    if "truncated_checker" in checker:
-        output_label = (
-            "output_trunc_diff"
-            if "input_and_output_truncated" in checker
-            else "output_difference"
-        )
+    input_names, output_names = _endpoint_names(data, output, checker)
+    input_label, output_label = _endpoint_labels(checker)
     return (
         input_label,
-        value(input_names, input_label),
+        _candidate_value(components, overrides, input_names, input_label),
         output_label,
-        value(output_names, output_label),
+        _candidate_value(components, overrides, output_names, output_label),
     )
 
 
 def _normalized_value(value, label, width):
     if "mask" in label and label != "input_trunc_diff":
-        return (
-            value
-            if isinstance(value, str)
-            and set(value) <= {"0", "1"}
-            and len(value) == width
-            else format(
-                int(value, 0) if isinstance(value, str) else int(value), f"0{width}b"
-            )
-        )
+        if isinstance(value, str) and set(value) <= {"0", "1"} and len(value) == width:
+            return value
+        return format(_as_int(value), f"0{width}b")
     if (
         "trunc" in label
         or isinstance(value, str)
@@ -116,7 +111,13 @@ def _normalized_value(value, label, width):
         and len(value) == width
     ):
         return value
-    return int(value, 0) if isinstance(value, str) else int(value)
+    return _as_int(value)
+
+
+def _as_int(value):
+    if isinstance(value, str):
+        return int(value, 0)
+    return int(value)
 
 
 def _default_checker(cipher, model_type):
@@ -154,11 +155,6 @@ def _scalar_event(
     data = _data_input(cipher)
     width = cipher.inputs_bit_size[cipher.inputs.index(data)]
     size = 1 << width
-    exhaustive = trials == "exhaustive"
-    if exhaustive and size > 1 << 16:
-        raise ValueError("Exhaustive validation is limited to 16-bit data inputs")
-    if not exhaustive and (not isinstance(trials, int) or trials <= 0):
-        raise ValueError("trials must be a positive integer or 'exhaustive'")
     if INPUT_KEY in cipher.inputs and fixed_key is None:
         raise ValueError("Supply fixed_key for a keyed cipher")
     if any(name not in (data, INPUT_KEY) for name in cipher.inputs):
@@ -166,35 +162,50 @@ def _scalar_event(
             "Supply a cipher with only data and optional key inputs"
         )
     inverse = cipher.cipher_inverse() if checker == "boomerang_scalar" else None
-
-    def evaluate(target, value):
-        arguments = [
-            fixed_key if name == INPUT_KEY else value for name in target.inputs
-        ]
-        return int(target.evaluate(arguments))
-
-    rng = random.Random(seed)
-    inputs = range(size) if exhaustive else (rng.randrange(size) for _ in range(trials))
-    successes = 0
-    for x in inputs:
-        y0 = evaluate(cipher, x)
-        if checker == "linear_scalar":
-            successes += ((x & first).bit_count() ^ (y0 & second).bit_count()) & 1 == 0
-            continue
-        y1 = evaluate(cipher, x ^ first)
-        if checker == "differential_linear_scalar":
-            successes += ((y0 ^ y1) & second).bit_count() % 2 == 0
-            continue
-        if checker == "differential_scalar":
-            successes += y0 ^ y1 == second
-            continue
-        x2 = evaluate(inverse, y0 ^ second)
-        x3 = evaluate(inverse, y1 ^ second)
-        successes += x2 ^ x3 == first and (
-            not exclude_returning_quartets or x2 not in (x, x ^ first)
+    inputs, total = _scalar_inputs(size, trials, seed)
+    successes = sum(
+        _scalar_match(
+            cipher, inverse, checker, x, first, second, fixed_key,
+            exclude_returning_quartets,
         )
-    total = size if exhaustive else trials
+        for x in inputs
+    )
     return successes, total
+
+
+def _scalar_inputs(size, trials, seed):
+    if trials == "exhaustive":
+        if size > 1 << 16:
+            raise ValueError("Exhaustive validation is limited to 16-bit data inputs")
+        return range(size), size
+    if not isinstance(trials, int) or trials <= 0:
+        raise ValueError("trials must be a positive integer or 'exhaustive'")
+    rng = np.random.default_rng(seed)
+    return (int(rng.integers(size)) for _ in range(trials)), trials
+
+
+def _fixed_key_evaluate(cipher, value, fixed_key):
+    arguments = [fixed_key if name == INPUT_KEY else value for name in cipher.inputs]
+    return int(cipher.evaluate(arguments))
+
+
+def _scalar_match(
+    cipher, inverse, checker, x, first, second, fixed_key,
+    exclude_returning_quartets,
+):
+    y0 = _fixed_key_evaluate(cipher, x, fixed_key)
+    if checker == "linear_scalar":
+        return ((x & first).bit_count() ^ (y0 & second).bit_count()) & 1 == 0
+    y1 = _fixed_key_evaluate(cipher, x ^ first, fixed_key)
+    if checker == "differential_linear_scalar":
+        return ((y0 ^ y1) & second).bit_count() % 2 == 0
+    if checker == "differential_scalar":
+        return y0 ^ y1 == second
+    x2 = _fixed_key_evaluate(inverse, y0 ^ second, fixed_key)
+    x3 = _fixed_key_evaluate(inverse, y1 ^ second, fixed_key)
+    if exclude_returning_quartets and x2 in (x, x ^ first):
+        return False
+    return x2 ^ x3 == first
 
 
 def _confidence_interval(successes, trials, correlation):
@@ -212,6 +223,202 @@ def _confidence_interval(successes, trials, correlation):
     return (2 * lower - 1, 2 * upper - 1) if correlation else (lower, upper)
 
 
+_SCALAR_CHECKERS = {
+    "boomerang_scalar",
+    "differential_scalar",
+    "linear_scalar",
+    "differential_linear_scalar",
+}
+
+
+def _validate_request(cipher, candidate, checker, baseline):
+    if not isinstance(candidate, dict) or not candidate.get("components_values"):
+        raise ValueError("candidate must contain a solved trail with components_values")
+    if candidate.get("status", "SATISFIABLE") != "SATISFIABLE":
+        raise ValueError("candidate must have SATISFIABLE status")
+    if checker not in _CHECKERS and checker not in _SCALAR_CHECKERS:
+        raise ValueError(f"Unknown candidate checker: {checker}")
+    if checker in _CHECKERS and ("single_key" in checker) != (INPUT_KEY in cipher.inputs):
+        raise ValueError("Checker and cipher key model do not match")
+    if baseline not in (None, "random_permutation"):
+        raise ValueError("baseline must be None or 'random_permutation'")
+
+
+def _cipher_sizes(cipher):
+    data = _data_input(cipher)
+    width = cipher.inputs_bit_size[cipher.inputs.index(data)]
+    key_size = None
+    if INPUT_KEY in cipher.inputs:
+        key_size = cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)]
+    return data, width, key_size
+
+
+def _uses_scalar(cipher, checker, trials, data, width, key_size):
+    if checker in _SCALAR_CHECKERS or trials == "exhaustive" or width % 8:
+        return True
+    if key_size is None:
+        return False
+    return bool(key_size % 8 or cipher.inputs.index(data) != 0)
+
+
+def _scalar_checker(checker):
+    if checker in _SCALAR_CHECKERS:
+        return checker
+    if checker.startswith("boomerang_"):
+        return "boomerang_scalar"
+    if checker.startswith("linear_checker_"):
+        return "linear_scalar"
+    if checker.startswith("differential_linear_checker_"):
+        return "differential_linear_scalar"
+    if checker in ("differential_checker_permutation", "differential_truncated_checker_single_key"):
+        return "differential_scalar"
+    raise NotImplementedError("This checker requires byte-aligned vectorized evaluation")
+
+
+def _scalar_measure(cipher, checker, first, second, trials, fixed_key, seed, exclude):
+    scalar = _scalar_checker(checker)
+    scalar_first = int(first, 2) if isinstance(first, str) else first
+    scalar_second = int(second, 2) if isinstance(second, str) else second
+    successes, total = _scalar_event(
+        cipher, scalar, scalar_first, scalar_second, trials, fixed_key, seed, exclude
+    )
+    measure = successes / total
+    if scalar in ("linear_scalar", "differential_linear_scalar"):
+        measure = 2 * measure - 1
+    return scalar, successes, total, measure
+
+
+def _checker_parameters(
+    cipher, checker, labels, values, trials, fixed_key, seed, num_workers,
+    width, key_size, exclude,
+):
+    input_label, output_label = labels
+    first, second = values
+    parameters = {
+        input_label: first,
+        output_label: second,
+        "number_of_samples": trials,
+        "seed": seed,
+        "num_workers": num_workers,
+    }
+    if INPUT_KEY in cipher.inputs:
+        if fixed_key is None:
+            raise ValueError("Supply fixed_key for a keyed cipher")
+        parameters.update(fixed_key=fixed_key, key_size=key_size)
+        size_label = "block_size"
+        if "truncated_checker" in checker:
+            size_label = "state_size"
+        parameters[size_label] = width
+    else:
+        parameters["state_size"] = width
+    if checker == "differential_truncated_checker_single_key" and isinstance(second, int):
+        parameters[output_label] = format(second, f"0{width}b")
+    if checker == "boomerang_checker_for_block_cipher_single_key":
+        parameters["exclude_returning_quartets"] = exclude
+        parameters["return_counts"] = True
+    return parameters
+
+
+def _is_correlation(checker):
+    return (
+        checker in ("linear_scalar", "differential_linear_scalar")
+        or checker.startswith("linear_checker_")
+        or "differential_linear_checker" in checker
+    )
+
+
+def _vectorized_measure(cipher, checker, parameters, trials):
+    measured = _CHECKERS[checker](cipher, **parameters)
+    if _is_correlation(checker):
+        return checker, round((measured + 1) * trials / 2), trials, measured
+    if checker.startswith("boomerang_"):
+        successes, total = measured
+        return checker, successes, total, successes / total
+    measure = 0.0
+    if measured != float("-inf"):
+        measure = 2**measured
+    return checker, round(measure * trials), trials, measure
+
+
+def _measurement_status(exhaustive, successes):
+    if exhaustive:
+        return "EXACT"
+    if successes:
+        return "MEASURED"
+    return "INCONCLUSIVE"
+
+
+def _measurement_result(checker, labels, values, successes, total, measure, exhaustive):
+    input_label, output_label = labels
+    first, second = values
+    correlation = _is_correlation(checker)
+    result = {
+        "checker": checker,
+        input_label: first,
+        output_label: second,
+        "successes": successes,
+        "trials": total,
+        "status": _measurement_status(exhaustive, successes),
+        "sampling": "exhaustive" if exhaustive else "random_plaintexts",
+        "confidence_interval_95": None,
+    }
+    result["observed_correlation" if correlation else "observed_probability"] = measure
+    if not exhaustive:
+        result["confidence_interval_95"] = _confidence_interval(successes, total, correlation)
+    return result
+
+
+def _random_baseline(checker, first, second, width, exclude):
+    size = 1 << width
+    if _is_correlation(checker):
+        simple_linear = checker in (
+            "linear_scalar", "linear_checker_permutation",
+            "linear_checker_for_block_cipher_single_key",
+        )
+        trivial_linear = simple_linear and not int(first, 2) and not int(second, 2)
+        trivial_pair = "differential_linear" in checker and (
+            first == 0 or not int(second, 2)
+        )
+        return "baseline_correlation", float(trivial_linear or trivial_pair)
+    if checker.startswith("boomerang_"):
+        if not first or not second:
+            return "baseline_probability", float(not exclude)
+        if size > 3:
+            value = (size - 2) / ((size - 1) * (size - 3))
+            if not exclude:
+                value += 1 / (size - 1)
+            return "baseline_probability", value
+    if checker in (
+        "differential_scalar", "differential_checker_permutation",
+        "differential_truncated_checker_single_key",
+    ):
+        if first == second == 0:
+            return "baseline_probability", 1.0
+        if not first or not second:
+            return "baseline_probability", 0.0
+        return "baseline_probability", 1 / (size - 1)
+    return None
+
+
+def _add_baseline_and_bound(result, baseline, width, exclude):
+    checker = result["checker"]
+    first = result.get("input_mask", result.get("input_difference"))
+    second = result.get("output_mask", result.get("output_difference"))
+    measure = result.get("observed_correlation", result.get("observed_probability"))
+    if baseline == "random_permutation":
+        reference = _random_baseline(checker, first, second, width, exclude)
+        if reference is not None:
+            label, value = reference
+            result[label] = value
+            result["advantage"] = measure - value
+    if result["status"] == "INCONCLUSIVE":
+        bound = -math.expm1(math.log(0.05) / result["trials"])
+        if _is_correlation(checker):
+            bound = 2 * bound - 1
+        result["one_sided_upper_bound_95"] = bound
+    return result
+
+
 def validate_candidate(
     cipher,
     candidate,
@@ -224,224 +431,54 @@ def validate_candidate(
     exclude_returning_quartets=False,
     **endpoints,
 ):
-    """Measure a candidate's external event with an existing CLAASP checker.
+    """Measure a solved trail's external event independently of its solver weight.
 
-    INPUT:
+    Pass a SATISFIABLE candidate from any CLAASP model and a positive sample
+    count, or ``trials='exhaustive'`` for data inputs of at most 16 bits.
+    Keyed ciphers require ``fixed_key``. A ``seed`` makes sampling repeatable.
+    Ordinary differential, linear, differential-linear, and boomerang trails
+    select an existing checker automatically. Select a specialized checker by
+    name and provide endpoint overrides when its event needs them.
 
-    - ``cipher`` -- original cipher object, before a search model removes its
-      key schedule or splits it into upper and lower copies.
-    - ``candidate`` -- SATISFIABLE trail dictionary returned by a CLAASP model.
-    - ``trials`` -- positive number of random plaintexts, or ``'exhaustive'``
-      for data inputs of at most 16 bits.
-    - ``fixed_key`` -- actual key value for a keyed cipher.
-    - ``seed`` -- reproducible random seed for sampled validation.
-    - ``checker`` -- optional name of any experimental checker in
-      ``claasp.cipher_modules.models.utils``. Ordinary XOR differential,
-      XOR linear, differential-linear, and boomerang trails select one
-      automatically; specialized events can pass endpoint overrides.
-    - ``baseline`` -- ``'random_permutation'`` (default) or ``None``.
-    - ``exclude_returning_quartets`` -- omit two-point boomerang returns.
-
-    OUTPUT: event counts, measured probability or correlation, a matched
-    baseline when available, and a 95% interval for sampled measurements.
-    A zero sampled count is ``INCONCLUSIVE`` and includes a one-sided upper
-    bound. An exhaustive count is exact for the selected cipher and key.
-    Neither the candidate weight nor a selected witness is treated as an
-    external probability.
+    The result contains successes, trials, a measured probability or
+    correlation, and a random-permutation baseline where applicable.
+    Sampled zero counts are marked ``INCONCLUSIVE`` with a one-sided bound.
+    Set ``exclude_returning_quartets=True`` to omit two-point boomerang
+    returns. Set ``baseline=None`` to omit the comparison.
     """
-    if not isinstance(candidate, dict) or not candidate.get("components_values"):
-        raise ValueError("candidate must contain a solved trail with components_values")
-    if candidate.get("status", "SATISFIABLE") != "SATISFIABLE":
-        raise ValueError("candidate must have SATISFIABLE status")
-    model_type = candidate.get("model_type", "")
-    checker = checker or _default_checker(cipher, model_type)
-    if checker not in _CHECKERS and checker not in {
-        "boomerang_scalar",
-        "differential_scalar",
-        "linear_scalar",
-        "differential_linear_scalar",
-    }:
-        raise ValueError(f"Unknown candidate checker: {checker}")
-    keyed = INPUT_KEY in cipher.inputs
-    if checker in _CHECKERS and ("single_key" in checker) != keyed:
-        raise ValueError("Checker and cipher key model do not match")
-    if baseline not in (None, "random_permutation"):
-        raise ValueError("baseline must be None or 'random_permutation'")
-    data = _data_input(cipher)
-    width = cipher.inputs_bit_size[cipher.inputs.index(data)]
-    key_size = (
-        cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)]
-        if INPUT_KEY in cipher.inputs
-        else None
-    )
+    if not isinstance(candidate, dict):
+        raise TypeError("candidate must be a solved trail dictionary")
+    checker = checker or _default_checker(cipher, candidate.get("model_type", ""))
+    _validate_request(cipher, candidate, checker, baseline)
+    data, width, key_size = _cipher_sizes(cipher)
     input_label, first, output_label, second = _endpoints(
         cipher, candidate, checker, endpoints
     )
     first = _normalized_value(first, input_label, width)
     second = _normalized_value(second, output_label, cipher.output_bit_size)
-    if (
-        checker
-        in (
-            "boomerang_scalar",
-            "differential_scalar",
-            "linear_scalar",
-            "differential_linear_scalar",
-        )
-        or trials == "exhaustive"
-        or width % 8
-        or (key_size is not None and key_size % 8)
-        or (key_size is not None and cipher.inputs.index(data) != 0)
-    ):
-        if checker in (
-            "boomerang_scalar",
-            "differential_scalar",
-            "linear_scalar",
-            "differential_linear_scalar",
-        ):
-            scalar = checker
-        elif checker.startswith("boomerang_"):
-            scalar = "boomerang_scalar"
-        elif checker.startswith("linear_checker_"):
-            scalar = "linear_scalar"
-        elif checker.startswith("differential_linear_checker_"):
-            scalar = "differential_linear_scalar"
-        elif checker in (
-            "differential_checker_permutation",
-            "differential_truncated_checker_single_key",
-        ):
-            scalar = "differential_scalar"
-        else:
-            raise NotImplementedError(
-                "This checker requires byte-aligned vectorized evaluation"
-            )
-        scalar_first = int(first, 2) if isinstance(first, str) else first
-        scalar_second = int(second, 2) if isinstance(second, str) else second
-        successes, total = _scalar_event(
-            cipher,
-            scalar,
-            scalar_first,
-            scalar_second,
-            trials,
-            fixed_key,
-            seed,
+    labels = input_label, output_label
+    values = first, second
+    if _uses_scalar(cipher, checker, trials, data, width, key_size):
+        measured = _scalar_measure(
+            cipher, checker, first, second, trials, fixed_key, seed,
             exclude_returning_quartets,
         )
-        measure = (
-            2 * successes / total - 1
-            if scalar in ("linear_scalar", "differential_linear_scalar")
-            else successes / total
-        )
-        checker_used = scalar
     else:
         if not isinstance(trials, int) or trials <= 0:
             raise ValueError("trials must be a positive integer or 'exhaustive'")
-        parameters = {
-            input_label: first,
-            output_label: second,
-            "number_of_samples": trials,
-            "seed": seed,
-            "num_workers": num_workers,
-        }
-        if INPUT_KEY in cipher.inputs:
-            if fixed_key is None:
-                raise ValueError("Supply fixed_key for a keyed cipher")
-            parameters.update(fixed_key=fixed_key, key_size=key_size)
-            parameters[
-                "state_size" if "truncated_checker" in checker else "block_size"
-            ] = width
-        else:
-            parameters["state_size"] = width
-        if checker == "differential_truncated_checker_single_key" and isinstance(
-            second, int
-        ):
-            parameters[output_label] = format(second, f"0{width}b")
-        if checker == "boomerang_checker_for_block_cipher_single_key":
-            parameters["exclude_returning_quartets"] = exclude_returning_quartets
-            parameters["return_counts"] = True
-        measured = _CHECKERS[checker](cipher, **parameters)
-        if (
-            checker.startswith("linear_checker_")
-            or "differential_linear_checker" in checker
-        ):
-            measure = measured
-            successes = round((measured + 1) * trials / 2)
-        elif checker.startswith("boomerang_"):
-            successes, total = measured
-            measure = successes / total
-        else:
-            measure = 0.0 if measured == float("-inf") else 2**measured
-            successes = round(measure * trials)
-        total = trials
-        checker_used = checker
-    correlation = (
-        checker_used in ("linear_scalar", "differential_linear_scalar")
-        or checker_used.startswith("linear_checker_")
-        or "differential_linear_checker" in checker_used
+        parameters = _checker_parameters(
+            cipher, checker, labels, values, trials, fixed_key, seed,
+            num_workers, width, key_size, exclude_returning_quartets,
+        )
+        measured = _vectorized_measure(cipher, checker, parameters, trials)
+    checker_used, successes, total, measure = measured
+    result = _measurement_result(
+        checker_used, labels, values, successes, total, measure,
+        trials == "exhaustive",
     )
-    result = {
-        "checker": checker_used,
-        input_label: first,
-        output_label: second,
-        "successes": successes,
-        "trials": total,
-        "observed_correlation" if correlation else "observed_probability": measure,
-        "status": "EXACT"
-        if trials == "exhaustive"
-        else "MEASURED"
-        if successes
-        else "INCONCLUSIVE",
-        "sampling": "exhaustive" if trials == "exhaustive" else "random_plaintexts",
-        "confidence_interval_95": None
-        if trials == "exhaustive"
-        else _confidence_interval(successes, total, correlation),
-    }
-    if baseline == "random_permutation":
-        size = 1 << width
-        if correlation:
-            trivial_linear = (
-                checker_used
-                in (
-                    "linear_scalar",
-                    "linear_checker_permutation",
-                    "linear_checker_for_block_cipher_single_key",
-                )
-                and not int(first, 2)
-                and not int(second, 2)
-            )
-            trivial_differential_linear = "differential_linear" in checker_used and (
-                first == 0 or not int(second, 2)
-            )
-            result["baseline_correlation"] = float(
-                trivial_linear or trivial_differential_linear
-            )
-        elif checker_used.startswith("boomerang_"):
-            if not first or not second:
-                result["baseline_probability"] = float(not exclude_returning_quartets)
-            elif size > 3:
-                result["baseline_probability"] = (size - 2) / (
-                    (size - 1) * (size - 3)
-                ) + (0 if exclude_returning_quartets else 1 / (size - 1))
-        elif checker_used in (
-            "differential_scalar",
-            "differential_checker_permutation",
-            "differential_truncated_checker_single_key",
-        ):
-            result["baseline_probability"] = (
-                1.0
-                if first == second == 0
-                else 0.0
-                if not first or not second
-                else 1 / (size - 1)
-            )
-    baseline_value = result.get(
-        "baseline_correlation", result.get("baseline_probability")
+    return _add_baseline_and_bound(
+        result, baseline, width, exclude_returning_quartets
     )
-    if baseline_value is not None:
-        result["advantage"] = measure - baseline_value
-    if trials != "exhaustive" and successes == 0:
-        bound = -math.expm1(math.log(0.05) / total)
-        result["one_sided_upper_bound_95"] = 2 * bound - 1 if correlation else bound
-    return result
 
 
 class CandidateValidationMixin:
