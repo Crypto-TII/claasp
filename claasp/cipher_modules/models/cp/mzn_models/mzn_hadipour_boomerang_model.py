@@ -89,7 +89,7 @@ class MznHadipourBoomerangModel(MznModel):
     equivalent to backward propagation, without constructing an inverse graph.
     BCT/UBCT/LBCT/EBCT constraints connect the two characteristics in Em.
     Exact-middle mode replaces local middle tables by four complete executions;
-    its score contains only the outer differential weights.
+    its weight contains only the outer differential weights.
     Block-cipher key inputs have zero differences. For permutation models
     such as ChaCha, use ``fixed_values`` to fix the constant/key portion of
     the state when targeting a particular stream-cipher setting.
@@ -665,7 +665,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- local estimated weight, or outer-characteristic score in exact-middle
+        - ``weight`` -- local estimated weight, or outer-characteristic weight in exact-middle
           mode; -1 minimizes the weight,
           None finds any trail; otherwise fixes it to a nonnegative multiple
           of 0.01 bits.
@@ -1045,7 +1045,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- estimated weight (outer-characteristic score for exact middle), a nonnegative
+        - ``weight`` -- estimated weight (outer-characteristic weight for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
           component IDs include ``upper_`` or ``lower_``. Defaults to the
@@ -1138,7 +1138,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``weight`` -- estimated weight (outer-characteristic score for exact middle), a nonnegative
+        - ``weight`` -- estimated weight (outer-characteristic weight for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
           component IDs include ``upper_`` or ``lower_``. Defaults to the
@@ -1185,7 +1185,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         INPUT:
 
-        - ``max_weight`` -- estimated weight (outer-characteristic score for exact middle), a nonnegative
+        - ``max_weight`` -- estimated weight (outer-characteristic weight for exact middle), a nonnegative
           multiple of 0.01. The objective uses the class-level approximation.
         - ``min_weight`` -- nonnegative lower weight bound in bits (default: 0).
         - ``fixed_values`` -- optional list from ``set_fixed_variables``;
