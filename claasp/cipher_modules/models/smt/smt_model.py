@@ -40,14 +40,19 @@ import math
 import re
 import subprocess
 
+from claasp.cipher_modules.models.candidate_validation import CandidateValidationMixin
 from claasp.cipher_modules.models.smt import solvers
 from claasp.cipher_modules.models.smt.utils import constants, utils
-from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary, set_component_solution
+from claasp.cipher_modules.models.utils import (
+    convert_solver_solution_to_dictionary,
+    set_component_solution,
+)
 from claasp.name_mappings import SATISFIABLE, SBOX, UNSATISFIABLE
 
 
-class SmtModel:
+class SmtModel(CandidateValidationMixin):
     def __init__(self, cipher, counter="sequential"):
+        self._validation_cipher = cipher
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []

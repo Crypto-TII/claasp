@@ -61,15 +61,22 @@ import uuid
 
 from sage.sat.solvers.satsolver import SAT
 
+from claasp.cipher_modules.models.candidate_validation import CandidateValidationMixin
 from claasp.cipher_modules.models.sat import solvers
 from claasp.cipher_modules.models.sat.utils import utils
-from claasp.cipher_modules.models.sat.utils.matsui_bounds import matsui_lower_bound, matsui_weight_constraints
+from claasp.cipher_modules.models.sat.utils.matsui_bounds import (
+    matsui_lower_bound,
+    matsui_weight_constraints,
+)
 from claasp.cipher_modules.models.utils import (
     convert_solver_solution_to_dictionary,
     save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
 )
-from claasp.editor import is_fixed_rotate_component, replace_bit_reordering_components_as_direct_wiring
+from claasp.editor import (
+    is_fixed_rotate_component,
+    replace_bit_reordering_components_as_direct_wiring,
+)
 from claasp.name_mappings import (
     CIPHER_OUTPUT,
     CONSTANT,
@@ -82,7 +89,7 @@ from claasp.name_mappings import (
 )
 
 
-class SatModel:
+class SatModel(CandidateValidationMixin):
     def __init__(self, cipher, counter="sequential", compact=False):
         """
         Initialise the sat model.
@@ -94,6 +101,7 @@ class SatModel:
         - ``compact`` -- **boolean** (default: False); set to True for using a simplified cipher where fixed
             rotations and permutation-only steps are inlined into downstream wiring
         """
+        self._validation_cipher = cipher
         # inline rotations and permutation-only steps (if any)
         internal_cipher = copy.deepcopy(cipher)
         if compact:

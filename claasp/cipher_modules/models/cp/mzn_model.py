@@ -27,8 +27,13 @@ from minizinc import Instance, Model, Solver, Status
 from sage.crypto.sbox import SBox
 
 from claasp.cipher_modules.component_analysis_tests import branch_number
+from claasp.cipher_modules.models.candidate_validation import CandidateValidationMixin
 from claasp.cipher_modules.models.cp.minizinc_utils import usefulfunctions
-from claasp.cipher_modules.models.cp.solvers import CP_SOLVERS_EXTERNAL, CP_SOLVERS_INTERNAL, SOLVER_DEFAULT
+from claasp.cipher_modules.models.cp.solvers import (
+    CP_SOLVERS_EXTERNAL,
+    CP_SOLVERS_INTERNAL,
+    SOLVER_DEFAULT,
+)
 from claasp.cipher_modules.models.utils import convert_solver_solution_to_dictionary
 from claasp.name_mappings import (
     CIPHER,
@@ -64,8 +69,9 @@ class MiniZincModelParts:
         return self.prefix + self.variables + self.constraints + self.outputs + self.carries_outputs
 
 
-class MznModel:
+class MznModel(CandidateValidationMixin):
     def __init__(self, cipher, sat_or_milp="sat"):
+        self._validation_cipher = cipher
         self._cipher = cipher
         self.initialise_model()
         if sat_or_milp not in ("sat", "milp"):

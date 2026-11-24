@@ -279,6 +279,19 @@ class MznHadipourBoomerangModel(MznModel):
         self.c_upper = self.c_lower = 0
         self._middle_probabilities = {}
 
+    def validate_boomerang_candidate(self, candidate, trials, **options):
+        """Measure the full-cipher event selected by a boomerang trail.
+
+        ``trials='exhaustive'`` is available for data inputs up to 16 bits;
+        otherwise use a positive sample count. ``fixed_key`` is required for
+        a keyed cipher. The result reports successes, trials, the empirical
+        probability and the matched random-permutation baseline. This does
+        not reinterpret the local trail weight as a measured probability.
+        """
+        if candidate.get("model_type") != _MODEL_TYPE:
+            raise ValueError("Expected a boomerang candidate")
+        return self.validate_candidate(candidate, trials, **options)
+
     @staticmethod
     def _validate_fixed_parameters(cipher, fixed_parameters):
         if fixed_parameters is None:

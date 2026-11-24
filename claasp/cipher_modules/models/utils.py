@@ -1391,7 +1391,7 @@ def _w_linear_perm(args):
 
 def _w_boomerang_sk(args):
     (cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes,
-     fixed_key, chunk_size, seed) = args
+     fixed_key, exclude_returning_quartets, chunk_size, seed) = args
     rng = np.random.default_rng(seed)
     fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
     delta_col = _repeat_input_difference(input_difference, chunk_size, state_num_bytes)      # (sb, n)
@@ -1404,12 +1404,14 @@ def _w_boomerang_sk(args):
     plaintext_3 = inverse.evaluate_vectorized([(ciphertext_1 ^ nabla_row).T, fk])[0]
     returned = plaintext_2 ^ plaintext_3
     matches = np.all(returned == delta_col.T, axis=1)
+    if exclude_returning_quartets:
+        matches &= np.any(plaintext_2 != plaintext_0.T, axis=1)
     return int(np.count_nonzero(matches))
 
 
 def boomerang_checker_for_block_cipher_single_key(
     cipher, input_difference, output_difference, number_of_samples, block_size, key_size, fixed_key, seed=None,
-    num_workers=1
+    num_workers=1, exclude_returning_quartets=False, return_counts=False
 ):
     """
     Verify experimentally boomerang (BCT) distinguishers for block ciphers using the vectorized evaluator.
@@ -1431,10 +1433,13 @@ def boomerang_checker_for_block_cipher_single_key(
     - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
     - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+    - ``exclude_returning_quartets`` -- **boolean** (default: ``False``); omit two-point returns
+    - ``return_counts`` -- **boolean** (default: ``False``); return ``(successes, trials)`` instead of a probability
 
     OUTPUT:
 
-    - This method returns a **float**; the empirical boomerang probability in the interval ``[0, 1]``
+    - By default, this method returns a **float** in ``[0, 1]``. With ``return_counts=True`` it returns
+      the integer pair ``(successes, trials)``.
 
     EXAMPLES::
 
@@ -1470,12 +1475,13 @@ def boomerang_checker_for_block_cipher_single_key(
     inverse = cipher.cipher_inverse()
     fixed_args = (
         cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes, fixed_key,
+        exclude_returning_quartets,
     )
     if num_workers > 1:
         count, total = _parallel_dispatch(_w_boomerang_sk, fixed_args, number_of_samples, num_workers, seed)
-        return count / total
+        return (count, total) if return_counts else count / total
     count = _w_boomerang_sk(fixed_args + (number_of_samples, seed))
-    return count / number_of_samples
+    return (count, number_of_samples) if return_counts else count / number_of_samples
 
 
 def differential_checker_permutation(
@@ -1496,7 +1502,8 @@ def differential_checker_permutation(
 
     OUTPUT:
 
-    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``,
+      or ``-inf`` when no match is observed
     """
     if state_size % 8 != 0:
         raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
@@ -1508,7 +1515,7 @@ def differential_checker_permutation(
             (cipher, input_difference, output_difference, num_bytes),
             number_of_samples, num_workers, seed,
         )
-        return math.log(total / n, 2)
+        return math.log(total / n, 2) if total else float("-inf")
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1521,7 +1528,7 @@ def differential_checker_permutation(
     rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
     total = np.count_nonzero(rows_all_true)
 
-    total_prob_weight = math.log(total / number_of_samples, 2)
+    total_prob_weight = math.log(total / number_of_samples, 2) if total else float("-inf")
     return total_prob_weight
 
 
@@ -1675,7 +1682,7 @@ def shared_difference_paired_input_differential_checker_permutation(
             (cipher, input_difference, output_difference, num_bytes),
             number_of_samples, num_workers, seed,
         )
-        return math.log(total / n, 2)
+        return math.log(total / n, 2) if total else float("-inf")
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1697,7 +1704,7 @@ def shared_difference_paired_input_differential_checker_permutation(
     )
     total = np.count_nonzero(rows_all_true)
 
-    total_prob_weight = math.log(total / number_of_samples, 2)
+    total_prob_weight = math.log(total / number_of_samples, 2) if total else float("-inf")
     return total_prob_weight
 
 
