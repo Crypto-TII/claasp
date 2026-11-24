@@ -15,7 +15,7 @@ from claasp.cipher_modules.models.milp.milp_model import MilpModel
 from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
-from claasp.name_mappings import PERMUTATION
+from claasp.name_mappings import BLOCK_CIPHER, PERMUTATION
 
 SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
 
@@ -170,6 +170,32 @@ def test_keyed_boomerang_reuses_the_existing_vectorized_checker():
     )
     assert nondegenerate["checker"] == "boomerang_checker_for_block_cipher_single_key"
     assert nondegenerate["successes"] == 0
+
+
+def test_vectorized_filter_excludes_swapped_two_point_returns():
+    cipher = Cipher("keyed_xor", BLOCK_CIPHER, ["plaintext", "key"], [8, 8], 8)
+    cipher.add_round()
+    xor = cipher.add_xor_component(
+        ["plaintext", "key"], [list(range(8)), list(range(8))], 8
+    )
+    output = cipher.add_cipher_output_component([xor.id], [list(range(8))], 8)
+    candidate = {
+        "model_type": "boomerang",
+        "components_values": {
+            "upper_plaintext": {"value": "0x01"},
+            f"lower_{output.id}": {"value": "0x01"},
+        },
+    }
+    assert (
+        validate_candidate(cipher, candidate, 32, fixed_key=0, seed=4)["successes"]
+        == 32
+    )
+    assert (
+        validate_candidate(
+            cipher, candidate, 32, fixed_key=0, seed=4, exclude_returning_quartets=True
+        )["successes"]
+        == 0
+    )
 
 
 def test_explicit_truncated_checker_uses_existing_utility():

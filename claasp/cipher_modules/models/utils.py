@@ -1406,6 +1406,7 @@ def _w_boomerang_sk(args):
     matches = np.all(returned == delta_col.T, axis=1)
     if exclude_returning_quartets:
         matches &= np.any(plaintext_2 != plaintext_0.T, axis=1)
+        matches &= np.any(plaintext_2 != plaintext_1.T, axis=1)
     return int(np.count_nonzero(matches))
 
 
