@@ -26,7 +26,6 @@ from types import SimpleNamespace
 from minizinc import Instance, Model, Solver, Status
 
 from claasp.cipher_modules.graph_normalization import binary_modadd_copy
-
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
     get_approx_logarithm_operation,
 )
@@ -53,6 +52,9 @@ from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicat
 )
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_lbct_predicates import (
     get_lbct_operations,
+)
+from claasp.cipher_modules.models.cp.minizinc_utils.mzn_sbox_switch_tables import (
+    minizinc_sbox_switch_table,
 )
 from claasp.cipher_modules.models.cp.minizinc_utils.mzn_ubct_predicates import (
     get_ubct_operations,
@@ -81,7 +83,7 @@ _SWITCH_PREDICATES = {
 
 
 class MznHadipourBoomerangModel(MznModel):
-    """Search single-key boomerang characteristics of ARX and AND-based ciphers.
+    """Search single-key boomerang characteristics of ARX, AND, and S-box ciphers.
 
     The cipher is split into E0, Em, E1. Upper differences propagate through
     E0 and Em; lower differences are constrained by their output through E1 and Em.
@@ -101,7 +103,10 @@ class MznHadipourBoomerangModel(MznModel):
     and lower characteristics.
     Their DDT weights use CLAASP's rounded centibit scale and rank retained
     characteristics; they are not full external probabilities. Local S-box
-    switches are unsupported.
+    switches use exact local BCT, UBCT, LBCT, and EBCT quartet counts for
+    bijective S-boxes of at most eight bits. Their centibit weights estimate
+    a characteristic under the same local independence assumptions as the
+    other switch predicates.
 
     The local-middle objective is
     ``2 * upper_weight + middle_weight + 2 * lower_weight``.
@@ -133,11 +138,10 @@ class MznHadipourBoomerangModel(MznModel):
 
     INPUT:
 
-    - ``cipher`` -- CLAASP cipher; two-input MODADD/MODSUB and AND are the
-      supported nonlinear operations in the upper and lower characteristics and local switches.
-      Exact-middle mode also supports two-input OR constraints, S-box differential
-      constraints for S-boxes of up to eight input bits, and middle components
-      with exact CP encoders.
+    - ``cipher`` -- CLAASP cipher; local switches support two-input
+      MODADD/MODSUB and AND, plus bijective S-boxes of up to eight input bits.
+      Exact-middle mode also supports two-input OR constraints and middle
+      components with exact CP encoders.
     - ``boomerang_structure`` -- dictionary containing nonnegative integer
       ``top_part_number_of_rounds``, positive ``middle_part_number_of_rounds``,
       and nonnegative ``bottom_part_number_of_rounds``. Their sum must equal
@@ -399,8 +403,6 @@ class MznHadipourBoomerangModel(MznModel):
     def _component_constraints(self, component):
         operation = component.description[0]
         if component.type == SBOX:
-            if self.middle_model != "exact":
-                raise NotImplementedError("S-box differential constraints require middle_model='exact'")
             if component.input_bit_size > 8:
                 raise NotImplementedError(
                     "S-box differential tables support at most eight input bits"
@@ -558,6 +560,50 @@ class MznHadipourBoomerangModel(MznModel):
         self._model_constraints.extend(self._switch_constraint(kind, args, size, index))
         return kind, size
 
+    def _add_sbox_switch(self, key, kind, index, declared_tables):
+        upper = self._cipher.component_from_id(_UPPER_PREFIX + key)
+        lower = self._cipher.component_from_id(_LOWER_PREFIX + key)
+        if (
+            upper.output_bit_size != upper.input_bit_size
+            or lower.output_bit_size != lower.input_bit_size
+        ):
+            raise NotImplementedError("Local S-box switches require square S-boxes")
+        name, declaration = minizinc_sbox_switch_table(upper.description, kind)
+        if name not in declared_tables:
+            self._model_constraints.append(declaration)
+            declared_tables.add(name)
+        upper_input = [
+            f"{link}[{bit}]"
+            for link, positions in zip(upper.input_id_links, upper.input_bit_positions)
+            for bit in positions
+        ]
+        lower_input = [
+            f"{link}[{bit}]"
+            for link, positions in zip(lower.input_id_links, lower.input_bit_positions)
+            for bit in positions
+        ]
+        differences = {
+            "upper_input": upper_input,
+            "upper_output": [
+                f"{upper.id}[{bit}]" for bit in range(upper.output_bit_size)
+            ],
+            "lower_input": lower_input,
+            "lower_output": [
+                f"{lower.id}[{bit}]" for bit in range(lower.output_bit_size)
+            ],
+        }
+        order = {
+            "bct": ("upper_input", "lower_output"),
+            "ubct": ("upper_input", "upper_output", "lower_output"),
+            "lbct": ("upper_input", "lower_input", "lower_output"),
+            "ebct": ("upper_input", "upper_output", "lower_input", "lower_output"),
+        }[kind]
+        values = [bit for difference in order for bit in differences[difference]]
+        values.append(f"middle_p[{index}]")
+        self._model_constraints.append(
+            f"constraint table([{', '.join(values)}], {name});"
+        )
+
     @staticmethod
     def _switch_constraint(kind, ids, size, index=None):
         indices = range(size) if index is not None else reversed(range(size))
@@ -588,6 +634,7 @@ class MznHadipourBoomerangModel(MznModel):
         keys = self._middle_keys()
         index = 0
         predicates = {}
+        declared_tables = set()
         for key in keys:
             round_number = int(key.split("_")[1])
             kind = self._switch_kind(round_number)
@@ -598,6 +645,8 @@ class MznHadipourBoomerangModel(MznModel):
             self._middle_probabilities[key] = list(range(index, index + count))
             if component.description[0] == "AND":
                 self._add_and_switch(key, kind, index)
+            elif component.type == SBOX:
+                self._add_sbox_switch(key, kind, index, declared_tables)
             else:
                 kind, size = self._add_modular_switch(key, kind, index)
                 if predicates and size not in predicates.values():
