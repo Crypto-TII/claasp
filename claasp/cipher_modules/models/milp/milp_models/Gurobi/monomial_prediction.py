@@ -601,6 +601,47 @@ class MilpMonomialPredictionModel:
             self.set_as_used_variables([input_vars_concat[(bit_pos - rotate_offset) % component.output_bit_size]])
         self._model.update()
 
+    def add_variable_rotate_constraints(self, component):
+        """
+        Monomial prediction of ``y = x <<< s`` or ``y = x >>> s`` for a variable amount ``s`` (the last input bits).
+        Each bit of ``s`` gives one conditional rotation stage, modeled with the exact COPY, AND and XOR rules.
+        """
+        output_vars = self._get_padded_output_vars(component)
+        input_vars = self.get_input_vars(component)
+        self.set_as_used_variables(input_vars)
+
+        n = component.output_bit_size
+        z, amount = input_vars[:n], input_vars[n:]
+        direction = component.description[1]
+        tag = f"varrot_{component.id}"
+        for stage in range(len(amount)):
+            r = amount[len(amount) - 1 - stage]
+            offset = (-direction * 2**stage) % n
+            if offset == 0:
+                # rotation by a multiple of n: the stage is the identity and r does not appear
+                self._model.addConstr(r == 0)
+                continue
+            keep = [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_{stage}_z_{j}") for j in range(n)]
+            r_keep = [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_{stage}_rz_{j}") for j in range(n)]
+            r_move = [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_{stage}_rzk_{j}") for j in range(n)]
+            z_next = [self._model.addVar(vtype=GRB.BINARY, name=f"{tag}_{stage}_out_{j}") for j in range(n)]
+            self._model.update()
+            for j in range(n):
+                self._model.addConstr(z_next[j] == keep[j] + r_keep[j] + r_move[j])
+                # COPY of z_j into the three terms that use it
+                uses = [keep[j], r_keep[j], r_move[(j - offset) % n]]
+                for v in uses:
+                    self._model.addConstr(z[j] >= v)
+                self._model.addConstr(sum(uses) >= z[j])
+            # COPY of r_i into the 2n products
+            for v in r_keep + r_move:
+                self._model.addConstr(r >= v)
+            self._model.addConstr(sum(r_keep + r_move) >= r)
+            z = z_next
+        for j in range(n):
+            self._model.addConstr(output_vars[j] == z[j])
+        self._model.update()
+
     def add_shift_constraints(self, component):
         output_vars = self.get_output_vars(component)
         input_vars_concat = self.get_input_vars(component)
@@ -1117,6 +1158,8 @@ class MilpMonomialPredictionModel:
             self.add_xor_constraints(component)
         elif op == "ROTATE":
             self.add_rotate_constraints(component)
+        elif op == "ROTATE_BY_VARIABLE_AMOUNT":
+            self.add_variable_rotate_constraints(component)
         elif op == "SHIFT":
             self.add_shift_constraints(component)
         elif op == "AND":
