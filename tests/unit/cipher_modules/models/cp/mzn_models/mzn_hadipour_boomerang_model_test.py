@@ -531,7 +531,7 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
     model = MznHadipourBoomerangModel(
         cipher, structure(), middle_model="exact", exclude_returning_quartets=True
     )
-    result = model.find_one_boomerang_trail(solver_name="gecode", timeout_in_seconds=10)
+    result = model.find_one_boomerang_trail(solver_name="coinbc", timeout_in_seconds=10)
     assert result["status"] == "SATISFIABLE"
     points = []
     for j in range(4):
@@ -546,8 +546,13 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
     assert len({point[1] for point in points}) == 4
     assert len({point[0] for point in points}) == 1
     local_model = MznHadipourBoomerangModel(cipher, structure())
-    with pytest.raises(NotImplementedError, match="S-box differential constraints require"):
-        local_model.build_hadipour_boomerang_model()
+    local_model.build_hadipour_boomerang_model()
+    assert any(
+        name.startswith("upper_sbox") for name in local_model.component_and_probability
+    )
+    assert any(
+        name.startswith("lower_sbox") for name in local_model.component_and_probability
+    )
 
 
 def test_binary_key_schedule_constants_do_not_reject_valid_twine_quartet():
