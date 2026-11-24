@@ -368,35 +368,48 @@ def _measurement_result(checker, labels, values, successes, total, measure, exha
     return result
 
 
+def _correlation_baseline(checker, first, second):
+    simple_linear = checker in (
+        "linear_scalar", "linear_checker_permutation",
+        "linear_checker_for_block_cipher_single_key",
+    )
+    trivial_linear = simple_linear and not int(first, 2) and not int(second, 2)
+    trivial_pair = "differential_linear" in checker and (
+        first == 0 or not int(second, 2)
+    )
+    return "baseline_correlation", float(trivial_linear or trivial_pair)
+
+
+def _boomerang_baseline(first, second, size, exclude):
+    if not first or not second:
+        return "baseline_probability", float(not exclude)
+    if size <= 3:
+        return None
+    value = (size - 2) / ((size - 1) * (size - 3))
+    if not exclude:
+        value += 1 / (size - 1)
+    return "baseline_probability", value
+
+
+def _differential_baseline(first, second, size):
+    if first == second == 0:
+        return "baseline_probability", 1.0
+    if not first or not second:
+        return "baseline_probability", 0.0
+    return "baseline_probability", 1 / (size - 1)
+
+
 def _random_baseline(checker, first, second, width, exclude):
     size = 1 << width
     if _is_correlation(checker):
-        simple_linear = checker in (
-            "linear_scalar", "linear_checker_permutation",
-            "linear_checker_for_block_cipher_single_key",
-        )
-        trivial_linear = simple_linear and not int(first, 2) and not int(second, 2)
-        trivial_pair = "differential_linear" in checker and (
-            first == 0 or not int(second, 2)
-        )
-        return "baseline_correlation", float(trivial_linear or trivial_pair)
+        return _correlation_baseline(checker, first, second)
     if checker.startswith("boomerang_"):
-        if not first or not second:
-            return "baseline_probability", float(not exclude)
-        if size > 3:
-            value = (size - 2) / ((size - 1) * (size - 3))
-            if not exclude:
-                value += 1 / (size - 1)
-            return "baseline_probability", value
+        return _boomerang_baseline(first, second, size, exclude)
     if checker in (
         "differential_scalar", "differential_checker_permutation",
         "differential_truncated_checker_single_key",
     ):
-        if first == second == 0:
-            return "baseline_probability", 1.0
-        if not first or not second:
-            return "baseline_probability", 0.0
-        return "baseline_probability", 1 / (size - 1)
+        return _differential_baseline(first, second, size)
     return None
 
 
