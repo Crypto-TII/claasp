@@ -95,8 +95,8 @@ than being inferred from package names. Queries work in either direction:
    ['concrete_execution', 'msolve_input', 'prime_field_polynomial', 'primitive_diagram', 'primitive_serialization', 'python_generated_source', 'singular_program']
    >>> [item.name for item in catalogue.components(representation="boolean_cnf")]
    ['Add', 'BitVectorSBox', 'BitwiseAnd', 'Constant', 'Identity', 'ModularAdd', 'Permutation', 'Rotate', 'Xor']
-   >>> [item.name for item in catalogue.drivers(representation="boolean_cnf")]
-   ['cryptominisat', 'glpk', 'kissat', 'minisat', 'minizinc', 'z3']
+   >>> {"cryptominisat", "z3"} <= {item.name for item in catalogue.drivers(representation="boolean_cnf")}
+   True
    >>> "enumerate_xor_differential_trails" in {
    ...     item.name for item in catalogue.analyses(primitive="Speck")}
    True

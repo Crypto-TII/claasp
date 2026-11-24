@@ -164,7 +164,7 @@ __catalogue__ = (
         kind="constraint",
         components=("BitwiseAnd", "Constant", "Rotate", "Xor"),
         domains=("Bit", "Word"),
-        drivers=("glpk", "highs"),
+        drivers=("coin_bc", "glpk", "highs", "scip"),
         scope="generic_graph",
     ),
 )

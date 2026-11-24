@@ -56,7 +56,7 @@ __catalogue__ = (
             "Xor",
         ),
         domains=("Bit", "Word"),
-        drivers=("z3",),
+        drivers=("mathsat", "yices", "z3"),
         scope="generic_graph",
     ),
     _entry(
@@ -78,7 +78,7 @@ __catalogue__ = (
             "Xor",
         ),
         domains=("Word",),
-        drivers=("z3",),
+        drivers=("mathsat", "yices", "z3"),
         scope="generic_graph",
     ),
     _entry(
@@ -100,7 +100,7 @@ __catalogue__ = (
             "Xor",
         ),
         domains=("Word",),
-        drivers=("z3",),
+        drivers=("mathsat", "yices", "z3"),
         scope="generic_graph",
     ),
 )
