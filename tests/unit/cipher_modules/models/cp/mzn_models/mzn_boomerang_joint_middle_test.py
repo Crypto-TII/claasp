@@ -61,7 +61,7 @@ def test_joint_middle_recovers_cancellation_excluded_by_local_tables():
         fixed_values=external, timeout_in_seconds=10
     )
     assert result["status"] == "SATISFIABLE"
-    assert result["score_type"] == "outer_characteristic_score"
+    assert result["weight_type"] == "outer_characteristic_weight"
     assert result["middle_weight"] is None
     assert float(result["total_weight"]) == 0
     assert set(result["components_values"]) == {
@@ -100,7 +100,7 @@ def test_joint_middle_supports_sbox_values_without_local_switch_encoder():
         model.build_hadipour_boomerang_model(fixed_variables=fixed_values)
 
 
-def test_joint_modular_middle_uses_integer_backend_and_preserves_outer_scores():
+def test_joint_modular_middle_uses_integer_backend_and_preserves_outer_weights():
     model = MznHadipourBoomerangModel(
         SpeckBlockCipher(number_of_rounds=3), structure(3, 1, 1), middle_model="exact"
     )
@@ -151,6 +151,11 @@ def test_returning_only_identity_pair_is_optional(middle_model, exclude):
     )
     assert result["status"] == ("UNSATISFIABLE" if exclude else "SATISFIABLE")
     if not exclude:
+        assert result["weight_type"] == (
+            "outer_characteristic_weight"
+            if middle_model == "exact"
+            else "local_characteristic_weight_estimate"
+        )
         assert result["exclude_returning_quartets"] is False
         xs = [
             int(result["quartet_values"][f"quartet_{i}_state"]["value"], 16)

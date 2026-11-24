@@ -165,7 +165,7 @@ class MznHadipourBoomerangModel(MznModel):
       components. Only the outer characteristics and external differences are
       retained. The objective is twice the sum of outer differential weights,
       an ordering heuristic, not a probability estimate. Results identify it as
-      ``score_type='outer_characteristic_score'`` and set ``middle_weight=None``. Returned
+      ``weight_type='outer_characteristic_weight'`` and set ``middle_weight=None``. Returned
       ``retained_difference_bits`` identifies physically anchored component bits;
       unretained auxiliary differences are omitted from ``components_values``.
       Fixing such auxiliary bits raises ValueError. Exact middle components need
@@ -793,9 +793,9 @@ class MznHadipourBoomerangModel(MznModel):
         if self.middle_model == "exact":
             self._retain_exact_components(components)
             result["middle_weight"] = None
-            result["score_type"] = "outer_characteristic_score"
+            result["weight_type"] = "outer_characteristic_weight"
         else:
-            result["score_type"] = "local_characteristic_estimate"
+            result["weight_type"] = "local_characteristic_weight_estimate"
         return result
 
     def _retain_exact_components(self, components):
