@@ -480,7 +480,7 @@ def _add_candidate_comparison(result, candidate):
         return result
     comparison["quantity"] = kind
     comparison["scope"] = "single-trail score versus full external event"
-    comparison["implied_trail_value"] = math.exp2(-weight)
+    comparison["implied_trail_value"] = 2 ** -weight
     if result["status"] == "INCONCLUSIVE":
         comparison["reason"] = "zero sampled successes do not determine the event probability"
         return result
