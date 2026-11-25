@@ -287,6 +287,10 @@ class MznHadipourBoomerangModel(MznModel):
         a keyed cipher. The result reports successes, trials, the empirical
         probability and the matched random-permutation baseline. This does
         not reinterpret the local trail weight as a measured probability.
+        Sampled byte-aligned keyless permutations and keyed block ciphers use
+        vectorized evaluation; small exhaustive checks use scalar evaluation.
+        Supply ``inverse_cipher`` if CLAASP cannot construct a permutation's
+        inverse automatically.
         """
         if candidate.get("model_type") != _MODEL_TYPE:
             raise ValueError("Expected a boomerang candidate")

@@ -16,6 +16,7 @@ _CHECKERS = {
     name: getattr(utils, name)
     for name in (
         "boomerang_checker_for_block_cipher_single_key",
+        "boomerang_checker_for_permutation",
         "differential_checker_permutation",
         "differential_linear_checker_for_block_cipher_single_key",
         "differential_truncated_checker_permutation",
@@ -126,7 +127,7 @@ def _default_checker(cipher, model_type):
         return (
             "boomerang_checker_for_block_cipher_single_key"
             if keyed
-            else "boomerang_scalar"
+            else "boomerang_checker_for_permutation"
         )
     if model_type == "xor_differential":
         return (
@@ -150,7 +151,8 @@ def _default_checker(cipher, model_type):
 
 
 def _scalar_event(
-    cipher, checker, first, second, trials, fixed_key, seed, exclude_returning_quartets
+    cipher, checker, first, second, trials, fixed_key, seed, exclude_returning_quartets,
+    inverse_cipher,
 ):
     data = _data_input(cipher)
     width = cipher.inputs_bit_size[cipher.inputs.index(data)]
@@ -161,7 +163,9 @@ def _scalar_event(
         raise NotImplementedError(
             "Supply a cipher with only data and optional key inputs"
         )
-    inverse = cipher.cipher_inverse() if checker == "boomerang_scalar" else None
+    inverse = inverse_cipher
+    if checker == "boomerang_scalar" and inverse is None:
+        inverse = cipher.cipher_inverse()
     inputs, total = _scalar_inputs(size, trials, seed)
     successes = sum(
         _scalar_match(
@@ -275,12 +279,13 @@ def _scalar_checker(checker):
     raise NotImplementedError("This checker requires byte-aligned vectorized evaluation")
 
 
-def _scalar_measure(cipher, checker, first, second, trials, fixed_key, seed, exclude):
+def _scalar_measure(cipher, checker, first, second, trials, fixed_key, seed, exclude, inverse_cipher):
     scalar = _scalar_checker(checker)
     scalar_first = int(first, 2) if isinstance(first, str) else first
     scalar_second = int(second, 2) if isinstance(second, str) else second
     successes, total = _scalar_event(
-        cipher, scalar, scalar_first, scalar_second, trials, fixed_key, seed, exclude
+        cipher, scalar, scalar_first, scalar_second, trials, fixed_key, seed,
+        exclude, inverse_cipher,
     )
     measure = successes / total
     if scalar in ("linear_scalar", "differential_linear_scalar"):
@@ -290,7 +295,7 @@ def _scalar_measure(cipher, checker, first, second, trials, fixed_key, seed, exc
 
 def _checker_parameters(
     cipher, checker, labels, values, trials, fixed_key, seed, num_workers,
-    width, key_size, exclude,
+    width, key_size, exclude, inverse_cipher,
 ):
     input_label, output_label = labels
     first, second = values
@@ -313,9 +318,14 @@ def _checker_parameters(
         parameters["state_size"] = width
     if checker == "differential_truncated_checker_single_key" and isinstance(second, int):
         parameters[output_label] = format(second, f"0{width}b")
-    if checker == "boomerang_checker_for_block_cipher_single_key":
+    if checker in (
+        "boomerang_checker_for_block_cipher_single_key",
+        "boomerang_checker_for_permutation",
+    ):
         parameters["exclude_returning_quartets"] = exclude
         parameters["return_counts"] = True
+    if checker == "boomerang_checker_for_permutation" and inverse_cipher is not None:
+        parameters["inverse_cipher"] = inverse_cipher
     return parameters
 
 
@@ -432,6 +442,60 @@ def _add_baseline_and_bound(result, baseline, width, exclude):
     return result
 
 
+def _candidate_score_kind(candidate):
+    model_type = candidate.get("model_type", "")
+    weight_type = candidate.get("weight_type")
+    if weight_type == "outer_characteristic_weight":
+        return None
+    if model_type == "boomerang":
+        if weight_type == "local_characteristic_weight_estimate":
+            return "probability"
+        return None
+    if model_type == "xor_differential":
+        return "probability"
+    if model_type == "xor_linear" or "differential_linear" in model_type:
+        return "absolute_correlation"
+    return None
+
+
+def _add_candidate_comparison(result, candidate):
+    raw_weight = candidate.get("total_weight")
+    if raw_weight is None:
+        return result
+    try:
+        weight = float(raw_weight)
+    except (TypeError, ValueError):
+        return result
+    comparison = {
+        "reported_weight_bits": weight,
+        "weight_type": candidate.get("weight_type", "unspecified"),
+    }
+    result["candidate_comparison"] = comparison
+    if not math.isfinite(weight) or weight < 0:
+        comparison["reason"] = "reported weight is not finite and nonnegative"
+        return result
+    kind = _candidate_score_kind(candidate)
+    if kind is None:
+        comparison["reason"] = "the score does not estimate the complete event"
+        return result
+    comparison["quantity"] = kind
+    comparison["scope"] = "single-trail score versus full external event"
+    comparison["implied_trail_value"] = math.exp2(-weight)
+    if result["status"] == "INCONCLUSIVE":
+        comparison["reason"] = "zero sampled successes do not determine the event probability"
+        return result
+    observed = result.get("observed_probability")
+    if kind == "absolute_correlation":
+        observed = abs(result["observed_correlation"])
+    comparison["observed_external_value"] = observed
+    comparison["observed_minus_implied_value"] = observed - comparison["implied_trail_value"]
+    if observed > 0:
+        observed_weight = -math.log2(observed)
+        comparison["observed_external_weight_bits"] = observed_weight
+        comparison["observed_minus_reported_weight_bits"] = observed_weight - weight
+    return result
+
+
 def validate_candidate(
     cipher,
     candidate,
@@ -442,6 +506,7 @@ def validate_candidate(
     checker=None,
     baseline="random_permutation",
     exclude_returning_quartets=False,
+    inverse_cipher=None,
     **endpoints,
 ):
     """Measure a solved trail's external event independently of its solver weight.
@@ -455,9 +520,15 @@ def validate_candidate(
 
     The result contains successes, trials, a measured probability or
     correlation, and a random-permutation baseline where applicable.
+    When the candidate has a meaningful trail weight, the result also
+    reports the numerical gap between its implied trail value and the
+    measured full external event. This is a diagnostic, not a full-event
+    probability estimate from the solver score.
     Sampled zero counts are marked ``INCONCLUSIVE`` with a one-sided bound.
     Set ``exclude_returning_quartets=True`` to omit two-point boomerang
     returns. Set ``baseline=None`` to omit the comparison.
+    Set ``inverse_cipher`` when the keyless permutation's inverse must be
+    supplied explicitly.
     """
     if not isinstance(candidate, dict):
         raise TypeError("candidate must be a solved trail dictionary")
@@ -474,7 +545,7 @@ def validate_candidate(
     if _uses_scalar(cipher, checker, trials, data, width, key_size):
         measured = _scalar_measure(
             cipher, checker, first, second, trials, fixed_key, seed,
-            exclude_returning_quartets,
+            exclude_returning_quartets, inverse_cipher,
         )
     else:
         if not isinstance(trials, int) or trials <= 0:
@@ -482,6 +553,7 @@ def validate_candidate(
         parameters = _checker_parameters(
             cipher, checker, labels, values, trials, fixed_key, seed,
             num_workers, width, key_size, exclude_returning_quartets,
+            inverse_cipher,
         )
         measured = _vectorized_measure(cipher, checker, parameters, trials)
     checker_used, successes, total, measure = measured
@@ -489,9 +561,10 @@ def validate_candidate(
         checker_used, labels, values, successes, total, measure,
         trials == "exhaustive",
     )
-    return _add_baseline_and_bound(
+    result = _add_baseline_and_bound(
         result, baseline, width, exclude_returning_quartets
     )
+    return _add_candidate_comparison(result, candidate)
 
 
 class CandidateValidationMixin:

@@ -1485,6 +1485,119 @@ def boomerang_checker_for_block_cipher_single_key(
     return (count, number_of_samples) if return_counts else count / number_of_samples
 
 
+def _w_boomerang_permutation(args):
+    """Count keyless boomerang returns in bounded vectorized batches."""
+    (cipher, inverse, input_difference, output_difference, state_num_bytes,
+     exclude_returning_quartets, number_of_samples, seed) = args
+    rng = np.random.default_rng(seed)
+    delta = np.frombuffer(input_difference.to_bytes(state_num_bytes, "big"), dtype=np.uint8).reshape(-1, 1)
+    nabla = np.frombuffer(output_difference.to_bytes(state_num_bytes, "big"), dtype=np.uint8).reshape(1, -1)
+    batch_size = max(1, min(4096, 65536 // state_num_bytes))
+    count = 0
+    for offset in range(0, number_of_samples, batch_size):
+        samples = min(batch_size, number_of_samples - offset)
+        plaintext_0 = rng.integers(0, 256, size=(state_num_bytes, samples), dtype=np.uint8)
+        plaintext_1 = plaintext_0 ^ delta
+        ciphertext_0 = cipher.evaluate_vectorized([plaintext_0])[0]
+        ciphertext_1 = cipher.evaluate_vectorized([plaintext_1])[0]
+        plaintext_2 = inverse.evaluate_vectorized([(ciphertext_0 ^ nabla).T])[0]
+        plaintext_3 = inverse.evaluate_vectorized([(ciphertext_1 ^ nabla).T])[0]
+        matches = np.all((plaintext_2 ^ plaintext_3) == delta.T, axis=1)
+        if exclude_returning_quartets:
+            matches &= np.any(plaintext_2 != plaintext_0.T, axis=1)
+            matches &= np.any(plaintext_2 != plaintext_1.T, axis=1)
+        count += int(np.count_nonzero(matches))
+    return count
+
+
+def _resolve_permutation_inverse(cipher, inverse_cipher, state_size):
+    if inverse_cipher is None:
+        try:
+            inverse_cipher = cipher.cipher_inverse()
+        except ValueError as exc:
+            raise ValueError(
+                "CLAASP cannot construct this permutation's inverse; supply inverse_cipher"
+            ) from exc
+    if (
+        len(inverse_cipher.inputs) != 1
+        or inverse_cipher.inputs_bit_size[0] != state_size
+        or inverse_cipher.output_bit_size != state_size
+    ):
+        raise ValueError("inverse_cipher must have one input and the same state size")
+    return inverse_cipher
+
+
+def boomerang_checker_for_permutation(
+    cipher, input_difference, output_difference, number_of_samples, state_size,
+    seed=None, num_workers=1, exclude_returning_quartets=False, return_counts=False,
+    inverse_cipher=None,
+):
+    """Measure a boomerang event on an invertible keyless permutation.
+
+    The checker encrypts random pairs differing by input_difference, XORs
+    output_difference into both outputs, decrypts them, and counts returned
+    pairs with the original input difference. Set
+    exclude_returning_quartets=True to omit two-point returns. Samples are
+    processed in bounded vectorized batches, including within each worker.
+    CLAASP can construct inverses for AsconSboxSigmaPermutation and
+    KeccakInvertiblePermutation. The older KeccakSboxPermutation graph does
+    not invert automatically; a caller can supply a compatible vectorized
+    inverse using inverse_cipher.
+
+    INPUT:
+
+    - cipher -- keyless permutation with vectorized forward and inverse evaluation
+    - input_difference -- integer input XOR difference
+    - output_difference -- integer output XOR difference
+    - number_of_samples -- positive number of random starting states
+    - state_size -- permutation width in bits, divisible by eight
+    - seed -- optional reproducible random seed
+    - num_workers -- positive number of worker processes
+    - exclude_returning_quartets -- omit two-point returns
+    - return_counts -- return (successes, trials) instead of a probability
+    - inverse_cipher -- optional explicit inverse when CLAASP cannot construct one
+
+    OUTPUT:
+
+    - The observed success probability, or integer success and trial counts.
+      This is a sampled measurement; a zero count does not prove zero probability.
+
+    A zero output difference is a control: every input pair returns.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+        sage: from claasp.cipher_modules.models.utils import boomerang_checker_for_permutation
+        sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=1)
+        sage: boomerang_checker_for_permutation(ascon, 1, 0, 8, 320, seed=1, return_counts=True)
+        (8, 8)
+    """
+    number_of_samples, state_size, num_workers = int(number_of_samples), int(state_size), int(num_workers)
+    if number_of_samples <= 0 or num_workers <= 0:
+        raise ValueError("number_of_samples and num_workers must be positive")
+    if state_size <= 0 or state_size % 8:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(cipher.inputs) != 1 or cipher.inputs_bit_size[0] != state_size or cipher.output_bit_size != state_size:
+        raise ValueError("cipher must be a keyless permutation with the specified input and output size")
+    input_difference, output_difference = int(input_difference), int(output_difference)
+    if not (0 <= input_difference < 1 << state_size) or not (0 <= output_difference < 1 << state_size):
+        raise ValueError("boomerang differences must fit in state_size bits")
+    seed = None if seed is None else int(seed)
+    inverse = _resolve_permutation_inverse(cipher, inverse_cipher, state_size)
+    fixed_args = (
+        cipher, inverse, input_difference, output_difference, state_size // 8,
+        exclude_returning_quartets,
+    )
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_boomerang_permutation, fixed_args, number_of_samples,
+            min(num_workers, number_of_samples), seed,
+        )
+    else:
+        count, total = _w_boomerang_permutation(fixed_args + (number_of_samples, seed)), number_of_samples
+    return (count, total) if return_counts else count / total
+
+
 def differential_checker_permutation(
     cipher, input_difference, output_difference, number_of_samples, state_size, seed=None, num_workers=1
 ):

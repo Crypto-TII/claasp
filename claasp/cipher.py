@@ -460,7 +460,7 @@ class Cipher:
                 else:
                     unprocessed_components.append(c)
             if len(unprocessed_components) == len(cipher_components_tmp):
-                raise Error(_inversion_stall_message(cipher_components_tmp))
+                raise ValueError(_inversion_stall_message(cipher_components_tmp))
             cipher_components_tmp = unprocessed_components
 
         # STEP 3 - rebuild cipher
