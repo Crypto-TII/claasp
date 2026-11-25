@@ -495,6 +495,24 @@ def test_zero_sampled_differential_count_is_inconclusive_with_bound():
     assert 0 < result["one_sided_upper_bound_95"] < 1
 
 
+def test_candidate_comparison_keeps_weight_gap_when_probability_underflows():
+    cipher, output = toy_sbox()
+    candidate = {
+        "model_type": "xor_differential",
+        "total_weight": 1100,
+        "components_values": {
+            "plaintext": {"value": "0x0"},
+            output: {"value": "0x0"},
+        },
+    }
+    result = validate_candidate(cipher, candidate, "exhaustive")
+    comparison = result["candidate_comparison"]
+    assert comparison["implied_trail_value"] is None
+    assert comparison["observed_external_value"] == 1
+    assert comparison["observed_minus_reported_weight_bits"] == -1100
+    assert "observed_minus_implied_value" not in comparison
+
+
 def test_boomerang_random_baseline_matches_all_three_bit_permutations():
     """Independently enumerate random permutations, including two-point returns."""
     total = nondegenerate = 0

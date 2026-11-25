@@ -480,7 +480,7 @@ def _add_candidate_comparison(result, candidate):
         return result
     comparison["quantity"] = kind
     comparison["scope"] = "single-trail score versus full external event"
-    comparison["implied_trail_value"] = 2 ** -weight
+    comparison["implied_trail_value"] = 2 ** -weight if weight <= 1074 else None
     if result["status"] == "INCONCLUSIVE":
         comparison["reason"] = "zero sampled successes do not determine the event probability"
         return result
@@ -488,7 +488,10 @@ def _add_candidate_comparison(result, candidate):
     if kind == "absolute_correlation":
         observed = abs(result["observed_correlation"])
     comparison["observed_external_value"] = observed
-    comparison["observed_minus_implied_value"] = observed - comparison["implied_trail_value"]
+    if comparison["implied_trail_value"] is None:
+        comparison["reason"] = "implied trail value below float range; compare bit weights"
+    else:
+        comparison["observed_minus_implied_value"] = observed - comparison["implied_trail_value"]
     if observed > 0:
         observed_weight = -math.log2(observed)
         comparison["observed_external_weight_bits"] = observed_weight

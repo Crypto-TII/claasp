@@ -82,6 +82,35 @@ _SWITCH_PREDICATES = {
 }
 
 
+def _probability_from_weight(weight):
+    """Convert a bit weight without representing float underflow as zero."""
+    return 2 ** -weight if math.isfinite(weight) and weight <= 1074 else None
+
+
+def _boomerang_probability_factors(weights, middle_model):
+    factors = {
+        "p": _probability_from_weight(weights["Upper weight"]),
+        "q": _probability_from_weight(weights["Lower weight"]),
+        "r": None,
+        "p_squared_q_squared_r": None,
+        "log2_p_squared_q_squared_r": None,
+        "kind": "middle_probability_unavailable",
+    }
+    if middle_model == "local":
+        factors["r"] = _probability_from_weight(weights["Middle weight"])
+        factors["p_squared_q_squared_r"] = _probability_from_weight(
+            weights["Trail weight"]
+        )
+        factors["log2_p_squared_q_squared_r"] = -weights["Trail weight"]
+        factors["kind"] = "local_characteristic_estimate"
+        if None in (
+            factors["p"], factors["q"], factors["r"],
+            factors["p_squared_q_squared_r"],
+        ):
+            factors["reason"] = "below_float_range; use the bit weights"
+    return factors
+
+
 class MznHadipourBoomerangModel(MznModel):
     """Search single-key boomerang characteristics of ARX, AND, and S-box ciphers.
 
@@ -110,6 +139,15 @@ class MznHadipourBoomerangModel(MznModel):
 
     The local-middle objective is
     ``2 * upper_weight + middle_weight + 2 * lower_weight``.
+    A solved candidate reports ``boomerang_probability_factors`` with
+    ``p = 2^-upper_weight``, ``q = 2^-lower_weight``,
+    ``r = 2^-middle_weight``, and ``p_squared_q_squared_r``. These are
+    characteristic estimates, not a measured full-cipher probability.
+    Exact-middle mode reports ``p`` and ``q`` but leaves ``r`` and the
+    product as ``None``, because a quartet witness does not determine the
+    middle connection probability. If a local estimate is too small for a
+    Python float, its value is ``None``; the reported log2 product and bit
+    weights retain its magnitude.
     It is a characteristic estimate under the usual independence assumptions,
     not the sum of all characteristics with the same external differences.
     Component ``weight`` entries are raw differential weights in each characteristic;
@@ -847,6 +885,9 @@ class MznHadipourBoomerangModel(MznModel):
             lower_weight=weights["Lower weight"],
             boomerang_structure=dict(self.boomerang_structure),
         )
+        result["boomerang_probability_factors"] = _boomerang_probability_factors(
+            weights, self.middle_model
+        )
         if self.enforce_value_compatibility:
             result["quartet_values"] = {
                 name: components.pop(name) for name in self._value_witness_names
@@ -1078,6 +1119,8 @@ class MznHadipourBoomerangModel(MznModel):
 
         OUTPUT: CLAASP solution dictionary with hexadecimal component values,
         ``total_weight``, ``upper_weight``, ``middle_weight``, ``lower_weight``,
+        ``boomerang_probability_factors`` with ``p``, ``q``, ``r``, and
+        ``p_squared_q_squared_r`` (the last two are ``None`` in exact-middle mode),
         solver statistics, build time, and ``solver_status``. ``status`` is
         SATISFIABLE, UNSATISFIABLE or UNKNOWN (e.g. a timeout without a solution).
         Check ``solver_status`` for proof of optimality. See the class

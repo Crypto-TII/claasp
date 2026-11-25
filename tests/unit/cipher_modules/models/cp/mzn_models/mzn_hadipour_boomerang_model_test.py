@@ -141,15 +141,38 @@ def test_prefix_round_trip_invalidates_cached_lookup():
 def test_parser_preserves_fractional_weight():
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
     raw = SimpleNamespace(
-        _output_item="upper_plaintext = [0, 1, 0, 0]\nUpper weight = 0.0\nMiddle weight = 1.25\nLower weight = 0.0\nTrail weight = 1.25\n"
+        _output_item="upper_plaintext = [0, 1, 0, 0]\nUpper weight = 1.0\nMiddle weight = 1.25\nLower weight = 2.0\nTrail weight = 7.25\n"
     )
     result = model._parse_boomerang_solution(
         raw, Status.OPTIMAL_SOLUTION, "gecode", {"time": timedelta(seconds=2)}
     )
     assert result["components_values"]["upper_plaintext"]["value"] == "0x4"
-    assert result["total_weight"] == "1.25"
+    assert result["total_weight"] == "7.25"
     assert result["middle_weight"] == 1.25
+    assert result["boomerang_probability_factors"] == {
+        "p": 0.5,
+        "q": 0.25,
+        "r": 2 ** -1.25,
+        "p_squared_q_squared_r": 2 ** -7.25,
+        "log2_p_squared_q_squared_r": -7.25,
+        "kind": "local_characteristic_estimate",
+    }
     assert result["status"] == "SATISFIABLE"
+
+
+def test_probability_factors_preserve_log2_value_below_float_range():
+    model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
+    raw = SimpleNamespace(
+        _output_item="Upper weight = 0.0\nMiddle weight = 1100.0\nLower weight = 0.0\nTrail weight = 1100.0\n"
+    )
+    result = model._parse_boomerang_solution(
+        raw, Status.SATISFIED, "gecode", {"time": timedelta()}
+    )
+    factors = result["boomerang_probability_factors"]
+    assert factors["r"] is None
+    assert factors["p_squared_q_squared_r"] is None
+    assert factors["log2_p_squared_q_squared_r"] == -1100
+    assert factors["reason"] == "below_float_range; use the bit weights"
 
 
 def test_solve_and_fixed_weight_round_trip():
@@ -533,6 +556,12 @@ def test_exact_sbox_quartet_replays_with_key_first_graph():
     )
     result = model.find_one_boomerang_trail(solver_name="gecode", timeout_in_seconds=10)
     assert result["status"] == "SATISFIABLE"
+    factors = result["boomerang_probability_factors"]
+    assert factors["p"] == 2 ** -result["upper_weight"]
+    assert factors["q"] == 2 ** -result["lower_weight"]
+    assert factors["r"] is None
+    assert factors["p_squared_q_squared_r"] is None
+    assert factors["kind"] == "middle_probability_unavailable"
     points = []
     for j in range(4):
         values = result["quartet_values"]
