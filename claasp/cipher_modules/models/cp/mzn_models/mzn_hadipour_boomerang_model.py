@@ -73,6 +73,10 @@ _UPPER_PREFIX = _UPPER + "_"
 _LOWER_PREFIX = _LOWER + "_"
 _MODEL_TYPE = "boomerang"
 _MODULAR_OPERATIONS = ("MODADD", "MODSUB")
+_UPPER_WEIGHT_LABEL = "Upper weight"
+_MIDDLE_WEIGHT_LABEL = "Middle weight"
+_LOWER_WEIGHT_LABEL = "Lower weight"
+_TRAIL_WEIGHT_LABEL = "Trail weight"
 
 _SWITCH_PREDICATES = {
     "bct": (get_bct_operations, get_evaluation_bct_operations),
@@ -89,19 +93,19 @@ def _probability_from_weight(weight):
 
 def _boomerang_probability_factors(weights, middle_model):
     factors = {
-        "p": _probability_from_weight(weights["Upper weight"]),
-        "q": _probability_from_weight(weights["Lower weight"]),
+        "p": _probability_from_weight(weights[_UPPER_WEIGHT_LABEL]),
+        "q": _probability_from_weight(weights[_LOWER_WEIGHT_LABEL]),
         "r": None,
         "p_squared_q_squared_r": None,
         "log2_p_squared_q_squared_r": None,
         "kind": "middle_probability_unavailable",
     }
     if middle_model == "local":
-        factors["r"] = _probability_from_weight(weights["Middle weight"])
+        factors["r"] = _probability_from_weight(weights[_MIDDLE_WEIGHT_LABEL])
         factors["p_squared_q_squared_r"] = _probability_from_weight(
-            weights["Trail weight"]
+            weights[_TRAIL_WEIGHT_LABEL]
         )
-        factors["log2_p_squared_q_squared_r"] = -weights["Trail weight"]
+        factors["log2_p_squared_q_squared_r"] = -weights[_TRAIL_WEIGHT_LABEL]
         factors["kind"] = "local_characteristic_estimate"
         if None in (
             factors["p"], factors["q"], factors["r"],
@@ -756,10 +760,10 @@ class MznHadipourBoomerangModel(MznModel):
             expression = " + ".join(f"{side}_p[{index}]" for index in indices) or "0"
             lines.append(f'"weight {name} = " ++ show(({expression})/100) ++ "\\n"')
         for label, variable in [
-            ("Upper weight", "upper_weight"),
-            ("Middle weight", "middle_weight"),
-            ("Lower weight", "lower_weight"),
-            ("Trail weight", "weight"),
+            (_UPPER_WEIGHT_LABEL, "upper_weight"),
+            (_MIDDLE_WEIGHT_LABEL, "middle_weight"),
+            (_LOWER_WEIGHT_LABEL, "lower_weight"),
+            (_TRAIL_WEIGHT_LABEL, "weight"),
         ]:
             lines.append(f'"{label} = " ++ show({variable}/100) ++ "\\n"')
         return "output [" + " ++ ".join(lines) + "];"
@@ -875,14 +879,14 @@ class MznHadipourBoomerangModel(MznModel):
             elapsed,
             statistics.get("peakMem", -1),
             components,
-            str(weights["Trail weight"]),
+            str(weights[_TRAIL_WEIGHT_LABEL]),
         )
         result.update(
             status="SATISFIABLE",
             solver_status=str(status),
-            upper_weight=weights["Upper weight"],
-            middle_weight=weights["Middle weight"],
-            lower_weight=weights["Lower weight"],
+            upper_weight=weights[_UPPER_WEIGHT_LABEL],
+            middle_weight=weights[_MIDDLE_WEIGHT_LABEL],
+            lower_weight=weights[_LOWER_WEIGHT_LABEL],
             boomerang_structure=dict(self.boomerang_structure),
         )
         result["boomerang_probability_factors"] = _boomerang_probability_factors(
