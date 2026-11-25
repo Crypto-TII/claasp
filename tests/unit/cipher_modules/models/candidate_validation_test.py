@@ -327,7 +327,7 @@ def test_keyless_vectorized_boomerang_matches_exact_arx_rate():
         candidate, 4097, seed=1, exclude_returning_quartets=True
     )
     assert result["checker"] == "boomerang_checker_for_permutation"
-    assert (result["successes"], result["trials"]) == direct
+    assert direct == (result["successes"], result["trials"])
     assert 0.04 < result["observed_probability"] < 0.09
     assert result["status"] == "MEASURED"
     assert result["confidence_interval_95"] is not None
