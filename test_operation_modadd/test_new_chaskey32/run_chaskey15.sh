@@ -7,11 +7,6 @@ GUROBI_DLL=/opt/gurobi1302/linux64/lib/libgurobi.so.13.0.2
 (
     cd ./test_7r_7_1_6/ || exit 1
     $MZN --solver gurobi --gurobi-dll $GUROBI_DLL \
-        --readParam ../../gurobi_params_suggested_2.prm \
-        --verbose --statistics \
-        chaskey_7r_7_1_6.mzn > test_chaskey_7r_7_1_6_seed_2.log 2>&1
-
-    $MZN --solver gurobi --gurobi-dll $GUROBI_DLL \
         --readParam ../../gurobi_params_suggested_3.prm \
         --verbose --statistics \
         chaskey_7r_7_1_6.mzn > test_chaskey_7r_7_1_6_seed_3.log 2>&1

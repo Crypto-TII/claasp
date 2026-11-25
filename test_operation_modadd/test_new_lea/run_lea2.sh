@@ -7,11 +7,6 @@ GUROBI_DLL=/opt/gurobi1302/linux64/lib/libgurobi.so.13.0.2
 (
     cd ./test_10r_4_1_5/ || exit 1
     $MZN --solver gurobi --gurobi-dll $GUROBI_DLL \
-        --readParam ../../gurobi_params_suggested_5.prm \
-        --verbose --statistics \
-        lea_10r_4_1_5.mzn > test_lea_10r_4_1_5_seed_5.log 2>&1
-
-    $MZN --solver gurobi --gurobi-dll $GUROBI_DLL \
         --readParam ../../gurobi_params_suggested_6.prm \
         --verbose --statistics \
         lea_10r_4_1_5.mzn > test_lea_10r_4_1_5_seed_6.log 2>&1
