@@ -736,7 +736,7 @@ def validate_boomerang_characteristic(
         sage: from claasp.cipher_modules.models.candidate_validation import validate_boomerang_characteristic
         sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
         sage: toy.add_round()
-        sage: toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+        sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
         sage: candidate = {'model_type': 'boomerang', 'components_values': {
         ....:     'upper_plaintext': {'value': '0x1'},
         ....:     'lower_cipher_output_0_0': {'value': '0x1'}}}

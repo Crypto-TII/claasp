@@ -356,7 +356,7 @@ class MznHadipourBoomerangModel(MznModel):
             ....:     MznHadipourBoomerangModel)
             sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
             sage: toy.add_round()
-            sage: toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+            sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
             sage: split = dict(top_part_number_of_rounds=0,
             ....:              middle_part_number_of_rounds=1,
             ....:              bottom_part_number_of_rounds=0)
