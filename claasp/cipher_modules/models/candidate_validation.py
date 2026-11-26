@@ -6,9 +6,12 @@ and uses scalar evaluation for small, non-byte-aligned ciphers.
 """
 
 import math
+from operator import index
+from types import ModuleType
 
 import numpy as np
 
+from claasp.cipher_modules import code_generator
 from claasp.cipher_modules.models import utils
 from claasp.name_mappings import CIPHER_OUTPUT, INPUT_KEY, INPUT_PLAINTEXT
 
@@ -568,6 +571,221 @@ def validate_candidate(
         result, baseline, width, exclude_returning_quartets
     )
     return _add_candidate_comparison(result, candidate)
+
+
+def _compiled_component_evaluator(cipher):
+    """Compile one evaluator and retain every physical component output."""
+    module = ModuleType("boomerang_characteristic_evaluator")
+    exec(code_generator.generate_python_code_string(cipher), module.__dict__)
+
+    def evaluate(inputs):
+        output, _, component_io = module.evaluate(inputs)
+        trace = dict(zip(cipher.inputs, inputs))
+        trace.update((name, values[1]) for name, values in component_io.items())
+        return int(output), trace
+
+    return evaluate
+
+
+def _boomerang_characteristic_constraints(cipher, candidate):
+    """Parse retained physical differences without dropping unknown fields."""
+    widths = dict(zip(cipher.inputs, cipher.inputs_bit_size))
+    widths.update((component.id, component.output_bit_size)
+                  for component in cipher.all_components())
+    components = candidate.get("components_values") or {}
+    if not components:
+        raise ValueError("candidate must contain component differences")
+    constraints = []
+    for name, item in components.items():
+        if name.startswith("upper_"):
+            side, physical = "upper", name[len("upper_"):]
+        elif name.startswith("lower_"):
+            side, physical = "lower", name[len("lower_"):]
+        else:
+            raise ValueError(f"Not an upper/lower physical difference: {name}")
+        if physical not in widths:
+            raise ValueError(f"Unknown physical component: {physical}")
+        value = _as_int(item["value"])
+        if not 0 <= value < 1 << widths[physical]:
+            raise ValueError(f"Difference does not fit {physical}")
+        constraints.append((side, physical, value))
+    return constraints
+
+
+def _matches_boomerang_characteristic(traces, constraints):
+    """Require each retained difference on both copies of its path."""
+    for side, physical, expected in constraints:
+        pairs = ((0, 1), (2, 3)) if side == "upper" else ((0, 2), (1, 3))
+        if any(traces[a][physical] ^ traces[b][physical] != expected
+               for a, b in pairs):
+            return False
+    return True
+
+
+def _boomerang_measurement(count, trials, exhaustive):
+    result = {"successes": count, "probability": count / trials,
+              "status": _measurement_status(exhaustive, count),
+              "confidence_interval_95": None}
+    if not exhaustive:
+        result["confidence_interval_95"] = _confidence_interval(count, trials, False)
+        if count == 0:
+            result["one_sided_upper_bound_95"] = -math.expm1(math.log(0.05) / trials)
+    return result
+
+
+def _evaluation_arguments(cipher, value, fixed_key):
+    """Use the graph's declared input order for data and fixed key."""
+    return [fixed_key if name == INPUT_KEY else value for name in cipher.inputs]
+
+
+def _boomerang_quartet(
+    cipher, inverse, forward_evaluate, inverse_evaluate, x, alpha, beta, fixed_key,
+):
+    """Return four plaintexts and component traces, checking the inverse."""
+    x2 = x ^ alpha
+    y1, trace1 = forward_evaluate(_evaluation_arguments(cipher, x, fixed_key))
+    y2, trace2 = forward_evaluate(_evaluation_arguments(cipher, x2, fixed_key))
+    y3, y4 = y1 ^ beta, y2 ^ beta
+    x3 = inverse_evaluate(_evaluation_arguments(inverse, y3, fixed_key))[0]
+    x4 = inverse_evaluate(_evaluation_arguments(inverse, y4, fixed_key))[0]
+    check3, trace3 = forward_evaluate(_evaluation_arguments(cipher, x3, fixed_key))
+    check4, trace4 = forward_evaluate(_evaluation_arguments(cipher, x4, fixed_key))
+    if (check3, check4) != (y3, y4):
+        raise ValueError("Inverse does not match the forward cipher")
+    return (x, x2, x3, x4), (trace1, trace2, trace3, trace4)
+
+
+def _prepare_characteristic_request(cipher, candidate, trials, fixed_key, seed):
+    """Validate the supported oracle and normalize Sage integer arguments."""
+    if not isinstance(candidate, dict) or candidate.get("model_type") != "boomerang":
+        raise ValueError("Expected a boomerang candidate")
+    if candidate.get("status", "SATISFIABLE") != "SATISFIABLE":
+        raise ValueError("Candidate must have SATISFIABLE status")
+    if trials != "exhaustive":
+        trials = index(trials)
+    if seed is not None:
+        seed = index(seed)
+    if fixed_key is not None:
+        fixed_key = _as_int(fixed_key)
+    data, width, _ = _cipher_sizes(cipher)
+    if any(name not in (data, INPUT_KEY) for name in cipher.inputs):
+        raise NotImplementedError("Only a data input and optional key are supported")
+    if INPUT_KEY in cipher.inputs and fixed_key is None:
+        raise ValueError("Supply fixed_key for a keyed cipher")
+    if fixed_key is not None and INPUT_KEY not in cipher.inputs:
+        raise ValueError("This cipher has no key input")
+    if fixed_key is not None:
+        key_width = cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)]
+        if not 0 <= fixed_key < 1 << key_width:
+            raise ValueError("fixed_key does not fit the key width")
+    return width, trials, fixed_key, seed
+
+
+def _add_local_model_estimate(result, candidate):
+    """Label a local model value as an estimate, separate from measurement."""
+    weight = candidate.get("total_weight")
+    if candidate.get("weight_type") == "local_characteristic_weight_estimate" and weight is not None:
+        weight = float(weight)
+        if math.isfinite(weight) and weight >= 0:
+            result["local_model_weight_bits"] = weight
+            result["local_model_probability_estimate"] = 2 ** -weight
+    return result
+
+
+def validate_boomerang_characteristic(
+    cipher, candidate, trials, fixed_key=None, seed=None,
+    exclude_returning_quartets=False, inverse_cipher=None,
+):
+    """Measure a boomerang differential and one retained characteristic.
+
+    For fixed non-data inputs, choose a plaintext ``x`` and form
+    ``x2=x xor alpha``, ``x3=E^-1(E(x) xor beta)``, and
+    ``x4=E^-1(E(x2) xor beta)``. The external event is
+    ``x3 xor x4=alpha``. A characteristic occurrence additionally requires
+    every listed ``upper_`` component difference on both upper pairs and
+    every listed ``lower_`` difference on both cross pairs. This is an
+    exact four-execution event; it does not multiply local probabilities.
+
+    INPUT:
+
+    - ``cipher`` -- CLAASP permutation or fixed-key block cipher with one
+      data input and, optionally, a key input.
+    - ``candidate`` -- solved boomerang dictionary with ``components_values``
+      containing physical upper/lower component differences and endpoints.
+    - ``trials`` -- positive sample count with replacement, or
+      ``'exhaustive'`` for at most 16 data bits.
+    - ``fixed_key`` -- required key value for keyed ciphers.
+    - ``seed`` -- optional random seed for reproducible sampling.
+    - ``exclude_returning_quartets`` -- omit two-point returns when True.
+    - ``inverse_cipher`` -- optional compatible inverse when CLAASP cannot
+      construct one automatically.
+
+    OUTPUT: dictionary with external and retained-characteristic counts,
+    exact when exhaustive, or sample rates and two-sided Wilson 95%
+    intervals. A zero sample count also has a one-sided 95% upper bound.
+    The random-permutation baseline is reported for the external event.
+    Results refer to the fixed key and specified differences; they are not
+    all-key guarantees. The local weight is included only as a separate
+    estimate. Dependence between the four paths can make it inaccurate;
+    see Kidmose and Tiessen, *A Formal Analysis
+    of Boomerang Probabilities*, ToSC 2022, DOI 10.46586/tosc.v2022.i1.88-109.
+
+    EXAMPLES::
+
+        sage: from claasp.cipher import Cipher
+        sage: from claasp.cipher_modules.models.candidate_validation import validate_boomerang_characteristic
+        sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
+        sage: toy.add_round()
+        sage: toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+        sage: candidate = {'model_type': 'boomerang', 'components_values': {
+        ....:     'upper_plaintext': {'value': '0x1'},
+        ....:     'lower_cipher_output_0_0': {'value': '0x1'}}}
+        sage: result = validate_boomerang_characteristic(toy, candidate, 'exhaustive')
+        sage: (result['external']['successes'], result['characteristic']['successes'])
+        (16, 16)
+    """
+    width, trials, fixed_key, seed = _prepare_characteristic_request(
+        cipher, candidate, trials, fixed_key, seed
+    )
+    _, alpha_raw, _, beta_raw = _endpoints(cipher, candidate, "boomerang_scalar", {})
+    alpha, beta = _as_int(alpha_raw), _as_int(beta_raw)
+    if not 0 <= alpha < 1 << width or not 0 <= beta < 1 << cipher.output_bit_size:
+        raise ValueError("External differences do not fit the cipher widths")
+    constraints = _boomerang_characteristic_constraints(cipher, candidate)
+    inverse = inverse_cipher if inverse_cipher is not None else cipher.cipher_inverse()
+    forward_evaluate = _compiled_component_evaluator(cipher)
+    inverse_evaluate = _compiled_component_evaluator(inverse)
+    inputs, total = _scalar_inputs(1 << width, trials, seed)
+    external_count = characteristic_count = 0
+    for x in inputs:
+        quartet, traces = _boomerang_quartet(
+            cipher, inverse, forward_evaluate, inverse_evaluate,
+            x, alpha, beta, fixed_key,
+        )
+        _, x2, x3, x4 = quartet
+        if exclude_returning_quartets and x3 in (x, x2):
+            continue
+        if x3 ^ x4 != alpha:
+            continue
+        external_count += 1
+        if _matches_boomerang_characteristic(traces, constraints):
+            characteristic_count += 1
+    exhaustive = trials == "exhaustive"
+    result = {
+        "input_difference": alpha, "output_difference": beta,
+        "trials": total, "sampling": "exhaustive" if exhaustive else "random_plaintexts",
+        "fixed_key": fixed_key, "seed": seed,
+        "exclude_returning_quartets": exclude_returning_quartets,
+        "external": _boomerang_measurement(external_count, total, exhaustive),
+        "characteristic": _boomerang_measurement(characteristic_count, total, exhaustive),
+    }
+    baseline = _boomerang_baseline(alpha, beta, 1 << width, exclude_returning_quartets)
+    if baseline is not None:
+        result["random_permutation_baseline_probability"] = baseline[1]
+        result["external_advantage_over_baseline"] = (
+            result["external"]["probability"] - baseline[1]
+        )
+    return _add_local_model_estimate(result, candidate)
 
 
 class CandidateValidationMixin:

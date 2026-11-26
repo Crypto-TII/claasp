@@ -338,6 +338,43 @@ class MznHadipourBoomerangModel(MznModel):
             raise ValueError("Expected a boomerang candidate")
         return self.validate_candidate(candidate, trials, **options)
 
+    def validate_boomerang_characteristic(self, candidate, trials, **options):
+        """Measure the external event and the candidate's four-path event.
+
+        This checks every retained physical difference on both copies of
+        its upper or lower path. ``trials='exhaustive'`` is exact for at most
+        16 data bits; sampled results have 95% Wilson intervals. The
+        need to measure joint path events follows Kidmose and Tiessen,
+        *A Formal Analysis of Boomerang Probabilities*, ToSC 2022. See
+        :func:`claasp.cipher_modules.models.candidate_validation.validate_boomerang_characteristic`
+        for the event definition, citations, inputs, and output fields.
+
+        EXAMPLES::
+
+            sage: from claasp.cipher import Cipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import (
+            ....:     MznHadipourBoomerangModel)
+            sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
+            sage: toy.add_round()
+            sage: toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+            sage: split = dict(top_part_number_of_rounds=0,
+            ....:              middle_part_number_of_rounds=1,
+            ....:              bottom_part_number_of_rounds=0)
+            sage: model = MznHadipourBoomerangModel(toy, split)
+            sage: candidate = {'model_type': 'boomerang', 'components_values': {
+            ....:     'upper_plaintext': {'value': '0x1'},
+            ....:     'lower_cipher_output_0_0': {'value': '0x1'}}}
+            sage: model.validate_boomerang_characteristic(candidate, 'exhaustive')['characteristic']['successes']
+            16
+        """
+        from claasp.cipher_modules.models.candidate_validation import (
+            validate_boomerang_characteristic,
+        )
+
+        return validate_boomerang_characteristic(
+            self.original_cipher, candidate, trials, **options
+        )
+
     @staticmethod
     def _validate_fixed_parameters(cipher, fixed_parameters):
         if fixed_parameters is None:

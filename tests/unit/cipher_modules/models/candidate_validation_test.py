@@ -7,7 +7,11 @@ import numpy as np
 import pytest
 
 from claasp.cipher import Cipher
-from claasp.cipher_modules.models.candidate_validation import validate_candidate
+from claasp.DTOs.component_state import ComponentState
+from claasp.cipher_modules.models.candidate_validation import (
+    validate_boomerang_characteristic,
+    validate_candidate,
+)
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
 from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import (
     MznHadipourBoomerangModel,
@@ -41,6 +45,31 @@ class ToyArxPermutation(Cipher):
                 [state, right.id], [list(range(4, 8)), list(range(4))], 8
             ).id
         self.add_cipher_output_component([state], [list(range(8))], 8)
+
+
+def mini_speck_for_boomerang():
+    """Build a three-round 8-bit ARX permutation with exact known quartets."""
+    cipher = Cipher("mini_speck", PERMUTATION, ["plaintext"], [8], 8)
+    left = ComponentState(["plaintext"], [list(range(4))])
+    right = ComponentState(["plaintext"], [list(range(4, 8))])
+    for round_index in range(3):
+        cipher.add_round()
+        cipher.add_rotate_component(left.id, left.input_bit_positions, 4, 1)
+        left = ComponentState([cipher.get_current_component_id()], [list(range(4))])
+        cipher.add_modadd_component(
+            left.id + right.id, left.input_bit_positions + right.input_bit_positions, 4
+        )
+        left = ComponentState([cipher.get_current_component_id()], [list(range(4))])
+        cipher.add_rotate_component(right.id, right.input_bit_positions, 4, -1)
+        right = ComponentState([cipher.get_current_component_id()], [list(range(4))])
+        cipher.add_xor_component(
+            left.id + right.id, left.input_bit_positions + right.input_bit_positions, 4
+        )
+        right = ComponentState([cipher.get_current_component_id()], [list(range(4))])
+        add_output = (cipher.add_cipher_output_component if round_index == 2
+                      else cipher.add_round_output_component)
+        add_output(left.id + right.id, left.input_bit_positions + right.input_bit_positions, 8)
+    return cipher
 
 
 def toy_sbox():
@@ -148,6 +177,79 @@ def test_boomerang_validator_counts_quartets_and_excludes_two_point_returns():
     assert comparison["observed_minus_implied_value"] == 7 / 8
     assert comparison["observed_minus_reported_weight_bits"] == -3
     assert nondegenerate["baseline_probability"] < all_returns["baseline_probability"]
+
+
+@pytest.mark.parametrize(
+    "upper_boundary,lower_boundary,expected",
+    [("0x31", "0x39", 0), ("0x31", "0x79", 16), ("0xfd", "0xf9", 4)],
+)
+def test_boomerang_characteristic_validator_counts_four_path_events(
+    upper_boundary, lower_boundary, expected,
+):
+    cipher = mini_speck_for_boomerang()
+    candidate = {
+        "model_type": "boomerang",
+        "total_weight": "6.36",
+        "weight_type": "local_characteristic_weight_estimate",
+        "components_values": {
+            "upper_plaintext": {"value": "0x01"},
+            "upper_intermediate_output_0_4": {"value": upper_boundary},
+            "lower_intermediate_output_0_4": {"value": lower_boundary},
+            "lower_cipher_output_2_4": {"value": "0x02"},
+        },
+    }
+    result = validate_boomerang_characteristic(cipher, candidate, "exhaustive")
+    assert result["external"]["successes"] == 20
+    assert result["characteristic"]["successes"] == expected
+    assert result["characteristic"]["probability"] == expected / 256
+    assert result["characteristic"]["status"] == "EXACT"
+    assert result["local_model_probability_estimate"] == pytest.approx(2 ** -6.36)
+    if expected == 16:
+        model = MznHadipourBoomerangModel(
+            cipher, dict(top_part_number_of_rounds=1,
+                         middle_part_number_of_rounds=1,
+                         bottom_part_number_of_rounds=1),
+        )
+        via_model = model.validate_boomerang_characteristic(candidate, "exhaustive")
+        external_only = model.validate_boomerang_candidate(candidate, "exhaustive")
+        assert via_model["characteristic"]["successes"] == expected
+        assert external_only["successes"] == result["external"]["successes"]
+        assert result["random_permutation_baseline_probability"] == (
+            external_only["baseline_probability"]
+        )
+
+
+def test_sampled_boomerang_characteristic_has_interval_and_zero_hit_bound():
+    cipher = mini_speck_for_boomerang()
+    candidate = {
+        "model_type": "boomerang",
+        "components_values": {
+            "upper_plaintext": {"value": "0x01"},
+            "lower_intermediate_output_0_4": {"value": "0x39"},
+            "lower_cipher_output_2_4": {"value": "0x02"},
+        },
+    }
+    result = validate_boomerang_characteristic(cipher, candidate, 64, seed=11)
+    assert result["trials"] == 64
+    assert result["external"]["status"] == "MEASURED"
+    assert result["characteristic"]["successes"] == 0
+    assert result["characteristic"]["status"] == "INCONCLUSIVE"
+    assert result["characteristic"]["confidence_interval_95"] is not None
+    assert result["characteristic"]["one_sided_upper_bound_95"] > 0
+
+
+def test_boomerang_characteristic_rejects_unmapped_component():
+    cipher = mini_speck_for_boomerang()
+    candidate = {
+        "model_type": "boomerang",
+        "components_values": {
+            "upper_plaintext": {"value": "0x01"},
+            "lower_cipher_output_2_4": {"value": "0x02"},
+            "upper_missing_component": {"value": "0x00"},
+        },
+    }
+    with pytest.raises(ValueError, match="Unknown physical component"):
+        validate_boomerang_characteristic(cipher, candidate, "exhaustive")
 
 
 def test_candidate_validation_rejects_missing_endpoints():
