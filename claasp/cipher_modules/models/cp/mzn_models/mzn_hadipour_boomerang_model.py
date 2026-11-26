@@ -1266,48 +1266,30 @@ class MznHadipourBoomerangModel(MznModel):
                 "Round-split optimization requires middle_model='local': "
                 "exact-middle weights do not include the middle probability"
             )
-        rounds = self.original_cipher.number_of_rounds
         best = None
         fallback = None
         results = []
         all_proved = True
-        for top in range(rounds):
-            for middle in range(1, rounds - top + 1):
-                structure = {
-                    "top_part_number_of_rounds": top,
-                    "middle_part_number_of_rounds": middle,
-                    "bottom_part_number_of_rounds": rounds - top - middle,
+        for structure, model in self._round_split_models():
+            result = model._search(
+                -1, fixed_values, solver_name, timeout_in_seconds, processes
+            )
+            if fallback is None or result["status"] == "UNKNOWN":
+                fallback = result
+            results.append(
+                {
+                    "boomerang_structure": structure,
+                    "status": result["status"],
+                    "solver_status": result["solver_status"],
+                    "total_weight": result["total_weight"],
                 }
-                model = self if structure == self.boomerang_structure else type(self)(
-                    self.original_cipher,
-                    structure,
-                    enforce_value_compatibility=self.enforce_value_compatibility,
-                    middle_model=self.middle_model,
-                    exclude_returning_quartets=self.exclude_returning_quartets,
-                    fixed_parameters=self.fixed_parameters,
-                )
-                result = model._search(
-                    -1, fixed_values, solver_name, timeout_in_seconds, processes
-                )
-                if fallback is None or result["status"] == "UNKNOWN":
-                    fallback = result
-                results.append(
-                    {
-                        "boomerang_structure": structure,
-                        "status": result["status"],
-                        "solver_status": result["solver_status"],
-                        "total_weight": result["total_weight"],
-                    }
-                )
-                if result["solver_status"] not in (
-                    "OPTIMAL_SOLUTION", "UNSATISFIABLE"
-                ):
-                    all_proved = False
-                if result["status"] == "SATISFIABLE" and (
-                    best is None
-                    or float(result["total_weight"]) < float(best["total_weight"])
-                ):
-                    best = result
+            )
+            if result["solver_status"] not in (
+                "OPTIMAL_SOLUTION", "UNSATISFIABLE"
+            ):
+                all_proved = False
+            if self._better_round_split_result(result, best):
+                best = result
         chosen = best if best is not None else fallback
         chosen["round_split_search"] = {
             "results": results,
@@ -1315,6 +1297,36 @@ class MznHadipourBoomerangModel(MznModel):
             "best_split": best["boomerang_structure"] if best else None,
         }
         return chosen
+
+    def _round_split_models(self):
+        """Yield every valid split with its model, reusing the current one."""
+        rounds = self.original_cipher.number_of_rounds
+        for top in range(rounds):
+            for middle in range(1, rounds - top + 1):
+                structure = {
+                    "top_part_number_of_rounds": top,
+                    "middle_part_number_of_rounds": middle,
+                    "bottom_part_number_of_rounds": rounds - top - middle,
+                }
+                if structure == self.boomerang_structure:
+                    yield structure, self
+                else:
+                    yield structure, type(self)(
+                        self.original_cipher,
+                        structure,
+                        enforce_value_compatibility=self.enforce_value_compatibility,
+                        middle_model=self.middle_model,
+                        exclude_returning_quartets=self.exclude_returning_quartets,
+                        fixed_parameters=self.fixed_parameters,
+                    )
+
+    @staticmethod
+    def _better_round_split_result(result, best):
+        """Check whether a solved split improves the current incumbent."""
+        return result["status"] == "SATISFIABLE" and (
+            best is None
+            or float(result["total_weight"]) < float(best["total_weight"])
+        )
 
     def find_all_boomerang_trails_with_fixed_weight(
         self,
