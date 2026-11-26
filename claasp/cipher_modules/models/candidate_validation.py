@@ -725,7 +725,9 @@ def validate_boomerang_characteristic(
     intervals. A zero sample count also has a one-sided 95% upper bound.
     The random-permutation baseline is reported for the external event.
     Results refer to the fixed key and specified differences; they are not
-    all-key guarantees. The local weight is included only as a separate
+    all-key guarantees. Fix the candidate before drawing the random sample;
+    reusing data that selected it invalidates the nominal interval coverage.
+    The local weight is included only as a separate
     estimate. Dependence between the four paths can make it inaccurate;
     see Kidmose and Tiessen, *A Formal Analysis
     of Boomerang Probabilities*, ToSC 2022, DOI 10.46586/tosc.v2022.i1.88-109.
