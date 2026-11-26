@@ -93,6 +93,14 @@ def test_byte_vector_select_all_words():
     assert np.all(result[0] == A[:4])
     assert np.all(result[1] == B[4:])
 
+    # The fast path must keep a uint8 array when masking a 4-bit word.
+    values = np.array([[0x1, 0x2, 0xF]], dtype=np.uint8)
+    result = byte_vector_select_all_words(
+        [values], [[list(range(4))]], [[0]], 1, 1, [4]
+    )
+    assert result[0].dtype == np.uint8
+    assert np.array_equal(result[0], values)
+
     # Unexpected leading bits are correctly removed
     input_bit_size = 10
     A = np.uint8([0xf1, 0x23]).reshape(2, 1)
