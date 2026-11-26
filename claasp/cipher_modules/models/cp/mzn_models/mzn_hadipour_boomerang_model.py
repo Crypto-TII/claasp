@@ -1200,6 +1200,7 @@ class MznHadipourBoomerangModel(MznModel):
         solver_name=None,
         timeout_in_seconds=None,
         processes=None,
+        optimize_round_split=False,
     ):
         """Find one minimum-weight characteristic using MiniZinc.
 
@@ -1215,6 +1216,14 @@ class MznHadipourBoomerangModel(MznModel):
         - ``timeout_in_seconds`` -- optional positive time limit, including
           flattening. A time limit may leave optimality unproved.
         - ``processes`` -- optional positive number of solver processes.
+        - ``optimize_round_split`` -- bool (default: False). Search every split
+          with a nonempty middle and the same total number of rounds, including
+          zero-round outer parts. Each split is solved separately with the given
+          time limit. Only local-middle weights can be compared this way;
+          exact-middle weights omit the middle probability. The returned
+          ``round_split_search`` lists every result and marks whether all splits
+          were proved optimal or unsatisfiable. A timeout or an incumbent without
+          an optimality proof makes that overall flag False.
 
         OUTPUT: CLAASP solution dictionary with hexadecimal component values,
         ``total_weight``, ``upper_weight``, ``middle_weight``, ``lower_weight``,
@@ -1229,7 +1238,16 @@ class MznHadipourBoomerangModel(MznModel):
             sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: model = MznHadipourBoomerangModel(SimonBlockCipher(number_of_rounds=3), dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
             sage: result = model.find_lowest_weight_boomerang_trail(solver_name='gecode', timeout_in_seconds=1)  # optional - minizinc
+            sage: split = model.find_lowest_weight_boomerang_trail(solver_name='gecode', timeout_in_seconds=1, optimize_round_split=True)  # optional - minizinc
+            sage: len(split['round_split_search']['results']) == 6  # optional - minizinc
+            True
         """
+        if not isinstance(optimize_round_split, bool):
+            raise TypeError("optimize_round_split must be a boolean")
+        if optimize_round_split:
+            return self._find_optimal_round_split(
+                fixed_values, solver_name, timeout_in_seconds, processes
+            )
         return self._search(
             -1,
             fixed_values,
@@ -1238,6 +1256,65 @@ class MznHadipourBoomerangModel(MznModel):
             processes,
             all_solutions=False,
         )
+
+    def _find_optimal_round_split(
+        self, fixed_values, solver_name, timeout_in_seconds, processes
+    ):
+        """Compare independently optimized local models for every valid split."""
+        if self.middle_model != "local":
+            raise ValueError(
+                "Round-split optimization requires middle_model='local': "
+                "exact-middle weights do not include the middle probability"
+            )
+        rounds = self.original_cipher.number_of_rounds
+        best = None
+        fallback = None
+        results = []
+        all_proved = True
+        for top in range(rounds):
+            for middle in range(1, rounds - top + 1):
+                structure = {
+                    "top_part_number_of_rounds": top,
+                    "middle_part_number_of_rounds": middle,
+                    "bottom_part_number_of_rounds": rounds - top - middle,
+                }
+                model = self if structure == self.boomerang_structure else type(self)(
+                    self.original_cipher,
+                    structure,
+                    enforce_value_compatibility=self.enforce_value_compatibility,
+                    middle_model=self.middle_model,
+                    exclude_returning_quartets=self.exclude_returning_quartets,
+                    fixed_parameters=self.fixed_parameters,
+                )
+                result = model._search(
+                    -1, fixed_values, solver_name, timeout_in_seconds, processes
+                )
+                if fallback is None or result["status"] == "UNKNOWN":
+                    fallback = result
+                results.append(
+                    {
+                        "boomerang_structure": structure,
+                        "status": result["status"],
+                        "solver_status": result["solver_status"],
+                        "total_weight": result["total_weight"],
+                    }
+                )
+                if result["solver_status"] not in (
+                    "OPTIMAL_SOLUTION", "UNSATISFIABLE"
+                ):
+                    all_proved = False
+                if result["status"] == "SATISFIABLE" and (
+                    best is None
+                    or float(result["total_weight"]) < float(best["total_weight"])
+                ):
+                    best = result
+        chosen = best if best is not None else fallback
+        chosen["round_split_search"] = {
+            "results": results,
+            "all_splits_proven": all_proved,
+            "best_split": best["boomerang_structure"] if best else None,
+        }
+        return chosen
 
     def find_all_boomerang_trails_with_fixed_weight(
         self,

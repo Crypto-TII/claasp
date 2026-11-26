@@ -196,6 +196,83 @@ def test_solve_and_fixed_weight_round_trip():
     assert again["total_weight"] == result["total_weight"]
 
 
+def test_optimize_round_split_compares_all_local_models(monkeypatch):
+    model = MznHadipourBoomerangModel(toy_modadd(3), structure(1, 1, 1))
+    searched = []
+
+    def fake_search(current, weight, fixed_values, solver_name, timeout, processes):
+        split = current.boomerang_structure
+        searched.append((split, weight, fixed_values, timeout, processes))
+        score = 10 - split["top_part_number_of_rounds"]
+        return {
+            "status": "SATISFIABLE",
+            "solver_status": "OPTIMAL_SOLUTION",
+            "total_weight": str(score),
+            "boomerang_structure": split,
+        }
+
+    monkeypatch.setattr(MznHadipourBoomerangModel, "_search", fake_search)
+    result = model.find_lowest_weight_boomerang_trail(
+        timeout_in_seconds=5, processes=2, optimize_round_split=True
+    )
+    assert len(searched) == 6
+    assert all(item[1:] == (-1, None, 5, 2) for item in searched)
+    assert result["boomerang_structure"] == structure(2, 1, 0)
+    assert result["round_split_search"]["all_splits_proven"] is True
+    assert result["round_split_search"]["best_split"] == structure(2, 1, 0)
+
+
+def test_optimize_round_split_marks_unproved_splits(monkeypatch):
+    model = MznHadipourBoomerangModel(toy_modadd(2), structure(0, 1, 1))
+
+    def fake_search(current, *args):
+        split = current.boomerang_structure
+        if split == structure(0, 2, 0):
+            return {
+                "status": "UNKNOWN",
+                "solver_status": "UNKNOWN",
+                "total_weight": None,
+                "boomerang_structure": split,
+            }
+        return {
+            "status": "SATISFIABLE",
+            "solver_status": "OPTIMAL_SOLUTION",
+            "total_weight": "3",
+            "boomerang_structure": split,
+        }
+
+    monkeypatch.setattr(MznHadipourBoomerangModel, "_search", fake_search)
+    result = model.find_lowest_weight_boomerang_trail(optimize_round_split=True)
+    assert result["status"] == "SATISFIABLE"
+    assert result["round_split_search"]["all_splits_proven"] is False
+    assert len(result["round_split_search"]["results"]) == 3
+
+
+def test_optimize_round_split_rejects_exact_middle():
+    model = MznHadipourBoomerangModel(
+        toy_modadd(), structure(0, 1, 0), middle_model="exact"
+    )
+    with pytest.raises(ValueError, match="middle_model='local'"):
+        model.find_lowest_weight_boomerang_trail(optimize_round_split=True)
+
+
+def test_optimize_round_split_with_solver():
+    model = MznHadipourBoomerangModel(toy_modadd(2), structure(0, 1, 1))
+    result = model.find_lowest_weight_boomerang_trail(
+        solver_name="gecode", timeout_in_seconds=10, optimize_round_split=True
+    )
+    search = result["round_split_search"]
+    assert len(search["results"]) == 3
+    assert result["status"] == "SATISFIABLE"
+    assert search["all_splits_proven"]
+    assert search["best_split"] == result["boomerang_structure"]
+    assert float(result["total_weight"]) == min(
+        float(item["total_weight"])
+        for item in search["results"]
+        if item["status"] == "SATISFIABLE"
+    )
+
+
 def test_unsatisfiable_external_difference():
     model = MznHadipourBoomerangModel(toy_modadd(), structure(0, 1, 0))
     fixed = [set_fixed_variables("upper_plaintext", "equal", range(4), [0] * 4)]
