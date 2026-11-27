@@ -609,11 +609,40 @@ class ModAdd(Modular):
         if out not in model.modadd_twoterms_mant:
             cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);")
             model.modadd_twoterms_mant.append(out)
-        cp_declarations.append(f"array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});")
-        cp_constraints.append(
-            f"constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = 1 then (sum([{inp1}[j], {inp2}[j], "
-            f"{out}[j]]) mod 2) = Shi_{inp2}[j] else true endif) /\\ p[{c}] = {100 * inplen}-100 * sum(eq_{out});"
-        )
+        cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});')
+        # print(f'component: {self.id}')
+        # print(f'top num rounds: {model.top_part_number_of_rounds}')
+        cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ p[{c}] = {inplen}-sum(eq_{out});')
+
+        return cp_declarations, cp_constraints
+    
+    def cp_twoterms_xor_differential_probability_boomerang(self, inp1, inp2, out, inplen, cp_constraints, cp_declarations, c, model):
+        if inp1 not in model.modadd_twoterms_mant:
+            cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{inp1} = LShift({inp1},1);')
+            model.modadd_twoterms_mant.append(inp1)
+        if inp2 not in model.modadd_twoterms_mant:
+            cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{inp2} = LShift({inp2},1);')
+            model.modadd_twoterms_mant.append(inp2)
+        if out not in model.modadd_twoterms_mant:
+            cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: Shi_{out} = LShift({out},1);')
+            model.modadd_twoterms_mant.append(out)
+        cp_declarations.append(f'array[0..{inplen - 1}] of var 0..1: eq_{out} = Eq(Shi_{inp1}, Shi_{inp2}, Shi_{out});')
+        # print(f'component: {self.id}')
+        # print(f'top num rounds: {model.top_part_number_of_rounds}')
+        if 'upper_' not in out and 'lower' not in out:
+            cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ p[{c}] = ({inplen}-sum(eq_{out})=*100;')
+        elif 'upper_' in out:
+            cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ upper_p[{c}] = ({inplen}-sum(eq_{out}))*100;')
+        elif 'lower_' in out:
+            cp_constraints.append(f'constraint forall(j in 0..{inplen - 1})(if eq_{out}[j] = '
+                              f'1 then (sum([{inp1}[j], {inp2}[j], {out}[j]]) mod 2) = Shi_{inp2}[j] else '
+                              f'true endif) /\\ lower_p[{c}] = ({inplen}-sum(eq_{out}))*100;')
 
         return cp_declarations, cp_constraints
 

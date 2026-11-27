@@ -584,7 +584,15 @@ class Component:
         ]
 
         return input_full_tuple, output_full_tuple
+    
+    def add_prefix(self, prefix='upper_'):
+        self._id = prefix + self.id
+        self._input._id_links = [prefix + i for i in self.input_id_links]
 
+    def remove_prefix(self, prefix='upper_'):
+        self._id = self.id[len(prefix):] if self.id.startswith(prefix) else self.id
+        self._input._id_links = [i[len(prefix):] if i.startswith(prefix) else i for i in self.input_id_links]
+    
     def as_python_dictionary(self):
         """
         Return the component as a Python dictionary.
