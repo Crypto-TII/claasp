@@ -396,6 +396,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
             sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
@@ -423,6 +424,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: from claasp.cipher import Cipher
             sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
             sage: toy.add_round()
@@ -451,6 +453,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
             sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
@@ -477,6 +480,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: from claasp.cipher import Cipher
             sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
             sage: toy.add_round()
@@ -506,6 +510,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
             sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
@@ -536,6 +541,7 @@ class MznHadipourBoomerangModel(MznModel):
 
         EXAMPLES::
 
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
             sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
             sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
             sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
