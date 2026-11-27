@@ -24,7 +24,9 @@ at most 16 bits. Other ciphers raise :class:`UnsupportedCipherError`, including 
 split into such S-boxes.
 
 The linear layers are computed on first use, by composing the components between two substitution layers. They do
-not include the key and constant additions, so they exist whatever the key schedule.
+not include the key and constant additions, so they exist whatever the key schedule. The affine parts add them,
+`s_{r+1} = L_r S(s_r) + M_r k + c_r` with `k` the key and tweak inputs, and need a key schedule made of affine
+operations only.
 """
 import copy
 from dataclasses import dataclass
@@ -33,6 +35,7 @@ from typing import NamedTuple
 
 import numpy as np
 from sage.matrix.constructor import matrix
+from sage.modules.free_module_element import vector
 from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
 from claasp.cipher_modules.component_analysis_tests import binary_matrix_of_linear_component
@@ -50,7 +53,8 @@ _MAX_CHI_SBOX_SIZE = 16
 
 class UnsupportedCipherError(ValueError):
     """
-    Raised when :class:`SpnStructure` does not recognize a cipher as an SPN.
+    Raised when :class:`SpnStructure` does not recognize a cipher as an SPN, or when the affine parts of a
+    recognized one cannot be computed.
     """
 
 
@@ -127,6 +131,24 @@ class SubstitutionLayer:
         tables = len({sbox.table for sbox in self.sboxes})
         return (f"SubstitutionLayer(round {self.round_number}, {self.kind}: {len(self.sboxes)} S-boxes of {sizes} bits "
                 f"on {self.size} bits, {tables} distinct table{'s' if tables > 1 else ''})")
+
+
+@dataclass(frozen=True)
+class AffinePart:
+    """
+    Affine part following a substitution layer: `s_{r+1} = linear S(s_r) + key k + constant`, with `s_{r+1}` the
+    input of the next substitution layer, or the cipher output after the last one.
+
+    - ``linear`` -- **matrix**; immutable matrix over `GF(2)`, the linear layer (`n \\times n`, or output size
+      `\\times n` after the last substitution layer)
+    - ``key`` -- **matrix**; immutable matrix over `GF(2)` with one column per key bit (none for a permutation)
+    - ``constant`` -- **vector**; immutable vector over `GF(2)`
+
+    Affine parts are obtained from :attr:`SpnStructure.affine_parts`.
+    """
+    linear: object
+    key: object
+    constant: object
 
 
 def _operation(component):
@@ -371,7 +393,11 @@ def _component_forms(component, forms, width, matrices):
         out[:, -1] = [(value >> (size - 1 - bit)) & 1 for bit in range(size)]
         return out
     if operation not in _AFFINE_OPERATIONS:
-        raise UnsupportedCipherError(f"{component.id}: {operation} cannot be composed")
+        # reached only from the key schedule: other operations are refused at construction, and the S-boxes and the
+        # ANDs of the substitution layers are not composed
+        name = "S-box" if component.type == SBOX else operation
+        raise UnsupportedCipherError(f"{component.id}: {name} in the key schedule; the affine parts need a key "
+                                     f"schedule made of affine operations")
     x = np.concatenate([forms[link][list(bits)]
                         for link, bits in zip(component.input_id_links, component.input_bit_positions)])
     if operation == "XOR":
@@ -425,7 +451,8 @@ def _affine_forms(cipher, layers, key_schedule_ids, key_indices=None):
 class SpnStructure:
     """
     The SPN structure of ``cipher``: checks that every round is a substitution layer followed by affine operations,
-    or affine operations only, and gives the substitution layers and the linear layer following each of them.
+    or affine operations only, and gives the substitution layers, the linear layer following each of them and, for
+    a key schedule made of affine operations, the affine parts.
 
     Building the object only reads the component graph, leaving out the key schedule, and raises
     :class:`UnsupportedCipherError` unless:
@@ -441,7 +468,7 @@ class SpnStructure:
       only through the last one (no bypass).
 
     The cipher is copied when the object is built, so later changes to ``cipher`` are not seen. The linear layers
-    are computed on first access to :attr:`linear_layers`.
+    and the affine parts are computed on first access.
 
     INPUT:
 
@@ -568,3 +595,26 @@ class SpnStructure:
             linear.set_immutable()
             result.append(linear)
         return tuple(result)
+
+    @cached_property
+    def affine_parts(self):
+        """
+        The :class:`AffinePart` following each substitution layer: ``affine_parts[r]`` gives the input of
+        ``substitution_layers[r + 1]``, or the cipher output for the last one, as `L_r S(s_r) + M_r k + c_r`, with
+        `k` the other inputs (key, tweak, ...) in the order of the cipher; `L_r` is ``linear_layers[r]``.
+
+        Computed by composing the components between two substitution layers, key schedule included. Raises
+        :class:`UnsupportedCipherError` when the key schedule has an operation other than the affine ones, even if
+        the schedule is affine as a whole (e.g. the S-boxes in the key schedule of AES or PRESENT).
+        """
+        others = [i for i in range(len(self._cipher.inputs)) if i != self._state_index]
+        n, F = self._state_size, GF(2)
+        parts = []
+        for target in _affine_forms(self._cipher, self._layers, self._key_schedule_ids, others):
+            linear = matrix(F, target[:, :n].tolist())
+            key = matrix(F, target.shape[0], target.shape[1] - n - 1, target[:, n:-1].tolist())
+            constant = vector(F, target[:, -1].tolist())
+            for value in (linear, key, constant):
+                value.set_immutable()
+            parts.append(AffinePart(linear, key, constant))
+        return tuple(parts)
