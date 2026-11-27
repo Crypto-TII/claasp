@@ -221,7 +221,7 @@ def _boomerang_inputs(width, trials, seed, fixed_input_bits, alpha):
     else:
         if not isinstance(trials, int) or trials <= 0:
             raise ValueError("trials must be a positive integer or 'exhaustive'")
-        rng = random.Random(seed)
+        rng = random.Random(int(seed) if seed is not None else None)
         choices, total = (rng.getrandbits(len(free_positions)) for _ in range(trials)), trials
     def expand(choice):
         return value | sum(((choice >> j) & 1) << i for j, i in enumerate(free_positions))
