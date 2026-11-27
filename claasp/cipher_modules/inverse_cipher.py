@@ -91,8 +91,8 @@ def _build_all_bit_names(components):
     """Build a map from every bit name in the cipher to its component id, position, and type (output / input / output_updated)."""
     bit_names = {}
     for c in components:
-        if c.type == INTERMEDIATE_OUTPUT:
-            continue
+        # Recovered round-output bits can carry a known operand into an
+        # inverse XOR or MODSUB. Keep them in the equivalence lookup.
         starting_bit_position = 0
         for index, input_id_link in enumerate(c.input_id_links):
             if not isinstance(input_id_link, str):

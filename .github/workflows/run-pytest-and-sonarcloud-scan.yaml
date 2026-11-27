@@ -63,8 +63,13 @@ jobs:
         GUROBI_COMPUTE_SERVER: ${{ secrets.GUROBI_COMPUTE_SERVER }}
 
   run-code-coverage:
-    # Pull requests from forks don't receive SONAR_TOKEN, so the scan would fail.
-    if: ${{ github.event_name == 'push' || !github.event.pull_request.head.repo.fork }}
+    # Analyze pull requests as pull requests; reserve branch analysis for long-lived branches.
+    # Fork pull requests do not receive SONAR_TOKEN.
+    if: >-
+      ${{
+        (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) ||
+        (github.event_name == 'push' && (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'))
+      }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -85,7 +90,6 @@ jobs:
       uses: SonarSource/sonarqube-scan-action@master
       with:
         args: >
-          -Dsonar.branch.name=${{ env.GITHUB_HEAD_REF }}
           -Dsonar.python.coverage.reportPaths=coverage.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
