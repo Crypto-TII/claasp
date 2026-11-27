@@ -589,6 +589,18 @@ class SBoxTransitionSemantics:
                 rows[alpha][beta] = coefficient
         return tuple(tuple(row) for row in rows)
 
+    def linear_approximation_table(self):
+        """Return the complete signed half-Walsh LAT as integer rows.
+
+        Rows index input masks and columns index output masks. Each entry is
+        the number of inputs with equal masked parities minus half the input
+        domain size. Multiply an entry by two for the corresponding full
+        coefficient in :meth:`walsh_correlation_table`.
+        """
+        return tuple(
+            tuple(coefficient // 2 for coefficient in row) for row in self.walsh_correlation_table()
+        )
+
     def xor_differential(self, input_difference: int, output_difference: int) -> Transition:
         """Return the exact differential transition counted over all inputs."""
 

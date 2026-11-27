@@ -35,6 +35,25 @@ def test_present_sbox_exact_signed_linear_transition():
     assert transition.weight == 1.0
 
 
+def test_present_sbox_linear_approximation_table_matches_exact_mask_counts():
+    semantics = SBoxTransitionSemantics(PRESENT_SBOX)
+    lat = semantics.linear_approximation_table()
+    walsh = semantics.walsh_correlation_table()
+
+    assert len(lat) == len(semantics.difference_distribution_table()) == 16
+    assert all(len(row) == 16 for row in lat)
+    assert lat[0][0] == 8
+    assert lat[1][5] == -4
+    for input_mask in range(16):
+        for output_mask in range(16):
+            matching = sum(
+                ((value & input_mask).bit_count() ^ (output & output_mask).bit_count()) % 2 == 0
+                for value, output in enumerate(PRESENT_SBOX)
+            )
+            assert lat[input_mask][output_mask] == matching - 8
+            assert 2 * lat[input_mask][output_mask] == walsh[input_mask][output_mask]
+
+
 def test_rectangular_des_sbox_uses_distinct_input_and_output_widths():
     from claasp.primitives.block_ciphers.des import DES
 
@@ -52,6 +71,9 @@ def test_rectangular_des_sbox_uses_distinct_input_and_output_widths():
     assert len(semantics.difference_distribution_table()[0]) == 16
     assert len(semantics.walsh_correlation_table()) == 64
     assert len(semantics.walsh_correlation_table()[0]) == 16
+    assert len(semantics.linear_approximation_table()) == 64
+    assert len(semantics.linear_approximation_table()[0]) == 16
+    assert semantics.linear_approximation_table()[0x10][0xF] == expected_walsh // 2
     assert (differential.input_pattern.width, differential.output_pattern.width) == (6, 4)
     assert differential.numerator == expected_differential
     assert (linear.input_pattern.width, linear.output_pattern.width) == (6, 4)
