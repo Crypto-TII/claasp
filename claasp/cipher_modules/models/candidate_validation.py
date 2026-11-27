@@ -629,6 +629,48 @@ def _compiled_component_evaluator(cipher):
     return evaluate
 
 
+def _compiled_vectorized_component_evaluator(cipher, constraints):
+    """Compile a batch evaluator returning only retained component values."""
+    names = sorted({physical for _, physical, _ in constraints})
+    code = code_generator.generate_byte_based_vectorized_python_code_string(cipher)
+    lines = code.splitlines()
+    terminal = lines.pop()
+    if not terminal.startswith("  return "):
+        raise ValueError("Unexpected vectorized evaluator output")
+    values = ", ".join(f"{name!r}: {name}" for name in names)
+    lines.append(f"  return {terminal[len('  return '):]}, {{{values}}}")
+    module = ModuleType("boomerang_vectorized_trail_evaluator")
+    exec("\n".join(lines), module.__dict__)
+
+    def evaluate(inputs):
+        return module.evaluate(inputs, False)
+
+    return evaluate
+
+
+def _vectorized_trail_matches(cipher, evaluator, constraints, states, key_bytes):
+    """Check retained differences on a batch of four-path executions."""
+    size = states[0].shape[1]
+    combined = np.concatenate(states, axis=1)
+    key = None if key_bytes is None else np.repeat(key_bytes[:, None], 4 * size, axis=1)
+    arguments = [key if name == INPUT_KEY else combined for name in cipher.inputs]
+    _, traces = evaluator(arguments)
+    matched = np.ones(size, dtype=bool)
+    for side, physical, expected in constraints:
+        values = traces[physical]
+        if values.shape[1] == 1:
+            values = np.broadcast_to(values, (values.shape[0], 4 * size))
+        first, second, third, fourth = np.split(values, 4, axis=1)
+        target = np.frombuffer(expected.to_bytes(values.shape[0], "big"), dtype=np.uint8)[:, None]
+        pairs = ((first, second), (third, fourth)) if side == "upper" else (
+            (first, third), (second, fourth))
+        for left, right in pairs:
+            matched &= np.all((left ^ right) == target, axis=0)
+        if not np.any(matched):
+            break
+    return int(np.count_nonzero(matched))
+
+
 def _boomerang_characteristic_constraints(cipher, candidate):
     """Parse retained physical differences without dropping unknown fields."""
     widths = dict(zip(cipher.inputs, cipher.inputs_bit_size))
@@ -700,8 +742,8 @@ def _vectorized_boomerang_counts(
     if fixed_key is not None:
         key_width = cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)] // 8
         key_bytes = np.frombuffer(fixed_key.to_bytes(key_width, "big"), dtype=np.uint8)
-    forward_evaluate = _compiled_component_evaluator(cipher) if constraints is not None else None
-    inverse_evaluate = _compiled_component_evaluator(inverse) if constraints is not None else None
+    trail_evaluate = (_compiled_vectorized_component_evaluator(cipher, constraints)
+                      if constraints is not None else None)
     differential_count = trail_count = 0
     batch_size = max(1, min(4096, 65536 // byte_width))
     for _ in range(0, total, batch_size):
@@ -736,12 +778,12 @@ def _vectorized_boomerang_counts(
         differential_count += len(successful)
         if constraints is None:
             continue
-        for j in successful:
-            _, traces = _boomerang_quartet(
-                cipher, inverse, forward_evaluate, inverse_evaluate,
-                batch[j], alpha, beta, fixed_key,
+        if len(successful):
+            states = (state[:, successful], state_pair[:, successful],
+                      returned_first[successful].T, returned_second[successful].T)
+            trail_count += _vectorized_trail_matches(
+                cipher, trail_evaluate, constraints, states, key_bytes,
             )
-            trail_count += _matches_boomerang_characteristic(traces, constraints)
     return differential_count, trail_count
 
 

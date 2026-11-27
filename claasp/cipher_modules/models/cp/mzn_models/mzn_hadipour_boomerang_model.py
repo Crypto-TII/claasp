@@ -676,6 +676,152 @@ class MznHadipourBoomerangModel(MznModel):
             "confidence_at_least": 1 - delta,
         }
 
+    def _find_and_count_boomerang_trail(
+        self, count_trail, fixed_values, solver_name, search_timeout_in_seconds,
+        processes, optimize_round_split,
+    ):
+        """Search by model weight, then count the returned trail."""
+        trail = self.find_lowest_weight_boomerang_trail(
+            fixed_values=fixed_values, solver_name=solver_name,
+            timeout_in_seconds=search_timeout_in_seconds,
+            processes=processes, optimize_round_split=optimize_round_split,
+        )
+        model_probability = None
+        if trail.get("weight_type") == "local_characteristic_weight_estimate":
+            model_probability = _probability_from_weight(float(trail["total_weight"]))
+        result = {
+            "trail": trail, "model_probability_estimate": model_probability,
+            "model_weight": trail.get("total_weight"),
+            "probability": None, "count": None,
+            "search_status": trail.get("solver_status"),
+        }
+        if trail.get("status") != "SATISFIABLE":
+            return {**result, "status": trail.get("status", "UNKNOWN")}
+        counted = count_trail(trail)
+        probability = counted.get("probability", counted.get("mean_probability_over_supplied_keys"))
+        return {**result, "status": counted["status"], "count": counted,
+                "probability": probability}
+
+    def find_and_estimate_boomerang_trail_for_fixed_key(
+        self, key, fixed_values=None, solver_name=None,
+        search_timeout_in_seconds=None, count_timeout_in_seconds=120,
+        processes=None, optimize_round_split=False, fixed_input_bits=None,
+        exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+    ):
+        """Search for a trail and count its four-execution probability at one key.
+
+        The search minimizes the model weight; it does not optimize the counted
+        probability over all trails. ``probability`` in the returned dictionary
+        is the projected SAT count estimate, or ``None`` if counting times out.
+        ``model_probability_estimate`` and ``model_weight`` remain separate
+        search diagnostics. ``trail`` contains the full solved result and
+        ``count`` contains the counter settings and uncertainty. A proved
+        model optimum is not a proof of the best counted trail.
+
+        ``key`` is the actual master key. ``fixed_values``, ``solver_name``,
+        ``processes`` and ``optimize_round_split`` are passed to
+        :meth:`find_lowest_weight_boomerang_trail`.
+        ``search_timeout_in_seconds`` bounds each search; the independent
+        ``count_timeout_in_seconds`` bounds counting. The other arguments
+        follow :meth:`estimate_boomerang_trail_probability_for_fixed_key`.
+        This uses the search models of Wang, Wang and Sun (ToSC 2023/1) and
+        projected approximate counting as in Chakraborty, Meel and Vardi
+        (CP 2013), now applied to the four boomerang executions.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+            sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_and_estimate_boomerang_trail_for_fixed_key(0, solver_name='gecode', search_timeout_in_seconds=5)  # optional - minizinc pyapproxmc
+            sage: result['probability'] == result['count']['probability']  # optional - minizinc pyapproxmc
+            True
+        """
+        self._require_key_mode(True)
+        return self._find_and_count_boomerang_trail(
+            lambda trail: self.estimate_boomerang_trail_probability_for_fixed_key(
+                trail, key, fixed_input_bits=fixed_input_bits,
+                exclude_returning_quartets=exclude_returning_quartets,
+                epsilon=epsilon, delta=delta, seed=seed,
+                timeout_in_seconds=count_timeout_in_seconds,
+            ), fixed_values, solver_name, search_timeout_in_seconds,
+            processes, optimize_round_split,
+        )
+
+    def find_and_estimate_boomerang_trail_for_permutation(
+        self, fixed_values=None, solver_name=None,
+        search_timeout_in_seconds=None, count_timeout_in_seconds=120,
+        processes=None, optimize_round_split=False, fixed_input_bits=None,
+        exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+    ):
+        """Search and count one trail of a keyless permutation.
+
+        Arguments and result follow
+        :meth:`find_and_estimate_boomerang_trail_for_fixed_key`, except that
+        no key is supplied. Fixed input bits can restrict the state domain.
+        The same SAT search and projected counting references apply.
+
+        EXAMPLES::
+
+            sage: from claasp.cipher import Cipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: cipher = Cipher('identity', 'permutation', ['plaintext'], [4], 4)
+            sage: cipher.add_round(); _ = cipher.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+            sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=0))
+            sage: result = model.find_and_estimate_boomerang_trail_for_permutation(solver_name='gecode', search_timeout_in_seconds=5)  # optional - minizinc pyapproxmc
+            sage: result['probability'] == result['count']['probability']  # optional - minizinc pyapproxmc
+            True
+        """
+        self._require_key_mode(False)
+        return self._find_and_count_boomerang_trail(
+            lambda trail: self.estimate_boomerang_trail_probability_for_permutation(
+                trail, fixed_input_bits=fixed_input_bits,
+                exclude_returning_quartets=exclude_returning_quartets,
+                epsilon=epsilon, delta=delta, seed=seed,
+                timeout_in_seconds=count_timeout_in_seconds,
+            ), fixed_values, solver_name, search_timeout_in_seconds,
+            processes, optimize_round_split,
+        )
+
+    def find_and_estimate_boomerang_trail_over_keys(
+        self, keys, fixed_values=None, solver_name=None,
+        search_timeout_in_seconds=None, count_timeout_in_seconds=120,
+        processes=None, optimize_round_split=False, fixed_input_bits=None,
+        exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+    ):
+        """Search once and count the same retained trail under supplied keys.
+
+        ``keys`` is a nonempty sequence of distinct master keys. The primary
+        ``probability`` is the mean counted probability over precisely these
+        keys. The search still minimizes the key-independent model weight,
+        so it does not prove the best counted mean. Other arguments and
+        returned fields follow
+        :meth:`find_and_estimate_boomerang_trail_for_fixed_key` and
+        :meth:`estimate_boomerang_trail_probability_over_keys`. The same
+        boomerang-search and projected-counting citations apply.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: cipher = SimonBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=3)
+            sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=1, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: result = model.find_and_estimate_boomerang_trail_over_keys([0, 1], solver_name='gecode', search_timeout_in_seconds=5)  # optional - minizinc pyapproxmc
+            sage: result['probability'] == result['count']['mean_probability_over_supplied_keys']  # optional - minizinc pyapproxmc
+            True
+        """
+        self._require_key_mode(True)
+        return self._find_and_count_boomerang_trail(
+            lambda trail: self.estimate_boomerang_trail_probability_over_keys(
+                trail, keys, fixed_input_bits=fixed_input_bits,
+                exclude_returning_quartets=exclude_returning_quartets,
+                epsilon=epsilon, delta=delta, seed=seed,
+                timeout_in_seconds=count_timeout_in_seconds,
+            ), fixed_values, solver_name, search_timeout_in_seconds,
+            processes, optimize_round_split,
+        )
+
     def measure_boomerang_differential_over_keys(
         self, input_pair_difference, output_cross_pair_difference, keys,
         trials_per_key, seed=None, fixed_input_bits=None,

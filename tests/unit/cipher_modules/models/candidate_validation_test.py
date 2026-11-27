@@ -8,6 +8,9 @@ import pytest
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules.models.candidate_validation import (
+    _boomerang_characteristic_constraints,
+    _boomerang_inputs,
+    _scalar_boomerang_counts,
     validate_boomerang_trail,
     validate_candidate,
 )
@@ -236,6 +239,25 @@ def test_sampled_boomerang_characteristic_has_interval_and_zero_hit_bound():
     assert result["trail"]["status"] == "INCONCLUSIVE"
     assert result["trail"]["confidence_interval_95"] is not None
     assert result["trail"]["one_sided_upper_bound_95"] > 0
+
+
+def test_vectorized_trail_count_matches_independent_scalar_replay():
+    cipher = mini_speck_for_boomerang()
+    trail = {"model_type": "boomerang", "components_values": {
+        "upper_plaintext": {"value": "0x01"},
+        "upper_intermediate_output_0_4": {"value": "0x31"},
+        "lower_intermediate_output_0_4": {"value": "0x79"},
+        "lower_cipher_output_2_4": {"value": "0x02"},
+    }}
+    measured = validate_boomerang_trail(cipher, trail, 128, seed=11)
+    (inputs, _), _ = _boomerang_inputs(8, 128, 11, None, 1)
+    scalar = _scalar_boomerang_counts(
+        cipher, cipher.cipher_inverse(), inputs, 1, 2, None, None, False,
+        _boomerang_characteristic_constraints(cipher, trail),
+    )
+    assert scalar == (measured["differential"]["successes"],
+                      measured["trail"]["successes"])
+    assert measured["trail"]["successes"] > 0
 
 
 def test_boomerang_characteristic_rejects_unmapped_component():

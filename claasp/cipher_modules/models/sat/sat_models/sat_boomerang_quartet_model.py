@@ -186,11 +186,10 @@ class SatBoomerangQuartetModel:
                     raise NotImplementedError(f"No exact SAT encoding for {component.id}") from exc
                 clauses.extend(encoded)
         if keyed:
-            for execution in range(1, 4):
-                clauses.extend(_difference_clauses(
-                    "quartet_0_key", f"quartet_{execution}_key", 0, key_width
+            for execution in range(4):
+                clauses.extend(_fixed_value_clauses(
+                    f"quartet_{execution}_key", fixed_key, key_width,
                 ))
-            clauses.extend(_fixed_value_clauses("quartet_0_key", fixed_key, key_width))
         for side, name, expected in differences:
             pairs = ((0, 1), (2, 3)) if side == "upper" else ((0, 2), (1, 3))
             for left, right in pairs:
