@@ -11,10 +11,12 @@ from sage.rings.finite_rings.finite_field_constructor import FiniteField as GF
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules import code_generator
-from claasp.cipher_modules.spn_structure import Sbox, SpnStructure, SubstitutionLayer, UnsupportedCipherError
+from claasp.cipher_modules.spn_structure import (AffinePart, Sbox, SpnStructure, SubstitutionLayer,
+                                                 UnsupportedCipherError)
 from claasp.ciphers.block_ciphers.aes_block_cipher import AESBlockCipher
 from claasp.ciphers.block_ciphers.midori_block_cipher import MidoriBlockCipher
 from claasp.ciphers.block_ciphers.present_block_cipher import PresentBlockCipher
+from claasp.ciphers.block_ciphers.prince_block_cipher import PrinceBlockCipher
 from claasp.ciphers.block_ciphers.serpent_block_cipher import SerpentBlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.skinny_block_cipher import SkinnyBlockCipher
@@ -127,6 +129,12 @@ def test_unsupported_components_raise():
         SpnStructure(cipher)
 
 
+def test_partial_substitution_layers_raise():
+    # Prince: the substitution layers found do not all cover the same number of bits
+    with pytest.raises(UnsupportedCipherError, match="substitution layers of different sizes"):
+        SpnStructure(PrinceBlockCipher())
+
+
 def test_and_outside_a_chi_layer_raises():
     cipher = SimonBlockCipher(number_of_rounds=3)
     with pytest.raises(UnsupportedCipherError):
@@ -165,28 +173,13 @@ def _random_inputs_and_components(cipher, number_of_samples):
         yield inputs, evaluate(inputs)[2]
 
 
-def _apply_sbox_layer(points, sboxes):
-    """Image of every row of ``points`` (an (N, n) bit array) by an S-box layer ``((positions, table), ...)``,
-    computed independently of CLAASP's components."""
-    points = np.asarray(points, dtype=np.uint8)
-    image = points.copy()
-    for positions, table in (sbox[:2] for sbox in sboxes):  # an Sbox, or a (positions, table) pair
-        word = np.zeros(points.shape[0], dtype=np.int64)
-        for position in positions:
-            word = (word << 1) | points[:, position]
-        output = np.asarray(table, dtype=np.int64)[word]
-        for k, position in enumerate(positions):
-            image[:, position] = (output >> (len(positions) - 1 - k)) & 1
-    return image
-
-
 @pytest.mark.parametrize("name", ["midori", "skinny", "keccak_sbox_w4", "keccak_circuit_w4"])
-def test_sbox_tables_match_real_cipher(structures, name):
+def test_sbox_tables_match_real_cipher(structures, apply_sbox_layer, name):
     cipher, structure = structures(name)
     for inputs, components_io in _random_inputs_and_components(cipher, 5):
         for layer in structure.substitution_layers:
             s_r = _bit_values(cipher, layer.input_bits, components_io, inputs)
-            image = _apply_sbox_layer(np.array([s_r]), layer.sboxes)[0].tolist()
+            image = apply_sbox_layer(np.array([s_r]), layer.sboxes)[0].tolist()
             assert image == _bit_values(cipher, layer.output_bits, components_io, inputs)
 
 
@@ -196,7 +189,7 @@ def test_sbox_tables_match_real_cipher(structures, name):
     lambda: AESBlockCipher(number_of_rounds=3),
     lambda: PresentBlockCipher(number_of_rounds=4),
 ], ids=["midori", "keccak_circuit", "aes", "present"])
-def test_linear_layers_on_real_cipher(build):
+def test_linear_layers_on_real_cipher(build, apply_sbox_layer):
     # two inputs differing only in the state: the key and constant additions cancel in the difference, so L_r must
     # map the difference of the S-box outputs to the difference of the next layer's inputs (or of the outputs),
     # whatever the key schedule
@@ -217,7 +210,7 @@ def test_linear_layers_on_real_cipher(build):
                            for bits in [layer.input_bits for layer in layers] + [_output_bits(cipher)]])
         assert len(structure.linear_layers) == len(layers)
         for r, linear in enumerate(structure.linear_layers):
-            images = [_apply_sbox_layer(np.array([state[r]]), layers[r].sboxes)[0].tolist() for state in states]
+            images = [apply_sbox_layer(np.array([state[r]]), layers[r].sboxes)[0].tolist() for state in states]
             difference = vector(F, images[0]) + vector(F, images[1])
             assert linear * difference == vector(F, states[0][r + 1]) + vector(F, states[1][r + 1])
 
@@ -391,3 +384,45 @@ def test_layer_inputs_prepared_after_some_of_its_sboxes():
     b = cipher.add_sbox_component([prepared], [[0, 1, 2, 3]], 4, PRESENT_SBOX).id
     cipher.add_cipher_output_component([a, b], [[0, 1, 2, 3], [0, 1, 2, 3]], 8)
     assert SpnStructure(cipher).linear_layers == (identity_matrix(F, 8), identity_matrix(F, 8))
+
+
+def _key_vector(cipher, inputs, state_index):
+    return vector(F, [bit for i, (value, size) in enumerate(zip(inputs, cipher.inputs_bit_size)) if i != state_index
+                      for bit in _bits(value, size)])
+
+
+@pytest.mark.parametrize("name", list(CIPHERS))
+def test_affine_relation_on_real_cipher(structures, apply_sbox_layer, name):
+    cipher, structure = structures(name)
+    state_index = cipher.inputs.index(structure.state_input)
+    layers = structure.substitution_layers
+    for inputs, components_io in _random_inputs_and_components(cipher, 20):
+        k = _key_vector(cipher, inputs, state_index)
+        states = [_bit_values(cipher, bits, components_io, inputs)
+                  for bits in [layer.input_bits for layer in layers] + [_output_bits(cipher)]]
+        assert len(structure.affine_parts) == len(layers)
+        for layer, part, s_r, s_next in zip(layers, structure.affine_parts, states, states[1:]):
+            image = vector(F, apply_sbox_layer(np.array([s_r]), layer.sboxes)[0].tolist())
+            assert part.linear * image + part.key * k + part.constant == vector(F, s_next)
+
+
+@pytest.mark.parametrize("name", list(CIPHERS))
+def test_affine_parts_sizes(structures, name):
+    _, structure = structures(name)
+    state_size, key_size, _ = EXPECTED_SIZES[name]
+    assert [part.linear for part in structure.affine_parts] == list(structure.linear_layers)
+    for part in structure.affine_parts:
+        assert isinstance(part, AffinePart)
+        assert part.key.dimensions() == (state_size, key_size)
+        assert len(part.constant) == state_size
+        assert part.key.is_immutable()
+        assert part.constant.is_immutable()
+
+
+@pytest.mark.parametrize("build", [lambda: AESBlockCipher(number_of_rounds=2),
+                                   lambda: PresentBlockCipher(number_of_rounds=2)], ids=["aes", "present"])
+def test_affine_parts_need_an_affine_key_schedule(build):
+    structure = SpnStructure(build())
+    assert len(structure.linear_layers) == 2  # the linear layers exist whatever the key schedule
+    with pytest.raises(UnsupportedCipherError, match="S-box in the key schedule"):
+        structure.affine_parts

@@ -95,6 +95,12 @@
         DOI: 10.1007/978-3-030-56877-1_15.
         IACR ePrint 2019/1378, https://eprint.iacr.org/2019/1378
 
+.. [BCLR2017]
+        Beierle C., Canteaut A., Leander G., Rotella Y. : *Proving Resistance
+        against Invariant Attacks: How to Choose the Round Constants* :
+        In Advances in Cryptology -- CRYPTO 2017, Springer, 2017 :
+        https://eprint.iacr.org/2017/463
+
 .. [BDDGR23]
         Belkheyar Y., Daemen J., Dobraunig C., Ghosh S., Rasoolzadeh S. : *BipBip: A Low-Latency
         Tweakable Block Cipher with Small Dimensions* : In IACR Transactions on Cryptographic
@@ -272,6 +278,12 @@
         vol. 10529, pp. 321--345. Springer (2017) : https://doi.org/10.1007/978-3-319-66787-4_16.
         Full version: https://eprint.iacr.org/2017/622.pdf.
         Reference implementation and test vectors: https://github.com/giftcipher/gift.
+
+.. [GJNQSS2016]
+        Guo J., Jean J., Nikolić I., Qiao K., Sasaki Y., Sim S. M. : *Invariant
+        Subspace Attack Against Midori64 and The Resistance Criteria for S-box
+        Designs* : In IACR Transactions on Symmetric Cryptology, 2016(1),
+        pp. 33--56 : https://doi.org/10.13154/tosc.v2016.i1.33-56
 
 .. [Go2019]
         Gohr A. : *Improving Attacks on Round-Reduced Speck32/64 using Deep Learning*.
@@ -515,6 +527,12 @@
 .. only:: html
 
         **T**
+
+.. [TLS2016]
+        Todo Y., Leander G., Sasaki Y. : *Nonlinear Invariant Attack: Practical
+        Attack on Full SCREAM, iSCREAM, and Midori64* : In Advances in
+        Cryptology -- ASIACRYPT 2016, Springer, 2016 :
+        https://eprint.iacr.org/2016/732
 
 .. [Tod2015]
         Todo Y. : *Structural Evaluation by Generalized Integral Property* :
