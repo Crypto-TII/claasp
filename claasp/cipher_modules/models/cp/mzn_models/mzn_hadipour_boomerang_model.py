@@ -529,6 +529,153 @@ class MznHadipourBoomerangModel(MznModel):
             ("differential", "trail"),
         )
 
+    def estimate_boomerang_trail_probability_for_fixed_key(
+        self, trail, key, fixed_input_bits=None, exclude_returning_quartets=False,
+        epsilon=0.3, delta=0.05, seed=1, timeout_in_seconds=120,
+    ):
+        """Count a retained trail's complete quartets under one fixed key.
+
+        This uses four exact SAT cipher executions and projected ApproxMC
+        counting; it does not multiply component probabilities. ``trail`` is
+        a solved boomerang trail with physical upper/lower differences.
+        ``key`` is the actual master key. ``fixed_input_bits`` and
+        ``exclude_returning_quartets`` follow
+        :meth:`validate_boomerang_trail_for_fixed_key`. ``epsilon`` is the
+        relative counting tolerance, ``delta`` the failure probability,
+        and ``seed`` makes counting reproducible. ``timeout_in_seconds``
+        bounds the counting phase; a timeout returns no probability. The result contains a
+        count, probability, base-two weight and counter settings. The
+        guarantee concerns counter randomness, not sampling of keys.
+        Requires the optional ``pyapproxmc`` package and exact SAT encoders
+        for every cipher component. See Chakraborty, Meel and Vardi,
+        *A Scalable Approximate Model Counter*, CP 2013, DOI
+        10.1007/978-3-642-40627-0_18, and Kidmose and Tiessen,
+        *A Formal Analysis of Boomerang Probabilities*, ToSC 2022(1),
+        DOI 10.46586/tosc.v2022.i1.88-109.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: trail = {'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_1_12': {'value': '0x63e'}}}
+            sage: result = model.estimate_boomerang_trail_probability_for_fixed_key(trail, key=0)  # optional - pyapproxmc
+            sage: result['probability'] >= 0
+            True
+        """
+        from claasp.cipher_modules.models.sat.sat_models.sat_boomerang_quartet_model import (
+            SatBoomerangQuartetModel,
+        )
+
+        self._require_key_mode(True)
+        return SatBoomerangQuartetModel(self.original_cipher).count(
+            trail, fixed_key=key, fixed_input_bits=fixed_input_bits,
+            exclude_returning_quartets=exclude_returning_quartets,
+            epsilon=epsilon, delta=delta, seed=seed,
+            timeout_in_seconds=timeout_in_seconds,
+        )
+
+    def estimate_boomerang_trail_probability_for_permutation(
+        self, trail, fixed_input_bits=None, exclude_returning_quartets=False,
+        epsilon=0.3, delta=0.05, seed=1, timeout_in_seconds=120,
+    ):
+        """Count a keyless permutation's retained trail with four exact paths.
+
+        Arguments and result follow
+        :meth:`estimate_boomerang_trail_probability_for_fixed_key`, except
+        that no key is supplied. ``fixed_input_bits`` can hold specified
+        state bits constant; its scope controls whether the returned inputs
+        must retain them. The denominator is the number of free initial
+        inputs. See the cited works and counting guarantee above.
+
+        EXAMPLES::
+
+            sage: from claasp.cipher import Cipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: toy = Cipher('identity', 'permutation', ['plaintext'], [4], 4)
+            sage: toy.add_round()
+            sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+            sage: model = MznHadipourBoomerangModel(toy, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=0))
+            sage: trail = {'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_0_0': {'value': '0x1'}}}
+            sage: model.estimate_boomerang_trail_probability_for_permutation(trail)['probability']  # optional - pyapproxmc
+            1.0
+        """
+        from claasp.cipher_modules.models.sat.sat_models.sat_boomerang_quartet_model import (
+            SatBoomerangQuartetModel,
+        )
+
+        self._require_key_mode(False)
+        return SatBoomerangQuartetModel(self.original_cipher).count(
+            trail, fixed_input_bits=fixed_input_bits,
+            exclude_returning_quartets=exclude_returning_quartets,
+            epsilon=epsilon, delta=delta, seed=seed,
+            timeout_in_seconds=timeout_in_seconds,
+        )
+
+    def estimate_boomerang_trail_probability_over_keys(
+        self, trail, keys, fixed_input_bits=None,
+        exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+        timeout_in_seconds=120,
+    ):
+        """Count a trail separately under supplied keys and average the rates.
+
+        ``keys`` is a nonempty sequence of distinct actual master keys.
+        Other inputs follow
+        :meth:`estimate_boomerang_trail_probability_for_fixed_key`.
+        ``timeout_in_seconds`` applies separately to each key; if any key
+        times out, no mean probability is reported.
+        Each key gets counting failure probability ``delta/len(keys)``;
+        the reported mean is within the same ``1+epsilon`` factor of the
+        true mean over these supplied keys with confidence at least
+        ``1-delta``. This is not an all-key average unless all keys are
+        supplied. See the ApproxMC and boomerang references above.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+            sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
+            sage: trail = {'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_1_12': {'value': '0x63e'}}}
+            sage: result = model.estimate_boomerang_trail_probability_over_keys(trail, [0, 1])  # optional - pyapproxmc
+            sage: result['number_of_keys']
+            2
+        """
+        self._require_key_mode(True)
+        keys = [int(key) for key in keys]
+        epsilon, delta = float(epsilon), float(delta)
+        if not keys or len(keys) != len(set(keys)):
+            raise ValueError("keys must be nonempty and distinct")
+        if not 0 < delta < 1:
+            raise ValueError("delta must lie strictly between zero and one")
+        import random
+
+        rng = random.Random(int(seed))
+        per_key = [
+            self.estimate_boomerang_trail_probability_for_fixed_key(
+                trail, key, fixed_input_bits=fixed_input_bits,
+                exclude_returning_quartets=exclude_returning_quartets,
+                epsilon=epsilon, delta=delta / len(keys),
+                seed=rng.getrandbits(64),
+                timeout_in_seconds=timeout_in_seconds,
+            )
+            for key in keys
+        ]
+        if any(item["status"] == "TIMEOUT" for item in per_key):
+            return {"status": "TIMEOUT", "number_of_keys": len(keys),
+                    "keys": [int(key) for key in keys], "per_key": per_key,
+                    "mean_probability_over_supplied_keys": None}
+        mean = sum(item["probability"] for item in per_key) / len(per_key)
+        return {
+            "status": "ESTIMATED", "method": "four_execution_projected_model_count",
+            "number_of_keys": len(keys), "keys": [int(key) for key in keys],
+            "per_key": per_key, "mean_probability_over_supplied_keys": mean,
+            "mean_weight_over_supplied_keys": -math.log2(mean) if mean else None,
+            "epsilon": epsilon, "delta": delta,
+            "confidence_at_least": 1 - delta,
+        }
+
     def measure_boomerang_differential_over_keys(
         self, input_pair_difference, output_cross_pair_difference, keys,
         trials_per_key, seed=None, fixed_input_bits=None,
