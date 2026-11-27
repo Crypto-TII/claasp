@@ -227,7 +227,7 @@ let {{
     ) /\\
     (
         ubct_value == sum(state in 0..3)( 
-                                if (((valid_state_ubct[state,0] + valid_state_ubct[state,1] + d_ll[1] + n_r[1] + n_l[1]) mod 2) == 0)
+                                if (((valid_state_ubct[state,0] + valid_state_ubct[state,1] + d_ll[0] + d_r[0] + d_l[0]) mod 2) == 0)
                                     then dp_ubct[branch_size-1,state]
                                 else 0
                                 endif

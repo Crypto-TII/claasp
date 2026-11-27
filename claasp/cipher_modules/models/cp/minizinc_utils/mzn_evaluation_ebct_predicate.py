@@ -649,8 +649,8 @@ let {{
     ) /\\
     (
         ebct_value == sum(state in 0..7)(
-                                        if ((valid_state_ebct[state,0] + valid_state_ebct[state,2] + n_ll[1] + n_r[1] + n_l[1]) mod 2 == 0) /\\
-                                           ((valid_state_ebct[state,0] + valid_state_ebct[state,1] + d_ll[1] + d_r[1] + d_l[1]) mod 2 == 0)
+                                        if ((valid_state_ebct[state,0] + valid_state_ebct[state,2] + n_ll[0] + n_r[0] + n_l[0]) mod 2 == 0) /\\
+                                           ((valid_state_ebct[state,0] + valid_state_ebct[state,1] + d_ll[0] + d_r[0] + d_l[0]) mod 2 == 0)
                                             then dp_ebct[branch_size-1,state]
                                         else
                                             0

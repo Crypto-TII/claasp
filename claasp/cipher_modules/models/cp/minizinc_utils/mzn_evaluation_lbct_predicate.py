@@ -391,7 +391,7 @@ let {{
     ) /\\
     (
         lbct_value == sum(state in 0..7)(
-                                        if ((valid_state_lbct[state,0] + valid_state_lbct[state,1] + n_ll[1] + n_r[1] + n_l[1]) mod 2 == 0)
+                                        if ((valid_state_lbct[state,0] + valid_state_lbct[state,1] + n_ll[0] + n_r[0] + n_l[0]) mod 2 == 0)
                                             then dp_lbct[branch_size-1,state]
                                         else
                                             0

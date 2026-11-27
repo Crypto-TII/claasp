@@ -358,6 +358,118 @@ def test_two_bit_modular_switch_matches_exhaustive_boomerang(delta, nabla, opera
         assert abs(float(solution["total_weight"]) + math.log2(successes / 16)) < 0.1
 
 
+@pytest.mark.parametrize("kind", ["ubct", "lbct"])
+def test_two_bit_modular_extended_table_matches_exhaustive_counts(kind):
+    """Check the published lifted-addition table against direct four-path counts."""
+    from minizinc import Instance, Model, Solver
+
+    from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
+        get_approx_logarithm_operation,
+    )
+    from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_lbct_predicate import (
+        get_evaluation_lbct_operations,
+    )
+    from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ubct_predicate import (
+        get_evaluation_ubct_operations,
+    )
+
+    def forward(point):
+        left, right = point >> 2, point & 3
+        return (((left + right) & 3) << 2) | right
+
+    def backward(point):
+        total, right = point >> 2, point & 3
+        return (((total - right) & 3) << 2) | right
+
+    def bit_array(value):
+        return f"array1d(0..1, [{(value >> 1) & 1}, {value & 1}])"
+
+    cases = {8: [], 16: []}
+    for upper in range(1, 16):
+        for lower in range(1, 16):
+            for retained in range(4):
+                count = 0
+                for point in range(16):
+                    first, second = forward(point), forward(point ^ upper)
+                    third, fourth = backward(first ^ lower), backward(second ^ lower)
+                    if third ^ fourth != upper:
+                        continue
+                    extra = ((first ^ second) >> 2 if kind == "ubct"
+                             else (point ^ third) >> 2)
+                    count += extra == retained
+                if count in cases and len(cases[count]) < 4:
+                    cases[count].append((upper, lower, retained))
+    selected = cases[8] + cases[16]
+    assert len(selected) == 8
+    model = Model()
+    model.add_string(get_approx_logarithm_operation())
+    model.add_string(
+        (get_evaluation_ubct_operations if kind == "ubct"
+         else get_evaluation_lbct_operations)(2)
+    )
+    source = [f"array[0..{len(selected) - 1}] of var 0..3200: weights;"]
+    for index, (upper, lower, retained) in enumerate(selected):
+        arrays = [bit_array(upper >> 2), bit_array(upper & 3),
+                  bit_array(lower >> 2), bit_array(lower & 3),
+                  bit_array(retained)]
+        source.append(
+            f"constraint {kind}_compute({', '.join(arrays)}, 2, weights[{index}]);"
+        )
+    model.add_string("\n".join(source + ["solve satisfy;"]))
+    weights = Instance(Solver.lookup("gecode"), model).solve()["weights"]
+    assert weights == [100] * 4 + [0] * 4, (selected, weights)
+
+
+def test_two_bit_modular_ebct_table_matches_exhaustive_counts():
+    """Retaining both output and returning input agrees with direct counting."""
+    from minizinc import Instance, Model, Solver
+
+    from claasp.cipher_modules.models.cp.minizinc_utils.mzn_approx_logarithm_predicate import (
+        get_approx_logarithm_operation,
+    )
+    from claasp.cipher_modules.models.cp.minizinc_utils.mzn_evaluation_ebct_predicate import (
+        get_evaluation_ebct_operations,
+    )
+
+    selected = [(1, 2, 1, 2), (1, 2, 3, 2), (1, 5, 1, 0),
+                (2, 2, 2, 2), (2, 8, 2, 2), (2, 10, 2, 0)]
+
+    def bits(value):
+        return f"array1d(0..1, [{(value >> 1) & 1}, {value & 1}])"
+
+    model = Model()
+    model.add_string(get_approx_logarithm_operation())
+    model.add_string(get_evaluation_ebct_operations(2))
+    source = ["array[0..5] of var 0..3200: weights;"]
+    for index, (upper, lower, upper_sum, lower_input) in enumerate(selected):
+        counted = 0
+        for point in range(16):
+            left, right = point >> 2, point & 3
+            first = (((left + right) & 3) << 2) | right
+            other = point ^ upper
+            other_left, other_right = other >> 2, other & 3
+            second = (((other_left + other_right) & 3) << 2) | other_right
+            crossed = first ^ lower
+            crossed_left, crossed_right = crossed >> 2, crossed & 3
+            third = (((crossed_left - crossed_right) & 3) << 2) | crossed_right
+            crossed = second ^ lower
+            crossed_left, crossed_right = crossed >> 2, crossed & 3
+            fourth = (((crossed_left - crossed_right) & 3) << 2) | crossed_right
+            counted += (third ^ fourth == upper
+                        and (first ^ second) >> 2 == upper_sum
+                        and (point ^ third) >> 2 == lower_input)
+        assert counted == (8 if index < 3 else 16)
+        arrays = [bits(upper >> 2), bits(upper & 3),
+                  bits(lower >> 2), bits(lower & 3),
+                  bits(upper_sum), bits(lower_input)]
+        source.append(
+            f"constraint ebct_compute({', '.join(arrays)}, 2, weights[{index}]);"
+        )
+    model.add_string("\n".join(source + ["solve satisfy;"]))
+    weights = Instance(Solver.lookup("gecode"), model).solve()["weights"]
+    assert weights == [100] * 3 + [0] * 3
+
+
 @pytest.mark.parametrize("middle", [2, 3])
 @pytest.mark.parametrize("operation", ["modadd", "modsub"])
 def test_multiround_modular_predicates_solve(middle, operation):
@@ -446,8 +558,9 @@ def test_invalid_weight_range():
         model.find_all_boomerang_trails_with_weight_at_most(1, min_weight=2)
 
 
-def test_and_extended_switch_matches_all_bit_quartets():
-    """Check joint derivative compatibility and probability, including zero directions."""
+@pytest.mark.parametrize("kind", ["bct", "ubct", "lbct", "ebct"])
+def test_and_switch_matches_all_bit_quartets(kind):
+    """Compare each local switch to all four one-bit AND inputs."""
     import itertools
     import math
     from minizinc import Instance, Model, Solver
@@ -461,8 +574,10 @@ def test_and_extended_switch_matches_all_bit_quartets():
     expected = []
     for index, (a, b, c, d, upper, lower) in enumerate(cases):
         count = sum(
-            ((x & y) ^ ((x ^ a) & (y ^ b))) == upper
-            and ((x & y) ^ ((x ^ c) & (y ^ d))) == lower
+            (kind not in ("ubct", "ebct") or
+             ((x & y) ^ ((x ^ a) & (y ^ b))) == upper)
+            and (kind not in ("lbct", "ebct") or
+                 ((x & y) ^ ((x ^ c) & (y ^ d))) == lower)
             and (
                 (x & y)
                 ^ ((x ^ a) & (y ^ b))
@@ -478,14 +593,17 @@ def test_and_extended_switch_matches_all_bit_quartets():
             str(100 if a or b else 0),
             str(100 if c or d else 0),
             f"weights[{index}]",
-            "ebct",
+            kind,
         )
         source.append(constraints[-1])
         conditions = [
             line.removeprefix("constraint ").removesuffix(";")
             for line in constraints[:-1]
         ]
-        conditions.extend([f"({a}+{b}>0 \\/ {upper}=0)", f"({c}+{d}>0 \\/ {lower}=0)"])
+        if kind in ("ubct", "ebct"):
+            conditions.append(f"({a}+{b}>0 \\/ {upper}=0)")
+        if kind in ("lbct", "ebct"):
+            conditions.append(f"({c}+{d}>0 \\/ {lower}=0)")
         source.append(
             f"constraint valid[{index}] = ("
             + " /\\ ".join(f"({condition})" for condition in conditions)

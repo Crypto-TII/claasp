@@ -1077,6 +1077,16 @@ class MznHadipourBoomerangModel(MznModel):
         )
 
     def _add_and_switch(self, key, kind, start):
+        """Apply the local quadratic switch to each bitwise AND output.
+
+        ``a,b`` are the upper input-difference bits of the two operands;
+        ``c,d`` are their lower input-difference bits. The surrounding DDT
+        constraints already link each direction to its output difference and
+        its one-bit differential weight. This routine adds the cross-direction
+        compatibility and the BCT/UBCT/LBCT/EBCT middle weight. It treats
+        AND components separately, so XOR cancellation between components
+        requires the exact four-execution layer instead.
+        """
         upper = self._cipher.component_from_id(_UPPER_PREFIX + key)
         lower = self._cipher.component_from_id(_LOWER_PREFIX + key)
         inputs = []
@@ -1115,9 +1125,21 @@ class MznHadipourBoomerangModel(MznModel):
     def _and_switch_constraints(
         a, b, c, d, upper_output, lower_output, upper_weight, lower_weight, target, kind
     ):
-        # D_(a,b)(xy) = bx + ay + ab. Vanishing second derivative forces
-        # the two linear equations to have rank at most one. When both
-        # directions are nonzero they coincide, so their outputs must agree.
+        """Return the one-bit AND switch condition and local weight.
+
+        For ``f(x,y)=x*y``, the four-path closure equation is
+        ``D_(a,b) D_(c,d) f = a*d xor b*c = 0``. With both directions
+        nonzero, that equation makes them equal, so an EBCT entry additionally
+        requires equal upper and lower output differences. The BCT has no
+        retained output and contributes zero middle weight. UBCT retains the
+        upper output and uses its DDT weight; LBCT does the same below; EBCT
+        uses the common nonzero direction's weight. Existing DDT constraints
+        reject nonzero output differences for zero input directions.
+
+        This is exact for one isolated AND bit under those DDT constraints.
+        Applied componentwise in a circuit, it is a restricted local model:
+        multiple AND contributions can cancel after an XOR.
+        """
         constraints = [f"constraint {a} * {d} = {b} * {c};"]
         if kind == "ebct":
             constraints.append(
@@ -1131,6 +1153,24 @@ class MznHadipourBoomerangModel(MznModel):
         return constraints
 
     def _add_modular_switch(self, key, kind, index):
+        """Connect and weigh one lifted modular-addition switch.
+
+        The referenced BCT, UBCT and LBCT tables describe the permutation
+        ``F(L,R)=(L+R mod 2^n,R)``. The first four argument arrays are the
+        upper differences of ``L,R`` and the lower differences of the
+        lifted output ``L+R,R``. UBCT additionally fixes the upper sum
+        difference; LBCT additionally fixes the lower difference of the
+        first input operand. ``only_large_switch_*_enum`` enforces the
+        source-published restricted connectivity condition, then
+        ``*_compute`` evaluates its local table weight. These local weights
+        are not a count of the complete cipher's boomerang quartets.
+
+        Subtraction is the inverse lifted permutation, so its input/output
+        roles and UBCT/LBCT labels exchange. See Wang, Wang and Sun,
+        *SAT-aided Automatic Search of Boomerang Distinguishers for ARX
+        Ciphers*, ToSC 2023(1), DOI 10.46586/tosc.v2023.i1.152-191,
+        Definitions 3--4 and Appendix A.
+        """
         upper, lower = _UPPER_PREFIX + key, _LOWER_PREFIX + key
         component = self._cipher.component_from_id(upper)
         size = component.output_bit_size

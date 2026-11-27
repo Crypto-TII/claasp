@@ -7,6 +7,17 @@ inputs). Their input differences pair executions 0/1 and 2/3, and their output
 differences pair 0/2 and 1/3. No inverse component model or product of local
 probabilities is required. This certifies existence, not a probability.
 
+For example, take the four-bit identity permutation, input difference
+``alpha = 0x1`` and output cross-pair difference ``beta = 0x2``::
+
+    execution       0     1     2     3
+    input/output   0x0   0x1   0x2   0x3
+
+The upper pairs have ``0x0 xor 0x1 = 0x2 xor 0x3 = alpha``. The lower
+cross pairs have ``0x0 xor 0x2 = 0x1 xor 0x3 = beta``. For a nontrivial
+cipher, the four copies and all their intermediate values are variables;
+the constraints ask whether such a quartet exists under one shared key.
+
 With local middle tables, the exact layer intersects their restricted search
 space. With an exact middle, it retains only outer characteristics and external
 differences, allowing cancellations across middle components. See Cid et al., EUROCRYPT 2018,
@@ -26,6 +37,7 @@ _NONLINEAR = ("AND", "MODADD", "MODSUB")
 
 
 def _execution_constraints(cipher, execution):
+    """Build one renamed, exact forward copy of every cipher component."""
     graph = deepcopy(cipher)
     graph.add_prefix(f"quartet_{execution}_")
     exact = MznCipherModel(graph)
@@ -45,6 +57,7 @@ def _execution_constraints(cipher, execution):
 
 
 def _difference_constraints(side, name, positions):
+    """Tie a modeled bit difference to both pairs on the requested side."""
     original = name.removeprefix(side + "_")
     return [
         f"constraint (quartet_{left}_{original}[{bit}] + "
@@ -55,6 +68,7 @@ def _difference_constraints(side, name, positions):
 
 
 def _component_inputs(component):
+    """Return all linked component input bits in operand order."""
     return [
         (name, bit)
         for name, positions in zip(
@@ -86,6 +100,7 @@ def _retained_middle_bits(component, side, kind):
 
 
 def _retained_bits(model):
+    """Select the modeled differences that all four executions must follow."""
     result = {side: set() for side in _PAIRS}
     top = model.top_part_number_of_rounds
     end = top + model.middle_part_number_of_rounds
@@ -142,6 +157,14 @@ def build_boomerang_value_constraints(model):
         sage: constraints, names = build_boomerang_value_constraints(model)
         sage: 'quartet_0_plaintext' in names
         True
+
+    For the identity example above, the four exact copies can take inputs
+    ``(0, 1, 2, 3)`` and their outputs are the same. The generated equations
+    enforce the two upper differences ``0 xor 1 = 2 xor 3 = 1`` and two
+    cross-pair differences ``0 xor 2 = 1 xor 3 = 2``. A solver witness must
+    additionally satisfy every retained intermediate difference of the
+    supplied trail; the endpoint equations alone define the wider boomerang
+    differential.
 
     The quartet construction follows the external event of Cid et al.,
     https://doi.org/10.1007/978-3-319-78375-8_22. It makes no independence or
