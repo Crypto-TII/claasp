@@ -7,9 +7,8 @@ import numpy as np
 import pytest
 
 from claasp.cipher import Cipher
-from claasp.DTOs.component_state import ComponentState
 from claasp.cipher_modules.models.candidate_validation import (
-    validate_boomerang_characteristic,
+    validate_boomerang_trail,
     validate_candidate,
 )
 from claasp.cipher_modules.models.cp.mzn_model import MznModel
@@ -21,6 +20,7 @@ from claasp.cipher_modules.models.sat.sat_model import SatModel
 from claasp.cipher_modules.models.smt.smt_model import SmtModel
 from claasp.cipher_modules.models.utils import boomerang_checker_for_permutation
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.DTOs.component_state import ComponentState
 from claasp.name_mappings import BLOCK_CIPHER, PERMUTATION
 
 SBOX = [12, 5, 6, 11, 9, 0, 10, 13, 3, 14, 15, 8, 4, 7, 1, 2]
@@ -164,8 +164,8 @@ def test_boomerang_validator_counts_quartets_and_excludes_two_point_returns():
             f"lower_{output}": {"value": "0x5"},
         },
     }
-    all_returns = model.validate_boomerang_candidate(candidate, "exhaustive")
-    nondegenerate = model.validate_boomerang_candidate(
+    all_returns = model.validate_candidate(candidate, "exhaustive")
+    nondegenerate = model.validate_candidate(
         candidate, "exhaustive", exclude_returning_quartets=True
     )
     assert all_returns["successes"] == 16
@@ -198,22 +198,22 @@ def test_boomerang_characteristic_validator_counts_four_path_events(
             "lower_cipher_output_2_4": {"value": "0x02"},
         },
     }
-    result = validate_boomerang_characteristic(cipher, candidate, "exhaustive")
-    assert result["external"]["successes"] == 20
-    assert result["characteristic"]["successes"] == expected
-    assert result["characteristic"]["probability"] == expected / 256
-    assert result["characteristic"]["status"] == "EXACT"
+    result = validate_boomerang_trail(cipher, candidate, "exhaustive")
+    assert result["differential"]["successes"] == 20
+    assert result["trail"]["successes"] == expected
+    assert result["trail"]["probability"] == expected / 256
+    assert result["trail"]["status"] == "EXACT"
     assert result["local_model_probability_estimate"] == pytest.approx(2 ** -6.36)
     if expected == 16:
         model = MznHadipourBoomerangModel(
-            cipher, dict(top_part_number_of_rounds=1,
-                         middle_part_number_of_rounds=1,
-                         bottom_part_number_of_rounds=1),
+            cipher, {"top_part_number_of_rounds": 1,
+                     "middle_part_number_of_rounds": 1,
+                     "bottom_part_number_of_rounds": 1},
         )
-        via_model = model.validate_boomerang_characteristic(candidate, "exhaustive")
-        external_only = model.validate_boomerang_candidate(candidate, "exhaustive")
-        assert via_model["characteristic"]["successes"] == expected
-        assert external_only["successes"] == result["external"]["successes"]
+        via_model = model.validate_boomerang_trail_for_permutation(candidate, "exhaustive")
+        external_only = model.validate_candidate(candidate, "exhaustive")
+        assert via_model["trail"]["successes"] == expected
+        assert external_only["successes"] == result["differential"]["successes"]
         assert result["random_permutation_baseline_probability"] == (
             external_only["baseline_probability"]
         )
@@ -229,13 +229,13 @@ def test_sampled_boomerang_characteristic_has_interval_and_zero_hit_bound():
             "lower_cipher_output_2_4": {"value": "0x02"},
         },
     }
-    result = validate_boomerang_characteristic(cipher, candidate, 64, seed=11)
+    result = validate_boomerang_trail(cipher, candidate, 64, seed=11)
     assert result["trials"] == 64
-    assert result["external"]["status"] == "MEASURED"
-    assert result["characteristic"]["successes"] == 0
-    assert result["characteristic"]["status"] == "INCONCLUSIVE"
-    assert result["characteristic"]["confidence_interval_95"] is not None
-    assert result["characteristic"]["one_sided_upper_bound_95"] > 0
+    assert result["differential"]["status"] == "MEASURED"
+    assert result["trail"]["successes"] == 0
+    assert result["trail"]["status"] == "INCONCLUSIVE"
+    assert result["trail"]["confidence_interval_95"] is not None
+    assert result["trail"]["one_sided_upper_bound_95"] > 0
 
 
 def test_boomerang_characteristic_rejects_unmapped_component():
@@ -249,7 +249,85 @@ def test_boomerang_characteristic_rejects_unmapped_component():
         },
     }
     with pytest.raises(ValueError, match="Unknown physical component"):
-        validate_boomerang_characteristic(cipher, candidate, "exhaustive")
+        validate_boomerang_trail(cipher, candidate, "exhaustive")
+
+
+def test_named_boomerang_permutation_api_shares_endpoint_count():
+    cipher, output = toy_sbox()
+    model = MznHadipourBoomerangModel(
+        cipher, {"top_part_number_of_rounds": 0,
+                 "middle_part_number_of_rounds": 1,
+                 "bottom_part_number_of_rounds": 0},
+    )
+    trail = {"model_type": "boomerang", "components_values": {
+        "upper_plaintext": {"value": "0x1"},
+        f"lower_{output}": {"value": "0x5"},
+    }}
+    measured = model.measure_boomerang_differential_for_permutation(
+        1, 5, "exhaustive",
+    )
+    validated = model.validate_boomerang_trail_for_permutation(
+        trail, "exhaustive",
+    )
+    assert measured["differential"] == validated["differential"]
+    assert validated["trail"] == validated["differential"]
+    fixed = {"mask": 8, "value": 0, "scope": "initial_pair"}
+    restricted = model.validate_boomerang_trail_for_permutation(
+        trail, "exhaustive", fixed_input_bits=fixed,
+    )
+    assert restricted["trials"] == 8
+    assert restricted["differential"]["successes"] <= 8
+    assert "random_permutation_baseline_probability" not in restricted
+    quartet_scope = model.validate_boomerang_trail_for_permutation(
+        trail, "exhaustive",
+        fixed_input_bits={"mask": 8, "value": 0, "scope": "quartet"},
+    )
+    assert quartet_scope["differential"]["successes"] <= (
+        restricted["differential"]["successes"]
+    )
+
+
+def test_named_boomerang_keyed_api_and_per_key_summary():
+    cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32,
+                              number_of_rounds=2)
+    model = MznHadipourBoomerangModel(
+        cipher, {"top_part_number_of_rounds": 0,
+                 "middle_part_number_of_rounds": 1,
+                 "bottom_part_number_of_rounds": 1},
+    )
+    output = next(component.id for component in cipher.all_components()
+                  if component.type == "cipher_output")
+    trail = {"model_type": "boomerang", "components_values": {
+        "upper_plaintext": {"value": "0x1"},
+        f"lower_{output}": {"value": "0x63e"},
+    }}
+    one = model.validate_boomerang_trail_for_fixed_key(
+        trail, key=0, trials=32, seed=7,
+    )
+    endpoint = model.measure_boomerang_differential_for_fixed_key(
+        1, 0x63e, key=0, trials=32, seed=7,
+    )
+    assert one["differential"] == endpoint["differential"]
+    assert one["trail"] == one["differential"]
+    fixed_bits = {"mask": 0x8000, "value": 0, "scope": "initial_pair"}
+    restricted_trail = model.validate_boomerang_trail_for_fixed_key(
+        trail, key=0, trials=32, seed=7, fixed_input_bits=fixed_bits,
+    )
+    restricted_endpoint = model.measure_boomerang_differential_for_fixed_key(
+        1, 0x63e, key=0, trials=32, seed=7, fixed_input_bits=fixed_bits,
+    )
+    assert restricted_trail["differential"] == restricted_endpoint["differential"]
+    with pytest.raises(ValueError, match="changes fixed input bits"):
+        model.validate_boomerang_trail_for_fixed_key(
+            trail, key=0, trials=32, seed=7,
+            fixed_input_bits={"mask": 1, "value": 0, "scope": "initial_pair"},
+        )
+    many = model.validate_boomerang_trail_over_keys(
+        trail, keys=[0, 1], trials_per_key=32, seed=7,
+    )
+    assert many["number_of_keys"] == 2
+    assert [row["fixed_key"] for row in many["per_key"]] == [0, 1]
+    assert 0 <= many["mean_probability_over_supplied_keys"]["trail"] <= 1
 
 
 def test_candidate_validation_rejects_missing_endpoints():
@@ -386,7 +464,7 @@ def test_two_round_arx_boomerang_counts_nondegenerate_returns():
             f"lower_{output}": {"value": "0xf0"},
         },
     }
-    result = model.validate_boomerang_candidate(
+    result = model.validate_candidate(
         candidate, "exhaustive", exclude_returning_quartets=True
     )
     assert result["successes"] == 16
@@ -425,7 +503,7 @@ def test_keyless_vectorized_boomerang_matches_exact_arx_rate():
             "bottom_part_number_of_rounds": 0,
         },
         middle_model="exact",
-    ).validate_boomerang_candidate(
+    ).validate_candidate(
         candidate, 4097, seed=1, exclude_returning_quartets=True
     )
     assert result["checker"] == "boomerang_checker_for_permutation"

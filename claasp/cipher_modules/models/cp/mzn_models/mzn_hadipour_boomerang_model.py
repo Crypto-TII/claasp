@@ -321,59 +321,256 @@ class MznHadipourBoomerangModel(MznModel):
         self.c_upper = self.c_lower = 0
         self._middle_probabilities = {}
 
-    def validate_boomerang_candidate(self, candidate, trials, **options):
-        """Measure the full-cipher event selected by a boomerang trail.
+    def _measure_boomerang(self, trail, trials, key, seed, fixed_input_bits,
+                           exclude_returning_quartets, inverse_cipher, include_trail):
+        """Run the shared quartet event and format its public measurements."""
+        from claasp.cipher_modules.models.candidate_validation import (
+            _prepare_characteristic_request,
+            validate_boomerang_trail,
+        )
 
-        ``trials='exhaustive'`` is available for data inputs up to 16 bits;
-        otherwise use a positive sample count. ``fixed_key`` is required for
-        a keyed cipher. The result reports successes, trials, the empirical
-        probability and the matched random-permutation baseline. This does
-        not reinterpret the local trail weight as a measured probability.
-        Sampled byte-aligned keyless permutations and keyed block ciphers use
-        vectorized evaluation; small exhaustive checks use scalar evaluation.
-        Supply ``inverse_cipher`` if CLAASP cannot construct a permutation's
-        inverse automatically.
+        if trail.get("model_type") != _MODEL_TYPE:
+            raise ValueError("Expected a solved boomerang trail")
+        if trials != "exhaustive":
+            trials = int(trials)
+        if key is not None:
+            key = int(key)
+        if seed is not None:
+            seed = int(seed)
+        _prepare_characteristic_request(self.original_cipher, trail, trials, key, seed)
+        options = {
+            "fixed_key": key, "seed": seed,
+            "exclude_returning_quartets": exclude_returning_quartets,
+            "inverse_cipher": inverse_cipher,
+        }
+        measured = validate_boomerang_trail(
+            self.original_cipher, trail, trials,
+            fixed_input_bits=fixed_input_bits, include_trail=include_trail, **options,
+        )
+        measured["input_pair_difference"] = measured.pop("input_difference")
+        measured["output_cross_pair_difference"] = measured.pop("output_difference")
+        return measured
+
+    def _endpoint_trail(self, input_pair_difference, output_cross_pair_difference):
+        """Build a trail retaining only the two specified endpoint differences."""
+        from claasp.cipher_modules.models.candidate_validation import _data_input
+        from claasp.name_mappings import CIPHER_OUTPUT
+
+        cipher = self.original_cipher
+        alpha, beta = int(input_pair_difference), int(output_cross_pair_difference)
+        data = _data_input(cipher)
+        width = cipher.inputs_bit_size[cipher.inputs.index(data)]
+        if not 0 <= alpha < 1 << width or not 0 <= beta < 1 << cipher.output_bit_size:
+            raise ValueError("Boomerang differences do not fit the cipher widths")
+        output = next(component.id for component in reversed(cipher.all_components())
+                      if component.type == CIPHER_OUTPUT)
+        return {"model_type": _MODEL_TYPE, "components_values": {
+            f"upper_{data}": {"value": hex(alpha)},
+            f"lower_{output}": {"value": hex(beta)},
+        }}
+
+    def _require_key_mode(self, keyed):
+        """Reject a keyed operation on a permutation or vice versa."""
+        from claasp.name_mappings import INPUT_KEY
+
+        if (INPUT_KEY in self.original_cipher.inputs) != keyed:
+            raise ValueError("This method requires a keyed cipher" if keyed
+                             else "This method requires a keyless permutation")
+
+    def validate_boomerang_trail_for_fixed_key(
+        self, trail, key, trials, seed=None, fixed_input_bits=None,
+        exclude_returning_quartets=False, inverse_cipher=None,
+    ):
+        """Sample the boomerang differential and retained trail for one key.
+
+        ``trail`` is a solved boomerang search result; ``key`` is the fixed
+        master key; ``trials`` is a positive sample count or ``'exhaustive'``
+        for at most 16 free input bits. ``seed`` reproduces sampling.
+        ``fixed_input_bits`` is an optional ``mask``/``value``/``scope`` dict;
+        scope is ``'initial_pair'`` or ``'quartet'``. The optional inverse
+        overrides CLAASP's automatic inverse. Set
+        ``exclude_returning_quartets`` to discard two-point returns.
+        The result has ``differential`` and ``trail`` counts and probabilities.
+        These are sampled fixed-key quantities, not an all-key guarantee.
+        See Kidmose and Tiessen, ToSC 2022, DOI 10.46586/tosc.v2022.i1.88-109.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
+            sage: output = next(c.id for c in cipher.all_components() if c.type == 'cipher_output')
+            sage: trail = {'model_type': 'boomerang', 'components_values': {'upper_plaintext': {'value': '0x1'}, f'lower_{output}': {'value': '0x63e'}}}
+            sage: result = model.validate_boomerang_trail_for_fixed_key(trail, key=0, trials=8, seed=1)
+            sage: result['trail']['successes'] == result['differential']['successes']
+            True
         """
-        if candidate.get("model_type") != _MODEL_TYPE:
-            raise ValueError("Expected a boomerang candidate")
-        return self.validate_candidate(candidate, trials, **options)
+        self._require_key_mode(True)
+        return self._measure_boomerang(
+            trail, trials, key, seed, fixed_input_bits,
+            exclude_returning_quartets, inverse_cipher, True,
+        )
 
-    def validate_boomerang_characteristic(self, candidate, trials, **options):
-        """Measure the external event and the candidate's four-path event.
+    def validate_boomerang_trail_for_permutation(
+        self, trail, trials, seed=None, fixed_input_bits=None,
+        exclude_returning_quartets=False, inverse_cipher=None,
+    ):
+        """Measure a keyless permutation's endpoint event and retained trail.
 
-        This checks every retained physical difference on both copies of
-        its upper or lower path. ``trials='exhaustive'`` is exact for at most
-        16 data bits; sampled results have 95% Wilson intervals. The
-        need to measure joint path events follows Kidmose and Tiessen,
-        *A Formal Analysis of Boomerang Probabilities*, ToSC 2022. See
-        :func:`claasp.cipher_modules.models.candidate_validation.validate_boomerang_characteristic`
-        for the event definition, citations, inputs, and output fields.
+        Arguments and result follow :meth:`validate_boomerang_trail_for_fixed_key`,
+        except that no key is supplied. ``fixed_input_bits`` constrains the
+        permutation input using an explicit mask, value and scope.
 
         EXAMPLES::
 
             sage: from claasp.cipher import Cipher
-            sage: from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import (
-            ....:     MznHadipourBoomerangModel)
             sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
             sage: toy.add_round()
             sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
-            sage: split = dict(top_part_number_of_rounds=0,
-            ....:              middle_part_number_of_rounds=1,
-            ....:              bottom_part_number_of_rounds=0)
-            sage: model = MznHadipourBoomerangModel(toy, split)
-            sage: candidate = {'model_type': 'boomerang', 'components_values': {
-            ....:     'upper_plaintext': {'value': '0x1'},
-            ....:     'lower_cipher_output_0_0': {'value': '0x1'}}}
-            sage: model.validate_boomerang_characteristic(candidate, 'exhaustive')['characteristic']['successes']
+            sage: model = MznHadipourBoomerangModel(toy, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 0})
+            sage: trail = {'model_type': 'boomerang', 'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_0_0': {'value': '0x1'}}}
+            sage: model.validate_boomerang_trail_for_permutation(trail, 'exhaustive')['trail']['successes']
             16
         """
-        from claasp.cipher_modules.models.candidate_validation import (
-            validate_boomerang_characteristic,
+        self._require_key_mode(False)
+        return self._measure_boomerang(
+            trail, trials, None, seed, fixed_input_bits,
+            exclude_returning_quartets, inverse_cipher, True,
         )
 
-        return validate_boomerang_characteristic(
-            self.original_cipher, candidate, trials, **options
+    def measure_boomerang_differential_for_fixed_key(
+        self, input_pair_difference, output_cross_pair_difference, key, trials,
+        seed=None, fixed_input_bits=None, exclude_returning_quartets=False,
+        inverse_cipher=None,
+    ):
+        """Measure only the boomerang endpoint event for one fixed master key.
+
+        Differences are integers at the plaintext pair and crossed ciphertext
+        pair. Other arguments follow :meth:`validate_boomerang_trail_for_fixed_key`.
+        The result contains ``differential`` counts, not a trail count.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
+            sage: result = model.measure_boomerang_differential_for_fixed_key(1, 0x63e, key=0, trials=8, seed=1)
+            sage: result['differential']['successes'] <= result['trials']
+            True
+        """
+        self._require_key_mode(True)
+        trail = self._endpoint_trail(input_pair_difference, output_cross_pair_difference)
+        return self._measure_boomerang(
+            trail, trials, key, seed, fixed_input_bits,
+            exclude_returning_quartets, inverse_cipher, False,
         )
+
+    def measure_boomerang_differential_for_permutation(
+        self, input_pair_difference, output_cross_pair_difference, trials,
+        seed=None, fixed_input_bits=None, exclude_returning_quartets=False,
+        inverse_cipher=None,
+    ):
+        """Measure only the endpoint event of a keyless permutation.
+
+        Differences, trial count, sampling constraints and result follow
+        :meth:`measure_boomerang_differential_for_fixed_key`, without a key.
+
+        EXAMPLES::
+
+            sage: from claasp.cipher import Cipher
+            sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
+            sage: toy.add_round()
+            sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
+            sage: model = MznHadipourBoomerangModel(toy, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 0})
+            sage: model.measure_boomerang_differential_for_permutation(1, 1, 'exhaustive')['differential']['successes']
+            16
+        """
+        self._require_key_mode(False)
+        trail = self._endpoint_trail(input_pair_difference, output_cross_pair_difference)
+        return self._measure_boomerang(
+            trail, trials, None, seed, fixed_input_bits,
+            exclude_returning_quartets, inverse_cipher, False,
+        )
+
+    def validate_boomerang_trail_over_keys(
+        self, trail, keys, trials_per_key, seed=None, fixed_input_bits=None,
+        exclude_returning_quartets=False,
+    ):
+        """Measure one retained trail separately for each supplied key.
+
+        ``keys`` must be a nonempty sequence of distinct master keys.
+        ``trials_per_key`` is applied to each; ``seed`` derives independent
+        reproducible plaintext samples. Returns per-key results and the
+        arithmetic mean of their measured probabilities. No all-key claim
+        follows unless the supplied keys exhaust the key space.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
+            sage: output = next(c.id for c in cipher.all_components() if c.type == 'cipher_output')
+            sage: trail = {'model_type': 'boomerang', 'components_values': {'upper_plaintext': {'value': '0x1'}, f'lower_{output}': {'value': '0x63e'}}}
+            sage: model.validate_boomerang_trail_over_keys(trail, [0, 1], 8, seed=1)['number_of_keys']
+            2
+        """
+        return self._measure_over_keys(
+            keys, seed,
+            lambda key, key_seed: self.validate_boomerang_trail_for_fixed_key(
+                trail, key, trials_per_key, seed=key_seed,
+                fixed_input_bits=fixed_input_bits,
+                exclude_returning_quartets=exclude_returning_quartets,
+            ),
+            ("differential", "trail"),
+        )
+
+    def measure_boomerang_differential_over_keys(
+        self, input_pair_difference, output_cross_pair_difference, keys,
+        trials_per_key, seed=None, fixed_input_bits=None,
+        exclude_returning_quartets=False,
+    ):
+        """Measure one boomerang endpoint event separately for supplied keys.
+
+        Inputs and per-key summary follow
+        :meth:`validate_boomerang_trail_over_keys`; no internal trail is checked.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: cipher = SpeckBlockCipher(block_bit_size=16, key_bit_size=32, number_of_rounds=2)
+            sage: model = MznHadipourBoomerangModel(cipher, {'top_part_number_of_rounds': 0, 'middle_part_number_of_rounds': 1, 'bottom_part_number_of_rounds': 1})
+            sage: model.measure_boomerang_differential_over_keys(1, 0x63e, [0, 1], 8, seed=1)['number_of_keys']
+            2
+        """
+        return self._measure_over_keys(
+            keys, seed,
+            lambda key, key_seed: self.measure_boomerang_differential_for_fixed_key(
+                input_pair_difference, output_cross_pair_difference, key,
+                trials_per_key, seed=key_seed, fixed_input_bits=fixed_input_bits,
+                exclude_returning_quartets=exclude_returning_quartets,
+            ),
+            ("differential",),
+        )
+
+    @staticmethod
+    def _measure_over_keys(keys, seed, measure, quantities):
+        """Preserve per-key measurements before computing an equal-key mean."""
+        import random
+
+        keys = list(keys)
+        if not keys or len(keys) != len(set(keys)):
+            raise ValueError("keys must be nonempty and distinct")
+        rng = random.Random(seed)
+        per_key = [measure(key, rng.getrandbits(64)) for key in keys]
+        return {
+            "per_key": per_key,
+            "number_of_keys": len(per_key),
+            "trials_per_key": per_key[0]["trials"],
+            "mean_probability_over_supplied_keys": {
+                name: sum(row[name]["probability"] for row in per_key) / len(per_key)
+                for name in quantities
+            },
+        }
 
     @staticmethod
     def _validate_fixed_parameters(cipher, fixed_parameters):

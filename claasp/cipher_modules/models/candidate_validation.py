@@ -6,6 +6,8 @@ and uses scalar evaluation for small, non-byte-aligned ciphers.
 """
 
 import math
+import random
+from itertools import islice
 from operator import index
 from types import ModuleType
 
@@ -191,6 +193,41 @@ def _scalar_inputs(size, trials, seed):
     return (int(rng.integers(size)) for _ in range(trials)), trials
 
 
+def _boomerang_inputs(width, trials, seed, fixed_input_bits, alpha):
+    """Sample the free data bits, or enumerate a small restricted input space."""
+    if fixed_input_bits is None:
+        if width <= 63:
+            return _scalar_inputs(1 << width, trials, seed), None
+        mask = value = 0
+        scope = "initial_pair"
+    else:
+        if set(fixed_input_bits) != {"mask", "value", "scope"}:
+            raise ValueError("fixed_input_bits needs mask, value, and scope")
+        mask = _as_int(fixed_input_bits["mask"])
+        value = _as_int(fixed_input_bits["value"])
+        scope = fixed_input_bits["scope"]
+        if scope not in ("initial_pair", "quartet"):
+            raise ValueError("scope must be 'initial_pair' or 'quartet'")
+        if not 0 <= mask < 1 << width or not 0 <= value < 1 << width or value & ~mask:
+            raise ValueError("fixed input mask or value does not fit the data input")
+        if alpha & mask:
+            raise ValueError("input_pair_difference changes fixed input bits")
+    free_positions = [i for i in range(width) if not (mask >> i) & 1]
+    free_size = 1 << len(free_positions)
+    if trials == "exhaustive":
+        if len(free_positions) > 16:
+            raise ValueError("Exhaustive validation is limited to 16 free input bits")
+        choices, total = range(free_size), free_size
+    else:
+        if not isinstance(trials, int) or trials <= 0:
+            raise ValueError("trials must be a positive integer or 'exhaustive'")
+        rng = random.Random(seed)
+        choices, total = (rng.getrandbits(len(free_positions)) for _ in range(trials)), trials
+    def expand(choice):
+        return value | sum(((choice >> j) & 1) << i for j, i in enumerate(free_positions))
+    return (map(expand, choices), total), (mask, value, scope)
+
+
 def _fixed_key_evaluate(cipher, value, fixed_key):
     arguments = [fixed_key if name == INPUT_KEY else value for name in cipher.inputs]
     return int(cipher.evaluate(arguments))
@@ -210,9 +247,14 @@ def _scalar_match(
         return y0 ^ y1 == second
     x2 = _fixed_key_evaluate(inverse, y0 ^ second, fixed_key)
     x3 = _fixed_key_evaluate(inverse, y1 ^ second, fixed_key)
-    if exclude_returning_quartets and x2 in (x, x ^ first):
-        return False
-    return x2 ^ x3 == first
+    return _boomerang_endpoint_matches(
+        x, x ^ first, x2, x3, first, exclude_returning_quartets,
+    )
+
+
+def _boomerang_endpoint_matches(x1, x2, x3, x4, alpha, exclude_returns):
+    """Apply one endpoint predicate in both scalar validation paths."""
+    return (not exclude_returns or x3 not in (x1, x2)) and x3 ^ x4 == alpha
 
 
 def _confidence_interval(successes, trials, correlation):
@@ -633,6 +675,104 @@ def _boomerang_measurement(count, trials, exhaustive):
     return result
 
 
+def _enforce_fixed_return_bits(matches, returned_first, returned_second, fixed_bits):
+    """Keep quartet successes whose returned inputs satisfy fixed data bits."""
+    if fixed_bits is None or fixed_bits[2] != "quartet":
+        return matches
+    mask, value, _ = fixed_bits
+    for j in np.flatnonzero(matches):
+        x3 = int.from_bytes(returned_first[j].tobytes(), "big")
+        x4 = int.from_bytes(returned_second[j].tobytes(), "big")
+        if x3 & mask != value or x4 & mask != value:
+            matches[j] = False
+    return matches
+
+
+def _vectorized_boomerang_counts(
+    cipher, inverse, inputs, width, total, alpha, beta, fixed_key,
+    fixed_bits, exclude_returns, constraints,
+):
+    """Batch endpoint tests and trace only successful quartets."""
+    byte_width = width // 8
+    alpha_bytes = np.frombuffer(alpha.to_bytes(byte_width, "big"), dtype=np.uint8)
+    beta_bytes = np.frombuffer(beta.to_bytes(byte_width, "big"), dtype=np.uint8)
+    key_bytes = None
+    if fixed_key is not None:
+        key_width = cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)] // 8
+        key_bytes = np.frombuffer(fixed_key.to_bytes(key_width, "big"), dtype=np.uint8)
+    forward_evaluate = _compiled_component_evaluator(cipher) if constraints is not None else None
+    inverse_evaluate = _compiled_component_evaluator(inverse) if constraints is not None else None
+    differential_count = trail_count = 0
+    batch_size = max(1, min(4096, 65536 // byte_width))
+    for _ in range(0, total, batch_size):
+        batch = list(islice(inputs, batch_size))
+        if not batch:
+            break
+        size = len(batch)
+        state = np.frombuffer(
+            b"".join(x.to_bytes(byte_width, "big") for x in batch),
+            dtype=np.uint8,
+        ).reshape(size, byte_width).T
+        state_pair = state ^ alpha_bytes[:, None]
+        key = None if key_bytes is None else np.repeat(key_bytes[:, None], size, axis=1)
+        first_args = [key if name == INPUT_KEY else state for name in cipher.inputs]
+        second_args = [key if name == INPUT_KEY else state_pair for name in cipher.inputs]
+        first_output = cipher.evaluate_vectorized(first_args)[0]
+        second_output = cipher.evaluate_vectorized(second_args)[0]
+        first_cross = (first_output ^ beta_bytes).T
+        second_cross = (second_output ^ beta_bytes).T
+        first_inverse_args = [key if name == INPUT_KEY else first_cross for name in inverse.inputs]
+        second_inverse_args = [key if name == INPUT_KEY else second_cross for name in inverse.inputs]
+        returned_first = inverse.evaluate_vectorized(first_inverse_args)[0]
+        returned_second = inverse.evaluate_vectorized(second_inverse_args)[0]
+        matches = np.all((returned_first ^ returned_second) == alpha_bytes, axis=1)
+        if exclude_returns:
+            matches &= np.any(returned_first != state.T, axis=1)
+            matches &= np.any(returned_first != state_pair.T, axis=1)
+        matches = _enforce_fixed_return_bits(
+            matches, returned_first, returned_second, fixed_bits,
+        )
+        successful = np.flatnonzero(matches)
+        differential_count += len(successful)
+        if constraints is None:
+            continue
+        for j in successful:
+            _, traces = _boomerang_quartet(
+                cipher, inverse, forward_evaluate, inverse_evaluate,
+                batch[j], alpha, beta, fixed_key,
+            )
+            trail_count += _matches_boomerang_characteristic(traces, constraints)
+    return differential_count, trail_count
+
+
+def _scalar_boomerang_counts(
+    cipher, inverse, inputs, alpha, beta, fixed_key, fixed_bits,
+    exclude_returns, constraints,
+):
+    """Count endpoint and retained-trail events for exact or odd-width runs."""
+    forward_evaluate = _compiled_component_evaluator(cipher)
+    inverse_evaluate = _compiled_component_evaluator(inverse)
+    differential_count = trail_count = 0
+    for x in inputs:
+        quartet, traces = _boomerang_quartet(
+            cipher, inverse, forward_evaluate, inverse_evaluate,
+            x, alpha, beta, fixed_key,
+        )
+        _, x2, x3, x4 = quartet
+        if fixed_bits is not None and fixed_bits[2] == "quartet":
+            mask, value, _ = fixed_bits
+            if x3 & mask != value or x4 & mask != value:
+                continue
+        if not _boomerang_endpoint_matches(
+            x, x2, x3, x4, alpha, exclude_returns,
+        ):
+            continue
+        differential_count += 1
+        if constraints is not None and _matches_boomerang_characteristic(traces, constraints):
+            trail_count += 1
+    return differential_count, trail_count
+
+
 def _evaluation_arguments(cipher, value, fixed_key):
     """Use the graph's declared input order for data and fixed key."""
     return [fixed_key if name == INPUT_KEY else value for name in cipher.inputs]
@@ -692,16 +832,17 @@ def _add_local_model_estimate(result, candidate):
     return result
 
 
-def validate_boomerang_characteristic(
-    cipher, candidate, trials, fixed_key=None, seed=None,
-    exclude_returning_quartets=False, inverse_cipher=None,
+def validate_boomerang_trail(
+    cipher, trail, trials, fixed_key=None, seed=None,
+    exclude_returning_quartets=False, inverse_cipher=None, fixed_input_bits=None,
+    include_trail=True,
 ):
-    """Measure a boomerang differential and one retained characteristic.
+    """Measure a boomerang differential and one retained trail.
 
     For fixed non-data inputs, choose a plaintext ``x`` and form
     ``x2=x xor alpha``, ``x3=E^-1(E(x) xor beta)``, and
     ``x4=E^-1(E(x2) xor beta)``. The external event is
-    ``x3 xor x4=alpha``. A characteristic occurrence additionally requires
+    ``x3 xor x4=alpha``. A trail occurrence additionally requires
     every listed ``upper_`` component difference on both upper pairs and
     every listed ``lower_`` difference on both cross pairs. This is an
     exact four-execution event; it does not multiply local probabilities.
@@ -710,7 +851,7 @@ def validate_boomerang_characteristic(
 
     - ``cipher`` -- CLAASP permutation or fixed-key block cipher with one
       data input and, optionally, a key input.
-    - ``candidate`` -- solved boomerang dictionary with ``components_values``
+    - ``trail`` -- solved boomerang dictionary with ``components_values``
       containing physical upper/lower component differences and endpoints.
     - ``trials`` -- positive sample count with replacement, or
       ``'exhaustive'`` for at most 16 data bits.
@@ -719,13 +860,19 @@ def validate_boomerang_characteristic(
     - ``exclude_returning_quartets`` -- omit two-point returns when True.
     - ``inverse_cipher`` -- optional compatible inverse when CLAASP cannot
       construct one automatically.
+    - ``fixed_input_bits`` -- optional dictionary with integer ``mask`` and
+      ``value`` and ``scope`` set to ``'initial_pair'`` or ``'quartet'``.
+      Fixed bits are excluded from the sampled input space; quartet scope
+      additionally requires both returned plaintexts to retain them.
+    - ``include_trail`` -- check internal trail conditions when True; endpoint
+      only when False. The model's endpoint methods set this automatically.
 
-    OUTPUT: dictionary with external and retained-characteristic counts,
+    OUTPUT: dictionary with differential and retained-trail counts,
     exact when exhaustive, or sample rates and two-sided Wilson 95%
     intervals. A zero sample count also has a one-sided 95% upper bound.
     The random-permutation baseline is reported for the external event.
     Results refer to the fixed key and specified differences; they are not
-    all-key guarantees. Fix the candidate before drawing the random sample;
+    all-key guarantees. Fix the trail before drawing the random sample;
     reusing data that selected it invalidates the nominal interval coverage.
     The local weight is included only as a separate
     estimate. Dependence between the four paths can make it inaccurate;
@@ -735,59 +882,61 @@ def validate_boomerang_characteristic(
     EXAMPLES::
 
         sage: from claasp.cipher import Cipher
-        sage: from claasp.cipher_modules.models.candidate_validation import validate_boomerang_characteristic
+        sage: from claasp.cipher_modules.models.candidate_validation import validate_boomerang_trail
         sage: toy = Cipher('tiny', 'permutation', ['plaintext'], [4], 4)
         sage: toy.add_round()
         sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
-        sage: candidate = {'model_type': 'boomerang', 'components_values': {
+        sage: trail = {'model_type': 'boomerang', 'components_values': {
         ....:     'upper_plaintext': {'value': '0x1'},
         ....:     'lower_cipher_output_0_0': {'value': '0x1'}}}
-        sage: result = validate_boomerang_characteristic(toy, candidate, 'exhaustive')
-        sage: (result['external']['successes'], result['characteristic']['successes'])
+        sage: result = validate_boomerang_trail(toy, trail, 'exhaustive')
+        sage: (result['differential']['successes'], result['trail']['successes'])
         (16, 16)
     """
     width, trials, fixed_key, seed = _prepare_characteristic_request(
-        cipher, candidate, trials, fixed_key, seed
+        cipher, trail, trials, fixed_key, seed
     )
-    _, alpha_raw, _, beta_raw = _endpoints(cipher, candidate, "boomerang_scalar", {})
+    _, alpha_raw, _, beta_raw = _endpoints(cipher, trail, "boomerang_scalar", {})
     alpha, beta = _as_int(alpha_raw), _as_int(beta_raw)
     if not 0 <= alpha < 1 << width or not 0 <= beta < 1 << cipher.output_bit_size:
         raise ValueError("External differences do not fit the cipher widths")
-    constraints = _boomerang_characteristic_constraints(cipher, candidate)
+    constraints = _boomerang_characteristic_constraints(cipher, trail) if include_trail else None
     inverse = inverse_cipher if inverse_cipher is not None else cipher.cipher_inverse()
-    forward_evaluate = _compiled_component_evaluator(cipher)
-    inverse_evaluate = _compiled_component_evaluator(inverse)
-    inputs, total = _scalar_inputs(1 << width, trials, seed)
-    external_count = characteristic_count = 0
-    for x in inputs:
-        quartet, traces = _boomerang_quartet(
-            cipher, inverse, forward_evaluate, inverse_evaluate,
-            x, alpha, beta, fixed_key,
+    (inputs, total), fixed_bits = _boomerang_inputs(
+        width, trials, seed, fixed_input_bits, alpha,
+    )
+    key_width = (cipher.inputs_bit_size[cipher.inputs.index(INPUT_KEY)]
+                 if INPUT_KEY in cipher.inputs else 0)
+    if trials != "exhaustive" and width % 8 == 0 and key_width % 8 == 0:
+        differential_count, trail_count = _vectorized_boomerang_counts(
+            cipher, inverse, inputs, width, total, alpha, beta, fixed_key,
+            fixed_bits, exclude_returning_quartets, constraints,
         )
-        _, x2, x3, x4 = quartet
-        if exclude_returning_quartets and x3 in (x, x2):
-            continue
-        if x3 ^ x4 != alpha:
-            continue
-        external_count += 1
-        if _matches_boomerang_characteristic(traces, constraints):
-            characteristic_count += 1
+    else:
+        differential_count, trail_count = _scalar_boomerang_counts(
+            cipher, inverse, inputs, alpha, beta, fixed_key, fixed_bits,
+            exclude_returning_quartets, constraints,
+        )
     exhaustive = trials == "exhaustive"
     result = {
         "input_difference": alpha, "output_difference": beta,
         "trials": total, "sampling": "exhaustive" if exhaustive else "random_plaintexts",
         "fixed_key": fixed_key, "seed": seed,
+        "fixed_input_bits": fixed_input_bits,
         "exclude_returning_quartets": exclude_returning_quartets,
-        "external": _boomerang_measurement(external_count, total, exhaustive),
-        "characteristic": _boomerang_measurement(characteristic_count, total, exhaustive),
+        "differential": _boomerang_measurement(differential_count, total, exhaustive),
     }
-    baseline = _boomerang_baseline(alpha, beta, 1 << width, exclude_returning_quartets)
+    if include_trail:
+        result["trail"] = _boomerang_measurement(trail_count, total, exhaustive)
+    baseline = None if fixed_input_bits is not None else _boomerang_baseline(
+        alpha, beta, 1 << width, exclude_returning_quartets,
+    )
     if baseline is not None:
         result["random_permutation_baseline_probability"] = baseline[1]
-        result["external_advantage_over_baseline"] = (
-            result["external"]["probability"] - baseline[1]
+        result["differential_advantage_over_baseline"] = (
+            result["differential"]["probability"] - baseline[1]
         )
-    return _add_local_model_estimate(result, candidate)
+    return _add_local_model_estimate(result, trail)
 
 
 class CandidateValidationMixin:
