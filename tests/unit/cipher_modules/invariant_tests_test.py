@@ -1,8 +1,7 @@
 """
-Tests of the round-constant invariant test, of the invariant closure W_L(D), of the S-box coset check (Algorithm
-1), and checks against published results: the lane bound of the Keccak linear layer (written from the specification,
-not taken from CLAASP's implementation) and the invariant space W_L(D) of Midori-64 given in [BCLR2017]_. The
-references are in docs/references.rst.
+Tests of the round-constant invariant test, of the invariant closure W_L(D) and of the S-box coset check (Algorithm
+1). They include the values given in [BCLR2017]_ for Midori-64 and Skinny-64-64, and the lane bound of the Keccak
+linear layer, written from the specification rather than taken from CLAASP's implementation.
 """
 import random
 from types import SimpleNamespace
