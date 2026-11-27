@@ -566,7 +566,7 @@ class MznHadipourBoomerangModel(MznModel):
         keys = list(keys)
         if not keys or len(keys) != len(set(keys)):
             raise ValueError("keys must be nonempty and distinct")
-        rng = random.Random(seed)
+        rng = random.Random(int(seed) if seed is not None else None)
         per_key = [measure(key, rng.getrandbits(64)) for key in keys]
         return {
             "per_key": per_key,
