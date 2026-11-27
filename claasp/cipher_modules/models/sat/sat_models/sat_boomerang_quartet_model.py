@@ -258,7 +258,7 @@ class SatBoomerangQuartetModel:
             sage: _ = toy.add_cipher_output_component(['plaintext'], [list(range(4))], 4)
             sage: trail = {'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_0_0': {'value': '0x1'}}}
             sage: result = SatBoomerangQuartetModel(toy).count(trail)  # optional - pyapproxmc
-            sage: result['probability']
+            sage: result['probability']  # optional - pyapproxmc
             1.0
         """
         epsilon, delta, seed = float(epsilon), float(delta), int(seed)

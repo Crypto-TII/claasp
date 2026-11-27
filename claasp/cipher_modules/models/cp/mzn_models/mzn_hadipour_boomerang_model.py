@@ -561,7 +561,7 @@ class MznHadipourBoomerangModel(MznModel):
             sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
             sage: trail = {'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_1_12': {'value': '0x63e'}}}
             sage: result = model.estimate_boomerang_trail_probability_for_fixed_key(trail, key=0)  # optional - pyapproxmc
-            sage: result['probability'] >= 0
+            sage: result['probability'] >= 0  # optional - pyapproxmc
             True
         """
         from claasp.cipher_modules.models.sat.sat_models.sat_boomerang_quartet_model import (
@@ -639,7 +639,7 @@ class MznHadipourBoomerangModel(MznModel):
             sage: model = MznHadipourBoomerangModel(cipher, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=1, bottom_part_number_of_rounds=1))
             sage: trail = {'components_values': {'upper_plaintext': {'value': '0x1'}, 'lower_cipher_output_1_12': {'value': '0x63e'}}}
             sage: result = model.estimate_boomerang_trail_probability_over_keys(trail, [0, 1])  # optional - pyapproxmc
-            sage: result['number_of_keys']
+            sage: result['number_of_keys']  # optional - pyapproxmc
             2
         """
         self._require_key_mode(True)
