@@ -321,6 +321,11 @@ def _verdict(subspace, linear_layer, layers, linear_invariant_in_every_layer, co
         checks.append((layer.round_number, check))
         if check["status"] == "proven":
             break
+    return _summarize_coset_checks(checks)
+
+
+def _summarize_coset_checks(checks):
+    """Aggregate evaluated layer checks, reporting one layer's coverage and the total sample count."""
     # the reported layer: the one that succeeded, otherwise the one that met the most cosets (coverage is per layer)
     evaluated = [(round_number, check) for round_number, check in checks if check["cosets_hit"] is not None]
     round_number, reported = max(evaluated, key=lambda item: item[1]["cosets_hit"], default=(None, None))
