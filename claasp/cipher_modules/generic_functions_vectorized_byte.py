@@ -175,7 +175,7 @@ def byte_vector_select_all_words(unformated_inputs, real_bits, real_inputs, numb
             and is_canonical_for_bit_size
         ):
             output[i] = np.array(unformated_inputs[idx], copy=True)
-            output[i][0, :] &= left_byte_mask
+            output[i][0, :] &= np.uint8(left_byte_mask)
         else:
             output[i] = np.zeros(shape=(words_per_input, max_number_of_columns), dtype=np.uint8)
             generate_formatted_inputs(actual_inputs_bits, i, output, pos, real_bits, real_inputs, unformated_inputs,
