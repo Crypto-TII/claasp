@@ -105,6 +105,68 @@ def test_find_lowest_weight_xor_linear_trail_with_log(tmp_path, monkeypatch):
     assert f"'total_weight': {trail['total_weight']!r}" in log_lines[-1]
 
 
+def test_find_lowest_weight_xor_linear_trail_from_above():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    sat = SatXorLinearModel(speck)
+    trail = sat.find_lowest_weight_xor_linear_trail(search_from="above")
+
+    assert trail["status"] == SATISFIABLE
+    assert trail["total_weight"] == 3.0
+    assert trail["test_name"] == "find_lowest_weight_xor_linear_trail"
+    # start_weight is an upper bound for the lowest weight
+    trail = sat.find_lowest_weight_xor_linear_trail(search_from="above", start_weight=6)
+    assert trail["total_weight"] == 3.0
+    trail = sat.find_lowest_weight_xor_linear_trail(search_from="above", start_weight=2)
+    assert trail["status"] == "UNSATISFIABLE"
+    with pytest.raises(ValueError, match="search_from"):
+        sat.find_lowest_weight_xor_linear_trail(search_from="middle")
+
+
+def test_find_lowest_weight_xor_linear_trail_from_above_with_log(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    sat = SatXorLinearModel(speck)
+    lowest_weight = 3
+    log_file_name = f"{speck.id}__sat_find_lowest_weight_xor_linear_trail_from_above__{CRYPTOMINISAT_EXT}solver.log"
+    try:
+        trail = sat.find_lowest_weight_xor_linear_trail(search_from="above", log=True)
+        with open(log_file_name) as f:
+            log_content = f.read()
+    finally:
+        if path.exists(log_file_name):
+            remove(log_file_name)
+
+    assert trail["total_weight"] == lowest_weight
+    log_lines = log_content.splitlines()
+    assert log_lines[0].endswith(f" {speck.id} xor_linear search from above s {CRYPTOMINISAT_EXT} o none f default")
+    unsat_lines = [line for line in log_lines if " UNSAT " in line]
+    assert len(unsat_lines) == 1
+    assert f" UNSAT wc <={lowest_weight - 1} t " in unsat_lines[0]
+    assert log_lines[-1] == unsat_lines[0]
+    assert " SAT wc " in log_lines[-2]
+    assert f" wg {lowest_weight} pt " in log_lines[-2]
+    plaintext = trail["components_values"]["plaintext"]["value"]
+    ciphertext = trail["components_values"]["cipher_output_3_12_o"]["value"]
+    assert f" pt {plaintext} " in log_lines[-2]
+    assert f" ct {ciphertext} t " in log_lines[-2]
+
+
+def test_search_xor_linear_trail_down_to_weight():
+    speck = SpeckBlockCipher(block_bit_size=32, key_bit_size=64, number_of_rounds=4)
+    sat = SatXorLinearModel(speck)
+
+    trail = sat.search_xor_linear_trail_down_to_weight(0)
+    assert trail["total_weight"] == 3.0
+    assert trail["test_name"] == "search_xor_linear_trail_down_to_weight"
+
+    trail = sat.search_xor_linear_trail_down_to_weight(6)
+    assert 3 <= trail["total_weight"] <= 6
+
+    trail = sat.search_xor_linear_trail_down_to_weight(0, start_weight=2)
+    assert trail["status"] == "UNSATISFIABLE"
+    assert trail["total_weight"] is None
+
+
 def test_find_one_xor_linear_trail():
     speck = SpeckBlockCipher(number_of_rounds=4)
     sat = SatXorLinearModel(speck)

@@ -26,7 +26,6 @@ from claasp.cipher_modules.models.utils import (
     get_single_key_scenario_format_for_fixed_values,
     hex_to_bitlist,
     join_and_sanitize_strings,
-    save_trail_lower_bounds_and_time_estimates,
     set_component_solution,
     set_fixed_variables,
 )
@@ -512,7 +511,13 @@ class SatXorDifferentialModel(SatModel):
         return weight, solutions_list
 
     def find_lowest_weight_xor_differential_trail(
-        self, fixed_values=[], solver_name=solvers.SOLVER_DEFAULT, options=None, start_weight=0, log=False
+        self,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        options=None,
+        start_weight=None,
+        log=False,
+        search_from="below",
     ):
         """
         Return the solution representing a trail with the lowest weight.
@@ -529,13 +534,30 @@ class SatXorDifferentialModel(SatModel):
         - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
         - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
         - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
-        - ``start_weight`` -- **integer** (default: `0`); the first weight to be searched. Use it to resume a search
-          from a known lower bound: if a trail is found at ``start_weight`` itself, it is only guaranteed to have weight
-          at most ``start_weight``
+        - ``start_weight`` -- **integer** (default: `None`); the meaning depends on ``search_from``:
+
+          * ``below``: the first weight to be searched (`0` if `None`), i.e. a known lower bound for the
+            lowest weight. Use it to resume a search: if a trail is found at ``start_weight`` itself, it is only
+            guaranteed to have weight at most ``start_weight``
+          * ``above``: an upper bound for the weight of the first trail (no bound if `None`), i.e. a weight
+            above the lowest one. If no trail of weight at most ``start_weight`` exists, the UNSATISFIABLE
+            solution is returned
+
         - ``log`` -- **boolean** (default: `False`); if ``True``, after each searched weight, append to the file
           ``<cipher_id>__sat_find_lowest_weight_xor_differential_trail_from_below__<solver_name>solver[_<options>].log``
           the lower bound proved so far, the time spent and an estimate of the time needed by the next weights
-          (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`)
+          (see :py:func:`~claasp.cipher_modules.models.utils.save_trail_lower_bounds_and_time_estimates`). When
+          searching from above, the file is
+          ``<cipher_id>__sat_find_lowest_weight_xor_differential_trail_from_above__<solver_name>solver[_<options>].log``
+          and it contains a line describing the search and one line per searched weight bound (see
+          :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
+        - ``search_from`` -- **string** (default: `below`); the search strategy:
+
+          * ``below``: weights are tried in increasing order, starting from ``start_weight``, until a trail is found
+          * ``above``: a first trail of weight at most ``start_weight`` is found, then trails of lower and lower
+            weight are searched, until none is found (see
+            :py:meth:`~SatXorDifferentialModel.search_xor_differential_trail_down_to_weight`).
+            Each step gives an upper bound, so stopping the search early still provides a trail
 
         .. SEEALSO::
 
@@ -549,6 +571,16 @@ class SatXorDifferentialModel(SatModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=5)
             sage: sat = SatXorDifferentialModel(speck)
             sage: trail = sat.find_lowest_weight_xor_differential_trail()
+            sage: trail['total_weight']
+            9.0
+
+            # search from above
+            sage: trail = sat.find_lowest_weight_xor_differential_trail(search_from="above")
+            sage: trail['total_weight']
+            9.0
+
+            # search from above, starting from a trail of weight at most 12
+            sage: trail = sat.find_lowest_weight_xor_differential_trail(search_from="above", start_weight=12)
             sage: trail['total_weight']
             9.0
 
@@ -568,33 +600,111 @@ class SatXorDifferentialModel(SatModel):
             sage: trail['total_weight']
             1.0
         """
+        if search_from not in ("below", "above"):
+            raise ValueError("search_from must be 'below' or 'above'")
         log_file_name = (
-            f"{self._cipher}__sat_find_lowest_weight_xor_differential_trail_from_below"
+            f"{self._cipher}__sat_find_lowest_weight_xor_differential_trail_from_{search_from}"
             f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
         )
-        searched_weights, search_times = [], []
-        current_weight = start_weight
-        total_time = 0
-        max_memory = 0
-        while True:
-            start_building_time = time.time()
-            self.build_xor_differential_trail_model(weight=current_weight, fixed_variables=fixed_values)
-            end_building_time = time.time()
-            solution = self.solve(XOR_DIFFERENTIAL, solver_name=solver_name, options=options)
-            end_solving_time = time.time()
-            solution["building_time_seconds"] = end_building_time - start_building_time
-            total_time += solution["solving_time_seconds"]
-            max_memory = max((max_memory, solution["memory_megabytes"]))
-            if log:
-                searched_weights.append(current_weight)
-                search_times.append(end_solving_time - end_building_time)
-                save_trail_lower_bounds_and_time_estimates(log_file_name, solution, searched_weights, search_times)
-            if solution["total_weight"] is not None:
-                break
-            current_weight += 1
-        solution["solving_time_seconds"] = total_time
-        solution["memory_megabytes"] = max_memory
+        build_model = self._xor_differential_model_builder(fixed_values)
+        if search_from == "above":
+            solution = self._search_trail_down_to_weight(
+                build_model, XOR_DIFFERENTIAL, 0, start_weight, log_file_name, solver_name, options, log, fixed_values
+            )
+        else:
+            solution = self._search_trail_up_from_weight(
+                build_model, XOR_DIFFERENTIAL, start_weight, log_file_name, solver_name, options, log
+            )
         solution["test_name"] = "find_lowest_weight_xor_differential_trail"
+
+        return solution
+
+    def _xor_differential_model_builder(self, fixed_values):
+        """Return a function building the model, with ``fixed_values``, for a given weight."""
+
+        def build_model(weight):
+            self.build_xor_differential_trail_model(weight=weight, fixed_variables=fixed_values)
+
+        return build_model
+
+    def search_xor_differential_trail_down_to_weight(
+        self,
+        end_weight,
+        fixed_values=[],
+        solver_name=solvers.SOLVER_DEFAULT,
+        options=None,
+        start_weight=None,
+        log=False,
+    ):
+        """
+        Return the lowest weight trail found by a search from above, stopping at ``end_weight``.
+
+        First, a trail of weight at most ``start_weight`` is searched (any trail, if ``start_weight`` is `None`).
+        Then, as long as the last trail found weighs more than ``end_weight``, a trail of weight at most the weight of
+        the last trail minus 1 is searched. Therefore, the returned solution is:
+
+        * a trail of weight at most ``end_weight``, if it exists (not necessarily the lowest weight one)
+        * the lowest weight trail, otherwise
+        * the UNSATISFIABLE solution (``total_weight`` is `None`), if no trail of weight at most ``start_weight``
+          exists
+
+        With ``end_weight=0`` the search finds the lowest weight trail, as
+        :py:meth:`~SatXorDifferentialModel.find_lowest_weight_xor_differential_trail` with ``search_from="above"``.
+        By default, the search is set in the single-key setting.
+
+        INPUT:
+
+        - ``end_weight`` -- **integer**; the search stops as soon as a trail of weight at most ``end_weight`` is found
+        - ``fixed_values`` -- **list** (default: `[]`); can be created using ``set_fixed_variables`` method
+        - ``solver_name`` -- **string** (default: `CRYPTOMINISAT_EXT`); the name of the solver
+        - ``options`` -- **list of strings** (default: `None`); additional settings for the chosen solver
+        - ``start_weight`` -- **integer** (default: `None`); an upper bound for the weight of the first trail. If
+          `None`, the first trail is searched without any weight bound
+        - ``log`` -- **boolean** (default: `False`); if ``True``, append to the file
+          ``<cipher_id>__sat_search_xor_differential_trail_down_to_weight_<end_weight>__<solver_name>solver[_<options>].log``
+          a line describing the search, then one line per searched weight bound (see
+          :py:func:`~claasp.cipher_modules.models.utils.save_trail_upper_bounds_and_times`)
+
+        .. SEEALSO::
+
+            :ref:`sat-solvers`
+
+        EXAMPLES::
+
+            sage: from claasp.cipher_modules.models.sat.sat_models.sat_xor_differential_model import SatXorDifferentialModel
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: speck = SpeckBlockCipher(number_of_rounds=5)
+            sage: sat = SatXorDifferentialModel(speck)
+            sage: trail = sat.search_xor_differential_trail_down_to_weight(0)
+            sage: trail['total_weight']
+            9.0
+
+            # stop as soon as a trail of weight at most 12 is found
+            sage: trail = sat.search_xor_differential_trail_down_to_weight(12)
+            sage: 9 <= trail['total_weight'] <= 12
+            True
+
+            # no trail of weight at most 8 exists
+            sage: trail = sat.search_xor_differential_trail_down_to_weight(0, start_weight=8)
+            sage: trail['status'], trail['total_weight']
+            ('UNSATISFIABLE', None)
+        """
+        log_file_name = (
+            f"{self._cipher}__sat_search_xor_differential_trail_down_to_weight_{end_weight}"
+            f"__{solver_name}solver{join_and_sanitize_strings(options)}.log"
+        )
+        solution = self._search_trail_down_to_weight(
+            self._xor_differential_model_builder(fixed_values),
+            XOR_DIFFERENTIAL,
+            end_weight,
+            start_weight,
+            log_file_name,
+            solver_name,
+            options,
+            log,
+            fixed_values,
+        )
+        solution["test_name"] = "search_xor_differential_trail_down_to_weight"
 
         return solution
 
