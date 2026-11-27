@@ -84,6 +84,21 @@ def _count_worker(numeric, projection, epsilon, delta, seed, output):
         output.put(("error", repr(exc)))
 
 
+def _check_supplied_inverse(cipher, inverse_cipher, data_width):
+    """Check dimensions and deterministic round trips of a supplied inverse."""
+    if (inverse_cipher.output_bit_size != data_width
+            or inverse_cipher.inputs_bit_size != [data_width, *cipher.inputs_bit_size[1:]]):
+        raise ValueError("Supplied inverse has incompatible input or output widths")
+    probes = (0, 1, (1 << data_width) - 1,
+              int("a5" * ((data_width + 7) // 8), 16) & ((1 << data_width) - 1))
+    for key_value in (0, 1):
+        extra_inputs = [key_value] if INPUT_KEY in cipher.inputs else []
+        for plaintext in probes:
+            ciphertext = cipher.evaluate([plaintext, *extra_inputs])
+            if inverse_cipher.evaluate([ciphertext, *extra_inputs]) != plaintext:
+                raise ValueError("Supplied inverse fails a deterministic round-trip check")
+
+
 class SatBoomerangQuartetModel:
     """Build and count an exact retained trail on a CLAASP permutation.
 
@@ -96,12 +111,19 @@ class SatBoomerangQuartetModel:
     a multiplicative ``1+epsilon`` counting tolerance with confidence
     ``1-delta``; this is distinct from a sampled plaintext confidence
     interval. The construction counts only first-input assignments and
-    requires the cipher to be invertible for each fixed non-data input.
+    requires the cipher to be invertible for each fixed non-data input. A
+    supplied inverse may certify an equivalent graph representation when
+    CLAASP cannot construct an inverse of the searched graph. Deterministic
+    round-trip probes reject obvious mismatches, but the caller must establish
+    equivalence; these probes are not a proof.
 
     INPUT:
 
     - ``cipher`` -- a CLAASP cipher with one data input and optionally one
       key input, one equally sized output, and exact SAT component encoders.
+    - ``inverse_cipher`` -- optional equivalent inverse graph. It must invert
+      ``cipher`` for every input and fixed key, even if built from a different
+      component representation.
 
     EXAMPLES::
 
@@ -112,7 +134,7 @@ class SatBoomerangQuartetModel:
         32
     """
 
-    def __init__(self, cipher):
+    def __init__(self, cipher, inverse_cipher=None):
         self.cipher = cipher
         self.data = _data_input(cipher)
         if any(name not in (self.data, INPUT_KEY) for name in cipher.inputs):
@@ -126,12 +148,14 @@ class SatBoomerangQuartetModel:
         for component in cipher.all_components():
             if not _supported_component(component):
                 raise NotImplementedError(f"No exact SAT encoding for {component.id}")
-        # Projection on the first plaintext is sound only for an invertible
-        # fixed-parameter cipher: the crossed output fixes the return input.
-        try:
-            cipher.cipher_inverse()
-        except (NotImplementedError, ValueError) as exc:
-            raise ValueError("Counting needs a CLAASP-constructible inverse") from exc
+        # The crossed output fixes the return input only for a bijection.
+        if inverse_cipher is None:
+            try:
+                cipher.cipher_inverse()
+            except (NotImplementedError, ValueError) as exc:
+                raise ValueError("Counting needs a CLAASP-constructible inverse") from exc
+        else:
+            _check_supplied_inverse(cipher, inverse_cipher, self.data_width)
 
     def build(self, trail, fixed_key=None, fixed_input_bits=None,
               exclude_returning_quartets=False):

@@ -92,7 +92,51 @@ def test_public_keyed_count_agrees_across_keys():
         "upper_plaintext": {"value": "0x1"},
         "lower_cipher_output_0_1": {"value": "0x1"},
     }}
-    result = model.estimate_boomerang_trail_probability_over_keys(trail, [0, 3])
+    inverse = cipher.cipher_inverse()
+    result = model.estimate_boomerang_trail_probability_over_keys(
+        trail, [0, 3], inverse_cipher=inverse,
+    )
 
     assert result["mean_probability_over_supplied_keys"] == 1
     assert [item["approximate_count"] for item in result["per_key"]] == [16, 16]
+    sampled = model.validate_boomerang_trail_over_keys(
+        trail, [0, 3], 16, inverse_cipher=inverse,
+    )
+    assert sampled["mean_probability_over_supplied_keys"]["trail"] == 1
+
+
+def test_supplied_inverse_rejects_wrong_graph():
+    cipher, _ = _sbox_example()
+    wrong = Cipher("identity", "permutation", ["plaintext"], [4], 4)
+    wrong.add_round()
+    wrong.add_cipher_output_component(["plaintext"], [list(range(4))], 4)
+    with pytest.raises(ValueError, match="round-trip"):
+        SatBoomerangQuartetModel(cipher, inverse_cipher=wrong.cipher_inverse())
+
+
+def test_equivalent_ascon_graph_supplies_inverse():
+    from claasp.ciphers.permutations.ascon_permutation import AsconPermutation
+    from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import (
+        AsconSboxSigmaPermutation,
+    )
+
+    cipher = AsconPermutation(number_of_rounds=1)
+    equivalent = AsconSboxSigmaPermutation(number_of_rounds=1)
+    model = SatBoomerangQuartetModel(
+        cipher, inverse_cipher=equivalent.cipher_inverse(),
+    )
+    assert model.data_width == 320
+
+
+def test_equivalent_aradi_graph_supplies_inverse():
+    from claasp.ciphers.block_ciphers.aradi_block_cipher import AradiBlockCipher
+    from claasp.ciphers.block_ciphers.aradi_block_cipher_sbox_and_compact_linear_map import (
+        AradiBlockCipherSBoxAndCompactLinearMap,
+    )
+
+    cipher = AradiBlockCipher(number_of_rounds=1)
+    equivalent = AradiBlockCipherSBoxAndCompactLinearMap(number_of_rounds=1)
+    model = SatBoomerangQuartetModel(
+        cipher, inverse_cipher=equivalent.cipher_inverse(),
+    )
+    assert model.data_width == 128

@@ -498,7 +498,7 @@ class MznHadipourBoomerangModel(MznModel):
 
     def validate_boomerang_trail_over_keys(
         self, trail, keys, trials_per_key, seed=None, fixed_input_bits=None,
-        exclude_returning_quartets=False,
+        exclude_returning_quartets=False, inverse_cipher=None,
     ):
         """Measure one retained trail separately for each supplied key.
 
@@ -506,7 +506,8 @@ class MznHadipourBoomerangModel(MznModel):
         ``trials_per_key`` is applied to each; ``seed`` derives independent
         reproducible plaintext samples. Returns per-key results and the
         arithmetic mean of their measured probabilities. No all-key claim
-        follows unless the supplied keys exhaust the key space.
+        follows unless the supplied keys exhaust the key space. An optional
+        ``inverse_cipher`` follows the fixed-key method's precondition.
 
         EXAMPLES::
 
@@ -525,6 +526,7 @@ class MznHadipourBoomerangModel(MznModel):
                 trail, key, trials_per_key, seed=key_seed,
                 fixed_input_bits=fixed_input_bits,
                 exclude_returning_quartets=exclude_returning_quartets,
+                inverse_cipher=inverse_cipher,
             ),
             ("differential", "trail"),
         )
@@ -532,6 +534,7 @@ class MznHadipourBoomerangModel(MznModel):
     def estimate_boomerang_trail_probability_for_fixed_key(
         self, trail, key, fixed_input_bits=None, exclude_returning_quartets=False,
         epsilon=0.3, delta=0.05, seed=1, timeout_in_seconds=120,
+        inverse_cipher=None,
     ):
         """Count a retained trail's complete quartets under one fixed key.
 
@@ -546,6 +549,9 @@ class MznHadipourBoomerangModel(MznModel):
         bounds the counting phase; a timeout returns no probability. The result contains a
         count, probability, base-two weight and counter settings. The
         guarantee concerns counter randomness, not sampling of keys.
+        ``inverse_cipher`` may supply an inverse from an equivalent CLAASP
+        graph when automatic inversion fails. Deterministic round trips are
+        checked, but the caller must establish all-input equivalence.
         Requires the optional ``pyapproxmc`` package and exact SAT encoders
         for every cipher component. See Chakraborty, Meel and Vardi,
         *A Scalable Approximate Model Counter*, CP 2013, DOI
@@ -569,7 +575,9 @@ class MznHadipourBoomerangModel(MznModel):
         )
 
         self._require_key_mode(True)
-        return SatBoomerangQuartetModel(self.original_cipher).count(
+        return SatBoomerangQuartetModel(
+            self.original_cipher, inverse_cipher=inverse_cipher,
+        ).count(
             trail, fixed_key=key, fixed_input_bits=fixed_input_bits,
             exclude_returning_quartets=exclude_returning_quartets,
             epsilon=epsilon, delta=delta, seed=seed,
@@ -579,6 +587,7 @@ class MznHadipourBoomerangModel(MznModel):
     def estimate_boomerang_trail_probability_for_permutation(
         self, trail, fixed_input_bits=None, exclude_returning_quartets=False,
         epsilon=0.3, delta=0.05, seed=1, timeout_in_seconds=120,
+        inverse_cipher=None,
     ):
         """Count a keyless permutation's retained trail with four exact paths.
 
@@ -587,7 +596,8 @@ class MznHadipourBoomerangModel(MznModel):
         that no key is supplied. ``fixed_input_bits`` can hold specified
         state bits constant; its scope controls whether the returned inputs
         must retain them. The denominator is the number of free initial
-        inputs. See the cited works and counting guarantee above.
+        inputs. An optional ``inverse_cipher`` has the fixed-key method's
+        all-input equivalence precondition. See the citations above.
 
         EXAMPLES::
 
@@ -606,7 +616,9 @@ class MznHadipourBoomerangModel(MznModel):
         )
 
         self._require_key_mode(False)
-        return SatBoomerangQuartetModel(self.original_cipher).count(
+        return SatBoomerangQuartetModel(
+            self.original_cipher, inverse_cipher=inverse_cipher,
+        ).count(
             trail, fixed_input_bits=fixed_input_bits,
             exclude_returning_quartets=exclude_returning_quartets,
             epsilon=epsilon, delta=delta, seed=seed,
@@ -616,7 +628,7 @@ class MznHadipourBoomerangModel(MznModel):
     def estimate_boomerang_trail_probability_over_keys(
         self, trail, keys, fixed_input_bits=None,
         exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
-        timeout_in_seconds=120,
+        timeout_in_seconds=120, inverse_cipher=None,
     ):
         """Count a trail separately under supplied keys and average the rates.
 
@@ -629,7 +641,8 @@ class MznHadipourBoomerangModel(MznModel):
         the reported mean is within the same ``1+epsilon`` factor of the
         true mean over these supplied keys with confidence at least
         ``1-delta``. This is not an all-key average unless all keys are
-        supplied. See the ApproxMC and boomerang references above.
+        supplied. An optional ``inverse_cipher`` has the fixed-key method's
+        all-input equivalence precondition. See the cited works above.
 
         EXAMPLES::
 
@@ -659,6 +672,7 @@ class MznHadipourBoomerangModel(MznModel):
                 epsilon=epsilon, delta=delta / len(keys),
                 seed=rng.getrandbits(64),
                 timeout_in_seconds=timeout_in_seconds,
+                inverse_cipher=inverse_cipher,
             )
             for key in keys
         ]
@@ -707,6 +721,7 @@ class MznHadipourBoomerangModel(MznModel):
         search_timeout_in_seconds=None, count_timeout_in_seconds=120,
         processes=None, optimize_round_split=False, fixed_input_bits=None,
         exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+        inverse_cipher=None,
     ):
         """Search for a trail and count its four-execution probability at one key.
 
@@ -745,6 +760,7 @@ class MznHadipourBoomerangModel(MznModel):
                 exclude_returning_quartets=exclude_returning_quartets,
                 epsilon=epsilon, delta=delta, seed=seed,
                 timeout_in_seconds=count_timeout_in_seconds,
+                inverse_cipher=inverse_cipher,
             ), fixed_values, solver_name, search_timeout_in_seconds,
             processes, optimize_round_split,
         )
@@ -754,6 +770,7 @@ class MznHadipourBoomerangModel(MznModel):
         search_timeout_in_seconds=None, count_timeout_in_seconds=120,
         processes=None, optimize_round_split=False, fixed_input_bits=None,
         exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+        inverse_cipher=None,
     ):
         """Search and count one trail of a keyless permutation.
 
@@ -780,6 +797,7 @@ class MznHadipourBoomerangModel(MznModel):
                 exclude_returning_quartets=exclude_returning_quartets,
                 epsilon=epsilon, delta=delta, seed=seed,
                 timeout_in_seconds=count_timeout_in_seconds,
+                inverse_cipher=inverse_cipher,
             ), fixed_values, solver_name, search_timeout_in_seconds,
             processes, optimize_round_split,
         )
@@ -789,6 +807,7 @@ class MznHadipourBoomerangModel(MznModel):
         search_timeout_in_seconds=None, count_timeout_in_seconds=120,
         processes=None, optimize_round_split=False, fixed_input_bits=None,
         exclude_returning_quartets=False, epsilon=0.3, delta=0.05, seed=1,
+        inverse_cipher=None,
     ):
         """Search once and count the same retained trail under supplied keys.
 
@@ -818,6 +837,7 @@ class MznHadipourBoomerangModel(MznModel):
                 exclude_returning_quartets=exclude_returning_quartets,
                 epsilon=epsilon, delta=delta, seed=seed,
                 timeout_in_seconds=count_timeout_in_seconds,
+                inverse_cipher=inverse_cipher,
             ), fixed_values, solver_name, search_timeout_in_seconds,
             processes, optimize_round_split,
         )
@@ -825,12 +845,13 @@ class MznHadipourBoomerangModel(MznModel):
     def measure_boomerang_differential_over_keys(
         self, input_pair_difference, output_cross_pair_difference, keys,
         trials_per_key, seed=None, fixed_input_bits=None,
-        exclude_returning_quartets=False,
+        exclude_returning_quartets=False, inverse_cipher=None,
     ):
         """Measure one boomerang endpoint event separately for supplied keys.
 
         Inputs and per-key summary follow
         :meth:`validate_boomerang_trail_over_keys`; no internal trail is checked.
+        An optional ``inverse_cipher`` follows the fixed-key method's precondition.
 
         EXAMPLES::
 
@@ -847,6 +868,7 @@ class MznHadipourBoomerangModel(MznModel):
                 input_pair_difference, output_cross_pair_difference, key,
                 trials_per_key, seed=key_seed, fixed_input_bits=fixed_input_bits,
                 exclude_returning_quartets=exclude_returning_quartets,
+                inverse_cipher=inverse_cipher,
             ),
             ("differential",),
         )
