@@ -77,3 +77,10 @@ searches archived under the previous revision must keep their code version
 recorded and must be rerun before claiming that a new search reproduces their
 model weights. Four-execution counts and direct quartet measurements of
 already specified trails do not use the local logarithm approximation.
+
+## API policy
+
+The boomerang API uses the current `*_boomerang_trail_*` and
+`measure_boomerang_differential_*` names. CLAASP does not provide aliases or
+other legacy behavior for earlier research-script method names. Reproduction
+scripts should call the current API or record the CLAASP revision they require.
