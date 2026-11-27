@@ -112,7 +112,7 @@ class SatBoomerangQuartetModel:
     ``1-delta``; this is distinct from a sampled plaintext confidence
     interval. The construction counts only first-input assignments and
     requires the cipher to be invertible for each fixed non-data input. A
-    supplied inverse may certify an equivalent graph representation when
+    supplied inverse can use an equivalent graph representation when
     CLAASP cannot construct an inverse of the searched graph. Deterministic
     round-trip probes reject obvious mismatches, but the caller must establish
     equivalence; these probes are not a proof.
