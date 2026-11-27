@@ -16,7 +16,7 @@ class VariableRotateCipher(SingleComponentCipher):
 
     - ``bit_size`` -- **integer** (default: `8`); input and output bit size
     - ``amount_bit_size`` -- **integer** (default: `3`); bit size of the rotation amount input
-    - ``direction`` -- **integer** (default: `1`); direction (positive = left, negative = right)
+    - ``direction`` -- **integer** (default: `1`); direction (positive = right, negative = left)
 
     EXAMPLES::
 

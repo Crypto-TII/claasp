@@ -2,6 +2,7 @@ import pytest
 
 from claasp.cipher import Cipher
 from claasp.cipher_modules.models.milp.milp_models.Gurobi.monomial_prediction import *
+from claasp.ciphers.block_ciphers.rc6_block_cipher import RC6BlockCipher
 from claasp.ciphers.block_ciphers.simon_block_cipher import SimonBlockCipher
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
 from claasp.ciphers.block_ciphers.ublock_block_cipher import UblockBlockCipher
@@ -14,6 +15,7 @@ from claasp.ciphers.toys.toyaes_block_cipher import ToyAESBlockCipher
 from claasp.ciphers.block_ciphers.kasumi_block_cipher import SBox7 as KASUMI_S7
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.ciphers.single_component_ciphers.permutation_cipher import PermutationCipher
+from claasp.ciphers.single_component_ciphers.variable_rotate_cipher import VariableRotateCipher
 from claasp.name_mappings import BLOCK_CIPHER
 from sage.crypto.sboxes import APN_6
 
@@ -172,6 +174,15 @@ def test_is_balanced_at_specific_output_bit_over_cube_with_independent_round_key
     assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(4, cube) is False
 
 @pytest.mark.skip(reason="Requires Gurobi license")
+def test_is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys_rc6_3():
+    cipher = RC6BlockCipher(word_size=8, number_of_rounds=3)
+    milp = MilpMonomialPredictionModel(cipher)
+    cube = [f"p{i}" for i in range(8)]  # word A
+
+    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(7, cube) is True  # A[0]
+    assert milp.is_balanced_at_specific_output_bit_over_cube_with_independent_round_keys(15, cube) is False  # B[0]
+
+@pytest.mark.skip(reason="Requires Gurobi license")
 def test_find_upper_bound_degree_of_specific_output_bit_with_independent_round_keys_simon_4():
     # Independent round keys give the same upper-bound degree as the full cipher here.
     cipher = SimonBlockCipher(number_of_rounds=4)
@@ -246,6 +257,22 @@ def test_modmul_modeling_correctness_via_anf_exhaustive():
                 f"ModMul fail for n={n}, x={x}, y={y}: "
                 f"Expected {expected_z}, got {computed_z}"
             )
+
+@pytest.mark.skip(reason="Requires Gurobi license")
+def test_variable_rotate_modeling_correctness_via_anf_exhaustive():
+    n, m = 4, 2
+    for direction in (-1, 1):
+        cipher = VariableRotateCipher(bit_size=n, amount_bit_size=m, direction=direction)
+        milp = MilpMonomialPredictionModel(cipher)
+        anfs = [milp.find_anf_of_specific_output_bit(i) for i in range(n)]
+        for x in range(2**n):
+            for s in range(2**m):
+                subs = {f"p{i}": (x >> (n - 1 - i)) & 1 for i in range(n)}
+                subs.update({f"k{i}": (s >> (m - 1 - i)) & 1 for i in range(m)})
+                y = 0
+                for anf in anfs:
+                    y = (y << 1) | int(anf.subs(subs))
+                assert y == cipher.evaluate([x, s])
 
 @pytest.mark.skip(reason="Requires Gurobi license")
 def test_msx64_degree_upper_bound():
