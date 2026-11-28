@@ -16,10 +16,12 @@
 # ****************************************************************************
 
 import math
+import secrets
 import time
 from copy import deepcopy
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
+from hashlib import sha256
 from operator import index
 from types import SimpleNamespace
 
@@ -113,6 +115,14 @@ def _boomerang_probability_factors(weights, middle_model):
         ):
             factors["reason"] = "below_float_range; use the bit weights"
     return factors
+
+
+def _subseed(seed, position):
+    """Derive distinct reproducible per-key seeds, or use OS entropy."""
+    if seed is None:
+        return secrets.randbits(64)
+    material = f"claasp-boomerang-subseed:{int(seed)}:{position}".encode()
+    return int.from_bytes(sha256(material).digest()[:8], "big")
 
 
 class MznHadipourBoomerangModel(MznModel):
@@ -662,19 +672,16 @@ class MznHadipourBoomerangModel(MznModel):
             raise ValueError("keys must be nonempty and distinct")
         if not 0 < delta < 1:
             raise ValueError("delta must lie strictly between zero and one")
-        import random
-
-        rng = random.Random(int(seed))
         per_key = [
             self.estimate_boomerang_trail_probability_for_fixed_key(
                 trail, key, fixed_input_bits=fixed_input_bits,
                 exclude_returning_quartets=exclude_returning_quartets,
                 epsilon=epsilon, delta=delta / len(keys),
-                seed=rng.getrandbits(64),
+                seed=_subseed(seed, position),
                 timeout_in_seconds=timeout_in_seconds,
                 inverse_cipher=inverse_cipher,
             )
-            for key in keys
+            for position, key in enumerate(keys)
         ]
         if any(item["status"] == "TIMEOUT" for item in per_key):
             return {"status": "TIMEOUT", "number_of_keys": len(keys),
@@ -876,13 +883,11 @@ class MznHadipourBoomerangModel(MznModel):
     @staticmethod
     def _measure_over_keys(keys, seed, measure, quantities):
         """Preserve per-key measurements before computing an equal-key mean."""
-        import random
-
         keys = list(keys)
         if not keys or len(keys) != len(set(keys)):
             raise ValueError("keys must be nonempty and distinct")
-        rng = random.Random(int(seed) if seed is not None else None)
-        per_key = [measure(key, rng.getrandbits(64)) for key in keys]
+        per_key = [measure(key, _subseed(seed, position))
+                   for position, key in enumerate(keys)]
         return {
             "per_key": per_key,
             "number_of_keys": len(per_key),
