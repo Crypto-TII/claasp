@@ -78,5 +78,6 @@ setup(
     keywords="",
     cmdclass={'testfast': SageTestFast, 'testall': SageTestAll},
     setup_requires=['sage-package', 'sphinx', 'bitstring'],
-    install_requires=['sage-package', 'sphinx', 'bitstring']
+    install_requires=['sage-package', 'sphinx', 'bitstring'],
+    extras_require={'boomerang-counting': ['pyapproxmc>=4.1']},
 )

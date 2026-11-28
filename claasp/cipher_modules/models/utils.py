@@ -331,7 +331,7 @@ def join_and_sanitize_strings(l):
     return "_" + re.sub(r"[^a-zA-Z0-9._-]", "", joined)
 
 
-def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, recency_weight_strength):
+def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile: float, recency_weight_strength):
     """Raise ``ValueError`` if the inputs of :py:func:`exponential_predict` are not valid."""
     if x.ndim != 1 or y.ndim != 1:
         raise ValueError("x_obs and y_obs must be 1-D arrays.")
@@ -343,7 +343,7 @@ def _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, 
         raise ValueError("ci must be between 1 and 99.")
     if np.any(y <= 0):
         raise ValueError("All y_obs values must be strictly positive.")
-    if not (0 < prediction_quantile < 1):
+    if not 0.0 < prediction_quantile < 1.0:
         raise ValueError("prediction_quantile must be between 0 and 1.")
     if recency_weight_strength < 0:
         raise ValueError("recency_weight_strength must be >= 0.")
@@ -380,7 +380,7 @@ def exponential_predict(
     - ``window`` -- **integer** (default: `10`); only the last ``window`` observations are used for the fit; ``None``
       means all observations
     - ``seed`` -- **integer** (default: `None`); seed of the bootstrap random generator
-    - ``prediction_quantile`` -- **float** (default: `0.6`); quantile of the bootstrap predictions used as central
+    - ``prediction_quantile`` -- **float** (default: `0.6`); finite quantile strictly between 0 and 1, used as central
       prediction (0.5 is the median, larger values are more conservative)
     - ``recency_weight_strength`` -- **float** (default: `1.5`); strength of the exponential recency weighting
       (0 means no weighting, larger values adapt faster to recent growth but are more sensitive to noise)
@@ -400,6 +400,7 @@ def exponential_predict(
     y = np.asarray(y_obs, dtype=float)
     x_new = np.atleast_1d(np.asarray(x_new, dtype=float))
 
+    prediction_quantile = float(prediction_quantile)
     _validate_exponential_predict_inputs(x, y, ci, window, prediction_quantile, recency_weight_strength)
     if window is not None:
         x = x[-window:]
@@ -1390,7 +1391,7 @@ def _w_linear_perm(args):
 
 def _w_boomerang_sk(args):
     (cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes,
-     fixed_key, chunk_size, seed) = args
+     fixed_key, exclude_returning_quartets, chunk_size, seed) = args
     rng = np.random.default_rng(seed)
     fk = _repeat_input_difference(fixed_key, chunk_size, key_num_bytes)
     delta_col = _repeat_input_difference(input_difference, chunk_size, state_num_bytes)      # (sb, n)
@@ -1403,12 +1404,15 @@ def _w_boomerang_sk(args):
     plaintext_3 = inverse.evaluate_vectorized([(ciphertext_1 ^ nabla_row).T, fk])[0]
     returned = plaintext_2 ^ plaintext_3
     matches = np.all(returned == delta_col.T, axis=1)
+    if exclude_returning_quartets:
+        matches &= np.any(plaintext_2 != plaintext_0.T, axis=1)
+        matches &= np.any(plaintext_2 != plaintext_1.T, axis=1)
     return int(np.count_nonzero(matches))
 
 
 def boomerang_checker_for_block_cipher_single_key(
     cipher, input_difference, output_difference, number_of_samples, block_size, key_size, fixed_key, seed=None,
-    num_workers=1
+    num_workers=1, exclude_returning_quartets=False, return_counts=False
 ):
     """
     Verify experimentally boomerang (BCT) distinguishers for block ciphers using the vectorized evaluator.
@@ -1430,10 +1434,13 @@ def boomerang_checker_for_block_cipher_single_key(
     - ``fixed_key`` -- **integer**; fixed key value for the single-key scenario
     - ``seed`` -- **integer** (default: `None`); seed for reproducible random sampling
     - ``num_workers`` -- **integer** (default: `1`); number of parallel worker processes
+    - ``exclude_returning_quartets`` -- **boolean** (default: ``False``); omit two-point returns
+    - ``return_counts`` -- **boolean** (default: ``False``); return ``(successes, trials)`` instead of a probability
 
     OUTPUT:
 
-    - This method returns a **float**; the empirical boomerang probability in the interval ``[0, 1]``
+    - By default, this method returns a **float** in ``[0, 1]``. With ``return_counts=True`` it returns
+      the integer pair ``(successes, trials)``.
 
     EXAMPLES::
 
@@ -1469,12 +1476,126 @@ def boomerang_checker_for_block_cipher_single_key(
     inverse = cipher.cipher_inverse()
     fixed_args = (
         cipher, inverse, input_difference, output_difference, state_num_bytes, key_num_bytes, fixed_key,
+        exclude_returning_quartets,
     )
     if num_workers > 1:
         count, total = _parallel_dispatch(_w_boomerang_sk, fixed_args, number_of_samples, num_workers, seed)
-        return count / total
+        return (count, total) if return_counts else count / total
     count = _w_boomerang_sk(fixed_args + (number_of_samples, seed))
-    return count / number_of_samples
+    return (count, number_of_samples) if return_counts else count / number_of_samples
+
+
+def _w_boomerang_permutation(args):
+    """Count keyless boomerang returns in bounded vectorized batches."""
+    (cipher, inverse, input_difference, output_difference, state_num_bytes,
+     exclude_returning_quartets, number_of_samples, seed) = args
+    rng = np.random.default_rng(seed)
+    delta = np.frombuffer(input_difference.to_bytes(state_num_bytes, "big"), dtype=np.uint8).reshape(-1, 1)
+    nabla = np.frombuffer(output_difference.to_bytes(state_num_bytes, "big"), dtype=np.uint8).reshape(1, -1)
+    batch_size = max(1, min(4096, 65536 // state_num_bytes))
+    count = 0
+    for offset in range(0, number_of_samples, batch_size):
+        samples = min(batch_size, number_of_samples - offset)
+        plaintext_0 = rng.integers(0, 256, size=(state_num_bytes, samples), dtype=np.uint8)
+        plaintext_1 = plaintext_0 ^ delta
+        ciphertext_0 = cipher.evaluate_vectorized([plaintext_0])[0]
+        ciphertext_1 = cipher.evaluate_vectorized([plaintext_1])[0]
+        plaintext_2 = inverse.evaluate_vectorized([(ciphertext_0 ^ nabla).T])[0]
+        plaintext_3 = inverse.evaluate_vectorized([(ciphertext_1 ^ nabla).T])[0]
+        matches = np.all((plaintext_2 ^ plaintext_3) == delta.T, axis=1)
+        if exclude_returning_quartets:
+            matches &= np.any(plaintext_2 != plaintext_0.T, axis=1)
+            matches &= np.any(plaintext_2 != plaintext_1.T, axis=1)
+        count += int(np.count_nonzero(matches))
+    return count
+
+
+def _resolve_permutation_inverse(cipher, inverse_cipher, state_size):
+    if inverse_cipher is None:
+        try:
+            inverse_cipher = cipher.cipher_inverse()
+        except ValueError as exc:
+            raise ValueError(
+                "CLAASP cannot construct this permutation's inverse; supply inverse_cipher"
+            ) from exc
+    if (
+        len(inverse_cipher.inputs) != 1
+        or inverse_cipher.inputs_bit_size[0] != state_size
+        or inverse_cipher.output_bit_size != state_size
+    ):
+        raise ValueError("inverse_cipher must have one input and the same state size")
+    return inverse_cipher
+
+
+def boomerang_checker_for_permutation(
+    cipher, input_difference, output_difference, number_of_samples, state_size,
+    seed=None, num_workers=1, exclude_returning_quartets=False, return_counts=False,
+    inverse_cipher=None,
+):
+    """Measure a boomerang event on an invertible keyless permutation.
+
+    The checker encrypts random pairs differing by input_difference, XORs
+    output_difference into both outputs, decrypts them, and counts returned
+    pairs with the original input difference. Set
+    exclude_returning_quartets=True to omit two-point returns. Samples are
+    processed in bounded vectorized batches, including within each worker.
+    CLAASP can construct inverses for AsconSboxSigmaPermutation and
+    KeccakInvertiblePermutation. The older KeccakSboxPermutation graph does
+    not invert automatically; a caller can supply a compatible vectorized
+    inverse using inverse_cipher.
+
+    INPUT:
+
+    - cipher -- keyless permutation with vectorized forward and inverse evaluation
+    - input_difference -- integer input XOR difference
+    - output_difference -- integer output XOR difference
+    - number_of_samples -- positive number of random starting states
+    - state_size -- permutation width in bits, divisible by eight
+    - seed -- optional reproducible random seed
+    - num_workers -- positive number of worker processes
+    - exclude_returning_quartets -- omit two-point returns
+    - return_counts -- return (successes, trials) instead of a probability
+    - inverse_cipher -- optional explicit inverse when CLAASP cannot construct one
+
+    OUTPUT:
+
+    - The observed success probability, or integer success and trial counts.
+      This is a sampled measurement; a zero count does not prove zero probability.
+
+    A zero output difference is a control: every input pair returns.
+
+    EXAMPLES::
+
+        sage: from claasp.ciphers.permutations.ascon_sbox_sigma_permutation import AsconSboxSigmaPermutation
+        sage: from claasp.cipher_modules.models.utils import boomerang_checker_for_permutation
+        sage: ascon = AsconSboxSigmaPermutation(number_of_rounds=1)
+        sage: boomerang_checker_for_permutation(ascon, 1, 0, 8, 320, seed=1, return_counts=True)
+        (8, 8)
+    """
+    number_of_samples, state_size, num_workers = int(number_of_samples), int(state_size), int(num_workers)
+    if number_of_samples <= 0 or num_workers <= 0:
+        raise ValueError("number_of_samples and num_workers must be positive")
+    if state_size <= 0 or state_size % 8:
+        raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
+    if len(cipher.inputs) != 1 or cipher.inputs_bit_size[0] != state_size or cipher.output_bit_size != state_size:
+        raise ValueError("cipher must be a keyless permutation with the specified input and output size")
+    input_difference, output_difference = int(input_difference), int(output_difference)
+    if not (0 <= input_difference < 1 << state_size) or not (0 <= output_difference < 1 << state_size):
+        raise ValueError("boomerang differences must fit in state_size bits")
+    seed = None if seed is None else int(seed)
+    inverse = _resolve_permutation_inverse(cipher, inverse_cipher, state_size)
+    fixed_args = (
+        cipher, inverse, input_difference, output_difference, state_size // 8,
+        exclude_returning_quartets,
+    )
+    if num_workers > 1:
+        count, total = _parallel_dispatch(
+            _w_boomerang_permutation, fixed_args, number_of_samples,
+            min(num_workers, number_of_samples), seed,
+        )
+    else:
+        count, total = _w_boomerang_permutation(fixed_args + (number_of_samples, seed)), number_of_samples
+    return (count, total) if return_counts else count / total
 
 
 def differential_checker_permutation(
@@ -1495,7 +1616,8 @@ def differential_checker_permutation(
 
     OUTPUT:
 
-    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``
+    - This method returns a **float**; the empirical probability weight ``log2(matches / number_of_samples)``,
+      or ``-inf`` when no match is observed
     """
     if state_size % 8 != 0:
         raise ValueError(STATE_SIZE_MULTIPLE_OF_8_ERROR)
@@ -1507,7 +1629,7 @@ def differential_checker_permutation(
             (cipher, input_difference, output_difference, num_bytes),
             number_of_samples, num_workers, seed,
         )
-        return math.log(total / n, 2)
+        return math.log(total / n, 2) if total else float("-inf")
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1520,7 +1642,7 @@ def differential_checker_permutation(
     rows_all_true = np.all((ciphertext1[0] ^ ciphertext2[0] == output_difference_data.T), axis=1)
     total = np.count_nonzero(rows_all_true)
 
-    total_prob_weight = math.log(total / number_of_samples, 2)
+    total_prob_weight = math.log(total / number_of_samples, 2) if total else float("-inf")
     return total_prob_weight
 
 
@@ -1674,7 +1796,7 @@ def shared_difference_paired_input_differential_checker_permutation(
             (cipher, input_difference, output_difference, num_bytes),
             number_of_samples, num_workers, seed,
         )
-        return math.log(total / n, 2)
+        return math.log(total / n, 2) if total else float("-inf")
 
     rng = np.random.default_rng(seed)
     input_difference_data = _repeat_input_difference(input_difference, number_of_samples, num_bytes)
@@ -1696,7 +1818,7 @@ def shared_difference_paired_input_differential_checker_permutation(
     )
     total = np.count_nonzero(rows_all_true)
 
-    total_prob_weight = math.log(total / number_of_samples, 2)
+    total_prob_weight = math.log(total / number_of_samples, 2) if total else float("-inf")
     return total_prob_weight
 
 

@@ -7,6 +7,8 @@ from claasp.cipher_modules.models.smt.smt_models.smt_xor_differential_model impo
 from claasp.cipher_modules.models.smt.solvers import MATHSAT_EXT, YICES_EXT, Z3_EXT
 from claasp.cipher_modules.models.utils import set_fixed_variables
 from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+from claasp.ciphers.block_ciphers.rc5_block_cipher import RC5BlockCipher
+from claasp.ciphers.single_component_ciphers.fsr_cipher import FsrCipher
 from claasp.ciphers.single_component_ciphers.sbox_cipher import SboxCipher
 from claasp.name_mappings import INPUT_KEY, INPUT_PLAINTEXT, SATISFIABLE, XOR_DIFFERENTIAL
 
@@ -25,6 +27,20 @@ def test_build_xor_differential_trail_model():
     assert constraints[-3:] == ["(check-sat)", "(get-model)", "(exit)"]
     assert "(declare-const plaintext_0 Bool)" in constraints
     assert not any(variable.startswith("dummy_hw_") for variable in smt._variables_list)
+
+
+@pytest.mark.parametrize(
+    "cipher, unsupported",
+    [
+        (RC5BlockCipher(number_of_rounds=1), "var_rot"),
+        (FsrCipher(register_size=2, description=[[[2, [[0]]]], 1]), "fsr_0_0"),
+    ],
+)
+def test_build_xor_differential_model_refuses_unsupported_components(cipher, unsupported):
+    """Do not return an underconstrained model after an unsupported operation."""
+    model = SmtXorDifferentialModel(cipher)
+    with pytest.raises(NotImplementedError, match=unsupported):
+        model.build_xor_differential_trail_model()
 
 
 def test_find_all_xor_differential_trails_with_fixed_weight():

@@ -219,6 +219,7 @@ class Blake2HashFunction(Cipher):
             state_word_ids, state_word_ranges = self.diagonal_step(
                 data_word_ids, data_word_ranges, state_word_ids, state_word_ranges, round_number
             )
+            self.add_round_output_component(state_word_ids, state_word_ranges, state_bit_size)
 
         self.add_cipher_output_component(state_word_ids, state_word_ranges, state_bit_size)
 

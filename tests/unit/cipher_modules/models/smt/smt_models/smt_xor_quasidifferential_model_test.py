@@ -585,3 +585,62 @@ def test_find_all_trails_up_to_a_weight_pass_fixed_masks_through():
     assert len(
         smt.find_all_xor_quasidifferential_trails_with_weight_at_most(0, fixed_masks=smt.boundary_masks())
     ) == 3
+
+
+@pytest.mark.parametrize("rotation", [-9, -5, -3, -2, -1, 0, 1, 2, 3, 5, 9])
+def test_rotation_masks_match_the_actual_width_normalized_permutation(rotation):
+    from claasp.ciphers.single_component_ciphers.rotate_cipher import RotateCipher
+
+    cipher = RotateCipher(bit_size=2, rotation_amount=rotation)
+    output = cipher.all_components()[-1].id
+    expected = cipher.evaluate([1])
+    differences = [
+        set_fixed_variables(name, "equal", range(2), integer_to_bit_list(value, 2, "big"))
+        for name, value in ((INPUT_PLAINTEXT, 1), (output, expected))
+    ]
+    for target_mask, status in ((expected, "SATISFIABLE"), (expected ^ 1, "UNSATISFIABLE")):
+        model = SmtXorQuasidifferentialModel(cipher)
+        masks = [
+            {"component_id": name, "bit_positions": range(2),
+             "bit_values": integer_to_bit_list(value, 2, "big")}
+            for name, value in ((INPUT_PLAINTEXT, 1), (output, target_mask))
+        ]
+        result = model.find_one_xor_quasidifferential_trail_with_fixed_weight(
+            0, fixed_values=differences, fixed_masks=masks, solver_name=Z3_EXT
+        )
+        assert result["status"] == status
+    component = cipher.component_from_id("rot_0_0")
+    bit_map = model._difference_bit_map(component)
+    predicted = sum(((1 >> (1 - source)) & 1) << (1 - target)
+                    for target, source in enumerate(bit_map))
+    assert predicted == expected
+
+
+@pytest.mark.parametrize('producer',['tap','xor','rotate'])
+def test_unused_internal_output_bits_do_not_create_fixed_key_trails(producer):
+    from claasp.cipher import Cipher
+    cipher=Cipher('partial_parameter_projection','block_cipher',['plaintext','key'],[2,4],2)
+    cipher.add_round()
+    if producer=='tap':
+        projection=cipher.add_intermediate_output_component(['key'],[list(range(4))],4,'key_state')
+    elif producer=='xor':
+        zero=cipher.add_constant_component(4,0)
+        projection=cipher.add_xor_component(['key',zero.id],[list(range(4)),list(range(4))],4)
+    else:
+        projection=cipher.add_rotate_component(['key'],[list(range(4))],4,1)
+    mixed=cipher.add_xor_component(['plaintext',projection.id],[[0,1],[0,1]],2)
+    output=cipher.add_cipher_output_component([mixed.id],[[0,1]],2)
+    fixed=[set_fixed_variables('plaintext','equal',[0,1],[0,1]),
+           set_fixed_variables('key','equal',list(range(4)),[0]*4),
+           set_fixed_variables(output.id,'equal',[0,1],[0,1])]
+    masks=[dict(component_id=name,bit_positions=[0,1],bit_values=[0,0])
+           for name in ['plaintext',output.id]]
+    result=SmtXorQuasidifferentialModel(cipher).estimate_fixed_key_probability(
+        min_weight=0,max_weight=0,fixed_values=fixed,fixed_masks=masks,key=0)
+    assert not result['truncated']
+    assert result['num_trails_found']==1
+    for key in range(16):
+        observed=sum(cipher.evaluate([x,key])^cipher.evaluate([x^1,key])==1 for x in range(4))/4
+        estimated=sum((-1)**((trail['key_mask']&key).bit_count())*trail['sign']*2.0**-trail['weight']
+                      for trail in result['trails'])
+        assert observed==estimated==1.0

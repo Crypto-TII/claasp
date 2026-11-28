@@ -25,6 +25,9 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
+    - name: Install Gecode
+      run: sudo bash docker/install_gecode.sh
+
     - name: Fix Directory Structure
       uses: ./.github/actions/fix-directory
 
@@ -53,6 +56,9 @@ jobs:
       with:
         persist-credentials: false
         fetch-depth: 0
+
+    - name: Install Gecode
+      run: sudo bash docker/install_gecode.sh
 
     - name: Run pytest
       run: |

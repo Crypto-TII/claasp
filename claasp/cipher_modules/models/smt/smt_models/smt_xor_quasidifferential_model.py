@@ -98,14 +98,12 @@ class SmtXorQuasidifferentialModel(SmtModel):
         # An S-box whose differences are not decided is left out, and writes out its full table.
         self.sbox_differences = {}
 
-        # Which components read each wire bit, and which ids are read at all. A consumer is recorded
+        # Which components read each wire bit. A consumer is recorded
         # once per READ, not once per component: see _component_wire_reads.
         self._wire_consumers = defaultdict(list)
-        self._consumed_component_ids = set()
 
         for component in cipher.all_components():
             for source_id, position, read_index in self._component_wire_reads(component):
-                self._consumed_component_ids.add(source_id)
                 self._wire_consumers[(source_id, position)].append((component.id, read_index))
 
     def build_xor_quasidifferential_trail_model(self, weight=-1, fixed_variables=[]):
@@ -273,7 +271,7 @@ class SmtXorQuasidifferentialModel(SmtModel):
             return positions if len(positions) == output_bit_size else None
 
         if operation == "ROTATE":
-            rotation = component.description[1]
+            rotation = component._rotation_amount()
             return positions[-rotation:] + positions[:-rotation]
 
         if operation == "SHIFT":
@@ -969,9 +967,14 @@ class SmtXorQuasidifferentialModel(SmtModel):
 
     def _terminal_tap_mask_constraints(self):
         """
-        Force to zero the mask of every IntermediateOutput that no component reads.
+        Force to zero masks of internal output bits that no component reads.
 
-        Such a component is an observation point -- it exposes a wire without consuming it -- and is
+        This applies bit by bit, including partly consumed key-state outputs and
+        ordinary internal components. An unread bit is not a coordinate of the
+        function being analyzed. Allowing its mask to remain free creates
+        spurious key masks and can make a signed probability sum exceed one.
+
+        An entirely unread IntermediateOutput is an observation point -- it exposes a wire without consuming it -- and is
         not a coordinate of the function the trail describes. Theorem 3.2's copy rule still hands it
         a fork branch, though (the source mask is the XOR of ALL branches), and leaving that branch
         free lets the solver push arbitrary mask into the tap, decoupling a producer's
@@ -1001,15 +1004,12 @@ class SmtXorQuasidifferentialModel(SmtModel):
         constraints = []
 
         for component in self._cipher.all_components():
-            if component.type != INTERMEDIATE_OUTPUT:
+            if component.type == CIPHER_OUTPUT:
                 continue
-
-            if component.id in self._consumed_component_ids:
-                continue
-
             constraints.extend(
                 utils.smt_assert(utils.smt_not(f"qdt_{component.id}_{position}"))
                 for position in range(component.output_bit_size)
+                if not self._wire_consumers.get((component.id, position))
             )
 
         return constraints

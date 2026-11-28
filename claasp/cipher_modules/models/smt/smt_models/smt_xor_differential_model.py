@@ -46,6 +46,10 @@ class SmtXorDifferentialModel(SmtModel):
         """
         Build the model for the search of xor differential trails.
 
+        Unsupported components raise :class:`NotImplementedError`. They are
+        never silently omitted or replaced by the preceding component's
+        constraints. No solver is called by this method.
+
         INPUT:
 
         - ``weight`` -- **integer** (default: `-1`); if set to non-negative integer, fixes the xor trail search to a
@@ -60,8 +64,16 @@ class SmtXorDifferentialModel(SmtModel):
             sage: speck = SpeckBlockCipher(number_of_rounds=1)
             sage: smt = SmtXorDifferentialModel(speck)
             sage: smt.build_xor_differential_trail_model()
+
+        Reject an unsupported feedback-register component explicitly::
+
+            sage: from claasp.ciphers.single_component_ciphers.fsr_cipher import FsrCipher
+            sage: cipher = FsrCipher(register_size=2, description=[[[2, [[0]]]], 1])
+            sage: SmtXorDifferentialModel(cipher).build_xor_differential_trail_model()
+            Traceback (most recent call last):
+            ...
+            NotImplementedError: Unsupported SMT XOR-differential component fsr_0_0 (fsr).
         """
-        variables = []
         self._variables_list = []
         if fixed_variables == []:
             fixed_variables = get_single_key_scenario_format_for_fixed_values(self._cipher)
@@ -84,9 +96,10 @@ class SmtXorDifferentialModel(SmtModel):
             if component.type not in component_types or (
                 WORD_OPERATION == component.type and operation not in operation_types
             ):
-                print(f"{component.id} not yet implemented")
-            else:
-                variables, constraints = component.smt_xor_differential_propagation_constraints(self)
+                raise NotImplementedError(
+                    f"Unsupported SMT XOR-differential component {component.id} ({component.type})."
+                )
+            variables, constraints = component.smt_xor_differential_propagation_constraints(self)
 
             self._variables_list.extend(variables)
             self._model_constraints.extend(constraints)

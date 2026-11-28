@@ -63,6 +63,77 @@ class VariableRotate(Component):
         component_input = Input(input_len, input_id_links, input_bit_positions)
         super().__init__(component_id, component_type, component_input, output_bit_size, description)
 
+    def cp_constraints(self):
+        """Return exact MiniZinc bit-value constraints for a variable rotation.
+
+        The first output-width input bits form the data word; the remaining
+        bits encode an unsigned rotation amount, most significant bit first.
+        Positive direction parameters rotate right; negative ones rotate left.
+        The amount is reduced modulo the word width, as in the evaluator.
+
+        INPUT: none. The component wiring supplies data and amount bits.
+
+        OUTPUT: a pair of lists: auxiliary declarations and exact equations.
+        These are value constraints, not XOR-differential probability weights.
+        See Rivest, *The RC5 Encryption Algorithm*, FSE 1994,
+        https://doi.org/10.1007/3-540-60590-8_7.
+
+        EXAMPLES::
+
+            sage: from claasp.components.variable_rotate_component import VariableRotate
+            sage: component = VariableRotate(0, 0, ['word', 'amount'], [[0, 1, 2, 3], [0, 1]], 4, -1)
+            sage: declarations, equations = component.cp_constraints()
+            sage: len(declarations), len(equations)
+            (2, 5)
+        """
+        width = self.output_bit_size
+        inputs = [
+            f"{name}[{bit}]"
+            for name, positions in zip(self.input_id_links, self.input_bit_positions)
+            for bit in positions
+        ]
+        if width < 1 or len(inputs) <= width:
+            raise ValueError("Variable rotation requires a data word and an amount")
+        word, amount = inputs[:width], inputs[width:]
+        amount_expression = " + ".join(
+            f"{pow(2, len(amount) - i - 1, width)}*{bit}" for i, bit in enumerate(amount)
+        )
+        declarations = [
+            f"array[0..{width - 1}] of var 0..1: {self.id}_input = array1d(0..{width - 1}, [{', '.join(word)}]);",
+            f"var 0..{width - 1}: {self.id}_amount;",
+        ]
+        constraints = [f"constraint {self.id}_amount = ({amount_expression}) mod {width};"]
+        multiplier = int(self.description[1]) % width
+        constraints.extend(
+            f"constraint {self.id}[{i}] = {self.id}_input[({i} - {multiplier}*{self.id}_amount + {width * width}) mod {width}];"
+            for i in range(width)
+        )
+        return declarations, constraints
+
+    def cp_xor_differential_propagation_constraints(self, model=None):
+        """Refuse differential weighting until a variable-rotation model exists.
+
+        Exact values are supported by :meth:`cp_constraints`. Rotating an XOR
+        difference by its amount difference would be incorrect. Use an exact
+        full-middle boomerang search for value feasibility without arm scores.
+
+        INPUT: optional differential model, unused.
+
+        OUTPUT: raises ``NotImplementedError``; no approximate weight is supplied.
+
+        EXAMPLES::
+
+            sage: from claasp.components.variable_rotate_component import VariableRotate
+            sage: component = VariableRotate(0, 0, ['word', 'amount'], [[0, 1, 2, 3], [0, 1]], 4, -1)
+            sage: component.cp_xor_differential_propagation_constraints()
+            Traceback (most recent call last):
+            ...
+            NotImplementedError: Variable-rotation differential weights are not implemented; use exact full-middle value feasibility
+        """
+        raise NotImplementedError(
+            "Variable-rotation differential weights are not implemented; use exact full-middle value feasibility"
+        )
+
     def get_word_based_c_code(self, verbosity, word_size, wordstring_variables):
         """
         Return C code for word-based variable rotation operation.
@@ -143,3 +214,40 @@ class VariableRotate(Component):
         del solution["components_values"][f"{output_id_link}_i"]
 
         return sign
+
+
+    def get_bit_based_vectorized_python_code(self, params, convert_output_to_bytes):
+        """Return code evaluating the exact variable rotation on bit matrices.
+
+        INPUT: ``params`` is a list of selected-input code strings;
+        ``convert_output_to_bytes`` is the standard generator flag (conversion
+        remains the caller's responsibility).
+
+        OUTPUT: a one-element list of Python source lines.
+
+        EXAMPLES::
+
+            sage: from claasp.components.variable_rotate_component import VariableRotate
+            sage: c = VariableRotate(0, 0, ['x', 's'], [[0, 1], [0]], 2, 1)
+            sage: c.get_bit_based_vectorized_python_code(['x', 's'], False)
+            ['  var_rot_0_0 = bit_vector_rotate_by_variable_amount([x,s], 2, 1)']
+        """
+        return [f"  {self.id} = bit_vector_rotate_by_variable_amount([{','.join(params)}], {self.output_bit_size}, {self.description[1]})"]
+
+    def get_byte_based_vectorized_python_code(self, params):
+        """Return code evaluating the exact rotation on packed byte matrices.
+
+        INPUT: ``params`` is the selected-input expression produced by the
+        standard byte-vector formatter.
+
+        OUTPUT: a one-element list of Python source lines, including the actual
+        amount width so that partial-byte padding cannot become amount bits.
+
+        EXAMPLES::
+
+            sage: from claasp.components.variable_rotate_component import VariableRotate
+            sage: c = VariableRotate(0, 0, ['x', 's'], [[0, 1], [0]], 2, -1)
+            sage: c.get_byte_based_vectorized_python_code('selected')
+            ['  var_rot_0_0 = byte_vector_rotate_by_variable_amount(selected, 2, -1, 1)']
+        """
+        return [f"  {self.id} = byte_vector_rotate_by_variable_amount({params}, {self.output_bit_size}, {self.description[1]}, {self.input_bit_size - self.output_bit_size})"]

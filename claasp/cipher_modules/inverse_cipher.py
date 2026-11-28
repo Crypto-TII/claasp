@@ -36,6 +36,7 @@ from claasp.components import (
     linear_layer_component,
     modsub_component,
 )
+from claasp.editor import get_key_schedule_component_ids  # noqa: F401 - re-exported for Cipher's legacy import
 from claasp.input import Input
 from claasp.name_mappings import (
     CIPHER_INPUT,
@@ -53,7 +54,6 @@ from claasp.name_mappings import (
     WORD_OPERATION,
 )
 
-from claasp.editor import get_key_schedule_component_ids
 
 
 # ===========================================================================
@@ -572,17 +572,54 @@ def _get_equivalent_input_bit_from_output_bit(
     )
     link_bit_names = [f"{potential_unwanted_component.id}_{i}_output" for i in positions]
 
-    equivalent_bits = []
-    for bit_name in link_bit_names:
-        for equivalent_bit in _equivalent_bit_names(bit_name, all_equivalent_bits):
-            if _is_valid_recovered_equivalent(equivalent_bit, all_bit_names, base_component.id, available_bits, key_schedule_components):
-                if not equivalent_bits or all_bit_names[equivalent_bit]["component_id"] == all_bit_names[equivalent_bits[0]]["component_id"]:
-                    equivalent_bits.append(equivalent_bit)
-
-    if not equivalent_bits:
+    recovered = [
+        _recovered_positions_for_bit(
+            name,
+            all_bit_names,
+            base_component.id,
+            available_bits,
+            all_equivalent_bits,
+            key_schedule_components,
+        )
+        for name in link_bit_names
+    ]
+    common = (
+        set.intersection(*(set(mapping) for mapping in recovered))
+        if recovered
+        else set()
+    )
+    if not common:
         return potential_unwanted_component.id, positions
-    input_bit_positions = sorted(all_bit_names[bit]["position"] for bit in equivalent_bits)
-    return all_bit_names[equivalent_bits[0]]["component_id"], input_bit_positions
+    source = (
+        potential_unwanted_component.id
+        if potential_unwanted_component.id in common
+        else min(common)
+    )
+    # Preserve the requested sequence, including permutations and repeated bits.
+    # Sorting recovered positions changes the value of the known XOR/MODADD operand.
+    return source, [mapping[source] for mapping in recovered]
+
+
+def _recovered_positions_for_bit(
+    bit_name,
+    all_bit_names,
+    base_component_id,
+    available_bits,
+    all_equivalent_bits,
+    key_schedule_components,
+):
+    positions = {}
+    for equivalent in _equivalent_bit_names(bit_name, all_equivalent_bits):
+        if _is_valid_recovered_equivalent(
+            equivalent,
+            all_bit_names,
+            base_component_id,
+            available_bits,
+            key_schedule_components,
+        ):
+            bit = all_bit_names[equivalent]
+            positions.setdefault(bit["component_id"], bit["position"])
+    return positions
 
 
 def _links_from_known_inputs(
@@ -684,6 +721,22 @@ def _link_is_sourceable_via_outputs(index, component, input_bits, available_bits
     return False
 
 
+def _available_input_credits(input_bits, usable, available_bits, all_equivalent_bits):
+    """Count full usable links and individually recovered bits of other links."""
+    available_credits = []
+    for index, bits in enumerate(input_bits):
+        if usable[index]:
+            available_credits.extend(bits)
+        else:
+            available_credits.extend(
+                bit for bit in bits
+                if _input_bit_value_is_recovered(
+                    bit["component_id"], bit["position"], available_bits, all_equivalent_bits
+                )
+            )
+    return available_credits
+
+
 def _are_there_enough_available_inputs_to_perform_inversion(component, available_bits, all_equivalent_bits, self):
     """Return True if the currently recovered bits are sufficient to invert ``component``.
 
@@ -707,6 +760,18 @@ def _are_there_enough_available_inputs_to_perform_inversion(component, available
         if bit in available_bits
     ]
 
+    if component.type == WORD_OPERATION and component.description[0] == "ROTATE_BY_VARIABLE_AMOUNT":
+        wires = [bit for group in _component_input_bits(component) for bit in group]
+        amount_known = all(
+            _input_bit_value_is_recovered(bit["component_id"], bit["position"], available_bits, all_equivalent_bits)
+            for bit in wires[component.output_bit_size:]
+        )
+        output_known = all(
+            _input_bit_value_is_recovered(component.id, bit, available_bits, all_equivalent_bits)
+            for bit in range(component.output_bit_size)
+        )
+        return amount_known and output_known
+
     # Determine which input links are usable (directly available or sourceable via outputs).
     input_bits = _component_input_bits(component)
     usable = [_are_these_bits_available(bits, available_bits) for bits in input_bits]
@@ -715,17 +780,9 @@ def _are_there_enough_available_inputs_to_perform_inversion(component, available
             usable[index] = _link_is_sourceable_via_outputs(index, component, input_bits, available_bits, all_equivalent_bits, self)
 
     # Merge credits: full link bits for usable links, individually known bits for unusable ones.
-    total_available = list(available_from_output)
-    for index, bits in enumerate(input_bits):
-        if usable[index]:
-            total_available += bits
-        else:
-            # A partially-available link still contributes the bits whose value is individually
-            # known (directly or via the equivalence map).
-            total_available += [
-                b for b in bits
-                if _input_bit_value_is_recovered(b["component_id"], b["position"], available_bits, all_equivalent_bits)
-            ]
+    total_available = available_from_output + _available_input_credits(
+        input_bits, usable, available_bits, all_equivalent_bits
+    )
 
     threshold = component.output_bit_size if (component.id == INPUT_PLAINTEXT or INTERMEDIATE_OUTPUT in component.id) else component.input_bit_size
     return len(total_available) >= threshold
@@ -735,7 +792,7 @@ _ALWAYS_INVERTIBLE_TYPES = frozenset({
     LINEAR_LAYER, PERMUTATION_COMPONENT, MIX_COLUMN, CONSTANT,
     CIPHER_INPUT, CIPHER_OUTPUT, INTERMEDIATE_OUTPUT,
 })
-_INVERTIBLE_WORD_OPS = frozenset({"ROTATE", "XOR", "SIGMA", "MODADD", "NOT"})
+_INVERTIBLE_WORD_OPS = frozenset({"ROTATE", "XOR", "SIGMA", "MODADD", "NOT", "ROTATE_BY_VARIABLE_AMOUNT"})
 
 
 def _is_possibly_invertible_component(component):
@@ -944,6 +1001,30 @@ def _invert_rotate(component, available_bits, all_equivalent_bits, key_schedule_
     )
 
 
+def _invert_variable_rotate(component, available_bits, all_equivalent_bits, key_schedule_components, self, oc, aoc):
+    links, positions = _links_from_outputs(component, aoc, all_equivalent_bits, self)
+    offset = 0
+    for read_index, (source, source_positions) in enumerate(zip(component.input_id_links, component.input_bit_positions)):
+        amount_positions = source_positions[max(0, component.output_bit_size - offset):]
+        offset += len(source_positions)
+        if not amount_positions:
+            continue
+        recovered_source, recovered_positions = _get_equivalent_input_bit_from_output_bit(
+            _component_from_id(source, self), component, available_bits, all_equivalent_bits,
+            key_schedule_components, self, base_component_input_index=read_index,
+            override_positions=amount_positions,
+        )
+        links.append(recovered_source)
+        positions.append(recovered_positions)
+    inverse_component = Component(
+        component.id, component.type, Input(component.input_bit_size, links, positions),
+        component.output_bit_size, [component.description[0], -component.description[1]],
+    )
+    return _finalize_inverse(
+        inverse_component, component, self, all_equivalent_bits, available_bits, component.__class__
+    )
+
+
 def _invert_not(component, available_bits, all_equivalent_bits, key_schedule_components, self, oc, aoc):
     input_id_links, input_bit_positions = _links_from_outputs(component, aoc, all_equivalent_bits, self)
     inverse_component = Component(
@@ -1056,6 +1137,7 @@ _INVERSION_RULES = {
     (WORD_OPERATION, "SIGMA"): _invert_sigma,
     (WORD_OPERATION, "XOR"): _invert_xor,
     (WORD_OPERATION, "ROTATE"): _invert_rotate,
+    (WORD_OPERATION, "ROTATE_BY_VARIABLE_AMOUNT"): _invert_variable_rotate,
     (WORD_OPERATION, "NOT"): _invert_not,
     (WORD_OPERATION, "MODADD"): _invert_modadd,
     CONSTANT: _invert_constant,
@@ -1279,8 +1361,8 @@ def _try_wire_via_candidate(candidate, link, needed_positions, link_bit_names, a
     if _is_bit_adjacent_to_list_of_bits(probe_bit, link_bit_names, all_equivalent_bits):
         if set(needed_positions) < set(candidate.input_bit_positions[link_index]):
             offset += needed_positions[0] - candidate.input_bit_positions[link_index][0]
-        l = list(range(offset, offset + len(needed_positions)))
-        ordered = _find_correct_order(link, needed_positions, candidate.id, l, all_equivalent_bits)
+        bit_positions = list(range(offset, offset + len(needed_positions)))
+        ordered = _find_correct_order(link, needed_positions, candidate.id, bit_positions, all_equivalent_bits)
         return candidate.id, ordered, False
 
     out_positions = _find_equivalent_output_updated_positions(link, needed_positions, candidate, all_equivalent_bits)
@@ -1312,7 +1394,7 @@ def _wire_input_link_for_evaluation(
 
     ids = []
     positions = []
-    link_bit_names = [f"{link}_{l}_output" for l in range(source.output_bit_size)]
+    link_bit_names = [f"{link}_{bit_index}_output" for bit_index in range(source.output_bit_size)]
     for candidate in _get_available_output_components(source, available_bits, self):
         if candidate.id in component.input_id_links or candidate.id == component.id:
             continue
@@ -1393,5 +1475,3 @@ def _build_evaluated_component(component, input_id_links, input_bit_positions, a
         )
 
     return evaluated
-
-

@@ -45,6 +45,7 @@ import tracemalloc
 
 from sage.numerical.mip import MIPSolverException, MixedIntegerLinearProgram
 
+from claasp.cipher_modules.models.candidate_validation import CandidateValidationMixin
 from claasp.cipher_modules.models.milp.solvers import (
     MILP_SOLVERS_EXTERNAL,
     MILP_SOLVERS_INTERNAL,
@@ -52,7 +53,9 @@ from claasp.cipher_modules.models.milp.solvers import (
     SOLVER_DEFAULT,
     SOLVER_INTERNAL_DEFAULT,
 )
-from claasp.cipher_modules.models.milp.utils.milp_name_mappings import MILP_DEFAULT_WEIGHT_PRECISION
+from claasp.cipher_modules.models.milp.utils.milp_name_mappings import (
+    MILP_DEFAULT_WEIGHT_PRECISION,
+)
 from claasp.cipher_modules.models.milp.utils.utils import (
     _get_data,
     _parse_external_solver_output,
@@ -161,10 +164,11 @@ def _run_and_stream_output(command, process_line):
         return "".join(output_lines), errors_file.read()
 
 
-class MilpModel:
+class MilpModel(CandidateValidationMixin):
     """Build MILP models for ciphers using Cipher."""
 
     def __init__(self, cipher, n_window_heuristic=None, verbose=False):
+        self._validation_cipher = cipher
         self._cipher = cipher
         self._variables_list = []
         self._model_constraints = []

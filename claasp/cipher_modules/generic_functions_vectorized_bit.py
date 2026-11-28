@@ -706,3 +706,40 @@ def bit_vector_permutation(input, permutation, word_size=1, verbosity=False):
         print("---")
 
     return output
+
+
+def bit_vector_rotate_by_variable_amount(inputs, input_size, direction):
+    """Rotate each bit-vector sample by its unsigned amount modulo the width.
+
+    INPUT:
+
+    - ``inputs`` -- list of bit matrices (MSB first, samples in columns).
+      Concatenated rows contain ``input_size`` data bits followed by amount bits.
+    - ``input_size`` -- positive data-word width in bits.
+    - ``direction`` -- negative for left rotation, nonnegative for right.
+
+    OUTPUT: uint8 bit matrix with one data word per sample column. Arbitrarily
+    wide amounts are reduced bit by bit, without conversion to a machine word.
+
+    EXAMPLES::
+
+        sage: import numpy as np
+        sage: from claasp.cipher_modules.generic_functions_vectorized_bit import bit_vector_rotate_by_variable_amount
+        sage: bits = np.array([[1], [0], [1]], dtype=np.uint8)
+        sage: bit_vector_rotate_by_variable_amount([bits], 2, 1).ravel().tolist()
+        [0, 1]
+    """
+    input_size = int(input_size)
+    bits = bit_vector_CONCAT(inputs)
+    if input_size < 1 or len(bits) <= input_size:
+        raise ValueError("Variable rotation requires data and amount bits")
+    amount = np.zeros(bits.shape[1], dtype=np.intp)
+    for bit in bits[input_size:]:
+        amount = (2 * amount + bit) % input_size
+    signed = amount * (int(direction) % input_size)
+    positions = (np.arange(input_size)[:, None] - signed[None, :]) % input_size
+    return np.take_along_axis(bits[:input_size], positions, axis=0)
+
+
+# Preserve imports used by code generated with the previous public name.
+bit_vector_ROTATE_BY_VARIABLE_AMOUNT = bit_vector_rotate_by_variable_amount

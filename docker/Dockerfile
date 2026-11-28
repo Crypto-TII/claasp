@@ -54,7 +54,7 @@ RUN set -eux; \
 
 ENV GUROBI_HOME=/opt/gurobi
 ENV PATH="/opt/gurobi/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/opt/gurobi/lib:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/opt/gurobi/lib"
 
 # Installing Soplex (for SCIP)
 RUN wget https://github.com/scipopt/soplex/archive/refs/tags/release-716.tar.gz \
@@ -413,6 +413,12 @@ RUN printf '%s\n' \
     'exec /opt/mallob/build/mallob -sat-config-dirs=/opt/mallob/config/sat/base -preprocess-config=/opt/mallob/config/satwithpre/actors_default.json "$@"' \
     > /usr/local/bin/mallob \
     && chmod +x /usr/local/bin/mallob
+
+
+# Modular boomerang probabilities require a float-capable solver. Use matching
+# Gecode binaries and MiniZinc definitions when the image has none installed.
+COPY docker/install_gecode.sh /usr/local/bin/install-gecode
+RUN bash /usr/local/bin/install-gecode
 
 
 FROM claasp-base AS claasp-lib

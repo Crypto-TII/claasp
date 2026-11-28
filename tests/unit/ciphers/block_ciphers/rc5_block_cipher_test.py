@@ -67,3 +67,24 @@ def test_rc5_block_cipher():
     #assert rc5.evaluate_vectorized([key, plaintext], evaluate_api=True) == ciphertext
 
 
+
+def test_rc5_partial_boundaries_preserve_consumed_state_bits():
+    cipher = RC5BlockCipher(number_of_rounds=4)
+    original = cipher.evaluate([0x0123456789abcdef, 0x12345678])
+    for keep_keys in (False, True):
+        for start, end in [(0,2),(1,3),(2,3)]:
+            partial = cipher.get_partial_cipher(start, end, keep_key_schedule=keep_keys)
+            available = set(partial.inputs) | set(partial.all_components_ids())
+            assert all(link in available for c in partial.all_components()
+                       for link in c.input_id_links if link)
+    assert cipher.evaluate([0x0123456789abcdef, 0x12345678]) == original
+
+
+def test_rc5_exact_full_middle_builds_without_differential_rotation_weights():
+    from claasp.cipher_modules.models.cp.mzn_models.mzn_hadipour_boomerang_model import MznHadipourBoomerangModel
+    cipher = RC5BlockCipher(number_of_rounds=4)
+    model = MznHadipourBoomerangModel(
+        cipher, dict(top_part_number_of_rounds=0, middle_part_number_of_rounds=4,
+                     bottom_part_number_of_rounds=0), middle_model='exact')
+    model.build_hadipour_boomerang_model(weight=None)
+    assert 'quartet_0_var_rot_' in model.assemble_model()

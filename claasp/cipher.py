@@ -460,7 +460,7 @@ class Cipher:
                 else:
                     unprocessed_components.append(c)
             if len(unprocessed_components) == len(cipher_components_tmp):
-                raise Error(_inversion_stall_message(cipher_components_tmp))
+                raise ValueError(_inversion_stall_message(cipher_components_tmp))
             cipher_components_tmp = unprocessed_components
 
         # STEP 3 - rebuild cipher
@@ -540,7 +540,7 @@ class Cipher:
             f"{self.family_name}_partial_{start_round}_to_{end_round}",
             f"{self.type}",
             inputs,
-            self._inputs_bit_size,
+            deepcopy(self._inputs_bit_size),
             self.output_bit_size,
         )
         for round in self.rounds_as_list:
@@ -1314,6 +1314,54 @@ class Cipher:
         else:
             print("'cipher_reference_code': None,")
         print("}")
+
+    def add_prefix(self, prefix='upper_'):
+        """Prepend ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1)
+            sage: obj.add_prefix()
+            sage: obj.inputs[0]
+            'upper_plaintext'
+            sage: obj.remove_prefix()
+            sage: obj.inputs[0]
+            'plaintext'
+        """
+        self._rounds.add_prefix(prefix)
+        self._inputs = [prefix + i for i in self._inputs]
+
+    def remove_prefix(self, prefix='upper_'):
+        """Remove one leading occurrence of ``prefix`` in component IDs and input links, in place.
+
+        INPUT: ``prefix`` -- string (default: ``'upper_'``). This namespaces
+        the graph for analyses such as boomerang searches. Round numbers and
+        bit positions are preserved. The caller must avoid ID collisions.
+
+        OUTPUT: None. IDs and links are updated; cryptographic values are
+        unaffected. A nonmatching prefix is left unchanged when removing.
+
+        EXAMPLES::
+
+            sage: from claasp.ciphers.block_ciphers.speck_block_cipher import SpeckBlockCipher
+            sage: obj = SpeckBlockCipher(number_of_rounds=1)
+            sage: obj.add_prefix()
+            sage: obj.inputs[0]
+            'upper_plaintext'
+            sage: obj.remove_prefix()
+            sage: obj.inputs[0]
+            'plaintext'
+        """
+        self._rounds.remove_prefix(prefix)
+        self._inputs = [i[len(prefix):] if i.startswith(prefix) else i for i in self._inputs]
 
     def print_as_python_dictionary_to_file(self, file_name=""):
         """
